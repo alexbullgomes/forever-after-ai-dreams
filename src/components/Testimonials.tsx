@@ -1,0 +1,127 @@
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Star, Heart, Quote } from "lucide-react";
+
+const Testimonials = () => {
+  const testimonials = [
+    {
+      id: 1,
+      name: "Sarah & Michael",
+      location: "Napa Valley Wedding",
+      rating: 5,
+      text: "Absolutely breathtaking! They captured every moment perfectly. Our wedding film brings tears of joy every time we watch it. The attention to detail and artistic vision exceeded all our expectations.",
+      image: "/api/placeholder/80/80"
+    },
+    {
+      id: 2,
+      name: "Emma & David",
+      location: "Malibu Beach Ceremony",
+      rating: 5,
+      text: "Professional, creative, and so much fun to work with! They made us feel comfortable and the results were simply magical. Our photos are like artwork - we display them proudly in our home.",
+      image: "/api/placeholder/80/80"
+    },
+    {
+      id: 3,
+      name: "Jessica & Ryan",
+      location: "Sonoma Garden Wedding",
+      rating: 5,
+      text: "The best investment we made for our wedding! The cinematic quality and storytelling approach created memories we'll treasure forever. They truly understand how to capture love.",
+      image: "/api/placeholder/80/80"
+    },
+    {
+      id: 4,
+      name: "Lauren & James",
+      location: "San Francisco City Wedding",
+      rating: 5,
+      text: "Incredible team with amazing artistic vision. They captured moments we didn't even know were happening. The final film was beyond our wildest dreams - it's our love story told beautifully.",
+      image: "/api/placeholder/80/80"
+    }
+  ];
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-4 py-2">
+              <Heart className="w-5 h-5 text-rose-500" />
+              <span className="text-rose-700 text-sm font-medium">Happy Couples</span>
+            </div>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            What Our Couples
+            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+              Are Saying
+            </span>
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Don't just take our word for it. Here's what couples across California are saying about their experience.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {testimonials.map((testimonial, index) => (
+            <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
+              <CardContent className="p-8">
+                <div className="flex items-center mb-6">
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name}
+                    className="w-16 h-16 rounded-full object-cover mr-4 ring-2 ring-rose-200"
+                  />
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-900">{testimonial.name}</h4>
+                    <p className="text-rose-600 text-sm font-medium">{testimonial.location}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+
+                <div className="relative">
+                  <Quote className="absolute -top-2 -left-2 w-8 h-8 text-rose-200" />
+                  <p className="text-gray-700 leading-relaxed pl-6 italic">
+                    "{testimonial.text}"
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Stats section */}
+        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+              500+
+            </div>
+            <p className="text-gray-600 font-medium">Happy Couples</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+              5★
+            </div>
+            <p className="text-gray-600 font-medium">Average Rating</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+              50+
+            </div>
+            <p className="text-gray-600 font-medium">Venues Covered</p>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+              8+
+            </div>
+            <p className="text-gray-600 font-medium">Years Experience</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Testimonials;
