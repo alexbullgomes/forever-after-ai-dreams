@@ -194,16 +194,16 @@ const WeddingPackages = () => {
           </p>
         </div>
 
-        {/* AI Assistant Wedding Planner Section */}
-        <AIAssistantSection />
-
-        {/* Combined Photo & Video Packages - MOVED TO FIRST */}
+        {/* Combined Photo & Video Packages - FIRST */}
         <PackageSection 
           title="Your Dream Wedding Photo & Video Packages" 
           subtitle="Your wedding day is more than an event — it's the beginning of your forever." 
           packages={combinedPackages} 
           icon={Heart} 
         />
+
+        {/* AI Assistant Wedding Planner Section - MOVED HERE */}
+        <AIAssistantSection />
 
         {/* Photography Packages */}
         <PackageSection 
