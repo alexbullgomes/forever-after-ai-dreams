@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, Camera, Video, Star, ArrowLeft, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AIChatInput } from "@/components/ui/ai-chat-input";
+
 const WeddingPackages = () => {
   const {
     user,
@@ -187,7 +189,6 @@ const WeddingPackages = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Your Dream Wedding Packages
           </h1>
@@ -195,6 +196,35 @@ const WeddingPackages = () => {
             Thank you for joining our family. Below are our carefully curated photography 
             and videography collections — each designed to capture your love story with beauty and intention.
           </p>
+        </div>
+
+        {/* AI Assistant Wedding Planner Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Heart className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Assistant Wedding Planner
+            </h2>
+            <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-8">
+              Let us help you plan your dream day. Tell us about yourself and share any ideas you have in mind. Feel free to 
+              send voice notes or files to help us better understand your needs. Together, we'll find the perfect wedding 
+              package for you.
+            </p>
+            
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Talk to me!</h3>
+              <span className="text-gray-600 italic">
+                I've got answers, plans, good vibes, and maybe a hidden offer, ask me :)
+              </span>
+            </div>
+          </div>
+          
+          {/* AI Chat Input */}
+          <div className="max-w-4xl mx-auto">
+            <AIChatInput />
+          </div>
         </div>
 
         {/* Combined Photo & Video Packages - MOVED TO FIRST */}
@@ -223,4 +253,5 @@ const WeddingPackages = () => {
       </div>
     </div>;
 };
+
 export default WeddingPackages;
