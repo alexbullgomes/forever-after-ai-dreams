@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,53 @@ const WeddingPackages = () => {
   if (!user) {
     return null;
   }
+
+  // Combined Photo & Video Packages (moved to be first)
+  const combinedPackages = [
+    {
+      name: "Essential Love",
+      price: "$2,999",
+      description: "Perfect for intimate ceremonies",
+      features: [
+        "4 hours of coverage",
+        "1 videographer + 1 photographer",
+        "Highlight reel (2–5 minutes)",
+        "150 edited photos",
+        "Online gallery access",
+      ],
+      popular: false,
+    },
+    {
+      name: "Dream Wedding",
+      price: "$4,999",
+      description: "Our most popular package",
+      features: [
+        "8 hours of coverage",
+        "2 videographers + 1 photographers",
+        "Cinematic wedding film (3–7 minutes)",
+        "Ceremony + reception footage",
+        "200+ edited photos",
+        "USB drive with all content",
+      ],
+      popular: true,
+    },
+    {
+      name: "Luxury Experience",
+      price: "$8,999",
+      description: "The ultimate wedding documentation",
+      features: [
+        "Full day coverage (12+ hours)",
+        "3 videographers + 2 photographers",
+        "Cinematic wedding film (6–15 minutes)",
+        "Drone footage",
+        "500+ edited photos",
+        "Engagement session included",
+        "Premium album + USB",
+        "Raw footage access",
+      ],
+      popular: false,
+    },
+  ];
 
   // Photography Packages
   const photographyPackages = [
@@ -140,53 +188,6 @@ const WeddingPackages = () => {
         "Full ceremony + reception videos + Audio",
         "Drone footage",
         "4K video + HD audio",
-      ],
-      popular: false,
-    },
-  ];
-
-  // Combined Photo & Video Packages
-  const combinedPackages = [
-    {
-      name: "Essential Love",
-      price: "$2,999",
-      description: "Perfect for intimate ceremonies",
-      features: [
-        "4 hours of coverage",
-        "1 videographer + 1 photographer",
-        "Highlight reel (2–5 minutes)",
-        "150 edited photos",
-        "Online gallery access",
-      ],
-      popular: false,
-    },
-    {
-      name: "Dream Wedding",
-      price: "$4,999",
-      description: "Our most popular package",
-      features: [
-        "8 hours of coverage",
-        "2 videographers + 1 photographers",
-        "Cinematic wedding film (3–7 minutes)",
-        "Ceremony + reception footage",
-        "200+ edited photos",
-        "USB drive with all content",
-      ],
-      popular: true,
-    },
-    {
-      name: "Luxury Experience",
-      price: "$8,999",
-      description: "The ultimate wedding documentation",
-      features: [
-        "Full day coverage (12+ hours)",
-        "3 videographers + 2 photographers",
-        "Cinematic wedding film (6–15 minutes)",
-        "Drone footage",
-        "500+ edited photos",
-        "Engagement session included",
-        "Premium album + USB",
-        "Raw footage access",
       ],
       popular: false,
     },
@@ -303,6 +304,14 @@ const WeddingPackages = () => {
           </p>
         </div>
 
+        {/* Combined Photo & Video Packages - MOVED TO FIRST */}
+        <PackageSection
+          title="Your Dream Wedding Photo & Video Packages"
+          subtitle="Your wedding day is more than an event — it's the beginning of your forever."
+          packages={combinedPackages}
+          icon={Heart}
+        />
+
         {/* Photography Packages */}
         <PackageSection
           title="Wedding Photography Packages"
@@ -317,14 +326,6 @@ const WeddingPackages = () => {
           subtitle="Every wedding tells a story — and we're here to capture yours, frame by frame."
           packages={videographyPackages}
           icon={Video}
-        />
-
-        {/* Combined Packages */}
-        <PackageSection
-          title="Your Dream Wedding Photo & Video Packages"
-          subtitle="Your wedding day is more than an event — it's the beginning of your forever."
-          packages={combinedPackages}
-          icon={Heart}
         />
 
         {/* CTA Section */}
