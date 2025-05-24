@@ -21,6 +21,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     password: ""
   });
   const [loading, setLoading] = useState(false);
+  const [googleAvailable, setGoogleAvailable] = useState(true);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,6 +70,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         }, 1000);
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({
         title: "Authentication Error",
         description: error.message || "Something went wrong. Please try again.",
@@ -89,18 +91,33 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         }
       });
 
-      if (error) throw error;
-
-      toast({
-        title: "Redirecting to Google...",
-        description: "Please complete authentication in the popup window.",
-      });
+      if (error) {
+        console.error('Google auth error:', error);
+        if (error.message.includes('provider is not enabled')) {
+          setGoogleAvailable(false);
+          toast({
+            title: "Google Sign-In Not Available",
+            description: "Please use email and password to continue.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Redirecting to Google...",
+          description: "Please complete authentication in the popup window.",
+        });
+      }
     } catch (error: any) {
+      console.error('Google auth error:', error);
       toast({
         title: "Google Sign-In Error",
-        description: error.message || "Failed to initialize Google sign-in.",
+        description: "Please try using email and password instead.",
         variant: "destructive",
       });
+      setGoogleAvailable(false);
+    } finally {
       setLoading(false);
     }
   };
@@ -134,25 +151,29 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         <div className="p-6">
           <Card className="border-0 shadow-none">
             <CardContent className="space-y-6 p-0">
-              {/* Google Sign-In */}
-              <Button
-                onClick={handleGoogleAuth}
-                disabled={loading}
-                variant="outline"
-                className="w-full h-12 text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors"
-              >
-                <Chrome className="w-5 h-5 mr-3" />
-                Continue with Google
-              </Button>
+              {/* Google Sign-In - only show if available */}
+              {googleAvailable && (
+                <>
+                  <Button
+                    onClick={handleGoogleAuth}
+                    disabled={loading}
+                    variant="outline"
+                    className="w-full h-12 text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors"
+                  >
+                    <Chrome className="w-5 h-5 mr-3" />
+                    Continue with Google
+                  </Button>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Or continue with email</span>
-                </div>
-              </div>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Email Form */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -209,7 +230,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                       required
                       disabled={loading}
                       className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
-                      placeholder={isLogin ? "Enter your password" : "Create a secure password"}
+                      placeholder={isLogin ? "Enter your password" : "Create a secure password (min 6 chars)"}
+                      minLength={6}
                     />
                   </div>
                 </div>
