@@ -15,7 +15,11 @@ const PLACEHOLDERS = [
   "Any specific photography style in mind?",
 ];
 
-const AIChatInput = () => {
+interface AIChatInputProps {
+  onSendMessage?: (message: string) => void;
+}
+
+const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -64,28 +68,32 @@ const AIChatInput = () => {
     const message = inputValue;
     setInputValue("");
     
-    try {
-      const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: message,
-          timestamp: new Date().toISOString(),
-        }),
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('AI Response:', result);
-        // Handle the response here - you might want to show it in a chat interface
+    if (onSendMessage) {
+      await onSendMessage(message);
+    } else {
+      // Fallback to original webhook call if no onSendMessage prop
+      try {
+        const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('AI Response:', result);
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setIsLoading(false);
     }
+    
+    setIsLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
