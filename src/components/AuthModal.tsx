@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Mail, Lock, User, Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,36 +20,89 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     email: "",
     password: ""
   });
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulate authentication
-    toast({
-      title: isLogin ? "Welcome back!" : "Account created!",
-      description: "Redirecting to your package dashboard...",
-    });
+    setLoading(true);
 
-    // In a real app, this would create a user session and redirect
-    setTimeout(() => {
-      onClose();
-      // Redirect to packages page would happen here
-      console.log("Redirecting to /wedding-packages");
-    }, 1500);
+    try {
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Welcome back!",
+          description: "Redirecting to your packages...",
+        });
+
+        setTimeout(() => {
+          onClose();
+          window.location.href = '/wedding-packages';
+        }, 1000);
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Account created!",
+          description: "Welcome to Dream Weddings! Redirecting to your packages...",
+        });
+
+        setTimeout(() => {
+          onClose();
+          window.location.href = '/wedding-packages';
+        }, 1000);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Authentication Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleAuth = () => {
-    toast({
-      title: "Google Sign-In",
-      description: "Redirecting to Google authentication...",
-    });
-    
-    // In a real app, this would trigger Google OAuth
-    setTimeout(() => {
-      onClose();
-      console.log("Google auth completed, redirecting to /wedding-packages");
-    }, 1500);
+  const handleGoogleAuth = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/wedding-packages`
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Redirecting to Google...",
+        description: "Please complete authentication in the popup window.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Google Sign-In Error",
+        description: error.message || "Failed to initialize Google sign-in.",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,6 +137,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               {/* Google Sign-In */}
               <Button
                 onClick={handleGoogleAuth}
+                disabled={loading}
                 variant="outline"
                 className="w-full h-12 text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors"
               >
@@ -113,6 +168,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                         value={formData.fullName}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                         className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
                         placeholder="Your full name"
                       />
@@ -132,6 +188,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                       value={formData.email}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                       className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
                       placeholder="your@email.com"
                     />
@@ -150,23 +207,26 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                       value={formData.password}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                       className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
-                      placeholder="Create a secure password"
+                      placeholder={isLogin ? "Enter your password" : "Create a secure password"}
                     />
                   </div>
                 </div>
 
                 <Button 
                   type="submit"
+                  disabled={loading}
                   className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
                 >
-                  {isLogin ? "Sign In" : "Create Account"}
+                  {loading ? "Processing..." : (isLogin ? "Sign In" : "Create Account")}
                 </Button>
               </form>
 
               <div className="text-center">
                 <button
                   onClick={() => setIsLogin(!isLogin)}
+                  disabled={loading}
                   className="text-sm text-gray-600 hover:text-rose-600 transition-colors"
                 >
                   {isLogin 
