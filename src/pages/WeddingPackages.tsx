@@ -49,166 +49,52 @@ const WeddingPackages = () => {
     return null; // Will redirect in useEffect
   }
 
-  const photographyPackages = [
+  const packages = [
     {
-      name: "The Intimate Moments Collection",
-      duration: "6 Hours",
-      price: "$1,800",
-      description: "Perfect for elopements, micro weddings, or couples who want just the essentials captured beautifully.",
+      name: "Essential Love",
+      price: "$2,999",
+      description: "Perfect for intimate ceremonies",
       features: [
-        "Up to 6 hrs of coverage",
-        "Unlimited Pictures",
-        "1 Lead Photographer",
-        "100+ Edited High-Resolution Photos",
-        "Print Release Rights",
-        "Sneak Peek Delivery within 72 hrs",
+        "4 hours of coverage",
+        "1 videographer + 1 photographer",
+        "Highlight reel (3-5 minutes)",
+        "50 edited photos",
+        "Online gallery access",
       ],
       popular: false,
     },
     {
-      name: "The Ever After Collection",
-      duration: "8 Hours",
-      price: "$2,600",
-      description: "A complete wedding day experience from the ceremony to the first dance.",
+      name: "Dream Wedding",
+      price: "$4,999",
+      description: "Our most popular package",
       features: [
-        "Up to 8 hrs of coverage",
-        "Unlimited Pictures",
-        "1 Lead Photographer + 1 Assistant",
-        "200+ Edited High-Resolution Photos + Raw Pictures",
-        "Print Release Rights",
-        "Sneak Peek Delivery within 48 hrs",
-        "Custom USB Drive with All Final Photos",
-        "Candid Moments + Posed Portraits Included",
+        "8 hours of coverage",
+        "2 videographers + 2 photographers",
+        "Cinematic wedding film (8-12 minutes)",
+        "Ceremony + reception footage",
+        "200+ edited photos",
+        "Same-day highlights (1 minute)",
+        "USB drive with all content",
       ],
       popular: true,
     },
     {
-      name: "The Forever Yours Experience",
-      duration: "12 Hours",
-      price: "$3,900",
-      description: "Our most luxurious package — every unforgettable moment captured from sunrise prep to the grand exit.",
+      name: "Luxury Experience",
+      price: "$8,999",
+      description: "The ultimate wedding documentation",
       features: [
-        "Up to 12 hrs of coverage",
-        "Unlimited Pictures",
-        "2 Photographers",
-        "300+ Edited High-Resolution Photos + Raw",
-        "Private Online Gallery",
-        "Print Release Rights",
-        "Sneak Peek Delivery within 24 hrs",
-        "Custom USB Drive",
-        "Engagement Session Included",
-        "Priority Photo Editing",
-        "Full Day Coverage – Getting Ready to Grand Exit",
-        "Social Media Highlights Pack",
+        "Full day coverage (12+ hours)",
+        "3 videographers + 3 photographers",
+        "Feature-length documentary",
+        "Drone footage (weather permitting)",
+        "500+ edited photos",
+        "Engagement session included",
+        "Premium album + USB",
+        "Raw footage access",
       ],
       popular: false,
     },
   ];
-
-  const videographyPackages = [
-    {
-      name: "The Highlight Reel",
-      duration: "6 Hours",
-      price: "$2,500",
-      description: "A short, cinematic film that captures the soul of your ceremony.",
-      features: [
-        "3–6 min Wedding Film",
-        "1 Videographer (Luiz Lopes)",
-        "Up to 6 hrs of coverage",
-        "Drone Shots",
-        "1 min Social Media Teaser included",
-        "4K Capture + HD Audio",
-      ],
-      popular: false,
-    },
-    {
-      name: "The Legacy Film",
-      duration: "8 Hours",
-      price: "$3,500",
-      description: "A full-scope storytelling package that honors every key moment of the day.",
-      features: [
-        "6–10 min Wedding Film",
-        "2 Videographers (Luiz Lopes + 2nd Shooter)",
-        "Up to 8 hrs of coverage",
-        "Drone Shots",
-        "1 min Social Media Teaser included",
-        "Full Ceremony Video + Audio",
-        "Full Reception Video + Audio",
-        "4K Capture + HD Audio",
-      ],
-      popular: true,
-    },
-    {
-      name: "The Cinematic Love Story",
-      duration: "12 Hours",
-      price: "$5,000",
-      description: "An all-inclusive cinematic production for couples who want the full spotlight treatment — crafted with artistry and intention.",
-      features: [
-        "6–10 min Wedding Film",
-        "3 Videographers (Luiz Lopes + 2 additional videographers)",
-        "Up to 12 hrs of coverage",
-        "Drone Shots",
-        "1 min Social Media Teaser included",
-        "Full Ceremony Video + Audio",
-        "Full Reception Video + Audio",
-        "Love Story Film",
-        "IG Reels Best Moments",
-        "Raw Footage",
-        "4K Capture + HD Audio",
-      ],
-      popular: false,
-    },
-  ];
-
-  const PackageCard = ({ pkg, icon: Icon }) => (
-    <Card 
-      className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl ${
-        pkg.popular 
-          ? 'ring-2 ring-rose-500 scale-105' 
-          : 'hover:scale-105'
-      }`}
-    >
-      {pkg.popular && (
-        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center py-2 text-sm font-semibold">
-          <Star className="w-4 h-4 inline mr-1" />
-          Most Popular
-        </div>
-      )}
-      
-      <CardHeader className={pkg.popular ? 'pt-12' : ''}>
-        <CardTitle className="text-2xl font-bold text-center text-gray-900">
-          {pkg.name}
-        </CardTitle>
-        <div className="text-center">
-          <span className="text-sm text-gray-500">{pkg.duration}</span>
-        </div>
-        <div className="text-center">
-          <span className="text-4xl font-bold text-rose-600">{pkg.price}</span>
-        </div>
-        <p className="text-center text-gray-600">{pkg.description}</p>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <ul className="space-y-3">
-          {pkg.features.map((feature, featureIndex) => (
-            <li key={featureIndex} className="flex items-start">
-              <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
-                <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-              </div>
-              <span className="text-gray-700">{feature}</span>
-            </li>
-          ))}
-        </ul>
-        
-        <Button 
-          className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
-        >
-          <Icon className="w-5 h-5 mr-2" />
-          Book Consultation
-        </Button>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
@@ -246,7 +132,7 @@ const WeddingPackages = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <Heart className="w-16 h-16 text-rose-500 mx-auto mb-6" />
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Your Dream Wedding Packages
@@ -257,51 +143,60 @@ const WeddingPackages = () => {
           </p>
         </div>
 
-        {/* Photography Packages Section */}
-        <div className="mb-20">
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full px-6 py-3">
-                <Camera className="w-6 h-6 text-purple-600" />
-                <span className="text-purple-700 text-lg font-semibold">Wedding Photography Packages</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {photographyPackages.map((pkg, index) => (
-              <PackageCard key={index} pkg={pkg} icon={Camera} />
-            ))}
-          </div>
-        </div>
-
-        {/* Videography Packages Section */}
-        <div className="mb-16">
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-6 py-3">
-                <Video className="w-6 h-6 text-rose-600" />
-                <span className="text-rose-700 text-lg font-semibold">Wedding Videography Packages</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {videographyPackages.map((pkg, index) => (
-              <PackageCard key={index} pkg={pkg} icon={Video} />
-            ))}
-          </div>
+        {/* Packages Grid */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {packages.map((pkg, index) => (
+            <Card 
+              key={index} 
+              className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl ${
+                pkg.popular 
+                  ? 'ring-2 ring-rose-500 scale-105' 
+                  : 'hover:scale-105'
+              }`}
+            >
+              {pkg.popular && (
+                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center py-2 text-sm font-semibold">
+                  <Star className="w-4 h-4 inline mr-1" />
+                  Most Popular
+                </div>
+              )}
+              
+              <CardHeader className={pkg.popular ? 'pt-12' : ''}>
+                <CardTitle className="text-2xl font-bold text-center text-gray-900">
+                  {pkg.name}
+                </CardTitle>
+                <div className="text-center">
+                  <span className="text-4xl font-bold text-rose-600">{pkg.price}</span>
+                </div>
+                <p className="text-center text-gray-600">{pkg.description}</p>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                <ul className="space-y-3">
+                  {pkg.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start">
+                      <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                      </div>
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button 
+                  className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
+                >
+                  <Camera className="w-5 h-5 mr-2" />
+                  Book Consultation
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* CTA Section */}
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="flex justify-center mb-6">
-            <div className="flex items-center space-x-4">
-              <Camera className="w-12 h-12 text-purple-500" />
-              <Heart className="w-8 h-8 text-rose-500" />
-              <Video className="w-12 h-12 text-rose-500" />
-            </div>
-          </div>
+          <Video className="w-16 h-16 text-rose-500 mx-auto mb-6" />
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Ready to Capture Your Love Story?
           </h2>
