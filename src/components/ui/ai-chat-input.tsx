@@ -190,12 +190,13 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                   {showPlaceholder && !isActive && !inputValue && (
                     <motion.span
                       key={placeholderIndex}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none text-base sm:text-base md:text-base"
                       style={{
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         zIndex: 0,
+                        fontSize: "14px", // Fixed mobile font size
                       }}
                       variants={placeholderContainerVariants}
                       initial="initial"
