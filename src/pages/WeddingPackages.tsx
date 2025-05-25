@@ -97,7 +97,7 @@ const WeddingPackages = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Wedding Packages</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Thank you for joining our family. Below are our carefully curated photography 
             and videography collections — each designed to capture your love story with beauty and intention.
