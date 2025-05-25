@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ChatMessage {
   id: string;
@@ -13,6 +14,7 @@ interface ChatMessage {
 
 const AIAssistantSection = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const { user } = useAuth();
 
   const handleSendMessage = async (message: string) => {
     // Add user message to history
@@ -26,15 +28,23 @@ const AIAssistantSection = () => {
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
+      const webhookData = {
+        message: message,
+        timestamp: new Date().toISOString(),
+        userId: user?.id || null,
+        userEmail: user?.email || null,
+        userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
+        source: "Dream Weddings AI Assistant"
+      };
+
+      console.log('Sending AI Assistant webhook data:', webhookData);
+
       const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: message,
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(webhookData),
       });
       
       if (response.ok) {
