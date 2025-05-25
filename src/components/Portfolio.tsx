@@ -14,16 +14,16 @@ const Portfolio = () => {
       title: "Sarah & Michael's Napa Valley Wedding",
       location: "Napa Valley, CA",
       date: "Summer 2024",
-      image: "/api/placeholder/400/600",
+      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1200&fit=crop",
       type: "Cinematic Film"
     },
     {
       id: 2,
       category: "photo",
-      title: "Emma & David's Beach Ceremony",
-      location: "Malibu, CA",
-      date: "Spring 2024",
-      image: "/api/placeholder/400/600",
+      title: "Emma & David's Romantic Ceremony",
+      location: "California, CA",
+      date: "Fall 2024",
+      image: "/lovable-uploads/2ee7f946-776a-4a8f-a249-03cd6995cb76.png",
       type: "Photography"
     },
     {
@@ -31,36 +31,9 @@ const Portfolio = () => {
       category: "video",
       title: "Jessica & Ryan's Garden Wedding",
       location: "Sonoma, CA",
-      date: "Fall 2024",
-      image: "/api/placeholder/400/600",
+      date: "Spring 2024",
+      image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop",
       type: "Cinematic Film"
-    },
-    {
-      id: 4,
-      category: "photo",
-      title: "Lauren & James' City Wedding",
-      location: "San Francisco, CA",
-      date: "Winter 2024",
-      image: "/api/placeholder/400/600",
-      type: "Photography"
-    },
-    {
-      id: 5,
-      category: "video",
-      title: "Mia & Alex's Vineyard Celebration",
-      location: "Paso Robles, CA",
-      date: "Summer 2024",
-      image: "/api/placeholder/400/600",
-      type: "Cinematic Film"
-    },
-    {
-      id: 6,
-      category: "photo",
-      title: "Rachel & Tom's Mountain Wedding",
-      location: "Lake Tahoe, CA",
-      date: "Fall 2024",
-      image: "/api/placeholder/400/600",
-      type: "Photography"
     }
   ];
 
@@ -75,7 +48,7 @@ const Portfolio = () => {
   ];
 
   return (
-    <section id="portfolio" className="py-20 bg-white">
+    <section id="portfolio" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -113,9 +86,9 @@ const Portfolio = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredItems.map((item) => (
-            <Card key={item.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105">
+            <Card key={item.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white">
               <div className="relative overflow-hidden">
                 <img 
                   src={item.image} 
@@ -166,7 +139,7 @@ const Portfolio = () => {
           </Button>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
