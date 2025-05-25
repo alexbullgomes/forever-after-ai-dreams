@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Heart, Play } from "lucide-react";
 import { useState } from "react";
-import { AuthModal } from "./AuthModal";
+import AuthModal from "./AuthModal";
 
 const HeroWithImages = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
