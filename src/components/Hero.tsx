@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Play, Heart, Camera } from "lucide-react";
 
@@ -17,7 +18,7 @@ const Hero = ({ onBookingClick }: HeroProps) => {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//wedding.webm" type="video/webm" />
+          <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//weddingdreams.webm" type="video/webm" />
           Your browser does not support the video tag.
         </video>
         <div className="absolute inset-0 bg-black/40"></div>
