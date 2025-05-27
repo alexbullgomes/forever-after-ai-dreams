@@ -145,10 +145,10 @@ const PersonalizedConsultationForm = ({
               <EstimatedPriceBadge />
             </div>
           </div>
-          <p className="text-gray-600 mt-4 text-sm leading-relaxed">
+          <p className="text-gray-600 mt-4 text-sm leading-relaxed text-center">
             {getPersonalizedMessage()}
           </p>
-          <p className="text-rose-600 font-medium text-sm mt-2">
+          <p className="text-rose-600 font-medium text-sm mt-2 text-center">
             Let's schedule your free consultation! ✨
           </p>
         </DialogHeader>
