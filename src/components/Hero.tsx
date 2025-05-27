@@ -11,15 +11,17 @@ const Hero = ({ onBookingClick }: HeroProps) => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
-        <div className="w-full h-full bg-gradient-to-br from-rose-100 via-pink-50 to-purple-100">
-          <div className="absolute inset-0 bg-black/20"></div>
-          {/* Placeholder for video - you can replace with actual video */}
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-32 h-32 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center animate-pulse">
-              <Play className="w-12 h-12 text-white" />
-            </div>
-          </div>
-        </div>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//wedding.webm" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+        <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
       {/* Content */}
