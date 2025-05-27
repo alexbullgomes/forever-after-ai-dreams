@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { EstimatedPriceBadge } from '@/components/ui/estimated-price-badge';
 import { CalendarIcon, Heart, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -140,6 +141,9 @@ const PersonalizedConsultationForm = ({
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
             {packageName} - {packagePrice}
           </DialogTitle>
+          <div className="flex justify-center mt-2">
+            <EstimatedPriceBadge />
+          </div>
           <p className="text-gray-600 mt-2 text-sm leading-relaxed">
             {getPersonalizedMessage()}
           </p>
