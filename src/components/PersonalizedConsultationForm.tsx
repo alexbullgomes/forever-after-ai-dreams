@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -138,13 +137,15 @@ const PersonalizedConsultationForm = ({
               <Heart className="w-8 h-8 text-white" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
-            {packageName} - {packagePrice}
-          </DialogTitle>
-          <div className="flex justify-center mt-2">
-            <EstimatedPriceBadge />
+          <div className="text-center space-y-3">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+              {packageName} - {packagePrice}
+            </DialogTitle>
+            <div className="flex justify-center">
+              <EstimatedPriceBadge />
+            </div>
           </div>
-          <p className="text-gray-600 mt-2 text-sm leading-relaxed">
+          <p className="text-gray-600 mt-4 text-sm leading-relaxed">
             {getPersonalizedMessage()}
           </p>
           <p className="text-rose-600 font-medium text-sm mt-2">
