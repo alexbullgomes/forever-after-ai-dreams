@@ -10,7 +10,7 @@ const Testimonials = () => {
       location: "Napa Valley Wedding",
       rating: 5,
       text: "Absolutely breathtaking! They captured every moment perfectly. Our wedding film brings tears of joy every time we watch it. The attention to detail and artistic vision exceeded all our expectations.",
-      image: "/lovable-uploads/160fe8f9-dfe9-4e38-880c-72c42ac5fbdb.png"
+      image: "/lovable-uploads/8218160d-57f7-4efa-9bcf-f22f3074d54a.png"
     },
     {
       id: 2,
@@ -18,7 +18,7 @@ const Testimonials = () => {
       location: "Malibu Beach Ceremony",
       rating: 5,
       text: "Professional, creative, and so much fun to work with! They made us feel comfortable and the results were simply magical. Our photos are like artwork - we display them proudly in our home.",
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=150&h=150&fit=crop&crop=faces"
+      image: "/lovable-uploads/a7af5164-9a69-4921-87dc-4d167dc3b382.png"
     },
     {
       id: 3,
@@ -26,7 +26,7 @@ const Testimonials = () => {
       location: "Sonoma Garden Wedding",
       rating: 5,
       text: "The best investment we made for our wedding! The cinematic quality and storytelling approach created memories we'll treasure forever. They truly understand how to capture love.",
-      image: "https://images.unsplash.com/photo-1439886183900-e79ec0057170?w=150&h=150&fit=crop&crop=faces"
+      image: "/lovable-uploads/16b44735-6be5-41eb-b64a-a9cd4a2c8571.png"
     },
     {
       id: 4,
@@ -34,7 +34,7 @@ const Testimonials = () => {
       location: "San Francisco City Wedding",
       rating: 5,
       text: "Incredible team with amazing artistic vision. They captured moments we didn't even know were happening. The final film was beyond our wildest dreams - it's our love story told beautifully.",
-      image: "https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=150&h=150&fit=crop&crop=faces"
+      image: "/lovable-uploads/e4d4b04a-7d06-4b7d-9e8c-4b85c7039d41.png"
     }
   ];
 
