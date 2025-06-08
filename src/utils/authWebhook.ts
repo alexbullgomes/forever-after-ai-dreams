@@ -1,4 +1,5 @@
 
+
 const WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/3d243bf4-c682-4903-a4b7-08bb9ef98b04";
 
 export const sendAuthWebhook = async (event: "login" | "register", userId: string, email: string) => {
@@ -39,7 +40,7 @@ export const sendGoogleAuthWebhook = async (
         provider: "google",
         user_id: userId,
         email,
-        full_name: fullName,
+        fname: fullName,
         timestamp: new Date().toISOString()
       }),
     });
@@ -49,3 +50,4 @@ export const sendGoogleAuthWebhook = async (
     // Don't block the user flow if webhook fails
   }
 };
+
