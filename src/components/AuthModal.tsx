@@ -13,6 +13,8 @@ interface AuthModalProps {
   onClose: () => void;
 }
 
+const WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/3d243bf4-c682-4903-a4b7-08bb9ef98b04";
+
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -23,6 +25,27 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
   const [googleAvailable, setGoogleAvailable] = useState(true);
   const { toast } = useToast();
+
+  const sendWebhook = async (event: "login" | "register", userId: string, email: string) => {
+    try {
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          event,
+          user_id: userId,
+          email,
+          timestamp: new Date().toISOString()
+        }),
+      });
+      console.log(`Webhook sent successfully for ${event} event`);
+    } catch (error) {
+      console.error(`Failed to send webhook for ${event} event:`, error);
+      // Don't block the user flow if webhook fails
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +59,11 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         });
 
         if (error) throw error;
+
+        // Send webhook after successful login
+        if (data.user) {
+          await sendWebhook("login", data.user.id, data.user.email || formData.email);
+        }
 
         toast({
           title: "Welcome back!",
@@ -58,6 +86,11 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         });
 
         if (error) throw error;
+
+        // Send webhook after successful registration
+        if (data.user) {
+          await sendWebhook("register", data.user.id, data.user.email || formData.email);
+        }
 
         toast({
           title: "Account created!",
