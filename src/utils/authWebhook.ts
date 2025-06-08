@@ -40,7 +40,7 @@ export const sendGoogleAuthWebhook = async (
         provider: "google",
         user_id: userId,
         email,
-        fname: fullName,
+        name: fullName,
         timestamp: new Date().toISOString()
       }),
     });
