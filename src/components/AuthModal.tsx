@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,31 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       // Don't block the user flow if webhook fails
     }
   };
+
+  // Listen for auth state changes to handle Google OAuth webhook
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Check if this was a Google OAuth login by checking the provider
+          const isGoogleAuth = session.user.app_metadata?.provider === 'google';
+          const isNewUser = event === 'SIGNED_IN' && session.user.created_at === session.user.last_sign_in_at;
+          
+          if (isGoogleAuth) {
+            // Send webhook for Google authentication
+            const webhookEvent = isNewUser ? 'register' : 'login';
+            await sendWebhook(webhookEvent, session.user.id, session.user.email || '');
+            
+            // Close modal and redirect
+            onClose();
+            window.location.href = '/wedding-packages';
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +166,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           title: "Redirecting to Google...",
           description: "Please complete authentication in the popup window.",
         });
+        // Note: Webhook will be handled by the auth state change listener
       }
     } catch (error: any) {
       console.error('Google auth error:', error);
