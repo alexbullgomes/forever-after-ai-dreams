@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { sendAuthWebhook } from "@/utils/authWebhook";
+import { sendGoogleAuthWebhook } from "@/utils/authWebhook";
 
 interface UseGoogleAuthProps {
   onClose: () => void;
@@ -17,9 +17,19 @@ export const useGoogleAuth = ({ onClose }: UseGoogleAuthProps) => {
           const isNewUser = event === 'SIGNED_IN' && session.user.created_at === session.user.last_sign_in_at;
           
           if (isGoogleAuth) {
-            // Send webhook for Google authentication
+            // Send webhook for Google authentication with enhanced payload
             const webhookEvent = isNewUser ? 'register' : 'login';
-            await sendAuthWebhook(webhookEvent, session.user.id, session.user.email || '');
+            const fullName = session.user.user_metadata?.full_name || 
+                           session.user.user_metadata?.name || 
+                           `${session.user.user_metadata?.given_name || ''} ${session.user.user_metadata?.family_name || ''}`.trim() || 
+                           '';
+            
+            await sendGoogleAuthWebhook(
+              webhookEvent, 
+              session.user.id, 
+              session.user.email || '', 
+              fullName
+            );
             
             // Close modal and redirect
             onClose();
