@@ -3,8 +3,12 @@
 
 import * as React from "react"
 import { useState, useEffect, useRef } from "react";
-import { Lightbulb, Mic, Globe, Paperclip, Send, Square, Image } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { Mic, Paperclip, Send, Square } from "lucide-react";
+import { motion } from "motion/react";
+import { useAudioRecording } from "@/hooks/useAudioRecording";
+import { FileAttachments } from "./file-attachments";
+import { ChatControls } from "./chat-controls";
+import { AnimatedPlaceholder } from "./animated-placeholder";
 
 const PLACEHOLDERS = [
   "Tell us about your dream wedding vision...",
@@ -27,12 +31,11 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   const [deepSearchActive, setDeepSearchActive] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+
+  const { isRecording, startRecording, stopRecording } = useAudioRecording();
 
   // Cycle placeholder text when input is inactive
   useEffect(() => {
@@ -85,36 +88,14 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     setAttachedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' });
+  const handleRecordingToggle = async () => {
+    if (isRecording) {
+      const audioFile = await stopRecording();
+      if (audioFile) {
         setAttachedFiles(prev => [...prev, audioFile]);
-        
-        // Stop all tracks to release microphone
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      }
+    } else {
+      await startRecording();
     }
   };
 
@@ -178,39 +159,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     },
   };
 
-  const placeholderContainerVariants = {
-    initial: {},
-    animate: { transition: { staggerChildren: 0.025 } },
-    exit: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
-  };
-
-  const letterVariants = {
-    initial: {
-      opacity: 0,
-      filter: "blur(12px)",
-      y: 10,
-    },
-    animate: {
-      opacity: 1,
-      filter: "blur(0px)",
-      y: 0,
-      transition: {
-        opacity: { duration: 0.25 },
-        filter: { duration: 0.4 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
-      },
-    },
-    exit: {
-      opacity: 0,
-      filter: "blur(12px)",
-      y: -10,
-      transition: {
-        opacity: { duration: 0.2 },
-        filter: { duration: 0.3 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
-      },
-    },
-  };
+  const isExpanded = isActive || inputValue || attachedFiles.length > 0;
 
   return (
     <div className="w-full flex justify-center items-center">
@@ -218,38 +167,14 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         ref={wrapperRef}
         className="w-full max-w-3xl"
         variants={containerVariants}
-        animate={isActive || inputValue || attachedFiles.length > 0 ? "expanded" : "collapsed"}
+        animate={isExpanded ? "expanded" : "collapsed"}
         initial="collapsed"
         style={{ overflow: "hidden", borderRadius: 32, background: "#fff" }}
         onClick={handleActivate}
       >
         <div className="flex flex-col items-stretch w-full h-full">
           {/* Attached Files Display */}
-          {attachedFiles.length > 0 && (
-            <div className="px-4 py-2 border-b border-gray-100">
-              <div className="flex flex-wrap gap-2">
-                {attachedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1 text-sm">
-                    {file.type.startsWith('image/') ? (
-                      <Image size={16} className="text-gray-600" />
-                    ) : (
-                      <Mic size={16} className="text-gray-600" />
-                    )}
-                    <span className="truncate max-w-[150px]">{file.name}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(index);
-                      }}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <FileAttachments files={attachedFiles} onRemoveFile={removeFile} />
 
           {/* Input Row */}
           <div className="flex items-center gap-2 p-3 rounded-full bg-white max-w-3xl w-full">
@@ -287,39 +212,13 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                 onFocus={handleActivate}
                 disabled={isLoading}
               />
-              <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
-                <AnimatePresence mode="wait">
-                  {showPlaceholder && !isActive && !inputValue && (
-                    <motion.span
-                      key={placeholderIndex}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none text-base sm:text-base md:text-base"
-                      style={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        zIndex: 0,
-                        fontSize: "14px",
-                      }}
-                      variants={placeholderContainerVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      {PLACEHOLDERS[placeholderIndex]
-                        .split("")
-                        .map((char, i) => (
-                          <motion.span
-                            key={i}
-                            variants={letterVariants}
-                            style={{ display: "inline-block" }}
-                          >
-                            {char === " " ? "\u00A0" : char}
-                          </motion.span>
-                        ))}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
+              <AnimatedPlaceholder
+                placeholders={PLACEHOLDERS}
+                currentIndex={placeholderIndex}
+                showPlaceholder={showPlaceholder}
+                isActive={isActive}
+                inputValue={inputValue}
+              />
             </div>
 
             <button
@@ -331,7 +230,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               title={isRecording ? "Stop recording" : "Voice input"}
               type="button"
               tabIndex={-1}
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={handleRecordingToggle}
             >
               {isRecording ? <Square size={20} /> : <Mic size={20} />}
             </button>
@@ -351,82 +250,13 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
           </div>
 
           {/* Expanded Controls */}
-          <motion.div
-            className="w-full flex justify-start px-4 items-center text-sm"
-            variants={{
-              hidden: {
-                opacity: 0,
-                y: 20,
-                pointerEvents: "none" as const,
-                transition: { duration: 0.25 },
-              },
-              visible: {
-                opacity: 1,
-                y: 0,
-                pointerEvents: "auto" as const,
-                transition: { duration: 0.35, delay: 0.08 },
-              },
-            }}
-            initial="hidden"
-            animate={isActive || inputValue || attachedFiles.length > 0 ? "visible" : "hidden"}
-            style={{ marginTop: 8 }}
-          >
-            <div className="flex gap-3 items-center">
-              {/* Think Toggle */}
-              <button
-                className={`flex items-center gap-1 px-4 py-2 rounded-full transition-all font-medium group ${
-                  thinkActive
-                    ? "bg-rose-600/10 outline outline-rose-600/60 text-rose-950"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                title="Think"
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setThinkActive((a) => !a);
-                }}
-              >
-                <Lightbulb
-                  className="group-hover:fill-yellow-300 transition-all"
-                  size={18}
-                />
-                Think
-              </button>
-
-              {/* Deep Search Toggle */}
-              <motion.button
-                className={`flex items-center px-4 gap-1 py-2 rounded-full transition font-medium whitespace-nowrap overflow-hidden justify-start ${
-                  deepSearchActive
-                    ? "bg-rose-600/10 outline outline-rose-600/60 text-rose-950"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-                title="Deep Search"
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeepSearchActive((a) => !a);
-                }}
-                initial={false}
-                animate={{
-                  width: deepSearchActive ? 125 : 36,
-                  paddingLeft: deepSearchActive ? 8 : 9,
-                }}
-              >
-                <div className="flex-1">
-                  <Globe size={18} />
-                </div>
-                <motion.span
-                className="pb-[2px]"
-                  initial={false}
-                  animate={{
-                    opacity: deepSearchActive ? 1 : 0,
-                  }}
-                >
-                  Deep Search
-                </motion.span>
-              </motion.button>
-            </div>
-          </motion.div>
+          <ChatControls
+            isVisible={isExpanded}
+            thinkActive={thinkActive}
+            deepSearchActive={deepSearchActive}
+            onThinkToggle={() => setThinkActive(prev => !prev)}
+            onDeepSearchToggle={() => setDeepSearchActive(prev => !prev)}
+          />
         </div>
       </motion.div>
     </div>
