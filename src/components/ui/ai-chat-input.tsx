@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { useState, useEffect, useRef } from "react";
-import { Lightbulb, Mic, Globe, Paperclip, Send } from "lucide-react";
+import { Lightbulb, Mic, Globe, Paperclip, Send, Square, Image } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 const PLACEHOLDERS = [
@@ -16,7 +16,7 @@ const PLACEHOLDERS = [
 ];
 
 interface AIChatInputProps {
-  onSendMessage?: (message: string) => void;
+  onSendMessage?: (message: string, files?: File[]) => void;
 }
 
 const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
@@ -27,7 +27,12 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   const [deepSearchActive, setDeepSearchActive] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Cycle placeholder text when input is inactive
   useEffect(() => {
@@ -51,37 +56,94 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         wrapperRef.current &&
         !wrapperRef.current.contains(event.target as Node)
       ) {
-        if (!inputValue) setIsActive(false);
+        if (!inputValue && attachedFiles.length === 0) setIsActive(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [inputValue]);
+  }, [inputValue, attachedFiles]);
 
   const handleActivate = () => setIsActive(true);
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter(file => 
+      file.type.startsWith('image/') || file.type.startsWith('audio/')
+    );
+    
+    setAttachedFiles(prev => [...prev, ...validFiles]);
+    setIsActive(true);
+    
+    // Reset the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' });
+        setAttachedFiles(prev => [...prev, audioFile]);
+        
+        // Stop all tracks to release microphone
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+    if ((!inputValue.trim() && attachedFiles.length === 0) || isLoading) return;
     
     setIsLoading(true);
     const message = inputValue;
+    const files = [...attachedFiles];
+    
     setInputValue("");
+    setAttachedFiles([]);
     
     if (onSendMessage) {
-      await onSendMessage(message);
+      await onSendMessage(message, files);
     } else {
       // Fallback to original webhook call if no onSendMessage prop
       try {
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('timestamp', new Date().toISOString());
+        
+        files.forEach((file, index) => {
+          formData.append(`file_${index}`, file);
+        });
+
         const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: message,
-            timestamp: new Date().toISOString(),
-          }),
+          body: formData,
         });
         
         if (response.ok) {
@@ -110,7 +172,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
       transition: { type: "spring", stiffness: 120, damping: 18 },
     },
     expanded: {
-      height: 128,
+      height: attachedFiles.length > 0 ? 180 : 128,
       boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
       transition: { type: "spring", stiffness: 120, damping: 18 },
     },
@@ -156,19 +218,59 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         ref={wrapperRef}
         className="w-full max-w-3xl"
         variants={containerVariants}
-        animate={isActive || inputValue ? "expanded" : "collapsed"}
+        animate={isActive || inputValue || attachedFiles.length > 0 ? "expanded" : "collapsed"}
         initial="collapsed"
         style={{ overflow: "hidden", borderRadius: 32, background: "#fff" }}
         onClick={handleActivate}
       >
         <div className="flex flex-col items-stretch w-full h-full">
+          {/* Attached Files Display */}
+          {attachedFiles.length > 0 && (
+            <div className="px-4 py-2 border-b border-gray-100">
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1 text-sm">
+                    {file.type.startsWith('image/') ? (
+                      <Image size={16} className="text-gray-600" />
+                    ) : (
+                      <Mic size={16} className="text-gray-600" />
+                    )}
+                    <span className="truncate max-w-[150px]">{file.name}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(index);
+                      }}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Input Row */}
           <div className="flex items-center gap-2 p-3 rounded-full bg-white max-w-3xl w-full">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,audio/*"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
             <button
               className="p-3 rounded-full hover:bg-gray-100 transition"
               title="Attach file"
               type="button"
               tabIndex={-1}
+              onClick={(e) => {
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
             >
               <Paperclip size={20} />
             </button>
@@ -196,7 +298,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         zIndex: 0,
-                        fontSize: "14px", // Fixed mobile font size
+                        fontSize: "14px",
                       }}
                       variants={placeholderContainerVariants}
                       initial="initial"
@@ -221,13 +323,19 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
             </div>
 
             <button
-              className="p-3 rounded-full hover:bg-gray-100 transition"
-              title="Voice input"
+              className={`p-3 rounded-full transition ${
+                isRecording 
+                  ? 'bg-red-500 text-white hover:bg-red-600' 
+                  : 'hover:bg-gray-100'
+              }`}
+              title={isRecording ? "Stop recording" : "Voice input"}
               type="button"
               tabIndex={-1}
+              onClick={isRecording ? stopRecording : startRecording}
             >
-              <Mic size={20} />
+              {isRecording ? <Square size={20} /> : <Mic size={20} />}
             </button>
+            
             <button
               className={`flex items-center gap-1 bg-black hover:bg-zinc-700 text-white p-3 rounded-full font-medium justify-center transition ${
                 isLoading ? 'opacity-50 cursor-not-allowed' : ''
@@ -236,7 +344,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               type="button"
               tabIndex={-1}
               onClick={handleSend}
-              disabled={isLoading || !inputValue.trim()}
+              disabled={isLoading || (!inputValue.trim() && attachedFiles.length === 0)}
             >
               <Send size={18} />
             </button>
@@ -260,7 +368,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               },
             }}
             initial="hidden"
-            animate={isActive || inputValue ? "visible" : "hidden"}
+            animate={isActive || inputValue || attachedFiles.length > 0 ? "visible" : "hidden"}
             style={{ marginTop: 8 }}
           >
             <div className="flex gap-3 items-center">
