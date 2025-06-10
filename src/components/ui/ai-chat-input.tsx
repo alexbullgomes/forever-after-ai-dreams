@@ -2,81 +2,86 @@
 "use client"
 
 import * as React from "react"
-import { Mic, Paperclip, Square } from "lucide-react";
-import { motion } from "motion/react";
-import { useAudioRecording } from "@/hooks/useAudioRecording";
-import { FileAttachments } from "./file-attachments";
-import { ChatControls } from "./chat-controls";
-import { useChatInputState } from "./ai-chat-input/use-chat-input-state";
-import { containerVariants } from "./ai-chat-input/animations";
-import { SendButton } from "./ai-chat-input/send-button";
-import { TextInput } from "./ai-chat-input/text-input";
+import { useState, useEffect, useRef } from "react";
+import { Lightbulb, Mic, Globe, Paperclip, Send } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+
+const PLACEHOLDERS = [
+  "Tell us about your dream wedding vision...",
+  "What's your ideal wedding style?",
+  "How many guests are you planning for?",
+  "What's your wedding budget range?",
+  "Do you have a preferred venue type?",
+  "Any specific photography style in mind?",
+];
 
 interface AIChatInputProps {
-  onSendMessage?: (message: string, files?: File[]) => void;
+  onSendMessage?: (message: string) => void;
 }
 
 const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
-  const {
-    placeholderIndex,
-    showPlaceholder,
-    isActive,
-    thinkActive,
-    deepSearchActive,
-    inputValue,
-    isLoading,
-    attachedFiles,
-    wrapperRef,
-    fileInputRef,
-    setThinkActive,
-    setDeepSearchActive,
-    setInputValue,
-    setIsLoading,
-    setAttachedFiles,
-    handleActivate,
-    handleFileSelect,
-    removeFile,
-  } = useChatInputState();
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [showPlaceholder, setShowPlaceholder] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+  const [thinkActive, setThinkActive] = useState(false);
+  const [deepSearchActive, setDeepSearchActive] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const { isRecording, startRecording, stopRecording } = useAudioRecording();
+  // Cycle placeholder text when input is inactive
+  useEffect(() => {
+    if (isActive || inputValue) return;
 
-  const handleRecordingToggle = async () => {
-    if (isRecording) {
-      const audioFile = await stopRecording();
-      if (audioFile) {
-        setAttachedFiles(prev => [...prev, audioFile]);
+    const interval = setInterval(() => {
+      setShowPlaceholder(false);
+      setTimeout(() => {
+        setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
+        setShowPlaceholder(true);
+      }, 400);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isActive, inputValue]);
+
+  // Close input when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        if (!inputValue) setIsActive(false);
       }
-    } else {
-      await startRecording();
-    }
-  };
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [inputValue]);
+
+  const handleActivate = () => setIsActive(true);
 
   const handleSend = async () => {
-    if ((!inputValue.trim() && attachedFiles.length === 0) || isLoading) return;
+    if (!inputValue.trim() || isLoading) return;
     
     setIsLoading(true);
     const message = inputValue;
-    const files = [...attachedFiles];
-    
     setInputValue("");
-    setAttachedFiles([]);
     
     if (onSendMessage) {
-      await onSendMessage(message, files);
+      await onSendMessage(message);
     } else {
       // Fallback to original webhook call if no onSendMessage prop
       try {
-        const formData = new FormData();
-        formData.append('message', message);
-        formData.append('timestamp', new Date().toISOString());
-        
-        files.forEach((file, index) => {
-          formData.append(`file_${index}`, file);
-        });
-
         const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
           method: 'POST',
-          body: formData,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message,
+            timestamp: new Date().toISOString(),
+          }),
         });
         
         if (response.ok) {
@@ -98,16 +103,51 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     }
   };
 
-  const isExpanded = Boolean(isActive || inputValue || attachedFiles.length > 0);
-  const animationState = isExpanded ? "expanded" : "collapsed";
-  
-  // Update container variants height based on attached files
-  const dynamicContainerVariants = {
-    ...containerVariants,
+  const containerVariants = {
+    collapsed: {
+      height: 68,
+      boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
+      transition: { type: "spring", stiffness: 120, damping: 18 },
+    },
     expanded: {
-      ...containerVariants.expanded,
-      height: attachedFiles.length > 0 ? 180 : 128,
-    }
+      height: 128,
+      boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
+      transition: { type: "spring", stiffness: 120, damping: 18 },
+    },
+  };
+
+  const placeholderContainerVariants = {
+    initial: {},
+    animate: { transition: { staggerChildren: 0.025 } },
+    exit: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
+  };
+
+  const letterVariants = {
+    initial: {
+      opacity: 0,
+      filter: "blur(12px)",
+      y: 10,
+    },
+    animate: {
+      opacity: 1,
+      filter: "blur(0px)",
+      y: 0,
+      transition: {
+        opacity: { duration: 0.25 },
+        filter: { duration: 0.4 },
+        y: { type: "spring", stiffness: 80, damping: 20 },
+      },
+    },
+    exit: {
+      opacity: 0,
+      filter: "blur(12px)",
+      y: -10,
+      transition: {
+        opacity: { duration: 0.2 },
+        filter: { duration: 0.3 },
+        y: { type: "spring", stiffness: 80, damping: 20 },
+      },
+    },
   };
 
   return (
@@ -115,81 +155,170 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
       <motion.div
         ref={wrapperRef}
         className="w-full max-w-3xl"
-        variants={dynamicContainerVariants}
-        animate={animationState}
+        variants={containerVariants}
+        animate={isActive || inputValue ? "expanded" : "collapsed"}
         initial="collapsed"
         style={{ overflow: "hidden", borderRadius: 32, background: "#fff" }}
         onClick={handleActivate}
       >
         <div className="flex flex-col items-stretch w-full h-full">
-          {/* Attached Files Display */}
-          <FileAttachments files={attachedFiles} onRemoveFile={removeFile} />
-
           {/* Input Row */}
           <div className="flex items-center gap-2 p-3 rounded-full bg-white max-w-3xl w-full">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,audio/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            
             <button
               className="p-3 rounded-full hover:bg-gray-100 transition"
               title="Attach file"
               type="button"
               tabIndex={-1}
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
             >
               <Paperclip size={20} />
             </button>
 
-            <TextInput
-              inputValue={inputValue}
-              onInputChange={setInputValue}
-              onKeyPress={handleKeyPress}
-              onFocus={handleActivate}
-              isLoading={isLoading}
-              placeholderIndex={placeholderIndex}
-              showPlaceholder={showPlaceholder}
-              isActive={isActive}
-            />
+            {/* Text Input & Placeholder */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal"
+                style={{ position: "relative", zIndex: 1 }}
+                onFocus={handleActivate}
+                disabled={isLoading}
+              />
+              <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
+                <AnimatePresence mode="wait">
+                  {showPlaceholder && !isActive && !inputValue && (
+                    <motion.span
+                      key={placeholderIndex}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none text-base sm:text-base md:text-base"
+                      style={{
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        zIndex: 0,
+                        fontSize: "14px", // Fixed mobile font size
+                      }}
+                      variants={placeholderContainerVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                    >
+                      {PLACEHOLDERS[placeholderIndex]
+                        .split("")
+                        .map((char, i) => (
+                          <motion.span
+                            key={i}
+                            variants={letterVariants}
+                            style={{ display: "inline-block" }}
+                          >
+                            {char === " " ? "\u00A0" : char}
+                          </motion.span>
+                        ))}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
 
             <button
-              className={`p-3 rounded-full transition ${
-                isRecording 
-                  ? 'bg-red-500 text-white hover:bg-red-600' 
-                  : 'hover:bg-gray-100'
-              }`}
-              title={isRecording ? "Stop recording" : "Voice input"}
+              className="p-3 rounded-full hover:bg-gray-100 transition"
+              title="Voice input"
               type="button"
               tabIndex={-1}
-              onClick={handleRecordingToggle}
             >
-              {isRecording ? <Square size={20} /> : <Mic size={20} />}
+              <Mic size={20} />
             </button>
-            
-            <SendButton
-              isLoading={isLoading}
-              inputValue={inputValue}
-              attachedFiles={attachedFiles}
-              onSend={handleSend}
-            />
+            <button
+              className={`flex items-center gap-1 bg-black hover:bg-zinc-700 text-white p-3 rounded-full font-medium justify-center transition ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              title="Send"
+              type="button"
+              tabIndex={-1}
+              onClick={handleSend}
+              disabled={isLoading || !inputValue.trim()}
+            >
+              <Send size={18} />
+            </button>
           </div>
 
           {/* Expanded Controls */}
-          <ChatControls
-            isVisible={isExpanded}
-            thinkActive={thinkActive}
-            deepSearchActive={deepSearchActive}
-            onThinkToggle={() => setThinkActive(prev => !prev)}
-            onDeepSearchToggle={() => setDeepSearchActive(prev => !prev)}
-          />
+          <motion.div
+            className="w-full flex justify-start px-4 items-center text-sm"
+            variants={{
+              hidden: {
+                opacity: 0,
+                y: 20,
+                pointerEvents: "none" as const,
+                transition: { duration: 0.25 },
+              },
+              visible: {
+                opacity: 1,
+                y: 0,
+                pointerEvents: "auto" as const,
+                transition: { duration: 0.35, delay: 0.08 },
+              },
+            }}
+            initial="hidden"
+            animate={isActive || inputValue ? "visible" : "hidden"}
+            style={{ marginTop: 8 }}
+          >
+            <div className="flex gap-3 items-center">
+              {/* Think Toggle */}
+              <button
+                className={`flex items-center gap-1 px-4 py-2 rounded-full transition-all font-medium group ${
+                  thinkActive
+                    ? "bg-rose-600/10 outline outline-rose-600/60 text-rose-950"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                title="Think"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setThinkActive((a) => !a);
+                }}
+              >
+                <Lightbulb
+                  className="group-hover:fill-yellow-300 transition-all"
+                  size={18}
+                />
+                Think
+              </button>
+
+              {/* Deep Search Toggle */}
+              <motion.button
+                className={`flex items-center px-4 gap-1 py-2 rounded-full transition font-medium whitespace-nowrap overflow-hidden justify-start ${
+                  deepSearchActive
+                    ? "bg-rose-600/10 outline outline-rose-600/60 text-rose-950"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                title="Deep Search"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeepSearchActive((a) => !a);
+                }}
+                initial={false}
+                animate={{
+                  width: deepSearchActive ? 125 : 36,
+                  paddingLeft: deepSearchActive ? 8 : 9,
+                }}
+              >
+                <div className="flex-1">
+                  <Globe size={18} />
+                </div>
+                <motion.span
+                className="pb-[2px]"
+                  initial={false}
+                  animate={{
+                    opacity: deepSearchActive ? 1 : 0,
+                  }}
+                >
+                  Deep Search
+                </motion.span>
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
       </motion.div>
     </div>

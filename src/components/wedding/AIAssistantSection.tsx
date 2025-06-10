@@ -10,98 +10,41 @@ interface ChatMessage {
   timestamp: string;
   isUser: boolean;
   response?: string;
-  files?: Array<{
-    name: string;
-    type: string;
-    size: number;
-    url?: string;
-  }>;
 }
 
 const AIAssistantSection = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const { user } = useAuth();
 
-  const handleSendMessage = async (message: string, files?: File[]) => {
-    // Create file URLs for uploaded files (in a real app, you'd upload to a CDN/storage service)
-    const fileData = files?.map(file => {
-      // Create a temporary URL for display purposes
-      const url = URL.createObjectURL(file);
-      return {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        url: url,
-      };
-    }) || [];
-
+  const handleSendMessage = async (message: string) => {
     // Add user message to history
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       message,
       timestamp: new Date().toISOString(),
       isUser: true,
-      files: fileData,
     };
     
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
-      // Prepare flat JSON payload for n8n webhook integration
-      const webhookPayload: {
-        message: string;
-        timestamp: string;
-        userId: string | null;
-        userEmail: string | null;
-        userName: string;
-        source: string;
-        files?: Array<{
-          fileUrl: string;
-          fileType: string;
-          fileName: string;
-          fileSize: number;
-        }>;
-      } = {
+      const webhookData = {
         message: message,
         timestamp: new Date().toISOString(),
         userId: user?.id || null,
         userEmail: user?.email || null,
         userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
-        source: "Dream Weddings AI Assistant",
+        source: "Dream Weddings AI Assistant"
       };
-      
-      // Add files array only if files exist
-      if (files && files.length > 0) {
-        // Create a files array with flat structure for each file
-        const filesArray = files.map(file => ({
-          fileUrl: `https://cdn.lovableproject.com/uploads/${file.name}`, // Example URL, would be different in production
-          fileType: file.type,
-          fileName: file.name,
-          fileSize: file.size
-        }));
-        
-        // Add files array to root of payload
-        webhookPayload.files = filesArray;
-      }
 
-      console.log('Sending AI Assistant webhook data (n8n format):', webhookPayload);
-
-      // For actual file uploads, we still need to use FormData
-      const formData = new FormData();
-      
-      // Add the JSON payload as a string for the server to parse
-      formData.append('json', JSON.stringify(webhookPayload));
-      
-      // Add files with simple indexing
-      if (files && files.length > 0) {
-        files.forEach((file, index) => {
-          formData.append(`file_${index}`, file);
-        });
-      }
+      console.log('Sending AI Assistant webhook data:', webhookData);
 
       const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData),
       });
       
       if (response.ok) {
@@ -110,7 +53,7 @@ const AIAssistantSection = () => {
         // Add AI response to history
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
-          message: result.output || result.message || "Thank you for your message and files!",
+          message: result.output || result.message || "Thank you for your message!",
           timestamp: new Date().toISOString(),
           isUser: false,
         };
@@ -171,24 +114,7 @@ const AIAssistantSection = () => {
                       : 'bg-white border border-gray-200 text-gray-800'
                   }`}
                 >
-                  {chat.message && (
-                    <p className="text-sm mb-1">{chat.message}</p>
-                  )}
-                  
-                  {chat.files && chat.files.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {chat.files.map((file, index) => (
-                        <div key={index} className={`text-xs ${
-                          chat.isUser ? 'text-rose-100' : 'text-gray-600'
-                        } flex items-center gap-1`}>
-                          <span>📎</span>
-                          <span className="truncate">{file.name}</span>
-                          <span>({(file.size / 1024 / 1024).toFixed(1)}MB)</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
+                  <p className="text-sm">{chat.message}</p>
                   <p className={`text-xs mt-1 ${
                     chat.isUser ? 'text-rose-100' : 'text-gray-500'
                   }`}>
