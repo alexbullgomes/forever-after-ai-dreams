@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Heart } from "lucide-react";
+import { Heart, Play, Pause } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -35,6 +35,7 @@ interface WebhookPayload {
 
 const AIAssistantSection = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const { user } = useAuth();
 
   const handleSendMessage = async (message: string, files?: File[]) => {
@@ -47,10 +48,9 @@ const AIAssistantSection = () => {
     }> = [];
 
     if (files && files.length > 0) {
-      // For now, we'll create placeholder URLs for files
-      // In a real implementation, you'd upload these to storage first
-      processedFiles = files.map((file, index) => ({
-        fileUrl: `https://placeholder-storage.com/${file.name}`,
+      // Create object URLs for immediate preview
+      processedFiles = files.map((file) => ({
+        fileUrl: URL.createObjectURL(file),
         fileType: file.type,
         fileName: file.name,
         fileSize: file.size
@@ -78,7 +78,7 @@ const AIAssistantSection = () => {
         source: "Dream Weddings AI Assistant"
       };
 
-      // Add files to payload if present (flat JSON structure for n8n)
+      // Add files to payload if present
       if (processedFiles.length > 0) {
         webhookPayload.files = processedFiles;
       }
@@ -118,6 +118,26 @@ const AIAssistantSection = () => {
       };
       
       setChatHistory(prev => [...prev, errorMessage]);
+    }
+  };
+
+  const handleAudioPlay = (audioUrl: string, audioId: string) => {
+    const audio = document.getElementById(audioId) as HTMLAudioElement;
+    if (audio) {
+      if (playingAudio === audioId) {
+        audio.pause();
+        setPlayingAudio(null);
+      } else {
+        // Pause any currently playing audio
+        if (playingAudio) {
+          const currentAudio = document.getElementById(playingAudio) as HTMLAudioElement;
+          if (currentAudio) currentAudio.pause();
+        }
+        audio.play();
+        setPlayingAudio(audioId);
+        
+        audio.onended = () => setPlayingAudio(null);
+      }
     }
   };
 
@@ -164,18 +184,71 @@ const AIAssistantSection = () => {
                   
                   {/* Display files if present */}
                   {chat.files && chat.files.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      {chat.files.map((file, index) => (
-                        <div key={index} className={`text-xs p-2 rounded ${
-                          chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
-                        }`}>
-                          <div className="flex items-center gap-2">
-                            {file.fileType.startsWith('image/') ? '🖼️' : 
-                             file.fileType.startsWith('audio/') ? '🎵' : '📎'}
-                            <span className="truncate">{file.fileName}</span>
-                          </div>
-                        </div>
-                      ))}
+                    <div className="mt-2 space-y-2">
+                      {chat.files.map((file, index) => {
+                        const fileId = `${chat.id}-file-${index}`;
+                        
+                        if (file.fileType.startsWith('image/')) {
+                          return (
+                            <div key={index} className="mt-2">
+                              <img 
+                                src={file.fileUrl} 
+                                alt={file.fileName}
+                                className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                style={{ maxHeight: '200px' }}
+                                onClick={() => window.open(file.fileUrl, '_blank')}
+                              />
+                              <p className={`text-xs mt-1 ${
+                                chat.isUser ? 'text-rose-100' : 'text-gray-500'
+                              }`}>
+                                {file.fileName}
+                              </p>
+                            </div>
+                          );
+                        } else if (file.fileType.startsWith('audio/')) {
+                          return (
+                            <div key={index} className={`flex items-center gap-2 p-2 rounded ${
+                              chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
+                            }`}>
+                              <button
+                                onClick={() => handleAudioPlay(file.fileUrl, fileId)}
+                                className={`p-1 rounded-full hover:bg-opacity-80 transition ${
+                                  chat.isUser ? 'hover:bg-rose-700' : 'hover:bg-gray-200'
+                                }`}
+                              >
+                                {playingAudio === fileId ? (
+                                  <Pause size={16} className={chat.isUser ? 'text-white' : 'text-gray-700'} />
+                                ) : (
+                                  <Play size={16} className={chat.isUser ? 'text-white' : 'text-gray-700'} />
+                                )}
+                              </button>
+                              <div className="flex-1">
+                                <p className={`text-xs ${
+                                  chat.isUser ? 'text-rose-100' : 'text-gray-600'
+                                }`}>
+                                  {file.fileName}
+                                </p>
+                                <audio 
+                                  id={fileId}
+                                  src={file.fileUrl}
+                                  className="hidden"
+                                />
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div key={index} className={`text-xs p-2 rounded ${
+                              chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
+                            }`}>
+                              <div className="flex items-center gap-2">
+                                <span>📎</span>
+                                <span className="truncate">{file.fileName}</span>
+                              </div>
+                            </div>
+                          );
+                        }
+                      })}
                     </div>
                   )}
                   
