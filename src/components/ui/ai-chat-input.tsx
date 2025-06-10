@@ -160,6 +160,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   };
 
   const isExpanded = isActive || inputValue || attachedFiles.length > 0;
+  const animationState = isExpanded ? "expanded" : "collapsed";
 
   return (
     <div className="w-full flex justify-center items-center">
@@ -167,7 +168,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         ref={wrapperRef}
         className="w-full max-w-3xl"
         variants={containerVariants}
-        animate={isExpanded ? "expanded" : "collapsed"}
+        animate={animationState}
         initial="collapsed"
         style={{ overflow: "hidden", borderRadius: 32, background: "#fff" }}
         onClick={handleActivate}
