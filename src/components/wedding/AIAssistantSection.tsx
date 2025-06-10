@@ -48,7 +48,20 @@ const AIAssistantSection = () => {
 
     try {
       // Prepare flat JSON payload for n8n webhook integration
-      const webhookPayload = {
+      const webhookPayload: {
+        message: string;
+        timestamp: string;
+        userId: string | null;
+        userEmail: string | null;
+        userName: string;
+        source: string;
+        files?: Array<{
+          fileUrl: string;
+          fileType: string;
+          fileName: string;
+          fileSize: number;
+        }>;
+      } = {
         message: message,
         timestamp: new Date().toISOString(),
         userId: user?.id || null,
