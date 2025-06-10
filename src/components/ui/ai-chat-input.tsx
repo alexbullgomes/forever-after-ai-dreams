@@ -2,91 +2,43 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect, useRef } from "react";
-import { Mic, Paperclip, Send, Square } from "lucide-react";
+import { Mic, Paperclip, Square } from "lucide-react";
 import { motion } from "motion/react";
 import { useAudioRecording } from "@/hooks/useAudioRecording";
 import { FileAttachments } from "./file-attachments";
 import { ChatControls } from "./chat-controls";
-import { AnimatedPlaceholder } from "./animated-placeholder";
-
-const PLACEHOLDERS = [
-  "Tell us about your dream wedding vision...",
-  "What's your ideal wedding style?",
-  "How many guests are you planning for?",
-  "What's your wedding budget range?",
-  "Do you have a preferred venue type?",
-  "Any specific photography style in mind?",
-];
+import { useChatInputState } from "./ai-chat-input/use-chat-input-state";
+import { containerVariants } from "./ai-chat-input/animations";
+import { SendButton } from "./ai-chat-input/send-button";
+import { TextInput } from "./ai-chat-input/text-input";
 
 interface AIChatInputProps {
   onSendMessage?: (message: string, files?: File[]) => void;
 }
 
 const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [showPlaceholder, setShowPlaceholder] = useState(true);
-  const [isActive, setIsActive] = useState(false);
-  const [thinkActive, setThinkActive] = useState(false);
-  const [deepSearchActive, setDeepSearchActive] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    placeholderIndex,
+    showPlaceholder,
+    isActive,
+    thinkActive,
+    deepSearchActive,
+    inputValue,
+    isLoading,
+    attachedFiles,
+    wrapperRef,
+    fileInputRef,
+    setThinkActive,
+    setDeepSearchActive,
+    setInputValue,
+    setIsLoading,
+    setAttachedFiles,
+    handleActivate,
+    handleFileSelect,
+    removeFile,
+  } = useChatInputState();
 
   const { isRecording, startRecording, stopRecording } = useAudioRecording();
-
-  // Cycle placeholder text when input is inactive
-  useEffect(() => {
-    if (isActive || inputValue) return;
-
-    const interval = setInterval(() => {
-      setShowPlaceholder(false);
-      setTimeout(() => {
-        setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
-        setShowPlaceholder(true);
-      }, 400);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isActive, inputValue]);
-
-  // Close input when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        if (!inputValue && attachedFiles.length === 0) setIsActive(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [inputValue, attachedFiles]);
-
-  const handleActivate = () => setIsActive(true);
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    const validFiles = files.filter(file => 
-      file.type.startsWith('image/') || file.type.startsWith('audio/')
-    );
-    
-    setAttachedFiles(prev => [...prev, ...validFiles]);
-    setIsActive(true);
-    
-    // Reset the input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const removeFile = (index: number) => {
-    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
-  };
 
   const handleRecordingToggle = async () => {
     if (isRecording) {
@@ -146,28 +98,24 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     }
   };
 
-  const containerVariants = {
-    collapsed: {
-      height: 68,
-      boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
-    },
-    expanded: {
-      height: attachedFiles.length > 0 ? 180 : 128,
-      boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
-    },
-  };
-
   const isExpanded = Boolean(isActive || inputValue || attachedFiles.length > 0);
   const animationState = isExpanded ? "expanded" : "collapsed";
+  
+  // Update container variants height based on attached files
+  const dynamicContainerVariants = {
+    ...containerVariants,
+    expanded: {
+      ...containerVariants.expanded,
+      height: attachedFiles.length > 0 ? 180 : 128,
+    }
+  };
 
   return (
     <div className="w-full flex justify-center items-center">
       <motion.div
         ref={wrapperRef}
         className="w-full max-w-3xl"
-        variants={containerVariants}
+        variants={dynamicContainerVariants}
         animate={animationState}
         initial="collapsed"
         style={{ overflow: "hidden", borderRadius: 32, background: "#fff" }}
@@ -201,26 +149,16 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               <Paperclip size={20} />
             </button>
 
-            {/* Text Input & Placeholder */}
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal"
-                style={{ position: "relative", zIndex: 1 }}
-                onFocus={handleActivate}
-                disabled={isLoading}
-              />
-              <AnimatedPlaceholder
-                placeholders={PLACEHOLDERS}
-                currentIndex={placeholderIndex}
-                showPlaceholder={showPlaceholder}
-                isActive={isActive}
-                inputValue={inputValue}
-              />
-            </div>
+            <TextInput
+              inputValue={inputValue}
+              onInputChange={setInputValue}
+              onKeyPress={handleKeyPress}
+              onFocus={handleActivate}
+              isLoading={isLoading}
+              placeholderIndex={placeholderIndex}
+              showPlaceholder={showPlaceholder}
+              isActive={isActive}
+            />
 
             <button
               className={`p-3 rounded-full transition ${
@@ -236,18 +174,12 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               {isRecording ? <Square size={20} /> : <Mic size={20} />}
             </button>
             
-            <button
-              className={`flex items-center gap-1 bg-black hover:bg-zinc-700 text-white p-3 rounded-full font-medium justify-center transition ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              title="Send"
-              type="button"
-              tabIndex={-1}
-              onClick={handleSend}
-              disabled={isLoading || (!inputValue.trim() && attachedFiles.length === 0)}
-            >
-              <Send size={18} />
-            </button>
+            <SendButton
+              isLoading={isLoading}
+              inputValue={inputValue}
+              attachedFiles={attachedFiles}
+              onSend={handleSend}
+            />
           </div>
 
           {/* Expanded Controls */}
