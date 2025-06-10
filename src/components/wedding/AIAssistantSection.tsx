@@ -14,6 +14,7 @@ interface ChatMessage {
     name: string;
     type: string;
     size: number;
+    url?: string;
   }>;
 }
 
@@ -22,26 +23,32 @@ const AIAssistantSection = () => {
   const { user } = useAuth();
 
   const handleSendMessage = async (message: string, files?: File[]) => {
+    // Create file URLs for uploaded files (in a real app, you'd upload to a CDN/storage service)
+    const fileData = files?.map(file => {
+      // Create a temporary URL for display purposes
+      const url = URL.createObjectURL(file);
+      return {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: url,
+      };
+    }) || [];
+
     // Add user message to history
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       message,
       timestamp: new Date().toISOString(),
       isUser: true,
-      files: files?.map(file => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      })),
+      files: fileData,
     };
     
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
-      // Create FormData to handle files
-      const formData = new FormData();
-      
-      const webhookData = {
+      // Prepare the payload with files at root level as requested
+      const webhookPayload = {
         message: message,
         timestamp: new Date().toISOString(),
         userId: user?.id || null,
@@ -49,10 +56,25 @@ const AIAssistantSection = () => {
         userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
         source: "Dream Weddings AI Assistant",
         fileCount: files?.length || 0,
+        ...(files && files.length > 0 && {
+          files: files.map(file => ({
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            // In a real implementation, you would upload the file and get a URL
+            fileUrl: `https://your-cdn.com/uploads/${file.name}`,
+          }))
+        })
       };
 
-      // Add text data as JSON string
-      formData.append('data', JSON.stringify(webhookData));
+      console.log('Sending AI Assistant webhook data:', webhookPayload);
+
+      // For files, we still need to send them as FormData for the actual file upload
+      // but we'll also include the structured data
+      const formData = new FormData();
+      
+      // Add the JSON payload as a string
+      formData.append('payload', JSON.stringify(webhookPayload));
 
       // Add files
       if (files && files.length > 0) {
@@ -60,11 +82,6 @@ const AIAssistantSection = () => {
           formData.append(`file_${index}`, file);
         });
       }
-
-      console.log('Sending AI Assistant webhook data:', {
-        ...webhookData,
-        files: files?.map(f => ({ name: f.name, type: f.type, size: f.size })) || [],
-      });
 
       const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
         method: 'POST',
