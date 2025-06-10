@@ -159,7 +159,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     },
   };
 
-  const isExpanded = isActive || inputValue || attachedFiles.length > 0;
+  const isExpanded = Boolean(isActive || inputValue || attachedFiles.length > 0);
   const animationState = isExpanded ? "expanded" : "collapsed";
 
   return (
