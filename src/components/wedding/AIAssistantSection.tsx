@@ -10,41 +10,87 @@ interface ChatMessage {
   timestamp: string;
   isUser: boolean;
   response?: string;
+  files?: Array<{
+    fileUrl: string;
+    fileType: string;
+    fileName: string;
+    fileSize: number;
+  }>;
+}
+
+interface WebhookPayload {
+  message: string;
+  timestamp: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  source: string;
+  files?: Array<{
+    fileUrl: string;
+    fileType: string;
+    fileName: string;
+    fileSize: number;
+  }>;
 }
 
 const AIAssistantSection = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const { user } = useAuth();
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string, files?: File[]) => {
+    // Process files if any
+    let processedFiles: Array<{
+      fileUrl: string;
+      fileType: string;
+      fileName: string;
+      fileSize: number;
+    }> = [];
+
+    if (files && files.length > 0) {
+      // For now, we'll create placeholder URLs for files
+      // In a real implementation, you'd upload these to storage first
+      processedFiles = files.map((file, index) => ({
+        fileUrl: `https://placeholder-storage.com/${file.name}`,
+        fileType: file.type,
+        fileName: file.name,
+        fileSize: file.size
+      }));
+    }
+
     // Add user message to history
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       message,
       timestamp: new Date().toISOString(),
       isUser: true,
+      files: processedFiles.length > 0 ? processedFiles : undefined,
     };
     
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
-      const webhookData = {
+      const webhookPayload: WebhookPayload = {
         message: message,
         timestamp: new Date().toISOString(),
-        userId: user?.id || null,
-        userEmail: user?.email || null,
+        userId: user?.id || "",
+        userEmail: user?.email || "",
         userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
         source: "Dream Weddings AI Assistant"
       };
 
-      console.log('Sending AI Assistant webhook data:', webhookData);
+      // Add files to payload if present (flat JSON structure for n8n)
+      if (processedFiles.length > 0) {
+        webhookPayload.files = processedFiles;
+      }
+
+      console.log('Sending AI Assistant webhook data:', webhookPayload);
 
       const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(webhookData),
+        body: JSON.stringify(webhookPayload),
       });
       
       if (response.ok) {
@@ -115,6 +161,24 @@ const AIAssistantSection = () => {
                   }`}
                 >
                   <p className="text-sm">{chat.message}</p>
+                  
+                  {/* Display files if present */}
+                  {chat.files && chat.files.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {chat.files.map((file, index) => (
+                        <div key={index} className={`text-xs p-2 rounded ${
+                          chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
+                        }`}>
+                          <div className="flex items-center gap-2">
+                            {file.fileType.startsWith('image/') ? '🖼️' : 
+                             file.fileType.startsWith('audio/') ? '🎵' : '📎'}
+                            <span className="truncate">{file.fileName}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
                   <p className={`text-xs mt-1 ${
                     chat.isUser ? 'text-rose-100' : 'text-gray-500'
                   }`}>
