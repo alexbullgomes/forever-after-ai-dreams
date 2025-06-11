@@ -29,7 +29,7 @@ const QuizLanding = ({
         </h1>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">Find your wedding vibe — and unlock a special offer!</p>
+        <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">Find your perfect wedding vibe — and unlock a special offer!</p>
 
         {/* CTA Button - Moved up */}
         <div className="mb-12">
