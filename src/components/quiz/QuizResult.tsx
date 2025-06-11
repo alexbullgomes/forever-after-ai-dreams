@@ -1,10 +1,11 @@
-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Video, Sparkles, Heart, ArrowRight, RotateCcw } from "lucide-react";
 import { QuizAnswer, UserLead } from "@/pages/WeddingQuiz";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { sendQuizWebhook } from "@/utils/quizWebhook";
 
 interface QuizResultProps {
   answers: QuizAnswer[];
@@ -117,6 +118,25 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
   const packageInfo = getPackageInfo();
   const IconComponent = packageInfo.icon;
 
+  // Send webhook when component mounts
+  useEffect(() => {
+    const sendWebhook = async () => {
+      await sendQuizWebhook(
+        userLead,
+        answers,
+        {
+          category: recommendation.category,
+          intensity: recommendation.intensity,
+          packageName: packageInfo.name,
+          packagePrice: packageInfo.price,
+          packageType: packageInfo.type,
+        }
+      );
+    };
+
+    sendWebhook();
+  }, [answers, userLead, recommendation, packageInfo]);
+
   const handleViewPackages = () => {
     navigate('/wedding-packages');
   };
@@ -138,10 +158,10 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
             </p>
           </div>
 
-          {/* Recommended Package - Updated Layout */}
+          {/* Recommended Package */}
           <div className="bg-gradient-to-r from-rose-50 to-purple-50 rounded-xl p-8 mb-8">
             <div className="text-center">
-              {/* Icon - Now at the top */}
+              {/* Icon */}
               <div className={`w-20 h-20 mx-auto mb-4 p-4 rounded-full bg-${packageInfo.color}-100`}>
                 <IconComponent className={`w-full h-full text-${packageInfo.color}-500`} />
               </div>
