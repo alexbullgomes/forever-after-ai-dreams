@@ -127,9 +127,9 @@ const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer, onBack }: Quiz
                 key={answer.id}
                 onClick={() => handleAnswer(answer.id, answer.category, answer.intensity)}
                 variant="outline"
-                className="w-full p-4 md:p-6 text-left justify-start text-base md:text-lg font-medium hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 hover:border-rose-300 transition-all duration-300 min-h-[60px] md:min-h-[70px] leading-relaxed"
+                className="w-full p-4 md:p-6 text-left justify-start text-base md:text-lg font-medium hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 hover:border-rose-300 transition-all duration-300 min-h-[60px] md:min-h-[70px] h-auto whitespace-normal leading-relaxed"
               >
-                <span className="text-left break-words">
+                <span className="text-left break-words w-full">
                   {answer.text}
                 </span>
               </Button>
