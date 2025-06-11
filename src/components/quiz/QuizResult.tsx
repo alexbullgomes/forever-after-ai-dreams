@@ -138,29 +138,35 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
             </p>
           </div>
 
-          {/* Recommended Package */}
-          <div className="bg-gradient-to-r from-rose-50 to-purple-50 rounded-xl p-6 mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <div className={`w-16 h-16 p-3 rounded-full bg-${packageInfo.color}-100 mr-4`}>
+          {/* Recommended Package - Updated Layout */}
+          <div className="bg-gradient-to-r from-rose-50 to-purple-50 rounded-xl p-8 mb-8">
+            <div className="text-center">
+              {/* Icon - Now at the top */}
+              <div className={`w-20 h-20 mx-auto mb-4 p-4 rounded-full bg-${packageInfo.color}-100`}>
                 <IconComponent className={`w-full h-full text-${packageInfo.color}-500`} />
               </div>
-              <div className="text-center">
-                <Badge variant="secondary" className="mb-2">
-                  {packageInfo.type}
-                </Badge>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {packageInfo.name}
-                </h3>
-                <p className="text-3xl font-bold text-rose-600 mt-2">
-                  {packageInfo.price}
-                </p>
-              </div>
+              
+              {/* Package Type Badge */}
+              <Badge variant="secondary" className="mb-4">
+                {packageInfo.type}
+              </Badge>
+              
+              {/* Package Name */}
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                {packageInfo.name}
+              </h3>
+              
+              {/* Price */}
+              <p className="text-4xl font-bold text-rose-600 mb-6">
+                {packageInfo.price}
+              </p>
+              
+              {/* Description */}
+              <p className="text-gray-700 leading-relaxed max-w-md mx-auto">
+                Based on your answers, this package perfectly captures your vision for intimate, 
+                authentic moments while fitting your style and budget preferences.
+              </p>
             </div>
-
-            <p className="text-gray-700 text-center">
-              Based on your answers, this package perfectly captures your vision for intimate, 
-              authentic moments while fitting your style and budget preferences.
-            </p>
           </div>
 
           {/* Call to Actions */}
