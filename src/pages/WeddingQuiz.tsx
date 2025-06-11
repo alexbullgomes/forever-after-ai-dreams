@@ -41,6 +41,15 @@ const WeddingQuiz = () => {
     }
   };
 
+  const handleBackQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(currentQuestion - 1);
+      setAnswers(answers.slice(0, -1));
+    } else {
+      setCurrentStep('landing');
+    }
+  };
+
   const handleLeadSubmit = (lead: UserLead) => {
     setUserLead(lead);
     setCurrentStep('result');
@@ -62,6 +71,7 @@ const WeddingQuiz = () => {
           questionNumber={currentQuestion + 1}
           totalQuestions={7}
           onAnswer={handleQuestionAnswer}
+          onBack={handleBackQuestion}
         />
       )}
       

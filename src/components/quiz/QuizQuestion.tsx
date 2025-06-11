@@ -2,12 +2,14 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { ArrowLeft } from "lucide-react";
 import { QuizAnswer } from "@/pages/WeddingQuiz";
 
 interface QuizQuestionProps {
   questionNumber: number;
   totalQuestions: number;
   onAnswer: (answer: QuizAnswer) => void;
+  onBack?: () => void;
 }
 
 const questions = [
@@ -76,7 +78,7 @@ const questions = [
   }
 ];
 
-const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer }: QuizQuestionProps) => {
+const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer, onBack }: QuizQuestionProps) => {
   const currentQuestion = questions[questionNumber - 1];
   const progress = (questionNumber / totalQuestions) * 100;
 
@@ -92,9 +94,21 @@ const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer }: QuizQuestion
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
       <div className="max-w-2xl mx-auto w-full">
-        {/* Progress Bar */}
+        {/* Back Button and Progress Bar */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-4">
+            {questionNumber > 1 && onBack ? (
+              <Button
+                onClick={onBack}
+                variant="ghost"
+                className="flex items-center text-gray-600 hover:text-gray-800 p-2"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            ) : (
+              <div></div>
+            )}
             <span className="text-sm text-gray-600">Question {questionNumber} of {totalQuestions}</span>
             <span className="text-sm text-gray-600">{Math.round(progress)}%</span>
           </div>
@@ -102,20 +116,22 @@ const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer }: QuizQuestion
         </div>
 
         {/* Question Card */}
-        <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8 text-center">
+        <Card className="p-6 md:p-8 bg-white/80 backdrop-blur-sm shadow-xl">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-6 md:mb-8 text-center leading-tight">
             {currentQuestion.question}
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {currentQuestion.answers.map((answer) => (
               <Button
                 key={answer.id}
                 onClick={() => handleAnswer(answer.id, answer.category, answer.intensity)}
                 variant="outline"
-                className="w-full p-6 text-left justify-start text-lg font-medium hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 hover:border-rose-300 transition-all duration-300"
+                className="w-full p-4 md:p-6 text-left justify-start text-base md:text-lg font-medium hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 hover:border-rose-300 transition-all duration-300 min-h-[60px] md:min-h-[70px] leading-relaxed"
               >
-                {answer.text}
+                <span className="text-left break-words">
+                  {answer.text}
+                </span>
               </Button>
             ))}
           </div>
