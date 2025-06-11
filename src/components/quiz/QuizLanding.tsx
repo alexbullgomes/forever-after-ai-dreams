@@ -1,14 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { Heart, Camera, Video, Sparkles } from "lucide-react";
-
 interface QuizLandingProps {
   onStartQuiz: () => void;
 }
-
-const QuizLanding = ({ onStartQuiz }: QuizLandingProps) => {
-  return (
-    <div className="container mx-auto px-4 py-8 md:py-16 min-h-screen flex items-center justify-center">
+const QuizLanding = ({
+  onStartQuiz
+}: QuizLandingProps) => {
+  return <div className="container mx-auto px-4 py-8 md:py-16 min-h-screen flex items-center justify-center">
       <div className="max-w-4xl mx-auto text-center">
         {/* Icon Header */}
         <div className="flex justify-center items-center gap-6 mb-8">
@@ -31,17 +29,11 @@ const QuizLanding = ({ onStartQuiz }: QuizLandingProps) => {
         </h1>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Find the perfect Ever After package — it's fast, fun, and pressure-free!
-        </p>
+        <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">Find your wedding vibe — and unlock a special offer!</p>
 
         {/* CTA Button - Moved up */}
         <div className="mb-12">
-          <Button
-            onClick={onStartQuiz}
-            size="lg"
-            className="text-lg px-8 py-6 bg-gradient-to-r from-rose-500 via-purple-500 to-blue-500 hover:from-rose-600 hover:via-purple-600 hover:to-blue-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-          >
+          <Button onClick={onStartQuiz} size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-rose-500 via-purple-500 to-blue-500 hover:from-rose-600 hover:via-purple-600 hover:to-blue-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             <Sparkles className="w-5 h-5 mr-2" />
             Start the Quiz ✨
           </Button>
@@ -83,8 +75,6 @@ const QuizLanding = ({ onStartQuiz }: QuizLandingProps) => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default QuizLanding;
