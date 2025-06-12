@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { EstimatedPriceBadge } from "@/components/ui/estimated-price-badge";
 import { Camera, Video, Sparkles, Heart, ArrowRight, RotateCcw } from "lucide-react";
 import { QuizAnswer, UserLead } from "@/pages/WeddingQuiz";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { sendQuizWebhook } from "@/utils/quizWebhook";
+
 interface QuizResultProps {
   answers: QuizAnswer[];
   userLead: UserLead;
@@ -163,9 +165,14 @@ const QuizResult = ({
               </h3>
               
               {/* Price */}
-              <p className="text-4xl font-bold text-rose-600 mb-6">
+              <p className="text-4xl font-bold text-rose-600 mb-2">
                 {packageInfo.price}
               </p>
+              
+              {/* Estimated Price Badge */}
+              <div className="mb-6">
+                <EstimatedPriceBadge />
+              </div>
               
               {/* Description */}
               <p className="text-gray-700 leading-relaxed max-w-md mx-auto">
@@ -181,6 +188,11 @@ const QuizResult = ({
               View Package Details
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
+
+            {/* Descriptive text above consultation button */}
+            <p className="text-center text-gray-600 text-sm">
+              Tailor your dream package to fit your budget.
+            </p>
 
             <Button variant="outline" className="w-full py-4 font-semibold border-2 hover:bg-rose-50">Book a Free Consultation</Button>
 
