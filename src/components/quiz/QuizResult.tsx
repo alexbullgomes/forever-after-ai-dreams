@@ -6,14 +6,16 @@ import { QuizAnswer, UserLead } from "@/pages/WeddingQuiz";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { sendQuizWebhook } from "@/utils/quizWebhook";
-
 interface QuizResultProps {
   answers: QuizAnswer[];
   userLead: UserLead;
   onRestart: () => void;
 }
-
-const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
+const QuizResult = ({
+  answers,
+  userLead,
+  onRestart
+}: QuizResultProps) => {
   const navigate = useNavigate();
 
   // Calculate the recommended package based on quiz answers
@@ -22,23 +24,17 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
       acc[answer.category] = (acc[answer.category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-
     const intensityCount = answers.reduce((acc, answer) => {
       acc[answer.intensity] = (acc[answer.intensity] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
-
-    const dominantCategory = Object.entries(categoryCount).reduce((a, b) => 
-      categoryCount[a[0]] > categoryCount[b[0]] ? a : b
-    )[0] as 'photo' | 'video' | 'both';
-
-    const dominantIntensity = Object.entries(intensityCount).reduce((a, b) => 
-      intensityCount[a[0]] > intensityCount[b[0]] ? a : b
-    )[0] as 'essential' | 'mid' | 'premium';
-
-    return { category: dominantCategory, intensity: dominantIntensity };
+    const dominantCategory = Object.entries(categoryCount).reduce((a, b) => categoryCount[a[0]] > categoryCount[b[0]] ? a : b)[0] as 'photo' | 'video' | 'both';
+    const dominantIntensity = Object.entries(intensityCount).reduce((a, b) => intensityCount[a[0]] > intensityCount[b[0]] ? a : b)[0] as 'essential' | 'mid' | 'premium';
+    return {
+      category: dominantCategory,
+      intensity: dominantIntensity
+    };
   };
-
   const recommendation = calculateRecommendation();
 
   // Package mapping based on recommendation
@@ -52,7 +48,7 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
         color: "rose"
       };
       if (recommendation.intensity === 'mid') return {
-        name: "The Ever After Collection", 
+        name: "The Ever After Collection",
         price: "$2,600",
         type: "Photography Package",
         icon: Camera,
@@ -60,18 +56,17 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
       };
       return {
         name: "The Forever Yours Experience",
-        price: "$3,900", 
+        price: "$3,900",
         type: "Photography Package",
         icon: Camera,
         color: "rose"
       };
     }
-
     if (recommendation.category === 'video') {
       if (recommendation.intensity === 'essential') return {
         name: "The Highlight Reel",
         price: "$2,500",
-        type: "Videography Package", 
+        type: "Videography Package",
         icon: Video,
         color: "blue"
       };
@@ -79,7 +74,7 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
         name: "The Legacy Film",
         price: "$3,500",
         type: "Videography Package",
-        icon: Video, 
+        icon: Video,
         color: "blue"
       };
       return {
@@ -100,7 +95,7 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
       color: "purple"
     };
     if (recommendation.intensity === 'mid') return {
-      name: "Dream Wedding", 
+      name: "Dream Wedding",
       price: "$4,999",
       type: "Photo + Video Package",
       icon: Sparkles,
@@ -109,40 +104,31 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
     return {
       name: "Luxury Experience",
       price: "$8,999",
-      type: "Photo + Video Package", 
+      type: "Photo + Video Package",
       icon: Sparkles,
       color: "purple"
     };
   };
-
   const packageInfo = getPackageInfo();
   const IconComponent = packageInfo.icon;
 
   // Send webhook when component mounts
   useEffect(() => {
     const sendWebhook = async () => {
-      await sendQuizWebhook(
-        userLead,
-        answers,
-        {
-          category: recommendation.category,
-          intensity: recommendation.intensity,
-          packageName: packageInfo.name,
-          packagePrice: packageInfo.price,
-          packageType: packageInfo.type,
-        }
-      );
+      await sendQuizWebhook(userLead, answers, {
+        category: recommendation.category,
+        intensity: recommendation.intensity,
+        packageName: packageInfo.name,
+        packagePrice: packageInfo.price,
+        packageType: packageInfo.type
+      });
     };
-
     sendWebhook();
   }, [answers, userLead, recommendation, packageInfo]);
-
   const handleViewPackages = () => {
     navigate('/wedding-packages');
   };
-
-  return (
-    <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
+  return <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
       <div className="max-w-2xl mx-auto w-full">
         <Card className="p-8 bg-white/90 backdrop-blur-sm shadow-xl">
           {/* Header */}
@@ -191,26 +177,14 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
 
           {/* Call to Actions */}
           <div className="space-y-4">
-            <Button
-              onClick={handleViewPackages}
-              className="w-full bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-            >
+            <Button onClick={handleViewPackages} className="w-full bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
               View Package Details
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
 
-            <Button
-              variant="outline" 
-              className="w-full py-4 font-semibold border-2 hover:bg-rose-50"
-            >
-              Book a Consultation with Our Team
-            </Button>
+            <Button variant="outline" className="w-full py-4 font-semibold border-2 hover:bg-rose-50">Book a Free Consultation</Button>
 
-            <Button
-              onClick={onRestart}
-              variant="ghost"
-              className="w-full py-4 text-gray-600 hover:text-gray-800"
-            >
+            <Button onClick={onRestart} variant="ghost" className="w-full py-4 text-gray-600 hover:text-gray-800">
               <RotateCcw className="w-4 h-4 mr-2" />
               Retake Quiz
             </Button>
@@ -224,8 +198,6 @@ const QuizResult = ({ answers, userLead, onRestart }: QuizResultProps) => {
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default QuizResult;
