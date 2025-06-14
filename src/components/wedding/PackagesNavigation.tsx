@@ -7,7 +7,7 @@ const PackagesNavigation = () => {
 
   const navItems = [
     { id: "combined-packages", label: "Photo & Video", icon: Heart },
-    { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare },
+    { id: "ai-assistant", label: "Planner Assistant", icon: MessageSquare },
     { id: "photography", label: "Photography", icon: Camera },
     { id: "videography", label: "Videography", icon: Video },
     { id: "contact-cta", label: "Contact", icon: Phone },
