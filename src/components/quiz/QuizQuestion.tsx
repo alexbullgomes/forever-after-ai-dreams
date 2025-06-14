@@ -15,65 +15,65 @@ interface QuizQuestionProps {
 const questions = [
   {
     id: 1,
-    question: "How would you describe your ideal wedding atmosphere?",
+    question: "How do you envision preserving your wedding memories?",
     answers: [
-      { id: "a", text: "Intimate and romantic", category: "photo" as const, intensity: "essential" as const },
-      { id: "b", text: "Cinematic and dramatic", category: "video" as const, intensity: "mid" as const },
-      { id: "c", text: "Grand celebration with all the details", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "Beautiful photos to hang on our walls and share with family", category: "photo" as const, intensity: "mid" as const },
+      { id: "b", text: "A cinematic film we can watch together on anniversaries", category: "video" as const, intensity: "mid" as const },
+      { id: "c", text: "Both stunning photos and a movie-like film of our day", category: "both" as const, intensity: "mid" as const }
     ]
   },
   {
     id: 2,
-    question: "What moments are most important to capture?",
+    question: "What excites you most about your wedding day documentation?",
     answers: [
-      { id: "a", text: "Those quiet, candid moments", category: "photo" as const, intensity: "essential" as const },
-      { id: "b", text: "The ceremony and emotional reactions", category: "video" as const, intensity: "mid" as const },
-      { id: "c", text: "Every single detail from prep to exit", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "Capturing those candid, heartfelt moments in timeless photographs", category: "photo" as const, intensity: "mid" as const },
+      { id: "b", text: "Having our love story told through moving images and sound", category: "video" as const, intensity: "mid" as const },
+      { id: "c", text: "Creating a complete archive of our special day in every format", category: "both" as const, intensity: "premium" as const }
     ]
   },
   {
     id: 3,
-    question: "How do you want to relive your wedding day?",
+    question: "How would you describe your ideal wedding celebration?",
     answers: [
-      { id: "a", text: "Beautiful photos on our walls", category: "photo" as const, intensity: "mid" as const },
-      { id: "b", text: "A cinematic film to watch together", category: "video" as const, intensity: "premium" as const },
-      { id: "c", text: "Both photos and videos for different occasions", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "An intimate gathering with our closest loved ones", category: "photo" as const, intensity: "essential" as const },
+      { id: "b", text: "A classic celebration with meaningful traditions", category: "video" as const, intensity: "mid" as const },
+      { id: "c", text: "A grand, unforgettable event with every detail perfect", category: "both" as const, intensity: "premium" as const }
     ]
   },
   {
     id: 4,
-    question: "What's your wedding budget priority?",
+    question: "When you imagine your wedding coverage, what feels right?",
     answers: [
-      { id: "a", text: "Quality essentials that fit our budget", category: "photo" as const, intensity: "essential" as const },
-      { id: "b", text: "Balanced coverage with good value", category: "video" as const, intensity: "mid" as const },
-      { id: "c", text: "Premium experience, it's worth the investment", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "Quality essentials that capture the key moments beautifully", category: "photo" as const, intensity: "essential" as const },
+      { id: "b", text: "Comprehensive coverage that tells our complete story", category: "video" as const, intensity: "mid" as const },
+      { id: "c", text: "Premium, luxury experience with every moment documented", category: "both" as const, intensity: "premium" as const }
     ]
   },
   {
     id: 5,
-    question: "How many guests will attend your wedding?",
+    question: "What's most important to you in your wedding investment?",
     answers: [
-      { id: "a", text: "50 or fewer (intimate ceremony)", category: "photo" as const, intensity: "essential" as const },
-      { id: "b", text: "50-150 guests (classic wedding)", category: "video" as const, intensity: "mid" as const },
-      { id: "c", text: "150+ guests (large celebration)", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "Smart value that delivers beautiful results within our budget", category: "photo" as const, intensity: "essential" as const },
+      { id: "b", text: "Balance between quality coverage and reasonable investment", category: "video" as const, intensity: "mid" as const },
+      { id: "c", text: "This is our once-in-a-lifetime day - we want the absolute best", category: "both" as const, intensity: "premium" as const }
     ]
   },
   {
     id: 6,
-    question: "What style appeals to you most?",
+    question: "How do you want to experience your wedding day?",
     answers: [
-      { id: "a", text: "Timeless and classic", category: "photo" as const, intensity: "mid" as const },
-      { id: "b", text: "Modern and cinematic", category: "video" as const, intensity: "premium" as const },
-      { id: "c", text: "Artistic and editorial", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "Relaxed and natural, focusing on authentic moments", category: "photo" as const, intensity: "essential" as const },
+      { id: "b", text: "Beautifully orchestrated with cinematic moments", category: "video" as const, intensity: "premium" as const },
+      { id: "c", text: "Like movie stars with full production value", category: "both" as const, intensity: "premium" as const }
     ]
   },
   {
     id: 7,
-    question: "How important is having raw footage/files?",
+    question: "What matters most for your wedding memories?",
     answers: [
-      { id: "a", text: "Not important, edited photos are enough", category: "photo" as const, intensity: "essential" as const },
-      { id: "b", text: "Somewhat important for special moments", category: "video" as const, intensity: "mid" as const },
-      { id: "c", text: "Very important, I want everything", category: "both" as const, intensity: "premium" as const }
+      { id: "a", text: "Having the edited highlights that tell our story perfectly", category: "photo" as const, intensity: "mid" as const },
+      { id: "b", text: "Getting both polished content and raw footage for flexibility", category: "video" as const, intensity: "premium" as const },
+      { id: "c", text: "Complete access to everything - we want it all!", category: "both" as const, intensity: "premium" as const }
     ]
   }
 ];
