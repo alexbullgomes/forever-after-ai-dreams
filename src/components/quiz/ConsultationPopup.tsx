@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,8 +121,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
           
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white text-center">
-              Customize Your Dream Package —<br />
-              and Unlock up to 30% OFF
+              Personalize your Video & Photo Package
             </DialogTitle>
           </DialogHeader>
           
