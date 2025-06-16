@@ -5,8 +5,9 @@ import { EstimatedPriceBadge } from "@/components/ui/estimated-price-badge";
 import { Camera, Video, Sparkles, Heart, ArrowRight, RotateCcw } from "lucide-react";
 import { QuizAnswer, UserLead } from "@/pages/WeddingQuiz";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { sendQuizWebhook } from "@/utils/quizWebhook";
+import ConsultationPopup from "./ConsultationPopup";
 
 interface QuizResultProps {
   answers: QuizAnswer[];
@@ -19,6 +20,7 @@ const QuizResult = ({
   onRestart
 }: QuizResultProps) => {
   const navigate = useNavigate();
+  const [showConsultationPopup, setShowConsultationPopup] = useState(false);
 
   // Calculate the recommended package based on quiz answers
   const calculateRecommendation = () => {
@@ -127,89 +129,117 @@ const QuizResult = ({
     };
     sendWebhook();
   }, [answers, userLead, recommendation, packageInfo]);
+
   const handleViewPackages = () => {
     navigate('/wedding-packages');
   };
-  return <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
-      <div className="max-w-2xl mx-auto w-full">
-        <Card className="p-8 bg-white/90 backdrop-blur-sm shadow-xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 p-4 rounded-full bg-gradient-to-r from-rose-500 to-purple-500">
-              <Heart className="w-full h-full text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Perfect Match Found! 
-            </h2>
-            <p className="text-gray-600">
-              Hi {userLead.fullName}, here's your personalized recommendation
-            </p>
-          </div>
 
-          {/* Recommended Package */}
-          <div className="bg-gradient-to-r from-rose-50 to-purple-50 rounded-xl p-8 mb-8">
-            <div className="text-center">
-              {/* Icon */}
-              <div className={`w-20 h-20 mx-auto mb-4 p-4 rounded-full bg-${packageInfo.color}-100`}>
-                <IconComponent className={`w-full h-full text-${packageInfo.color}-500`} />
+  const handleBookConsultation = () => {
+    setShowConsultationPopup(true);
+  };
+
+  return (
+    <>
+      <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
+        <div className="max-w-2xl mx-auto w-full">
+          <Card className="p-8 bg-white/90 backdrop-blur-sm shadow-xl">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 mx-auto mb-4 p-4 rounded-full bg-gradient-to-r from-rose-500 to-purple-500">
+                <Heart className="w-full h-full text-white" />
               </div>
-              
-              {/* Package Type Badge */}
-              <Badge variant="secondary" className="mb-4">
-                {packageInfo.type}
-              </Badge>
-              
-              {/* Package Name */}
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                {packageInfo.name}
-              </h3>
-              
-              {/* Price */}
-              <p className="text-4xl font-bold text-rose-600 mb-2">
-                {packageInfo.price}
-              </p>
-              
-              {/* Estimated Price Badge */}
-              <div className="mb-6">
-                <EstimatedPriceBadge />
-              </div>
-              
-              {/* Description */}
-              <p className="text-gray-700 leading-relaxed max-w-md mx-auto">
-                Based on your answers, this package perfectly captures your vision for intimate, 
-                authentic moments while fitting your style and budget preferences.
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Perfect Match Found! 
+              </h2>
+              <p className="text-gray-600">
+                Hi {userLead.fullName}, here's your personalized recommendation
               </p>
             </div>
-          </div>
 
-          {/* Call to Actions */}
-          <div className="space-y-4">
-            <Button onClick={handleViewPackages} className="w-full bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-              View Package Details
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            {/* Recommended Package */}
+            <div className="bg-gradient-to-r from-rose-50 to-purple-50 rounded-xl p-8 mb-8">
+              <div className="text-center">
+                {/* Icon */}
+                <div className={`w-20 h-20 mx-auto mb-4 p-4 rounded-full bg-${packageInfo.color}-100`}>
+                  <IconComponent className={`w-full h-full text-${packageInfo.color}-500`} />
+                </div>
+                
+                {/* Package Type Badge */}
+                <Badge variant="secondary" className="mb-4">
+                  {packageInfo.type}
+                </Badge>
+                
+                {/* Package Name */}
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                  {packageInfo.name}
+                </h3>
+                
+                {/* Price */}
+                <p className="text-4xl font-bold text-rose-600 mb-2">
+                  {packageInfo.price}
+                </p>
+                
+                {/* Estimated Price Badge */}
+                <div className="mb-6">
+                  <EstimatedPriceBadge />
+                </div>
+                
+                {/* Description */}
+                <p className="text-gray-700 leading-relaxed max-w-md mx-auto">
+                  Based on your answers, this package perfectly captures your vision for intimate, 
+                  authentic moments while fitting your style and budget preferences.
+                </p>
+              </div>
+            </div>
 
-            {/* Descriptive text above consultation button */}
-            <p className="text-center text-gray-600 text-sm">
-              Tailor your dream package to fit your budget.
-            </p>
+            {/* Call to Actions */}
+            <div className="space-y-4">
+              <Button onClick={handleViewPackages} className="w-full bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                View Package Details
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
 
-            <Button variant="outline" className="w-full py-4 font-semibold border-2 hover:bg-rose-50">Book a Free Consultation</Button>
+              {/* Descriptive text above consultation button */}
+              <p className="text-center text-gray-600 text-sm">
+                Tailor your dream package to fit your budget.
+              </p>
 
-            <Button onClick={onRestart} variant="ghost" className="w-full py-4 text-gray-600 hover:text-gray-800">
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Retake Quiz
-            </Button>
-          </div>
+              <Button 
+                onClick={handleBookConsultation} 
+                variant="outline" 
+                className="w-full py-4 font-semibold border-2 hover:bg-rose-50"
+              >
+                Book a Free Consultation
+              </Button>
 
-          {/* Additional Info */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 text-center">
-              💡 <strong>Next Steps:</strong> Our team will reach out within 24 hours to discuss your vision and answer any questions about your recommended package.
-            </p>
-          </div>
-        </Card>
+              <Button onClick={onRestart} variant="ghost" className="w-full py-4 text-gray-600 hover:text-gray-800">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Retake Quiz
+              </Button>
+            </div>
+
+            {/* Additional Info */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800 text-center">
+                💡 <strong>Next Steps:</strong> Our team will reach out within 24 hours to discuss your vision and answer any questions about your recommended package.
+              </p>
+            </div>
+          </Card>
+        </div>
       </div>
-    </div>;
+
+      {/* Consultation Popup */}
+      <ConsultationPopup
+        isOpen={showConsultationPopup}
+        onClose={() => setShowConsultationPopup(false)}
+        userEmail={userLead.email}
+        packageInfo={{
+          name: packageInfo.name,
+          price: packageInfo.price,
+          type: packageInfo.type
+        }}
+      />
+    </>
+  );
 };
 export default QuizResult;
