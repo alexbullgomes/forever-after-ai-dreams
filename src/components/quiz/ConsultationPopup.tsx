@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,8 +121,9 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
           </div>
           
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white text-center">
-              Personalize your Video & Photo Package
+            <DialogTitle className="text-xl font-bold text-white text-center leading-tight">
+              Personalize your Video & Photo Package<br />
+              Unlock up to 30% OFF
             </DialogTitle>
           </DialogHeader>
           
@@ -129,23 +131,18 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
             Tell us a bit about your wedding so we can tailor the perfect Photo & Video bundle for you.
           </p>
 
-          {/* Countdown Timer */}
-          <div className="mt-4 inline-flex items-center bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-            <Clock className="w-4 h-4 mr-2" />
-            Your 30% OFF offer expires in: {formatTime(timeLeft)}
+          {/* Enhanced Countdown Timer */}
+          <div className="mt-6 mx-auto max-w-xs">
+            <div className="bg-white text-rose-600 px-6 py-4 rounded-xl shadow-lg">
+              <div className="flex items-center justify-center mb-2">
+                <Clock className="w-5 h-5 mr-2 text-rose-500" />
+                <span className="text-sm font-semibold">Your 30% OFF offer expires in:</span>
+              </div>
+              <div className="text-2xl font-bold text-rose-600 font-mono">
+                {formatTime(timeLeft)}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Package Info */}
-        <div className="px-6 py-4 bg-rose-50 text-center">
-          <h3 className="font-semibold text-rose-600 text-lg">{packageInfo.name} - {packageInfo.price}</h3>
-          <Badge variant="secondary" className="mt-1">Estimated Price</Badge>
-          <p className="text-sm text-gray-600 mt-2">
-            Excellent selection! The {packageInfo.name} package is our most popular choice, offering comprehensive coverage to capture every magical moment of your special day.
-          </p>
-          <p className="text-rose-600 font-medium text-sm mt-2">
-            Let's schedule your free consultation!
-          </p>
         </div>
 
         {/* Form */}
