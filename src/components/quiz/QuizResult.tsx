@@ -130,12 +130,25 @@ const QuizResult = ({
     sendWebhook();
   }, [answers, userLead, recommendation, packageInfo]);
 
+  // Auto-open consultation popup after 30 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowConsultationPopup(true);
+    }, 30000); // 30 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleViewPackages = () => {
     navigate('/wedding-packages');
   };
 
   const handleBookConsultation = () => {
     setShowConsultationPopup(true);
+  };
+
+  const handleCloseConsultation = () => {
+    setShowConsultationPopup(false);
   };
 
   return (
@@ -230,7 +243,7 @@ const QuizResult = ({
       {/* Consultation Popup */}
       <ConsultationPopup
         isOpen={showConsultationPopup}
-        onClose={() => setShowConsultationPopup(false)}
+        onClose={handleCloseConsultation}
         userEmail={userLead.email}
         packageInfo={{
           name: packageInfo.name,
