@@ -194,11 +194,6 @@ const QuizResult = ({
 
             {/* Call to Actions */}
             <div className="space-y-4">
-              <Button onClick={handleViewPackages} className="w-full bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
-                View Package Details
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-
               {/* Descriptive text above consultation button */}
               <p className="text-center text-gray-600 text-sm">
                 Tailor your dream package to fit your budget.
@@ -206,10 +201,14 @@ const QuizResult = ({
 
               <Button 
                 onClick={handleBookConsultation} 
-                variant="outline" 
-                className="w-full py-4 font-semibold border-2 hover:bg-rose-50"
+                className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Book a Free Consultation
+              </Button>
+
+              <Button onClick={handleViewPackages} variant="outline" className="w-full py-4 font-semibold border-2 hover:bg-rose-50">
+                View Package Details
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
 
               <Button onClick={onRestart} variant="ghost" className="w-full py-4 text-gray-600 hover:text-gray-800">
