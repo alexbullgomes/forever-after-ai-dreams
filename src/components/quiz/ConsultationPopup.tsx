@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Clock, X } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+import { initializeCountdown, clearCountdownExpiry } from "./utils/countdownTimer";
+import ConsultationPopupHeader from "./ConsultationPopupHeader";
+import ConsultationForm from "./ConsultationForm";
 
 interface ConsultationPopupProps {
   isOpen: boolean;
@@ -18,27 +18,14 @@ interface ConsultationPopupProps {
 }
 
 const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: ConsultationPopupProps) => {
-  const [email, setEmail] = useState(userEmail || "");
-  const [cellphone, setCellphone] = useState("");
   const [timeLeft, setTimeLeft] = useState(24 * 60 * 60); // 24 hours in seconds
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize countdown timer from localStorage or set 24 hours
   useEffect(() => {
     if (!isOpen) return;
     
-    const savedExpiry = localStorage.getItem('consultation_offer_expiry');
-    const now = new Date().getTime();
-    
-    if (savedExpiry) {
-      const expiryTime = parseInt(savedExpiry);
-      const secondsLeft = Math.max(0, Math.floor((expiryTime - now) / 1000));
-      setTimeLeft(secondsLeft);
-    } else {
-      // Set 24 hours from now
-      const expiryTime = now + (24 * 60 * 60 * 1000);
-      localStorage.setItem('consultation_offer_expiry', expiryTime.toString());
-    }
+    const initialTime = initializeCountdown();
+    setTimeLeft(initialTime);
   }, [isOpen]);
 
   // Countdown timer effect
@@ -48,7 +35,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          localStorage.removeItem('consultation_offer_expiry');
+          clearCountdownExpiry();
           return 0;
         }
         return prev - 1;
@@ -57,48 +44,6 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
 
     return () => clearInterval(timer);
   }, [timeLeft, isOpen]);
-
-  // Format time as HH:MM:SS
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !cellphone) return;
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('https://agcreationmkt.cloud/webhook/36fb4d39-8ebe-4ab6-b781-c7d8b73cc9cb', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          event: 'consultation_request',
-          email,
-          cellphone,
-          package_info: packageInfo,
-          discount_offer: '30% OFF',
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      if (response.ok) {
-        // Close popup and show success
-        onClose();
-        console.log('Consultation request submitted successfully');
-      }
-    } catch (error) {
-      console.error('Failed to submit consultation request:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   // Don't render if offer expired
   if (timeLeft <= 0) {
@@ -118,94 +63,15 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
           <span className="sr-only">Close</span>
         </button>
 
-        {/* Header with heart icon */}
-        <div className="bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center py-6 px-6">
-          <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-            <Heart className="w-8 h-8 text-white" />
-          </div>
-          
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white text-center leading-tight">
-              Personalize your Video & Photo Package<br />
-              Unlock up to 30% OFF
-            </DialogTitle>
-          </DialogHeader>
-          
-          <p className="text-rose-100 text-sm mt-2">
-            Tell us a bit about your wedding so we can tailor the perfect Photo & Video bundle for you.
-          </p>
-
-          {/* Enhanced Countdown Timer */}
-          <div className="mt-6 mx-auto max-w-xs">
-            <div className="bg-white text-rose-600 px-6 py-4 rounded-xl shadow-lg">
-              <div className="flex items-center justify-center mb-2">
-                <Clock className="w-5 h-5 mr-2 text-rose-500" />
-                <span className="text-sm font-semibold">Your 30% OFF offer expires in:</span>
-              </div>
-              <div className="text-2xl font-bold text-rose-600 font-mono">
-                {formatTime(timeLeft)}
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Header */}
+        <ConsultationPopupHeader timeLeft={timeLeft} />
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Email
-            </label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
-              autoComplete="email"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Cellphone
-            </label>
-            <Input
-              type="tel"
-              value={cellphone}
-              onChange={(e) => setCellphone(e.target.value)}
-              placeholder="(555) 123-4567"
-              required
-              className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
-              autoComplete="tel"
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3 pt-2">
-            <Button
-              type="submit"
-              disabled={isSubmitting || !email || !cellphone}
-              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
-            >
-              {isSubmitting ? "Submitting..." : "📞 Book Free Consultation"}
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              className="w-full text-gray-600 hover:text-gray-800 py-2 hover:bg-gray-50"
-            >
-              Maybe Later
-            </Button>
-          </div>
-
-          {/* Urgency copy */}
-          <p className="text-center text-xs text-gray-500 mt-3">
-            Offer expires soon. Lock in your savings today.
-          </p>
-        </form>
+        <ConsultationForm
+          userEmail={userEmail}
+          packageInfo={packageInfo}
+          onClose={onClose}
+        />
       </DialogContent>
     </Dialog>
   );
