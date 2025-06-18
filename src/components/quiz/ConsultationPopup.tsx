@@ -25,6 +25,8 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
 
   // Initialize countdown timer from localStorage or set 24 hours
   useEffect(() => {
+    if (!isOpen) return;
+    
     const savedExpiry = localStorage.getItem('consultation_offer_expiry');
     const now = new Date().getTime();
     
@@ -41,7 +43,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
 
   // Countdown timer effect
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0 || !isOpen) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -54,7 +56,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, isOpen]);
 
   // Format time as HH:MM:SS
   const formatTime = (seconds: number) => {
@@ -89,7 +91,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
       if (response.ok) {
         // Close popup and show success
         onClose();
-        // You could add a toast notification here
+        console.log('Consultation request submitted successfully');
       }
     } catch (error) {
       console.error('Failed to submit consultation request:', error);
@@ -98,19 +100,21 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
     }
   };
 
+  // Don't render if offer expired
   if (timeLeft <= 0) {
-    return null; // Don't show if offer expired
+    return null;
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md mx-4 p-0 gap-0 rounded-xl overflow-hidden">
-        {/* Close button */}
+      <DialogContent className="sm:max-w-md mx-4 p-0 gap-0 rounded-xl overflow-hidden bg-white border border-gray-200 shadow-2xl max-h-[90vh] overflow-y-auto">
+        {/* Close button - Enhanced visibility for Chrome */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          type="button"
+          className="absolute right-4 top-4 z-50 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-white/80 p-1 hover:bg-white"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4 text-gray-600" />
           <span className="sr-only">Close</span>
         </button>
 
@@ -146,7 +150,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Confirm Email
@@ -157,7 +161,8 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="w-full"
+              className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              autoComplete="email"
             />
           </div>
 
@@ -171,7 +176,8 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
               onChange={(e) => setCellphone(e.target.value)}
               placeholder="(555) 123-4567"
               required
-              className="w-full"
+              className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+              autoComplete="tel"
             />
           </div>
 
@@ -180,7 +186,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
             <Button
               type="submit"
               disabled={isSubmitting || !email || !cellphone}
-              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
             >
               {isSubmitting ? "Submitting..." : "📞 Book Free Consultation"}
             </Button>
@@ -189,7 +195,7 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
               type="button"
               variant="ghost"
               onClick={onClose}
-              className="w-full text-gray-600 hover:text-gray-800 py-2"
+              className="w-full text-gray-600 hover:text-gray-800 py-2 hover:bg-gray-50"
             >
               Maybe Later
             </Button>

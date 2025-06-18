@@ -11,7 +11,7 @@ export interface PackageInfo {
 }
 
 export interface Recommendation {
-  category: 'photo' | 'video' | 'both';
+  category: 'video' | 'both';
   intensity: 'essential' | 'mid' | 'premium';
 }
 
@@ -34,37 +34,16 @@ export const calculateRecommendation = (answers: QuizAnswer[]): Recommendation =
     intensityCount[a[0]] > intensityCount[b[0]] ? a : b
   )[0] as 'essential' | 'mid' | 'premium';
   
+  // Filter out photo-only packages - default to 'both' if photo is selected
+  const filteredCategory = dominantCategory === 'photo' ? 'both' : dominantCategory as 'video' | 'both';
+  
   return {
-    category: dominantCategory,
+    category: filteredCategory,
     intensity: dominantIntensity
   };
 };
 
 export const getPackageInfo = (recommendation: Recommendation): PackageInfo => {
-  if (recommendation.category === 'photo') {
-    if (recommendation.intensity === 'essential') return {
-      name: "The Intimate Moments Collection",
-      price: "$1,800",
-      type: "Photography Package",
-      icon: Camera,
-      color: "rose"
-    };
-    if (recommendation.intensity === 'mid') return {
-      name: "The Ever After Collection",
-      price: "$2,600",
-      type: "Photography Package",
-      icon: Camera,
-      color: "rose"
-    };
-    return {
-      name: "The Forever Yours Experience",
-      price: "$3,900",
-      type: "Photography Package",
-      icon: Camera,
-      color: "rose"
-    };
-  }
-  
   if (recommendation.category === 'video') {
     if (recommendation.intensity === 'essential') return {
       name: "The Highlight Reel",
@@ -89,7 +68,7 @@ export const getPackageInfo = (recommendation: Recommendation): PackageInfo => {
     };
   }
 
-  // Both category
+  // Both category (Photo + Video packages)
   if (recommendation.intensity === 'essential') return {
     name: "Essential Love",
     price: "$2,999",
