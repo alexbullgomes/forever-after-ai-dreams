@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Heart, Play, Pause } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
@@ -26,7 +25,8 @@ interface WebhookPayload {
   userName: string;
   source: string;
   files?: Array<{
-    fileUrl: string;
+    fileUrl?: string;
+    fileData?: string; // Base64 encoded file data
     fileType: string;
     fileName: string;
     fileSize: number;
@@ -38,6 +38,21 @@ const AIAssistantSection = () => {
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const { user } = useAuth();
 
+  // Helper function to convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data URL prefix (e.g., "data:audio/webm;base64,")
+        const base64Data = result.split(',')[1];
+        resolve(base64Data);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const handleSendMessage = async (message: string, files?: File[]) => {
     // Process files if any
     let processedFiles: Array<{
@@ -47,13 +62,43 @@ const AIAssistantSection = () => {
       fileSize: number;
     }> = [];
 
+    let webhookFiles: Array<{
+      fileUrl?: string;
+      fileData?: string;
+      fileType: string;
+      fileName: string;
+      fileSize: number;
+    }> = [];
+
     if (files && files.length > 0) {
-      // Create object URLs for immediate preview
+      // Create object URLs for immediate preview in chat
       processedFiles = files.map((file) => ({
         fileUrl: URL.createObjectURL(file),
         fileType: file.type,
         fileName: file.name,
         fileSize: file.size
+      }));
+
+      // Convert files to base64 for webhook (for audio files) or use URL for others
+      webhookFiles = await Promise.all(files.map(async (file) => {
+        if (file.type.startsWith('audio/')) {
+          // Convert audio files to base64
+          const base64Data = await fileToBase64(file);
+          return {
+            fileData: base64Data,
+            fileType: file.type,
+            fileName: file.name,
+            fileSize: file.size
+          };
+        } else {
+          // For non-audio files, use the blob URL
+          return {
+            fileUrl: URL.createObjectURL(file),
+            fileType: file.type,
+            fileName: file.name,
+            fileSize: file.size
+          };
+        }
       }));
     }
 
@@ -79,8 +124,8 @@ const AIAssistantSection = () => {
       };
 
       // Add files to payload if present
-      if (processedFiles.length > 0) {
-        webhookPayload.files = processedFiles;
+      if (webhookFiles.length > 0) {
+        webhookPayload.files = webhookFiles;
       }
 
       console.log('Sending AI Assistant webhook data:', webhookPayload);
