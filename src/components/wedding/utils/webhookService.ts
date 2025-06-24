@@ -8,26 +8,19 @@ export interface WebhookPayload {
   userEmail: string;
   userName: string;
   source: string;
-  files?: Array<{
-    fileUrl?: string;
-    fileData?: string; // Base64 encoded file data
-    fileType: string;
-    fileName: string;
-    fileSize: number;
-  }>;
 }
 
 export const sendWebhookMessage = async (
   message: string,
   user: User | null,
-  webhookFiles?: Array<{
-    fileUrl?: string;
-    fileData?: string;
-    fileType: string;
-    fileName: string;
-    fileSize: number;
-  }>
+  files?: File[]
 ): Promise<any> => {
+  console.log('Sending AI Assistant webhook data with files:', { message, filesCount: files?.length || 0 });
+
+  // Create FormData to send files as binary
+  const formData = new FormData();
+  
+  // Add the main payload as JSON
   const webhookPayload: WebhookPayload = {
     message: message,
     timestamp: new Date().toISOString(),
@@ -36,20 +29,20 @@ export const sendWebhookMessage = async (
     userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
     source: "Dream Weddings AI Assistant"
   };
-
-  // Add files to payload if present
-  if (webhookFiles && webhookFiles.length > 0) {
-    webhookPayload.files = webhookFiles;
+  
+  formData.append('data', JSON.stringify(webhookPayload));
+  
+  // Add files as binary data
+  if (files && files.length > 0) {
+    files.forEach((file, index) => {
+      formData.append(`file_${index}`, file, file.name);
+    });
+    formData.append('file_count', files.length.toString());
   }
-
-  console.log('Sending AI Assistant webhook data:', webhookPayload);
 
   const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(webhookPayload),
+    body: formData, // Send as FormData instead of JSON
   });
 
   if (!response.ok) {

@@ -21,18 +21,12 @@ const AIAssistantSection = () => {
       fileSize: number;
     }> = [];
 
-    let webhookFiles: Array<{
-      fileUrl?: string;
-      fileData?: string;
-      fileType: string;
-      fileName: string;
-      fileSize: number;
-    }> = [];
+    let originalFiles: File[] = [];
 
     if (files && files.length > 0) {
-      const result = await processFiles(files);
+      const result = processFiles(files);
       processedFiles = result.processedFiles;
-      webhookFiles = result.webhookFiles;
+      originalFiles = result.originalFiles;
     }
 
     // Add user message to history
@@ -47,7 +41,8 @@ const AIAssistantSection = () => {
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
-      const result = await sendWebhookMessage(message, user, webhookFiles);
+      // Send original files as binary data to webhook
+      const result = await sendWebhookMessage(message, user, originalFiles);
       
       // Add AI response to history
       const aiMessage: ChatMessage = {
