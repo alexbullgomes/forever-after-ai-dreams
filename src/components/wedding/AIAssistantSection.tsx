@@ -1,60 +1,19 @@
+
 import { useState } from "react";
-import { Heart, Play, Pause } from "lucide-react";
+import { Heart } from "lucide-react";
 import { AIChatInput } from "@/components/ui/ai-chat-input";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface ChatMessage {
-  id: string;
-  message: string;
-  timestamp: string;
-  isUser: boolean;
-  response?: string;
-  files?: Array<{
-    fileUrl: string;
-    fileType: string;
-    fileName: string;
-    fileSize: number;
-  }>;
-}
-
-interface WebhookPayload {
-  message: string;
-  timestamp: string;
-  userId: string;
-  userEmail: string;
-  userName: string;
-  source: string;
-  files?: Array<{
-    fileUrl?: string;
-    fileData?: string; // Base64 encoded file data
-    fileType: string;
-    fileName: string;
-    fileSize: number;
-  }>;
-}
+import { ChatHistory } from "./components/ChatHistory";
+import { ChatMessage } from "./components/ChatMessage";
+import { processFiles } from "./utils/fileUtils";
+import { sendWebhookMessage } from "./utils/webhookService";
 
 const AIAssistantSection = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Helper function to convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Remove the data URL prefix (e.g., "data:audio/webm;base64,")
-        const base64Data = result.split(',')[1];
-        resolve(base64Data);
-      };
-      reader.onerror = error => reject(error);
-    });
-  };
-
   const handleSendMessage = async (message: string, files?: File[]) => {
-    // Process files if any
     let processedFiles: Array<{
       fileUrl: string;
       fileType: string;
@@ -71,35 +30,9 @@ const AIAssistantSection = () => {
     }> = [];
 
     if (files && files.length > 0) {
-      // Create object URLs for immediate preview in chat
-      processedFiles = files.map((file) => ({
-        fileUrl: URL.createObjectURL(file),
-        fileType: file.type,
-        fileName: file.name,
-        fileSize: file.size
-      }));
-
-      // Convert files to base64 for webhook (for audio files) or use URL for others
-      webhookFiles = await Promise.all(files.map(async (file) => {
-        if (file.type.startsWith('audio/')) {
-          // Convert audio files to base64
-          const base64Data = await fileToBase64(file);
-          return {
-            fileData: base64Data,
-            fileType: file.type,
-            fileName: file.name,
-            fileSize: file.size
-          };
-        } else {
-          // For non-audio files, use the blob URL
-          return {
-            fileUrl: URL.createObjectURL(file),
-            fileType: file.type,
-            fileName: file.name,
-            fileSize: file.size
-          };
-        }
-      }));
+      const result = await processFiles(files);
+      processedFiles = result.processedFiles;
+      webhookFiles = result.webhookFiles;
     }
 
     // Add user message to history
@@ -114,43 +47,17 @@ const AIAssistantSection = () => {
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
-      const webhookPayload: WebhookPayload = {
-        message: message,
-        timestamp: new Date().toISOString(),
-        userId: user?.id || "",
-        userEmail: user?.email || "",
-        userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
-        source: "Dream Weddings AI Assistant"
-      };
-
-      // Add files to payload if present
-      if (webhookFiles.length > 0) {
-        webhookPayload.files = webhookFiles;
-      }
-
-      console.log('Sending AI Assistant webhook data:', webhookPayload);
-
-      const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookPayload),
-      });
+      const result = await sendWebhookMessage(message, user, webhookFiles);
       
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Add AI response to history
-        const aiMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          message: result.output || result.message || "Thank you for your message!",
-          timestamp: new Date().toISOString(),
-          isUser: false,
-        };
-        
-        setChatHistory(prev => [...prev, aiMessage]);
-      }
+      // Add AI response to history
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        message: result.output || result.message || "Thank you for your message!",
+        timestamp: new Date().toISOString(),
+        isUser: false,
+      };
+      
+      setChatHistory(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       
@@ -209,105 +116,11 @@ const AIAssistantSection = () => {
         </div>
       </div>
       
-      {/* Chat History */}
-      {chatHistory.length > 0 && (
-        <div className="max-w-4xl mx-auto mb-6">
-          <div className="bg-gray-50 rounded-xl p-4 max-h-80 overflow-y-auto space-y-4">
-            {chatHistory.map((chat) => (
-              <div
-                key={chat.id}
-                className={`flex ${chat.isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    chat.isUser
-                      ? 'bg-rose-500 text-white'
-                      : 'bg-white border border-gray-200 text-gray-800'
-                  }`}
-                >
-                  <p className="text-sm">{chat.message}</p>
-                  
-                  {/* Display files if present */}
-                  {chat.files && chat.files.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {chat.files.map((file, index) => {
-                        const fileId = `${chat.id}-file-${index}`;
-                        
-                        if (file.fileType.startsWith('image/')) {
-                          return (
-                            <div key={index} className="mt-2">
-                              <img 
-                                src={file.fileUrl} 
-                                alt={file.fileName}
-                                className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                style={{ maxHeight: '200px' }}
-                                onClick={() => window.open(file.fileUrl, '_blank')}
-                              />
-                              <p className={`text-xs mt-1 ${
-                                chat.isUser ? 'text-rose-100' : 'text-gray-500'
-                              }`}>
-                                {file.fileName}
-                              </p>
-                            </div>
-                          );
-                        } else if (file.fileType.startsWith('audio/')) {
-                          return (
-                            <div key={index} className={`flex items-center gap-2 p-2 rounded ${
-                              chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
-                            }`}>
-                              <button
-                                onClick={() => handleAudioPlay(file.fileUrl, fileId)}
-                                className={`p-1 rounded-full hover:bg-opacity-80 transition ${
-                                  chat.isUser ? 'hover:bg-rose-700' : 'hover:bg-gray-200'
-                                }`}
-                              >
-                                {playingAudio === fileId ? (
-                                  <Pause size={16} className={chat.isUser ? 'text-white' : 'text-gray-700'} />
-                                ) : (
-                                  <Play size={16} className={chat.isUser ? 'text-white' : 'text-gray-700'} />
-                                )}
-                              </button>
-                              <div className="flex-1">
-                                <p className={`text-xs ${
-                                  chat.isUser ? 'text-rose-100' : 'text-gray-600'
-                                }`}>
-                                  {file.fileName}
-                                </p>
-                                <audio 
-                                  id={fileId}
-                                  src={file.fileUrl}
-                                  className="hidden"
-                                />
-                              </div>
-                            </div>
-                          );
-                        } else {
-                          return (
-                            <div key={index} className={`text-xs p-2 rounded ${
-                              chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
-                            }`}>
-                              <div className="flex items-center gap-2">
-                                <span>📎</span>
-                                <span className="truncate">{file.fileName}</span>
-                              </div>
-                            </div>
-                          );
-                        }
-                      })}
-                    </div>
-                  )}
-                  
-                  <p className={`text-xs mt-1 ${
-                    chat.isUser ? 'text-rose-100' : 'text-gray-500'
-                  }`}>
-                    {new Date(chat.timestamp).toLocaleTimeString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <ChatHistory 
+        chatHistory={chatHistory}
+        playingAudio={playingAudio}
+        onAudioPlay={handleAudioPlay}
+      />
       
       {/* AI Chat Input */}
       <div className="max-w-4xl mx-auto">
