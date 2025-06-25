@@ -1,4 +1,5 @@
 import { User } from "@supabase/supabase-js";
+import { formatInTimeZone } from 'date-fns-tz';
 
 export interface WebhookPayload {
   message: string;
@@ -32,6 +33,12 @@ const determineMessageType = (files?: File[]): "text" | "audio" | "image" => {
   return "image";
 };
 
+const getPacificTimestamp = (): string => {
+  const now = new Date();
+  // Convert to Pacific Time (Los Angeles timezone)
+  return formatInTimeZone(now, 'America/Los_Angeles', "yyyy-MM-dd'T'HH:mm:ssxxx");
+};
+
 export const sendWebhookMessage = async (
   message: string,
   user: User | null,
@@ -39,12 +46,13 @@ export const sendWebhookMessage = async (
 ): Promise<any> => {
   const webhookUrl = 'https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1';
   const messageType = determineMessageType(files);
+  const pacificTimestamp = getPacificTimestamp();
 
   // If no files, send as regular JSON
   if (!files || files.length === 0) {
     const webhookPayload: WebhookPayload = {
       message: message,
-      timestamp: new Date().toISOString(),
+      timestamp: pacificTimestamp,
       userId: user?.id || "",
       userEmail: user?.email || "",
       userName: user?.user_metadata?.full_name || user?.email || "Anonymous",
@@ -74,7 +82,7 @@ export const sendWebhookMessage = async (
   
   // Add text data
   formData.append('message', message);
-  formData.append('timestamp', new Date().toISOString());
+  formData.append('timestamp', pacificTimestamp);
   formData.append('userId', user?.id || "");
   formData.append('userEmail', user?.email || "");
   formData.append('userName', user?.user_metadata?.full_name || user?.email || "Anonymous");
@@ -90,6 +98,7 @@ export const sendWebhookMessage = async (
 
   console.log('Sending AI Assistant webhook data (FormData with files):', {
     message,
+    timestamp: pacificTimestamp,
     type: messageType,
     fileCount: files.length,
     files: files.map(f => ({ name: f.name, type: f.type, size: f.size }))
