@@ -5,6 +5,7 @@ import Portfolio from "@/components/Portfolio";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import AuthModal from "@/components/AuthModal";
+import Navigation from "@/components/Navigation";
 import { useState } from "react";
 
 const Index = () => {
@@ -12,6 +13,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Navigation />
       <Hero onBookingClick={() => setIsAuthModalOpen(true)} />
       <Services onBookingClick={() => setIsAuthModalOpen(true)} />
       <Portfolio />
