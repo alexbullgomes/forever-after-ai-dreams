@@ -35,9 +35,9 @@ const Planner = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Wedding Planner Assistant</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Personalized Planner Assistant</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Let our AI assistant help you plan every detail of your perfect wedding day.
+            Let our smart assistant help you find the perfect photo or video package for your special moment—whether it's a wedding, family milestone, or business event.
           </p>
         </div>
 

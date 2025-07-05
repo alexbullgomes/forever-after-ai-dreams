@@ -92,18 +92,19 @@ const AIAssistantSection = () => {
           <Heart className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Assistant Wedding Planner
+          Assistant Planner
         </h2>
         <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-8">
-          Let us help you plan your dream day. Tell us about yourself and share any ideas you have in mind. Feel free to 
-          send voice notes or files to help us better understand your needs. Together, we'll find the perfect wedding 
-          package for you.
+          Tell us what you need! Share your story, send photos or voice notes, and we'll help you discover the best options 
+          tailored to your vision and budget. Whether you're planning a big celebration or a personal shoot, our assistant 
+          is here to guide you—plus, you might even unlock exclusive discounts and bonuses 😉
         </p>
         
         <div className="mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Talk to me!</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Talk to Me!</h3>
           <span className="text-gray-600 italic">
-            I've got answers, plans, good vibes, and maybe a hidden offer, ask me :)
+            I'm here to help you plan, create, and capture unforgettable memories.<br />
+            🎤 Send a voice message 📸 Upload an image or idea 💬 Ask me anything—I'm ready! 📱Book a free consultation.
           </span>
         </div>
       </div>
