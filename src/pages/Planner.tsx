@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
-import InteractiveBentoGallery from "@/components/ui/interactive-bento-gallery";
+import InteractiveBentoGallery from "@/components/ui/gallery/interactive-bento-gallery";
 
 const GallerySection = () => {
   const mediaItems = [
