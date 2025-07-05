@@ -48,8 +48,8 @@ const WeddingPackages = () => {
         <div id="wedding-gallery" className="my-16">
           <InteractiveBentoGallery 
             mediaItems={weddingGalleryItems}
-            title="Our Wedding Gallery"
-            description="Explore our collection of beautiful wedding moments and memories"
+            title="Everafter Gallery"
+            description="Explore our collection of beautiful wedding, family milestone, or business event moments and memories."
           />
         </div>
 
