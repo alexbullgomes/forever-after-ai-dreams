@@ -18,10 +18,10 @@ const GallerySection = () => {
     },
     {
       id: 2,
-      type: "image",
+      type: "video",
       title: "Dream Reception",
       desc: "Elegant celebration memories",
-      url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3",
+      url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm",
       span: "md:col-span-2 md:row-span-2 col-span-1 sm:col-span-2 sm:row-span-2",
     },
     {
@@ -55,6 +55,14 @@ const GallerySection = () => {
       desc: "Dancing and joyful moments",
       url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a",
       span: "md:col-span-2 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    },
+    {
+      id: 7,
+      type: "image",
+      title: "Intimate Moments",
+      desc: "Quiet, precious moments together",
+      url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b",
+      span: "md:col-span-1 md:row-span-1 sm:col-span-1 sm:row-span-1",
     },
   ];
 

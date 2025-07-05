@@ -14,7 +14,7 @@ interface MediaItemType {
     span: string;
 }
 // MediaItem component renders either a video or image based on item.type
-const MediaItem = ({ item, className, onClick }: { item: MediaItemType, className?: string, onClick?: () => void }) => {
+const MediaItem = ({ item, className, onClick }: { item: MediaItemType, className?: string, onClick?: (e?: any) => void }) => {
     const videoRef = useRef<HTMLVideoElement>(null); // Reference for video element
     const [isInView, setIsInView] = useState(false); // To track if video is in the viewport
     const [isBuffering, setIsBuffering] = useState(true);  // To track if video is buffering
@@ -107,7 +107,7 @@ const MediaItem = ({ item, className, onClick }: { item: MediaItemType, classNam
                         willChange: 'transform',
                     }}
                 >
-                    <source src={item.url} type="video/mp4" />
+                    <source src={item.url} type="video/webm" />
                 </video>
                 {isBuffering && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/10">
@@ -147,6 +147,15 @@ const GalleryModal = ({ selectedItem, isOpen, onClose, setSelectedItem, mediaIte
 
     return (
         <>
+            {/* Backdrop */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 z-10"
+                onClick={onClose}
+            />
+            
             {/* Main Modal */}
             <motion.div
                 initial={{ scale: 0.98 }}
@@ -158,8 +167,8 @@ const GalleryModal = ({ selectedItem, isOpen, onClose, setSelectedItem, mediaIte
                     damping: 30
                 }}
                 className="fixed inset-0 w-full min-h-screen sm:h-[90vh] md:h-[600px] backdrop-blur-lg 
-                          rounded-none sm:rounded-lg md:rounded-xl overflow-hidden z-10"
-
+                          rounded-none sm:rounded-lg md:rounded-xl overflow-hidden z-20"
+                onClick={(e) => e.stopPropagation()}
             >
                 {/* Main Content */}
                 <div className="h-full flex flex-col">
@@ -185,9 +194,9 @@ const GalleryModal = ({ selectedItem, isOpen, onClose, setSelectedItem, mediaIte
                                     scale: 0.97,
                                     transition: { duration: 0.15 }
                                 }}
-                                onClick={onClose}
+                                onClick={(e) => e.stopPropagation()}
                             >
-                                <MediaItem item={selectedItem} className="w-full h-full object-contain bg-gray-900/20" onClick={onClose} />
+                                <MediaItem item={selectedItem} className="w-full h-full object-contain bg-gray-900/20" />
                                 <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 md:p-4 
                                               bg-gradient-to-t from-black/50 to-transparent">
                                     <h3 className="text-white text-base sm:text-lg md:text-xl font-semibold">
