@@ -62,7 +62,7 @@ const GallerySection = () => {
       title: "Intimate Moments",
       desc: "Quiet, precious moments together",
       url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b",
-      span: "md:col-span-1 md:row-span-1 sm:col-span-1 sm:row-span-1",
+      span: "md:col-span-2 md:row-span-1 sm:col-span-2 sm:row-span-1",
     },
   ];
 
