@@ -56,6 +56,20 @@ const PhotoVideoServices = () => {
         "Print release rights"
       ],
       popular: true
+    },
+    {
+      name: "Milestone Photography",
+      price: "$350",
+      description: "Celebrate special moments and achievements together.",
+      features: [
+        "1 hour session",
+        "Indoor or outdoor location",
+        "30+ edited high-resolution images",
+        "Perfect for graduations, anniversaries",
+        "Online gallery access",
+        "Print release rights"
+      ],
+      popular: false
     }
   ];
 
@@ -86,6 +100,19 @@ const PhotoVideoServices = () => {
         "Brand consultation included"
       ],
       popular: false
+    },
+    {
+      name: "Commercial Event Coverage",
+      price: "$850",
+      description: "Professional documentation of your business events.",
+      features: [
+        "Full event coverage",
+        "Candid and posed shots",
+        "75+ edited high-resolution images",
+        "Same-day preview selection",
+        "Marketing usage rights"
+      ],
+      popular: true
     }
   ];
 
@@ -101,6 +128,32 @@ const PhotoVideoServices = () => {
         "Natural, candid moments",
         "Music and professional editing",
         "4K resolution"
+      ],
+      popular: false
+    },
+    {
+      name: "Milestone Celebration Film",
+      price: "$650",
+      description: "Document special family celebrations and milestones.",
+      features: [
+        "3-4 hours of filming",
+        "2-3 minute highlight reel",
+        "Perfect for birthdays, graduations",
+        "Professional editing with music",
+        "HD resolution delivery"
+      ],
+      popular: true
+    },
+    {
+      name: "Legacy Story Video",
+      price: "$1,200",
+      description: "Create a timeless family story for future generations.",
+      features: [
+        "Full day filming",
+        "5-8 minute cinematic film",
+        "Interviews with family members",
+        "Multiple location shoots",
+        "4K resolution with premium editing"
       ],
       popular: false
     }
@@ -131,7 +184,7 @@ const PhotoVideoServices = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
             {familyPhotographyPackages.map((pkg, index) => (
               <PackageCard
                 key={index}
@@ -157,7 +210,7 @@ const PhotoVideoServices = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
             {businessPhotographyPackages.map((pkg, index) => (
               <PackageCard
                 key={index}
