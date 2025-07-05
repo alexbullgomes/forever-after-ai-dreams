@@ -173,12 +173,12 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     collapsed: {
       height: selectedFiles.length > 0 || isActive ? 128 + (selectedFiles.length * 30) : 68,
       boxShadow: "0 2px 8px 0 rgba(0,0,0,0.08)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
+      transition: { type: "spring" as const, stiffness: 120, damping: 18 },
     },
     expanded: {
       height: 128 + (selectedFiles.length * 30),
       boxShadow: "0 8px 32px 0 rgba(0,0,0,0.16)",
-      transition: { type: "spring", stiffness: 120, damping: 18 },
+      transition: { type: "spring" as const, stiffness: 120, damping: 18 },
     },
   };
 
@@ -201,7 +201,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
       transition: {
         opacity: { duration: 0.25 },
         filter: { duration: 0.4 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
+        y: { type: "spring" as const, stiffness: 80, damping: 20 },
       },
     },
     exit: {
@@ -211,7 +211,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
       transition: {
         opacity: { duration: 0.2 },
         filter: { duration: 0.3 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
+        y: { type: "spring" as const, stiffness: 80, damping: 20 },
       },
     },
   };

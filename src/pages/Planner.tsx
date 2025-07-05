@@ -4,6 +4,68 @@ import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
+import InteractiveBentoGallery from "@/components/ui/interactive-bento-gallery";
+
+const GallerySection = () => {
+  const mediaItems = [
+    {
+      id: 1,
+      type: "image",
+      title: "Romantic Ceremony",
+      desc: "Capturing precious wedding moments",
+      url: "https://images.unsplash.com/photo-1519741497674-611481863552",
+      span: "md:col-span-1 md:row-span-3 sm:col-span-1 sm:row-span-2",
+    },
+    {
+      id: 2,
+      type: "image",
+      title: "Dream Reception",
+      desc: "Elegant celebration memories",
+      url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3",
+      span: "md:col-span-2 md:row-span-2 col-span-1 sm:col-span-2 sm:row-span-2",
+    },
+    {
+      id: 3,
+      type: "image",
+      title: "Portrait Magic",
+      desc: "Beautiful couple portraits",
+      url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc",
+      span: "md:col-span-1 md:row-span-3 sm:col-span-2 sm:row-span-2",
+    },
+    {
+      id: 4,
+      type: "image",
+      title: "Golden Hour",
+      desc: "Romantic sunset photography",
+      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92",
+      span: "md:col-span-2 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    },
+    {
+      id: 5,
+      type: "image",
+      title: "Wedding Details",
+      desc: "Every detail perfectly captured",
+      url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf",
+      span: "md:col-span-1 md:row-span-3 sm:col-span-1 sm:row-span-2",
+    },
+    {
+      id: 6,
+      type: "image",
+      title: "Celebration Joy",
+      desc: "Dancing and joyful moments",
+      url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a",
+      span: "md:col-span-2 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    },
+  ];
+
+  return (
+    <InteractiveBentoGallery
+      mediaItems={mediaItems}
+      title="Our Wedding Gallery"
+      description="Explore our collection of beautiful wedding moments and memories"
+    />
+  );
+};
 
 const Planner = () => {
   const { user, loading } = useAuth();
@@ -47,6 +109,9 @@ const Planner = () => {
         
         {/* Explore Services Section */}
         <ExploreServicesSection />
+        
+        {/* Gallery Section */}
+        <GallerySection />
       </div>
     </div>
   );
