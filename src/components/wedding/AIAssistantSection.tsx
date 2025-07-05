@@ -95,16 +95,14 @@ const AIAssistantSection = () => {
           Assistant Planner
         </h2>
         <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-8">
-          Tell us what you need! Share your story, send photos or voice notes, and we'll help you discover the best options 
-          tailored to your vision and budget. Whether you're planning a big celebration or a personal shoot, our assistant 
-          is here to guide you—plus, you might even unlock exclusive discounts and bonuses 😉
+          Need photo or video services for your family, business, or personal moments?
+          Send a quick message, voice note, or image—we'll help you find the right package for your goals and budget.
         </p>
         
         <div className="mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Talk to Me!</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">🎤 Voice note   📸 Upload image   💬 Ask anything</h3>
           <span className="text-gray-600 italic">
-            I'm here to help you plan, create, and capture unforgettable memories.<br />
-            🎤 Send a voice message 📸 Upload an image or idea 💬 Ask me anything—I'm ready! 📱Book a free consultation.
+            Get personalized options, plus exclusive deals or a free consultation.
           </span>
         </div>
       </div>
