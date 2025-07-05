@@ -4,66 +4,45 @@ import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
-import InteractiveBentoGallery from "@/components/ui/interactive-bento-gallery";
 
 const GallerySection = () => {
-  const mediaItems = [
-    {
-      id: 1,
-      type: "image",
-      title: "Romantic Ceremony",
-      desc: "Capturing precious wedding moments",
-      url: "https://images.unsplash.com/photo-1519741497674-611481863552",
-      span: "md:col-span-1 md:row-span-3 sm:col-span-1 sm:row-span-2",
-    },
-    {
-      id: 2,
-      type: "image",
-      title: "Dream Reception",
-      desc: "Elegant celebration memories",
-      url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3",
-      span: "md:col-span-2 md:row-span-2 col-span-1 sm:col-span-2 sm:row-span-2",
-    },
-    {
-      id: 3,
-      type: "image",
-      title: "Portrait Magic",
-      desc: "Beautiful couple portraits",
-      url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc",
-      span: "md:col-span-1 md:row-span-3 sm:col-span-2 sm:row-span-2",
-    },
-    {
-      id: 4,
-      type: "image",
-      title: "Golden Hour",
-      desc: "Romantic sunset photography",
-      url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92",
-      span: "md:col-span-2 md:row-span-2 sm:col-span-1 sm:row-span-2",
-    },
-    {
-      id: 5,
-      type: "image",
-      title: "Wedding Details",
-      desc: "Every detail perfectly captured",
-      url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf",
-      span: "md:col-span-1 md:row-span-3 sm:col-span-1 sm:row-span-2",
-    },
-    {
-      id: 6,
-      type: "image",
-      title: "Celebration Joy",
-      desc: "Dancing and joyful moments",
-      url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a",
-      span: "md:col-span-2 md:row-span-2 sm:col-span-1 sm:row-span-2",
-    },
-  ];
-
   return (
-    <InteractiveBentoGallery
-      mediaItems={mediaItems}
-      title="Our Wedding Gallery"
-      description="Explore our collection of beautiful wedding moments and memories"
-    />
+    <section className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl mx-4 mb-16">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+
+      {/* Content Overlay */}
+      <div className="relative z-10 h-full flex items-center justify-center text-center px-6">
+        <div className="max-w-2xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Our Wedding Gallery
+          </h2>
+          <p className="text-lg md:text-xl text-white/90 mb-6">
+            Explore our collection of beautiful wedding moments and memories
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105">
+              View Full Gallery
+            </button>
+            <button className="border border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 px-6 py-3 rounded-full font-semibold transition-all duration-300">
+              Watch Videos
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 

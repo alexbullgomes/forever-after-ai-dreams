@@ -148,6 +148,15 @@ const GalleryModal = ({ selectedItem, isOpen, onClose, setSelectedItem, mediaIte
     return (
         <>
             {/* Main Modal */}
+            {/* Backdrop - clicking outside closes modal */}
+            <motion.div
+                className="fixed inset-0 bg-black/50 z-40"
+                onClick={onClose}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            />
+            
             <motion.div
                 initial={{ scale: 0.98 }}
                 animate={{ scale: 1 }}
@@ -158,8 +167,8 @@ const GalleryModal = ({ selectedItem, isOpen, onClose, setSelectedItem, mediaIte
                     damping: 30
                 }}
                 className="fixed inset-0 w-full min-h-screen sm:h-[90vh] md:h-[600px] backdrop-blur-lg 
-                          rounded-none sm:rounded-lg md:rounded-xl overflow-hidden z-10"
-
+                          rounded-none sm:rounded-lg md:rounded-xl overflow-hidden z-50"
+                onClick={(e) => e.stopPropagation()}
             >
                 {/* Main Content */}
                 <div className="h-full flex flex-col">
