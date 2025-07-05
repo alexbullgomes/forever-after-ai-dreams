@@ -69,8 +69,8 @@ const GallerySection = () => {
   return (
     <InteractiveBentoGallery
       mediaItems={mediaItems}
-      title="Our Wedding Gallery"
-      description="Explore our collection of beautiful wedding moments and memories"
+      title="EverAfter Gallery"
+      description="Explore our collection of beautiful wedding, family milestone, or business even moments and memories"
     />
   );
 };
