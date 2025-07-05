@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
 import WeddingQuiz from "./pages/WeddingQuiz";
+import Planner from "./pages/Planner";
+import PhotoVideoServices from "./pages/PhotoVideoServices";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/planner" element={<Planner />} />
+            <Route path="/photo-video-services" element={<PhotoVideoServices />} />
             <Route path="/wedding-packages" element={<WeddingPackages />} />
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

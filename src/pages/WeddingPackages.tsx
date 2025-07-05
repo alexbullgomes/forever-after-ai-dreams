@@ -2,10 +2,8 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Camera, Video } from "lucide-react";
-import { PageHeader } from "@/components/wedding/PageHeader";
-import { PackagesNavigation } from "@/components/wedding/PackagesNavigation";
+import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageSection } from "@/components/wedding/PackageSection";
-import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { CTASection } from "@/components/wedding/CTASection";
 
 const WeddingPackages = () => {
@@ -22,7 +20,7 @@ const WeddingPackages = () => {
       <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
           <Heart className="w-12 h-12 text-rose-500 animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading your exclusive packages...</p>
+          <p className="text-gray-600">Loading your wedding packages...</p>
         </div>
       </div>
     );
@@ -179,24 +177,18 @@ const WeddingPackages = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
-      {/* Header */}
-      <PageHeader />
-
-      {/* Navigation */}
-      <PackagesNavigation />
-
-      {/* Content */}
+      <DashboardNavigation />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Welcome</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Wedding Packages</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Thank you for joining our family. Below are our carefully curated photography 
-            and videography collections — each designed to capture your love story with beauty and intention.
+            Carefully curated wedding photography and videography collections — each designed to capture your love story with beauty and intention.
           </p>
         </div>
 
-        {/* Combined Photo & Video Packages - FIRST */}
+        {/* Combined Photo & Video Packages */}
         <div id="combined-packages">
           <PackageSection 
             title="Your Dream Wedding Photo & Video Packages" 
@@ -204,11 +196,6 @@ const WeddingPackages = () => {
             packages={combinedPackages} 
             icon={Heart} 
           />
-        </div>
-
-        {/* AI Assistant Wedding Planner Section - MOVED HERE */}
-        <div id="ai-assistant">
-          <AIAssistantSection />
         </div>
 
         {/* Photography Packages */}
