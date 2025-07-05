@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { MediaItemType } from './types';
@@ -20,6 +20,35 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
     mediaItems 
 }) => {
     const [dockPosition, setDockPosition] = useState({ x: 0, y: 0 });
+
+    // Handle keyboard events (ESC to close)
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+            if (event.key === 'ArrowLeft') {
+                const currentIndex = mediaItems.findIndex(item => item.id === selectedItem.id);
+                const prevIndex = currentIndex > 0 ? currentIndex - 1 : mediaItems.length - 1;
+                setSelectedItem(mediaItems[prevIndex]);
+            }
+            if (event.key === 'ArrowRight') {
+                const currentIndex = mediaItems.findIndex(item => item.id === selectedItem.id);
+                const nextIndex = currentIndex < mediaItems.length - 1 ? currentIndex + 1 : 0;
+                setSelectedItem(mediaItems[nextIndex]);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen, onClose, selectedItem, mediaItems, setSelectedItem]);
 
     if (!isOpen) return null;
 
@@ -89,17 +118,36 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
                     </div>
                 </div>
 
-                {/* Close Button */}
+                {/* Enhanced Close Button */}
                 <motion.button
-                    className="absolute top-2 sm:top-2.5 md:top-3 right-2 sm:right-2.5 md:right-3 
-                              p-2 rounded-full bg-gray-200/80 text-gray-700 hover:bg-gray-300/80 
-                              text-xs sm:text-sm backdrop-blur-sm "
+                    className="absolute top-3 right-3 z-30
+                              w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 
+                              text-white backdrop-blur-sm shadow-lg
+                              flex items-center justify-center
+                              transition-all duration-200"
                     onClick={onClose}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    aria-label="Close gallery"
                 >
-                    <X className='w-3 h-3' />
+                    <X className='w-5 h-5' />
                 </motion.button>
+
+                {/* Instruction overlay for mobile */}
+                <motion.div
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0 }}
+                    transition={{ delay: 2, duration: 1 }}
+                    className="absolute top-16 left-1/2 -translate-x-1/2 
+                              bg-black/70 text-white text-sm px-3 py-1 rounded-full
+                              backdrop-blur-sm pointer-events-none
+                              block sm:hidden"
+                >
+                    Tap outside to close • Use arrows to navigate
+                </motion.div>
             </motion.div>
 
             {/* Draggable Dock */}
