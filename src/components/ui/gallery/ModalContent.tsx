@@ -6,9 +6,11 @@ import LikeButton from './LikeButton';
 
 interface ModalContentProps {
   selectedItem: MediaItemType;
+  isLiked: boolean;
+  onToggleLike: () => void;
 }
 
-const ModalContent: React.FC<ModalContentProps> = ({ selectedItem }) => {
+const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike }) => {
   return (
     <div className="h-full flex flex-col pt-16 pb-24">
       <div className="flex-1 p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center gap-4">
@@ -48,7 +50,11 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem }) => {
           </motion.div>
         </AnimatePresence>
         
-        <LikeButton selectedItem={selectedItem} />
+        <LikeButton 
+          selectedItem={selectedItem} 
+          isLiked={isLiked}
+          onToggleLike={onToggleLike}
+        />
       </div>
     </div>
   );

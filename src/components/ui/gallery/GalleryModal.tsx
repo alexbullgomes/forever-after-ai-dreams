@@ -12,6 +12,8 @@ interface GalleryModalProps {
     onClose: () => void;
     setSelectedItem: (item: MediaItemType | null) => void;
     mediaItems: MediaItemType[];
+    likedItems: Set<number>;
+    onToggleLike: (itemId: number) => void;
 }
 
 const GalleryModal: React.FC<GalleryModalProps> = ({ 
@@ -19,7 +21,9 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
     isOpen, 
     onClose, 
     setSelectedItem, 
-    mediaItems 
+    mediaItems,
+    likedItems,
+    onToggleLike
 }) => {
 
     // Handle keyboard events (ESC to close)
@@ -80,7 +84,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 <ModalCloseButton onClose={onClose} />
-                <ModalContent selectedItem={selectedItem} />
+                <ModalContent 
+                    selectedItem={selectedItem} 
+                    isLiked={likedItems.has(selectedItem.id)}
+                    onToggleLike={() => onToggleLike(selectedItem.id)}
+                />
                 <MobileInstructions />
             </motion.div>
 

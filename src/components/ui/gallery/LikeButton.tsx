@@ -7,10 +7,11 @@ import { MediaItemType } from './types';
 
 interface LikeButtonProps {
   selectedItem: MediaItemType;
+  isLiked: boolean;
+  onToggleLike: () => void;
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem }) => {
-  const [isLiked, setIsLiked] = useState(false);
+const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggleLike }) => {
   const [isLiking, setIsLiking] = useState(false);
   const { user } = useAuth();
 
@@ -56,7 +57,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem }) => {
     setIsLiking(true);
     try {
       await sendLikeWebhook();
-      setIsLiked(!isLiked);
+      onToggleLike();
     } catch (error) {
       console.error('Error liking content:', error);
     } finally {

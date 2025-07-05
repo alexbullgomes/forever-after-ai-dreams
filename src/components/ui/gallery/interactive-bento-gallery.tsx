@@ -18,6 +18,19 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
     const [selectedItem, setSelectedItem] = useState<MediaItemType | null>(null);
     const [items, setItems] = useState(mediaItems);
     const [isDragging, setIsDragging] = useState(false);
+    const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
+
+    const toggleLikeItem = (itemId: number) => {
+        setLikedItems(prev => {
+            const newLikedItems = new Set(prev);
+            if (newLikedItems.has(itemId)) {
+                newLikedItems.delete(itemId);
+            } else {
+                newLikedItems.add(itemId);
+            }
+            return newLikedItems;
+        });
+    };
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -50,6 +63,8 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
                         onClose={() => setSelectedItem(null)}
                         setSelectedItem={setSelectedItem}
                         mediaItems={items}
+                        likedItems={likedItems}
+                        onToggleLike={toggleLikeItem}
                     />
                 ) : (
                     <motion.div
