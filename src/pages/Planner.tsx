@@ -71,6 +71,7 @@ const GallerySection = () => {
       mediaItems={mediaItems}
       title="EverAfter Gallery"
       description="Explore our collection of beautiful wedding, family milestone, or business even moments and memories"
+      pageSource="Planner"
     />
   );
 };

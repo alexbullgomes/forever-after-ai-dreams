@@ -50,6 +50,7 @@ const WeddingPackages = () => {
             mediaItems={weddingGalleryItems}
             title="Our Wedding Gallery"
             description="Explore our collection of beautiful wedding moments and memories"
+            pageSource="Wedding Packages"
           />
         </div>
 

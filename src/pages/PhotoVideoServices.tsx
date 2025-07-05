@@ -206,6 +206,7 @@ const PhotoVideoServices = () => {
             mediaItems={weddingGalleryItems}
             title="Our Portfolio Gallery"
             description="Explore our collection of stunning photography and videography work"
+            pageSource="Photo & Video"
           />
         </div>
 

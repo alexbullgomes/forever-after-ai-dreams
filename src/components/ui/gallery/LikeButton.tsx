@@ -9,9 +9,10 @@ interface LikeButtonProps {
   selectedItem: MediaItemType;
   isLiked: boolean;
   onToggleLike: () => void;
+  pageSource?: string;
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggleLike }) => {
+const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggleLike, pageSource }) => {
   const [isLiking, setIsLiking] = useState(false);
   const { user } = useAuth();
 
@@ -30,7 +31,8 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggle
       content_title: selectedItem.title,
       content_url: selectedItem.url,
       timestamp: new Date().toISOString(),
-      source: 'Dream Weddings Gallery'
+      source: 'Dream Weddings Gallery',
+      page_source: pageSource || 'Unknown'
     };
 
     try {

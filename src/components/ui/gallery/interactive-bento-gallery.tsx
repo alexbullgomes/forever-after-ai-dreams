@@ -8,16 +8,17 @@ interface InteractiveBentoGalleryProps {
     mediaItems: MediaItemType[];
     title: string;
     description: string;
+    pageSource?: string;
 }
 
 const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ 
     mediaItems, 
     title, 
-    description 
+    description,
+    pageSource 
 }) => {
     const [selectedItem, setSelectedItem] = useState<MediaItemType | null>(null);
     const [items, setItems] = useState(mediaItems);
-    const [isDragging, setIsDragging] = useState(false);
     const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
 
     const toggleLikeItem = (itemId: number) => {
@@ -65,6 +66,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
                         mediaItems={items}
                         likedItems={likedItems}
                         onToggleLike={toggleLikeItem}
+                        pageSource={pageSource}
                     />
                 ) : (
                     <motion.div
@@ -84,8 +86,8 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
                             <motion.div
                                 key={item.id}
                                 layoutId={`media-${item.id}`}
-                                className={`relative overflow-hidden rounded-xl cursor-move ${item.span}`}
-                                onClick={() => !isDragging && setSelectedItem(item)}
+                                className={`relative overflow-hidden rounded-xl cursor-pointer ${item.span}`}
+                                onClick={() => setSelectedItem(item)}
                                 variants={{
                                     hidden: { y: 50, scale: 0.9, opacity: 0 },
                                     visible: {
@@ -101,29 +103,11 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
                                     }
                                 }}
                                 whileHover={{ scale: 1.02 }}
-                                drag
-                                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                                dragElastic={1}
-                                onDragStart={() => setIsDragging(true)}
-                                onDragEnd={(e, info) => {
-                                    setIsDragging(false);
-                                    const moveDistance = info.offset.x + info.offset.y;
-                                    if (Math.abs(moveDistance) > 50) {
-                                        const newItems = [...items];
-                                        const draggedItem = newItems[index];
-                                        const targetIndex = moveDistance > 0 ?
-                                            Math.min(index + 1, items.length - 1) :
-                                            Math.max(index - 1, 0);
-                                        newItems.splice(index, 1);
-                                        newItems.splice(targetIndex, 0, draggedItem);
-                                        setItems(newItems);
-                                    }
-                                }}
                             >
                                 <MediaItem
                                     item={item}
                                     className="absolute inset-0 w-full h-full"
-                                    onClick={() => !isDragging && setSelectedItem(item)}
+                                    onClick={() => setSelectedItem(item)}
                                 />
                                 <motion.div
                                     className="absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4"
