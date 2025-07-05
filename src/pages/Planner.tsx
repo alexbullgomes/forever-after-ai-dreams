@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
+import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
 
 const Planner = () => {
   const { user, loading } = useAuth();
@@ -43,6 +44,9 @@ const Planner = () => {
 
         {/* AI Assistant Section */}
         <AIAssistantSection />
+        
+        {/* Explore Services Section */}
+        <ExploreServicesSection />
       </div>
     </div>
   );
