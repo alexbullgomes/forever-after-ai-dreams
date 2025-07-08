@@ -10,48 +10,54 @@ const Portfolio = () => {
     title: "Sarah & Michael's Napa Valley Wedding",
     location: "Napa Valley, CA",
     date: "Summer 2024",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1200&fit=crop",
-    type: "Wedding"
+    type: "Wedding",
+    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
+    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp"
   }, {
     id: 1,
     category: "video",
     title: "Corporate Brand Story",
     location: "San Francisco, CA",
     date: "Winter 2024",
-    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=1200&fit=crop",
-    type: "Photo & Video"
+    type: "Photo & Video",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
   }, {
     id: 5,
     category: "photo",
     title: "Emma & David's Romantic Ceremony",
     location: "Sonoma, CA",
     date: "Fall 2024",
-    image: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=1200&fit=crop",
-    type: "Wedding"
+    type: "Wedding",
+    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
+    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp"
   }, {
     id: 2,
     category: "video",
     title: "Family Milestone Celebration",
     location: "Los Angeles, CA",
     date: "Fall 2024",
-    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop",
-    type: "Photo & Video"
+    type: "Photo & Video",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
   }, {
     id: 6,
     category: "photo",
     title: "Jessica & Ryan's Garden Wedding",
     location: "Malibu, CA",
     date: "Spring 2024",
-    image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&h=1200&fit=crop",
-    type: "Wedding"
+    type: "Wedding",
+    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
+    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp"
   }, {
     id: 3,
     category: "video",
     title: "Business Achievement Portrait",
     location: "San Diego, CA",
     date: "Summer 2024",
-    image: "/lovable-uploads/2ee7f946-776a-4a8f-a249-03cd6995cb76.png",
-    type: "Photo & Video"
+    type: "Photo & Video",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
   }];
   const filteredItems = activeFilter === "all" ? portfolioItems : portfolioItems.filter(item => item.category === activeFilter);
   const filters = [{
@@ -92,7 +98,22 @@ const Portfolio = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredItems.map(item => <Card key={item.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white">
               <div className="relative overflow-hidden">
-                <img src={item.image} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" />
+                {item.type === "Wedding" && item.video ? (
+                  <video 
+                    className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline
+                    poster={item.image}
+                  >
+                    <source src={item.video} type="video/webm" />
+                    <source src={item.videoMp4} type="video/mp4" />
+                    <img src={item.image} alt={item.title} className="w-full h-80 object-cover" />
+                  </video>
+                ) : (
+                  <img src={item.image} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
                 {/* Play button for videos */}
