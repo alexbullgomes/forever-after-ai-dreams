@@ -32,7 +32,7 @@ const Hero = ({
             
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight mix-blend-exclusion">
               Everafter
-              <span className="block bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">Memories That Moves</span>
+              <span className="block bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">Memories That Lasts</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">California-based visual storytelling brand specializing in cinematic photography and videography for weddings, families, and businesses. </p>
