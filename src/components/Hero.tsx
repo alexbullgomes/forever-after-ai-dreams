@@ -33,23 +33,23 @@ const Hero = ({ onBookingClick }: HeroProps) => {
 
         {/* Content */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <div className="mb-6 flex justify-center">
-            <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-              <Heart className="w-5 h-5 text-rose-400" />
-              <span className="text-white text-sm font-medium">California's Premier Wedding Team</span>
+            <div className="mb-6 flex justify-center">
+              <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <Heart className="w-5 h-5 text-rose-400" />
+                <span className="text-white text-sm font-medium">California-Based Premium Visual Storytelling</span>
+              </div>
             </div>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight mix-blend-exclusion">
-            Your Love Story
-            <span className="block bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-              Beautifully Captured
-            </span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Award-winning wedding videography & photography that transforms your special day into cinematic memories that last forever.
-          </p>
+            
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight mix-blend-exclusion">
+              Everafter
+              <span className="block bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
+                Timeless Memories
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+              Premium visual storytelling brand offering photography and videography services tailored for families, businesses, and weddings. We blend emotional storytelling with cinematic visuals to transform meaningful moments into timeless memories.
+            </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
