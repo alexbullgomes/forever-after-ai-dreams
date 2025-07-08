@@ -13,22 +13,6 @@ const Portfolio = () => {
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1200&fit=crop",
     type: "Wedding"
   }, {
-    id: 5,
-    category: "photo",
-    title: "Emma & David's Romantic Ceremony",
-    location: "Sonoma, CA",
-    date: "Fall 2024",
-    image: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=1200&fit=crop",
-    type: "Wedding"
-  }, {
-    id: 6,
-    category: "photo",
-    title: "Jessica & Ryan's Garden Wedding",
-    location: "Malibu, CA",
-    date: "Spring 2024",
-    image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&h=1200&fit=crop",
-    type: "Wedding"
-  }, {
     id: 1,
     category: "video",
     title: "Corporate Brand Story",
@@ -37,6 +21,14 @@ const Portfolio = () => {
     image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=1200&fit=crop",
     type: "Photo & Video"
   }, {
+    id: 5,
+    category: "photo",
+    title: "Emma & David's Romantic Ceremony",
+    location: "Sonoma, CA",
+    date: "Fall 2024",
+    image: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=1200&fit=crop",
+    type: "Wedding"
+  }, {
     id: 2,
     category: "video",
     title: "Family Milestone Celebration",
@@ -44,6 +36,14 @@ const Portfolio = () => {
     date: "Fall 2024",
     image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop",
     type: "Photo & Video"
+  }, {
+    id: 6,
+    category: "photo",
+    title: "Jessica & Ryan's Garden Wedding",
+    location: "Malibu, CA",
+    date: "Spring 2024",
+    image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&h=1200&fit=crop",
+    type: "Wedding"
   }, {
     id: 3,
     category: "video",
