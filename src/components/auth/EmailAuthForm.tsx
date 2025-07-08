@@ -47,7 +47,7 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
 
         setTimeout(() => {
           onClose();
-          window.location.href = '/wedding-packages';
+          window.location.href = '/planner';
         }, 1000);
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -74,7 +74,7 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
 
         setTimeout(() => {
           onClose();
-          window.location.href = '/wedding-packages';
+          window.location.href = '/planner';
         }, 1000);
       }
     } catch (error: any) {
