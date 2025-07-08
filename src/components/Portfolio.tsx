@@ -36,10 +36,10 @@ const Portfolio = () => {
     id: 2,
     category: "video",
     title: "Family Milestone Celebration",
-    location: "Los Angeles, CA",
+    location: "Oceanside, CA",
     date: "Fall 2024",
     type: "Photo & Video",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Tavi.webp"
   }, {
     id: 6,
     category: "photo",
