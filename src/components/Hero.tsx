@@ -1,29 +1,19 @@
-
 import { Button } from "@/components/ui/button";
 import { Play, Heart, Camera } from "lucide-react";
 import { useState } from "react";
 import ConsultationForm from "./ConsultationForm";
-
 interface HeroProps {
   onBookingClick: () => void;
 }
-
-const Hero = ({ onBookingClick }: HeroProps) => {
+const Hero = ({
+  onBookingClick
+}: HeroProps) => {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
-
-  return (
-    <>
+  return <>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homepicture.webp"
-            className="absolute inset-0 w-full h-full object-cover"
-          >
+          <video autoPlay muted loop playsInline poster="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homepicture.webp" className="absolute inset-0 w-full h-full object-cover">
             <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm" type="video/webm" />
             <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homeeverafte.mp4" type="video/mp4" />
             Your browser does not support the video tag.
@@ -47,26 +37,15 @@ const Hero = ({ onBookingClick }: HeroProps) => {
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Premium visual storytelling brand offering photography and videography services tailored for families, businesses, and weddings. We blend emotional storytelling with cinematic visuals to transform meaningful moments into timeless memories.
-            </p>
+            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">California-based visual storytelling brand specializing in cinematic photography and videography for weddings, families, and businesses. </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              onClick={onBookingClick}
-              size="lg" 
-              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
-            >
+            <Button onClick={onBookingClick} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
               <Camera className="w-5 h-5 mr-2" />
               View Packages & Book
             </Button>
             
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300"
-              onClick={() => setIsConsultationFormOpen(true)}
-            >
+            <Button variant="outline" size="lg" className="border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300" onClick={() => setIsConsultationFormOpen(true)}>
               Book Consultation
             </Button>
           </div>
@@ -93,12 +72,7 @@ const Hero = ({ onBookingClick }: HeroProps) => {
         <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
       </section>
 
-      <ConsultationForm 
-        isOpen={isConsultationFormOpen}
-        onClose={() => setIsConsultationFormOpen(false)}
-      />
-    </>
-  );
+      <ConsultationForm isOpen={isConsultationFormOpen} onClose={() => setIsConsultationFormOpen(false)} />
+    </>;
 };
-
 export default Hero;
