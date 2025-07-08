@@ -1,30 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Video, Camera, Sparkles, Heart, Clock, Award } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 interface ServicesProps {
   onBookingClick: () => void;
 }
 const Services = ({
   onBookingClick
 }: ServicesProps) => {
+  const navigate = useNavigate();
+  
   const services = [{
-    icon: Video,
-    title: "Cinematic Wedding Films",
-    description: "Epic storytelling through cinematic videography with drone footage, multiple angles, and professional editing.",
-    features: ["4K Resolution", "Drone Footage", "Same-Day Highlights", "Full Feature Film"],
-    gradient: "from-rose-500 to-pink-500"
+    icon: Heart,
+    title: "Personalized Planner",
+    description: "Smart assistant to help you find the perfect photo or video package for your special moment.",
+    features: ["AI-Powered Recommendations", "Custom Package Planning", "Event Type Matching", "Budget Optimization"],
+    gradient: "from-rose-500 to-pink-500",
+    route: "/planner"
   }, {
     icon: Camera,
-    title: "Wedding Photography",
-    description: "Stunning photography that captures every emotion, detail, and candid moment of your special day.",
-    features: ["Unlimited Photos", "Professional Editing", "Online Gallery", "Print Rights"],
-    gradient: "from-purple-500 to-pink-500"
+    title: "Photo & Video Services",
+    description: "Professional photography and videography for families, businesses, and special occasions beyond weddings.",
+    features: ["Family Portraits", "Business Photography", "Corporate Events", "Milestone Celebrations"],
+    gradient: "from-purple-500 to-pink-500",
+    route: "/photo-video-services"
   }, {
     icon: Sparkles,
-    title: "Complete Packages",
-    description: "Full-service wedding documentation combining both videography and photography for complete coverage.",
-    features: ["Photo + Video", "Engagement Session", "Bridal Prep", "Reception Coverage"],
-    gradient: "from-pink-500 to-rose-500"
+    title: "Wedding Packages",
+    description: "Complete wedding documentation combining both videography and photography for your special day.",
+    features: ["Photo + Video Packages", "Wedding Photography", "Wedding Videography", "Premium Collections"],
+    gradient: "from-pink-500 to-rose-500",
+    route: "/wedding-packages"
   }];
   return <section id="services" className="py-20 bg-gradient-to-br from-gray-50 to-rose-50">
       <div className="container mx-auto px-4">
@@ -61,7 +67,7 @@ const Services = ({
                     </li>)}
                 </ul>
 
-                <Button onClick={onBookingClick} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
+                <Button onClick={() => navigate(service.route)} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
                   Details & Booking
                 </Button>
               </CardContent>
