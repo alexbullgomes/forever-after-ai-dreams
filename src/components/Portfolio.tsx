@@ -43,13 +43,13 @@ const Portfolio = () => {
   }, {
     id: 6,
     category: "photo",
-    title: "Jessica & Ryan's Garden Wedding",
+    title: "Giovanna & Claudio Wedding",
     location: "Malibu, CA",
     date: "Spring 2024",
     type: "Wedding",
-    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
-    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp"
+    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//giovannaeclaudioweb.webm",
+    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//GIovanaandclaudio.mp4",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//giovannaeclaudio.webp"
   }, {
     id: 3,
     category: "video",
