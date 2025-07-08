@@ -21,9 +21,11 @@ const Hero = ({ onBookingClick }: HeroProps) => {
             muted
             loop
             playsInline
+            poster="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homepicture.webp"
             className="absolute inset-0 w-full h-full object-cover"
           >
             <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm" type="video/webm" />
+            <source src="https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homeeverafte.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <div className="absolute inset-0 bg-black/40"></div>
