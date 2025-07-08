@@ -98,7 +98,7 @@ const Portfolio = () => {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredItems.map(item => <Card key={item.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white">
               <div className="relative overflow-hidden">
-                {item.type === "Wedding" && item.video ? (
+                {item.video ? (
                   <video 
                     className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" 
                     autoPlay 
