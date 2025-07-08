@@ -7,38 +7,62 @@ const Portfolio = () => {
   const portfolioItems = [{
     id: 1,
     category: "video",
+    title: "Corporate Brand Story",
+    location: "San Francisco, CA",
+    date: "Winter 2024",
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=1200&fit=crop",
+    type: "Cinematic Film"
+  }, {
+    id: 2,
+    category: "video",
+    title: "Family Milestone Celebration",
+    location: "Los Angeles, CA",
+    date: "Fall 2024",
+    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop",
+    type: "Cinematic Film"
+  }, {
+    id: 3,
+    category: "video",
+    title: "Business Achievement Portrait",
+    location: "San Diego, CA",
+    date: "Summer 2024",
+    image: "/lovable-uploads/2ee7f946-776a-4a8f-a249-03cd6995cb76.png",
+    type: "Photography"
+  }, {
+    id: 4,
+    category: "photo",
     title: "Sarah & Michael's Napa Valley Wedding",
     location: "Napa Valley, CA",
     date: "Summer 2024",
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1200&fit=crop",
     type: "Cinematic Film"
   }, {
-    id: 2,
+    id: 5,
     category: "photo",
     title: "Emma & David's Romantic Ceremony",
-    location: "California, CA",
-    date: "Fall 2024",
-    image: "/lovable-uploads/2ee7f946-776a-4a8f-a249-03cd6995cb76.png",
-    type: "Photography"
-  }, {
-    id: 3,
-    category: "video",
-    title: "Jessica & Ryan's Garden Wedding",
     location: "Sonoma, CA",
-    date: "Spring 2024",
-    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop",
+    date: "Fall 2024",
+    image: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&h=1200&fit=crop",
     type: "Cinematic Film"
+  }, {
+    id: 6,
+    category: "photo",
+    title: "Jessica & Ryan's Garden Wedding",
+    location: "Malibu, CA",
+    date: "Spring 2024",
+    image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800&h=1200&fit=crop",
+    type: "Photography"
   }];
   const filteredItems = activeFilter === "all" ? portfolioItems : portfolioItems.filter(item => item.category === activeFilter);
   const filters = [{
     id: "all",
-    label: "All Work"
+    label: "All Stories"
   }, {
     id: "video",
-    label: "Wedding Films"
+    label: "Photo & Videos"
   }, {
     id: "photo",
-    label: "Photography"
+    label: "Weddings"
   }];
   return <section id="portfolio" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
       <div className="container mx-auto px-4">
