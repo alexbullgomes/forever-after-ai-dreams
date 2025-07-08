@@ -24,14 +24,14 @@ const Portfolio = () => {
     image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
   }, {
     id: 5,
-    category: "photo",
-    title: "Emma & David's Romantic Ceremony",
-    location: "Sonoma, CA",
+    category: "video",
+    title: "Libs Corporate Event",
+    location: "San Diego, CA",
     date: "Fall 2024",
-    type: "Wedding",
-    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
-    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp"
+    type: "Photo & Video",
+    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
+    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp"
   }, {
     id: 2,
     category: "video",
