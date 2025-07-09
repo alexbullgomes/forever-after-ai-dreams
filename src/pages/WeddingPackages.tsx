@@ -4,11 +4,10 @@ import { Heart, Camera, Video } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageSection } from "@/components/wedding/PackageSection";
 import { CTASection } from "@/components/wedding/CTASection";
-import InteractiveBentoGallery from "@/components/ui/gallery/interactive-bento-gallery";
+import WeddingGallery from "@/components/galleries/WeddingGallery";
 import WeddingPackagesHeader from "@/components/wedding/WeddingPackagesHeader";
 import LoadingState from "@/components/wedding/LoadingState";
 import { combinedPackages, photographyPackages, videographyPackages } from "@/data/weddingPackages";
-import { weddingGalleryItems } from "@/data/weddingGallery";
 
 const WeddingPackages = () => {
   const { user, loading } = useAuth();
@@ -46,12 +45,7 @@ const WeddingPackages = () => {
 
         {/* Wedding Gallery */}
         <div id="wedding-gallery" className="my-16">
-          <InteractiveBentoGallery 
-            mediaItems={weddingGalleryItems}
-            title="Our Wedding Gallery"
-            description="Explore our collection of beautiful wedding moments and memories"
-            pageSource="Wedding Packages"
-          />
+          <WeddingGallery />
         </div>
 
         {/* Photography Packages */}

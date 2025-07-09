@@ -3,8 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Camera, Video, Users, Building } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageCard } from "@/components/wedding/PackageCard";
-import InteractiveBentoGallery from "@/components/ui/gallery/interactive-bento-gallery";
-import { weddingGalleryItems } from "@/data/weddingGallery";
+import PhotoVideoGallery from "@/components/galleries/PhotoVideoGallery";
 
 const PhotoVideoServices = () => {
   const { user, loading } = useAuth();
@@ -202,12 +201,7 @@ const PhotoVideoServices = () => {
 
         {/* Portfolio Gallery */}
         <div id="portfolio-gallery" className="my-16">
-          <InteractiveBentoGallery 
-            mediaItems={weddingGalleryItems}
-            title="Our Portfolio Gallery"
-            description="Explore our collection of stunning photography and videography work"
-            pageSource="Photo & Video"
-          />
+          <PhotoVideoGallery />
         </div>
 
         {/* Business Photography */}
