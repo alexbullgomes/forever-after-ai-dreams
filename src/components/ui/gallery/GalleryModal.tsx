@@ -80,7 +80,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
                     stiffness: 400,
                     damping: 30
                 }}
-                className="fixed inset-1 sm:inset-2 md:inset-3 lg:inset-4 backdrop-blur-lg 
+                className="fixed inset-4 sm:inset-8 md:inset-12 backdrop-blur-lg 
                           bg-white/95 dark:bg-gray-900/95 rounded-xl overflow-hidden z-20 
                           shadow-2xl border border-white/20"
                 onClick={(e) => e.stopPropagation()}
