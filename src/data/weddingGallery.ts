@@ -48,7 +48,7 @@ export const weddingGalleryItems: MediaItemType[] = [
     type: "image",
     title: "Intimate Moments",
     desc: "Beautiful couple portraits capturing intimate moments",
-    url: "/lovable-uploads/e4d4b04a-7d06-4b7d-9e8c-4b85c7039d41.png",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//lweddingring.webp",
     span: "col-span-1 sm:col-span-2 row-span-3"
   }
 ];
