@@ -5,8 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import PromotionalPopup from "@/components/PromotionalPopup";
-import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
@@ -16,11 +14,9 @@ import PhotoVideoServices from "./pages/PhotoVideoServices";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
-  const { showPopup, closePopup } = usePromotionalPopup();
-
-  return (
-    <>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -36,15 +32,6 @@ const AppContent = () => {
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-      <PromotionalPopup isOpen={showPopup} onClose={closePopup} />
-    </>
-  );
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AppContent />
     </AuthProvider>
   </QueryClientProvider>
 );
