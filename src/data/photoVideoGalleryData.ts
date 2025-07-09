@@ -77,7 +77,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     type: "image",
     title: "Corporate Team Photos",
     desc: "Professional team photography for businesses",
-    url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//stenio.webp",
     span: "col-span-1 sm:col-span-1 row-span-3"
   }
 ];
