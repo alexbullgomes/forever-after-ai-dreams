@@ -24,11 +24,11 @@ export const usePromotionalPopup = () => {
       // 2. User hasn't seen it this session
       // 3. User hasn't clicked "Maybe Later" recently (within same session)
       if (!hasBeenSubmitted && !sessionShown && !hasBeenSeen) {
-        // Wait 30 seconds after login
+        // Wait 15 seconds after login
         const timer = setTimeout(() => {
           setShowPopup(true);
           sessionStorage.setItem('promotional_popup_shown', 'true');
-        }, 30000); // 30 seconds
+        }, 15000); // 15 seconds
 
         return () => clearTimeout(timer);
       }
