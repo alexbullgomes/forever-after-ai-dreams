@@ -15,6 +15,8 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     title: "Corporate Brand Story",
     desc: "Professional business storytelling",
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp",
     span: "col-span-1 sm:col-span-1 row-span-2"
   },
   {
@@ -39,6 +41,8 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     title: "Family Documentary",
     desc: "Cinematic family storytelling",
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp",
     span: "col-span-1 sm:col-span-1 row-span-3"
   },
   {

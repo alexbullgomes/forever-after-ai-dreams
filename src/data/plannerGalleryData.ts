@@ -15,6 +15,7 @@ export const plannerGalleryItems: MediaItemType[] = [
     title: "Dream Reception",
     desc: "Elegant celebration memories",
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homeeverafte.mp4",
     span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
   },
   {

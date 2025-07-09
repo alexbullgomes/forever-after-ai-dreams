@@ -92,6 +92,7 @@ const MediaItem: React.FC<MediaItemProps> = ({ item, className, onClick }) => {
                     muted
                     loop
                     preload="auto"
+                    poster={item.posterUrl}
                     style={{
                         opacity: isBuffering ? 0.8 : 1,
                         transition: 'opacity 0.2s',
@@ -100,6 +101,7 @@ const MediaItem: React.FC<MediaItemProps> = ({ item, className, onClick }) => {
                     }}
                 >
                     <source src={item.url} type="video/webm" />
+                    {item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
                 </video>
                 {isBuffering && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/10">

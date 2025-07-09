@@ -6,4 +6,6 @@ export interface MediaItemType {
     desc: string;
     url: string;
     span: string;
+    mp4Url?: string;
+    posterUrl?: string;
 }
