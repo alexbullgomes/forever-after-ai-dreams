@@ -14,7 +14,9 @@ export const weddingGalleryItems: MediaItemType[] = [
     type: "video",
     title: "First Dance",
     desc: "Cinematic capture of the couple's first dance",
-    url: "/lovable-uploads/16b44735-6be5-41eb-b64a-a9cd4a2c8571.png",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homeeverafte.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homepicture.webp",
     span: "col-span-1 sm:col-span-1 row-span-2"
   },
   {
