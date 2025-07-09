@@ -43,10 +43,10 @@ export const photoVideoGalleryItems: MediaItemType[] = [
   },
   {
     id: 6,
-    type: "image",
-    title: "Creative Brand Photography",
-    desc: "Unique visual branding solutions",
-    url: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0",
+    type: "video",
+    title: "Corporate Meeting Event",
+    desc: "Professional corporate event coverage",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.webm",
     span: "col-span-1 sm:col-span-2 row-span-3"
   }
 ];
