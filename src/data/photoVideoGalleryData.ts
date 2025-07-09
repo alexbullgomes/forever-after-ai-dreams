@@ -57,9 +57,9 @@ export const photoVideoGalleryItems: MediaItemType[] = [
   {
     id: 7,
     type: "image",
-    title: "Family Lifestyle Session",
-    desc: "Natural family moments captured beautifully",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Tavi.webp",
+    title: "Intimate Moments",
+    desc: "Beautiful couple portraits capturing intimate moments",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//lweddingring.webp",
     span: "col-span-1 sm:col-span-1 row-span-2"
   },
   {
