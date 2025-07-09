@@ -51,6 +51,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     title: "Corporate Meeting Event",
     desc: "Professional corporate event coverage",
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.mp4",
     span: "col-span-1 sm:col-span-2 row-span-3"
   }
 ];
