@@ -57,4 +57,20 @@ export const plannerGalleryItems: MediaItemType[] = [
     url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b",
     span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
+  {
+    id: 8,
+    type: "image",
+    title: "Family Celebrations",
+    desc: "Milestone moments with loved ones",
+    url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc",
+    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+  },
+  {
+    id: 9,
+    type: "image",
+    title: "Corporate Events",
+    desc: "Professional event photography",
+    url: "https://images.unsplash.com/photo-1505236858219-8359eb29e329",
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+  },
 ];
