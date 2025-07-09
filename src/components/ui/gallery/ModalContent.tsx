@@ -13,7 +13,7 @@ interface ModalContentProps {
 
 const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource }) => {
   return (
-    <div className="h-full flex flex-col pt-12 pb-16">
+    <div className="h-full flex flex-col pt-8 pb-12">
       <div className="flex-1 p-3 sm:p-4 md:p-6 flex flex-col items-center justify-center gap-3">
         <AnimatePresence mode="wait">
           <motion.div

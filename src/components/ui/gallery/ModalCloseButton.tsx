@@ -9,11 +9,11 @@ interface ModalCloseButtonProps {
 const ModalCloseButton: React.FC<ModalCloseButtonProps> = ({ onClose }) => {
   return (
     <motion.button
-      className="absolute top-4 right-4 z-30
-                w-12 h-12 rounded-full bg-black/80 hover:bg-black/90 
+      className="absolute top-2 right-2 z-30
+                w-10 h-10 rounded-full bg-black/90 hover:bg-black 
                 text-white backdrop-blur-sm shadow-xl
                 flex items-center justify-center
-                transition-all duration-200 border border-white/10"
+                transition-all duration-200 border border-white/20"
       onClick={onClose}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
@@ -22,7 +22,7 @@ const ModalCloseButton: React.FC<ModalCloseButtonProps> = ({ onClose }) => {
       transition={{ delay: 0.2 }}
       aria-label="Close gallery"
     >
-      <X className='w-6 h-6' />
+      <X className='w-5 h-5' />
     </motion.button>
   );
 };
