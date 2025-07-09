@@ -38,7 +38,7 @@ export const weddingGalleryItems: MediaItemType[] = [
     type: "video",
     title: "Reception Highlights",
     desc: "Joyful moments from the wedding reception",
-    url: "/lovable-uploads/a7af5164-9a69-4921-87dc-4d167dc3b382.png",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
     span: "col-span-1 sm:col-span-1 row-span-3"
   },
   {
