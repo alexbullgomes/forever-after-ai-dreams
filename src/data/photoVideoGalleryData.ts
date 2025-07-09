@@ -28,9 +28,9 @@ export const photoVideoGalleryItems: MediaItemType[] = [
   {
     id: 4,
     type: "image",
-    title: "Milestone Celebration",
+    title: "Corporate Photography Event",
     desc: "Capturing life's special moments",
-    url: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libswidephoto.webp",
     span: "col-span-1 sm:col-span-2 row-span-2"
   },
   {
