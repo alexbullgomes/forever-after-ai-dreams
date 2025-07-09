@@ -44,9 +44,9 @@ export const weddingGalleryItems: MediaItemType[] = [
   {
     id: 6,
     type: "image",
-    title: "Couple's Portrait",
-    desc: "Intimate couple's portrait by the beach",
+    title: "Intimate Moments",
+    desc: "Beautiful couple portraits capturing intimate moments",
     url: "/lovable-uploads/e4d4b04a-7d06-4b7d-9e8c-4b85c7039d41.png",
-    span: "col-span-1 sm:col-span-1 row-span-2"
+    span: "col-span-1 sm:col-span-2 row-span-3"
   }
 ];
