@@ -173,11 +173,6 @@ const PhotoVideoServices = () => {
           </p>
         </div>
 
-        {/* Portfolio Gallery */}
-        <div id="portfolio-gallery" className="my-16">
-          <PhotoVideoGallery />
-        </div>
-
         {/* Family Photography */}
         <div className="mb-16">
           <div className="text-center mb-12">
@@ -202,6 +197,11 @@ const PhotoVideoServices = () => {
               />
             ))}
           </div>
+        </div>
+
+        {/* Portfolio Gallery */}
+        <div id="portfolio-gallery" className="my-16">
+          <PhotoVideoGallery />
         </div>
 
         {/* Business Photography */}
