@@ -59,7 +59,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     type: "image",
     title: "Family Lifestyle Session",
     desc: "Natural family moments captured beautifully",
-    url: "https://images.unsplash.com/photo-1609220136736-443140cffec6",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Tavi.webp",
     span: "col-span-1 sm:col-span-1 row-span-2"
   },
   {
