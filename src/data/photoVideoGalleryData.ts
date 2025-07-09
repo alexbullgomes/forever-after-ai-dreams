@@ -53,5 +53,31 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.webm",
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.mp4",
     span: "col-span-1 sm:col-span-2 row-span-3"
+  },
+  {
+    id: 7,
+    type: "image",
+    title: "Family Lifestyle Session",
+    desc: "Natural family moments captured beautifully",
+    url: "https://images.unsplash.com/photo-1609220136736-443140cffec6",
+    span: "col-span-1 sm:col-span-1 row-span-2"
+  },
+  {
+    id: 8,
+    type: "video",
+    title: "Business Promotional Video",
+    desc: "Engaging promotional content for brands",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp",
+    span: "col-span-1 sm:col-span-2 row-span-2"
+  },
+  {
+    id: 9,
+    type: "image",
+    title: "Corporate Team Photos",
+    desc: "Professional team photography for businesses",
+    url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+    span: "col-span-1 sm:col-span-1 row-span-3"
   }
 ];
