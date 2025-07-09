@@ -24,7 +24,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     type: "image",
     title: "Business Headshots",
     desc: "Professional corporate photography",
-    url: "https://images.unsplash.com/photo-1560250097-0b93528c311a",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Coporatepotratil.webp",
     span: "col-span-1 sm:col-span-1 row-span-2"
   },
   {
