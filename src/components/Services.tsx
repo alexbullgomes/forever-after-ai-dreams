@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Video, Camera, Sparkles, Heart, Clock, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 interface ServicesProps {
   onBookingClick: () => void;
 }
@@ -9,6 +10,15 @@ const Services = ({
   onBookingClick
 }: ServicesProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleServiceClick = (route: string) => {
+    if (user) {
+      navigate(route);
+    } else {
+      onBookingClick();
+    }
+  };
   
   const services = [{
     icon: Heart,
@@ -67,8 +77,8 @@ const Services = ({
                     </li>)}
                 </ul>
 
-                <Button onClick={() => navigate(service.route)} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
-                  Details & Booking
+                <Button onClick={() => handleServiceClick(service.route)} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
+                  More Details
                 </Button>
               </CardContent>
             </Card>)}
