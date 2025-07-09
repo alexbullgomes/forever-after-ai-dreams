@@ -14,7 +14,7 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Hero onBookingClick={() => setIsAuthModalOpen(true)} />
       <Services onBookingClick={() => setIsAuthModalOpen(true)} />
-      <Portfolio />
+      <Portfolio onBookingClick={() => setIsAuthModalOpen(true)} />
       <Testimonials />
       <Contact />
       <AuthModal 

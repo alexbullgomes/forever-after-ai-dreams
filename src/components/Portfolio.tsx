@@ -2,8 +2,24 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Heart, Calendar } from "lucide-react";
-const Portfolio = () => {
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+interface PortfolioProps {
+  onBookingClick?: () => void;
+}
+
+const Portfolio = ({ onBookingClick }: PortfolioProps = {}) => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleViewPortfolioClick = () => {
+    if (user) {
+      navigate("/planner");
+    } else if (onBookingClick) {
+      onBookingClick();
+    }
+  };
   const portfolioItems = [{
     id: 4,
     category: "photo",
@@ -147,7 +163,11 @@ const Portfolio = () => {
         </div>
 
         <div className="text-center mt-12">
-          <Button size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300">
+          <Button 
+            onClick={handleViewPortfolioClick}
+            size="lg" 
+            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
+          >
             View Complete Portfolio
           </Button>
         </div>
