@@ -6,11 +6,13 @@ export const usePromotionalPopup = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Check if popup was already shown in this session
+    // Check if popup was already shown in this session or submitted
     const popupShownKey = "promotional_popup_shown";
+    const popupSubmittedKey = "promotional_popup_submitted";
     const wasShown = sessionStorage.getItem(popupShownKey);
+    const wasSubmitted = sessionStorage.getItem(popupSubmittedKey);
     
-    if (user && !wasShown) {
+    if (user && !wasShown && !wasSubmitted) {
       // Set a timer to show the popup after 30 seconds
       const timer = setTimeout(() => {
         setShowPopup(true);
