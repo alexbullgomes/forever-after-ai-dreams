@@ -29,7 +29,7 @@ const NavigationDock: React.FC<NavigationDockProps> = ({
           y: prev.y + info.offset.y
         }));
       }}
-      className="fixed z-50 left-1/2 bottom-4 -translate-x-1/2 touch-none"
+      className="relative z-10 touch-none"
     >
       <motion.div
         className="relative rounded-xl bg-sky-400/20 backdrop-blur-xl 

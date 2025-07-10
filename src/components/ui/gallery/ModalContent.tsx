@@ -76,7 +76,7 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
         </div>
         
         {/* Centered Thumbnail Navigation */}
-        <div className="flex justify-center w-full max-w-4xl">
+        <div className="flex justify-center items-center w-full max-w-4xl mt-4">
           <NavigationDock 
             mediaItems={mediaItems}
             selectedItem={selectedItem}
