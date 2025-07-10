@@ -1,22 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const usePromotionalPopup = () => {
   const { user, loading } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
-  const [loginDetected, setLoginDetected] = useState(false);
+  const previousUserRef = useRef<typeof user>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    console.log('Promotional popup: Effect triggered', { 
+      user: !!user, 
+      loading, 
+      userId: user?.id 
+    });
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
     // Don't do anything while auth is loading
     if (loading) {
       console.log('Promotional popup: Auth still loading...');
       return;
     }
 
-    // Check if user just logged in
-    if (user && !loginDetected) {
-      console.log('Promotional popup: User login detected, setting up timer...');
-      setLoginDetected(true);
+    // Detect login: user was null/undefined and now has a value
+    const wasLoggedOut = !previousUserRef.current;
+    const isNowLoggedIn = !!user;
+    
+    if (wasLoggedOut && isNowLoggedIn) {
+      console.log('Promotional popup: Login detected! Setting up timer...', user.id);
       
       // Check if popup should be shown
       const hasBeenSubmitted = localStorage.getItem('wedding_discount_popup_submitted');
@@ -29,35 +44,38 @@ export const usePromotionalPopup = () => {
         sessionShown: !!sessionShown
       });
       
-      // Show popup only if:
-      // 1. User hasn't submitted before
-      // 2. User hasn't seen it this session
-      // 3. User hasn't clicked "Maybe Later" recently (within same session)
+      // Show popup only if user hasn't interacted with it before
       if (!hasBeenSubmitted && !sessionShown && !hasBeenSeen) {
         console.log('Promotional popup: Starting 15 second timer...');
-        // Wait 15 seconds after login
-        const timer = setTimeout(() => {
+        
+        timerRef.current = setTimeout(() => {
           console.log('Promotional popup: Timer finished, showing popup');
           setShowPopup(true);
           sessionStorage.setItem('promotional_popup_shown', 'true');
         }, 15000); // 15 seconds
-
-        return () => {
-          console.log('Promotional popup: Timer cleanup');
-          clearTimeout(timer);
-        };
       } else {
         console.log('Promotional popup: Blocked by previous interaction');
       }
     }
 
-    // Reset login detection when user logs out
-    if (!user && loginDetected) {
+    // Update the previous user ref
+    previousUserRef.current = user;
+
+    // Reset popup when user logs out
+    if (!user && previousUserRef.current) {
       console.log('Promotional popup: User logged out, resetting state');
-      setLoginDetected(false);
       setShowPopup(false);
     }
-  }, [user, loading, loginDetected]);
+
+    // Cleanup function
+    return () => {
+      if (timerRef.current) {
+        console.log('Promotional popup: Cleaning up timer');
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [user, loading]);
 
   const closePopup = () => {
     setShowPopup(false);
