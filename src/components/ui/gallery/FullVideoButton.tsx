@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, ExternalLink } from 'lucide-react';
+import { Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface FullVideoButtonProps {
@@ -61,31 +62,37 @@ const FullVideoButton: React.FC<FullVideoButtonProps> = ({
   };
 
   return (
-    <motion.button
-      onClick={handleClick}
-      disabled={isLoading}
-      className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 
-                 backdrop-blur-sm border border-white/20 rounded-lg 
-                 text-white font-medium transition-all duration-200
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 hover:scale-105 active:scale-95"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="flex items-center justify-center mt-4"
     >
-      {isLoading ? (
-        <motion.div
-          className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
-      ) : (
-        icon
-      )}
-      <span className="text-sm">
-        {isLoading ? 'Opening...' : buttonText}
-      </span>
-      <ExternalLink className="w-3 h-3 opacity-70" />
-    </motion.button>
+      <Button
+        onClick={handleClick}
+        disabled={isLoading}
+        variant="outline"
+        size="lg"
+        className="
+          flex items-center gap-2 px-6 py-3 rounded-full
+          transition-all duration-300 shadow-lg
+          bg-white/90 text-gray-700 hover:bg-white border-2 border-rose-200 hover:border-rose-300
+        "
+      >
+        {isLoading ? (
+          <motion.div
+            className="w-5 h-5 border-2 border-rose-300 border-t-rose-500 rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        ) : (
+          <Play className="w-5 h-5 text-rose-500" />
+        )}
+        <span className="font-medium">
+          {isLoading ? 'Opening...' : buttonText}
+        </span>
+      </Button>
+    </motion.div>
   );
 };
 

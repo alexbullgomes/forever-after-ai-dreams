@@ -52,21 +52,19 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
           </motion.div>
         </AnimatePresence>
         
-        <div className="flex items-center justify-center gap-4 mt-4">
-          <LikeButton 
-            selectedItem={selectedItem} 
-            isLiked={isLiked}
-            onToggleLike={onToggleLike}
-            pageSource={pageSource}
+        <LikeButton 
+          selectedItem={selectedItem} 
+          isLiked={isLiked}
+          onToggleLike={onToggleLike}
+          pageSource={pageSource}
+        />
+        
+        {selectedItem.fullVideoUrl && (
+          <FullVideoButton
+            videoUrl={selectedItem.fullVideoUrl}
+            eventName={selectedItem.title}
           />
-          
-          {selectedItem.fullVideoUrl && (
-            <FullVideoButton
-              videoUrl={selectedItem.fullVideoUrl}
-              eventName={selectedItem.title}
-            />
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
