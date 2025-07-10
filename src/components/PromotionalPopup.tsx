@@ -23,7 +23,7 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // 72-hour persistent countdown timer
+  // 12-hour persistent countdown timer
   useEffect(() => {
     if (!isOpen) return;
 
@@ -39,8 +39,8 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
     const updateCountdown = () => {
       const now = Date.now();
       const elapsed = now - parseInt(startTime);
-      const seventyTwoHours = 72 * 60 * 60 * 1000; // 72 hours in milliseconds
-      const remaining = seventyTwoHours - elapsed;
+      const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+      const remaining = twelveHours - elapsed;
 
       if (remaining <= 0) {
         // Time expired

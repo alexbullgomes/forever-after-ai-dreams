@@ -16,16 +16,16 @@ export const usePromotionalPopup = () => {
       let startTime = localStorage.getItem(popupStartTimeKey);
       
       if (!startTime) {
-        // First time seeing the popup - start the 72-hour countdown
+        // First time seeing the popup - start the 12-hour countdown
         startTime = Date.now().toString();
         localStorage.setItem(popupStartTimeKey, startTime);
       }
       
-      // Check if 72 hours (259200000 ms) have passed
+      // Check if 12 hours have passed
       const elapsed = Date.now() - parseInt(startTime);
-      const seventyTwoHours = 72 * 60 * 60 * 1000; // 72 hours in milliseconds
+      const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
       
-      if (elapsed < seventyTwoHours) {
+      if (elapsed < twelveHours) {
         // Set a timer to show the popup after 30 seconds
         const timer = setTimeout(() => {
           setShowPopup(true);
