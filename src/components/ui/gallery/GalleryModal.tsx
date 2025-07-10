@@ -91,15 +91,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
                     onToggleLike={() => onToggleLike(selectedItem.id)}
                     pageSource={pageSource}
                     onClose={onClose}
+                    mediaItems={mediaItems}
+                    setSelectedItem={setSelectedItem}
                 />
                 <MobileInstructions />
             </motion.div>
-
-            <NavigationDock 
-                mediaItems={mediaItems}
-                selectedItem={selectedItem}
-                setSelectedItem={setSelectedItem}
-            />
         </>
     );
 };
