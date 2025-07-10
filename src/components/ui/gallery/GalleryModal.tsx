@@ -85,12 +85,12 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
                           shadow-2xl border border-white/20"
                 onClick={(e) => e.stopPropagation()}
             >
-                <ModalCloseButton onClose={onClose} />
                 <ModalContent 
                     selectedItem={selectedItem} 
                     isLiked={likedItems.has(selectedItem.id)}
                     onToggleLike={() => onToggleLike(selectedItem.id)}
                     pageSource={pageSource}
+                    onClose={onClose}
                 />
                 <MobileInstructions />
             </motion.div>

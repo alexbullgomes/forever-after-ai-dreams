@@ -4,15 +4,17 @@ import { MediaItemType } from './types';
 import MediaItem from './MediaItem';
 import LikeButton from './LikeButton';
 import FullVideoButton from './FullVideoButton';
+import ModalCloseButton from './ModalCloseButton';
 
 interface ModalContentProps {
   selectedItem: MediaItemType;
   isLiked: boolean;
   onToggleLike: () => void;
   pageSource?: string;
+  onClose: () => void;
 }
 
-const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource }) => {
+const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose }) => {
   return (
     <div className="h-full flex flex-col pt-8 pb-12">
       <div className="flex-1 p-3 sm:p-4 md:p-6 flex flex-col items-center justify-center gap-3">
@@ -40,6 +42,7 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
             onClick={(e) => e.stopPropagation()}
           >
             <MediaItem item={selectedItem} className="w-full h-full object-contain bg-gray-100 dark:bg-gray-800" />
+            <ModalCloseButton onClose={onClose} />
             <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5 
                           bg-gradient-to-t from-black/70 to-transparent">
               <h3 className="text-white text-lg sm:text-xl md:text-2xl font-semibold">
