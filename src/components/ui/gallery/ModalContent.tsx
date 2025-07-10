@@ -5,7 +5,6 @@ import MediaItem from './MediaItem';
 import LikeButton from './LikeButton';
 import FullVideoButton from './FullVideoButton';
 import ModalCloseButton from './ModalCloseButton';
-import NavigationDock from './NavigationDock';
 
 interface ModalContentProps {
   selectedItem: MediaItemType;
@@ -13,19 +12,17 @@ interface ModalContentProps {
   onToggleLike: () => void;
   pageSource?: string;
   onClose: () => void;
-  mediaItems: MediaItemType[];
-  setSelectedItem: (item: MediaItemType) => void;
 }
 
-const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose, mediaItems, setSelectedItem }) => {
+const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose }) => {
   return (
     <div className="h-full flex flex-col pt-8 pb-12">
-      <div className="flex-1 p-3 sm:p-4 md:p-6 flex flex-col items-center justify-center">
+      <div className="flex-1 p-3 sm:p-4 md:p-6 flex flex-col items-center justify-center gap-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedItem.id}
             className="relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl 
-                     h-auto max-h-[60vh] rounded-lg overflow-hidden shadow-lg mb-6"
+                     h-auto max-h-[80vh] rounded-lg overflow-hidden shadow-lg"
             initial={{ y: 20, scale: 0.97 }}
             animate={{
               y: 0,
@@ -58,8 +55,7 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
           </motion.div>
         </AnimatePresence>
         
-        {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-4 mb-6">
+        <div className="flex items-center justify-center gap-4 mt-4">
           <LikeButton 
             selectedItem={selectedItem} 
             isLiked={isLiked}
@@ -73,15 +69,6 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
               eventName={selectedItem.title}
             />
           )}
-        </div>
-        
-        {/* Centered Thumbnail Navigation */}
-        <div className="flex justify-center w-full max-w-4xl">
-          <NavigationDock 
-            mediaItems={mediaItems}
-            selectedItem={selectedItem}
-            setSelectedItem={setSelectedItem}
-          />
         </div>
       </div>
     </div>
