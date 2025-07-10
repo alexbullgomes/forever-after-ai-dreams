@@ -16,34 +16,55 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
-    hours: 23,
-    minutes: 59,
-    seconds: 59
+    hours: 0,
+    minutes: 0,
+    seconds: 0
   });
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // 24-hour countdown timer
+  // 72-hour persistent countdown timer
   useEffect(() => {
     if (!isOpen) return;
 
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        } else {
-          clearInterval(timer);
-          return prev;
-        }
-      });
-    }, 1000);
+    const popupStartTimeKey = "promotional_popup_start_time";
+    const startTime = localStorage.getItem(popupStartTimeKey);
+    
+    if (!startTime) {
+      // If no start time is found, close the popup (shouldn't happen)
+      onClose();
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      const elapsed = now - parseInt(startTime);
+      const seventyTwoHours = 72 * 60 * 60 * 1000; // 72 hours in milliseconds
+      const remaining = seventyTwoHours - elapsed;
+
+      if (remaining <= 0) {
+        // Time expired
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
+        onClose();
+        return;
+      }
+
+      // Convert remaining milliseconds to hours, minutes, seconds
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+      setTimeLeft({ hours, minutes, seconds });
+    };
+
+    // Update immediately
+    updateCountdown();
+
+    // Update every second
+    const timer = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   // Phone number validation - simplified for better UX
   const isValidPhone = (phone: string) => {
