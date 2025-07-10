@@ -8,4 +8,5 @@ export interface MediaItemType {
     span: string;
     mp4Url?: string;
     posterUrl?: string;
+    fullVideoUrl?: string; // YouTube or external video URL for "Watch Full Video" button
 }

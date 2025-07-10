@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MediaItemType } from './types';
 import MediaItem from './MediaItem';
 import LikeButton from './LikeButton';
+import FullVideoButton from './FullVideoButton';
 
 interface ModalContentProps {
   selectedItem: MediaItemType;
@@ -51,12 +52,21 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
           </motion.div>
         </AnimatePresence>
         
-        <LikeButton 
-          selectedItem={selectedItem} 
-          isLiked={isLiked}
-          onToggleLike={onToggleLike}
-          pageSource={pageSource}
-        />
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <LikeButton 
+            selectedItem={selectedItem} 
+            isLiked={isLiked}
+            onToggleLike={onToggleLike}
+            pageSource={pageSource}
+          />
+          
+          {selectedItem.fullVideoUrl && (
+            <FullVideoButton
+              videoUrl={selectedItem.fullVideoUrl}
+              eventName={selectedItem.title}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
