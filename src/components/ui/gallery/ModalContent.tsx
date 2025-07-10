@@ -5,6 +5,7 @@ import MediaItem from './MediaItem';
 import LikeButton from './LikeButton';
 import FullVideoButton from './FullVideoButton';
 import ModalCloseButton from './ModalCloseButton';
+import NavigationDock from './NavigationDock';
 
 interface ModalContentProps {
   selectedItem: MediaItemType;
@@ -12,9 +13,11 @@ interface ModalContentProps {
   onToggleLike: () => void;
   pageSource?: string;
   onClose: () => void;
+  mediaItems: MediaItemType[];
+  setSelectedItem: (item: MediaItemType) => void;
 }
 
-const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose }) => {
+const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose, mediaItems, setSelectedItem }) => {
   return (
     <div className="h-full flex flex-col pt-8 pb-12">
       <div className="flex-1 p-3 sm:p-4 md:p-6 flex flex-col items-center justify-center gap-3">
@@ -69,6 +72,15 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
               eventName={selectedItem.title}
             />
           )}
+        </div>
+        
+        {/* Centered Thumbnail Navigation */}
+        <div className="flex justify-center mt-6">
+          <NavigationDock 
+            mediaItems={mediaItems}
+            selectedItem={selectedItem}
+            setSelectedItem={setSelectedItem}
+          />
         </div>
       </div>
     </div>
