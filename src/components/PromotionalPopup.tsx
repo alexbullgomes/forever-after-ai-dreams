@@ -45,10 +45,11 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
     return () => clearInterval(timer);
   }, [isOpen]);
 
-  // Phone number validation
+  // Phone number validation - simplified for better UX
   const isValidPhone = (phone: string) => {
-    const phoneRegex = /^\(\d{3}\)\s\d{3}-\d{4}$|^\d{10}$|^\d{3}-\d{3}-\d{4}$/;
-    return phoneRegex.test(phone.replace(/\s+/g, ''));
+    const digits = phone.replace(/[^\d]/g, '');
+    console.log('Phone validation:', { phone, digits, length: digits.length });
+    return digits.length === 10;
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -64,6 +65,7 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
+    console.log('Phone change:', { original: e.target.value, formatted, isValid: isValidPhone(formatted) });
     setPhoneNumber(formatted);
   };
 
