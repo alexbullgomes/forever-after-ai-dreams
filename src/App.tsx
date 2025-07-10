@@ -21,21 +21,21 @@ const AppContent = () => {
 
   return (
     <>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/planner" element={<Planner />} />
-          <Route path="/photo-video-services" element={<PhotoVideoServices />} />
-          <Route path="/wedding-packages" element={<WeddingPackages />} />
-          <Route path="/weddingquiz" element={<WeddingQuiz />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-      
-      {/* Promotional Popup */}
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/planner" element={<Planner />} />
+            <Route path="/photo-video-services" element={<PhotoVideoServices />} />
+            <Route path="/wedding-packages" element={<WeddingPackages />} />
+            <Route path="/weddingquiz" element={<WeddingQuiz />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
       <PromotionalPopup isOpen={showPopup} onClose={closePopup} />
     </>
   );
@@ -44,9 +44,7 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <AppContent />
-      </TooltipProvider>
+      <AppContent />
     </AuthProvider>
   </QueryClientProvider>
 );
