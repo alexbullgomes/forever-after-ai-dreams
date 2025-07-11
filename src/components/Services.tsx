@@ -52,7 +52,7 @@ const Services = ({
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Capturing Love in
+            Capturing
             <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
               Every Frame
             </span>
