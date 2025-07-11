@@ -7,12 +7,14 @@ import { useNavigate } from "react-router-dom";
 interface PortfolioProps {
   onBookingClick?: () => void;
 }
-
-const Portfolio = ({ onBookingClick }: PortfolioProps = {}) => {
+const Portfolio = ({
+  onBookingClick
+}: PortfolioProps = {}) => {
   const [activeFilter, setActiveFilter] = useState("all");
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
-
   const handleViewPortfolioClick = () => {
     if (user) {
       navigate("/planner");
@@ -97,9 +99,7 @@ const Portfolio = ({ onBookingClick }: PortfolioProps = {}) => {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Recent
-            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
-              Love Stories
-            </span>
+            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Stories</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">All stories are unique. Here are some of our recent celebrations captured across California.</p>
 
@@ -114,22 +114,11 @@ const Portfolio = ({ onBookingClick }: PortfolioProps = {}) => {
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredItems.map(item => <Card key={item.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white">
               <div className="relative overflow-hidden">
-                {item.video ? (
-                  <video 
-                    className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline
-                    poster={item.image}
-                  >
+                {item.video ? <video className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" autoPlay muted loop playsInline poster={item.image}>
                     <source src={item.video} type="video/webm" />
                     <source src={item.videoMp4} type="video/mp4" />
                     <img src={item.image} alt={item.title} className="w-full h-80 object-cover" />
-                  </video>
-                ) : (
-                  <img src={item.image} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" />
-                )}
+                  </video> : <img src={item.image} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
                 {/* Play button for videos */}
@@ -163,11 +152,7 @@ const Portfolio = ({ onBookingClick }: PortfolioProps = {}) => {
         </div>
 
         <div className="text-center mt-12">
-          <Button 
-            onClick={handleViewPortfolioClick}
-            size="lg" 
-            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
-          >
+          <Button onClick={handleViewPortfolioClick} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300">
             View Complete Portfolio
           </Button>
         </div>
