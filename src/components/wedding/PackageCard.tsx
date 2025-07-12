@@ -9,13 +9,12 @@ import PersonalizedConsultationForm from "../PersonalizedConsultationForm";
 interface PackageCardProps {
   name: string;
   price: string;
-  subtitle?: string;
   description: string;
   features: string[];
   popular: boolean;
 }
 
-const PackageCard = ({ name, price, subtitle, description, features, popular }: PackageCardProps) => {
+const PackageCard = ({ name, price, description, features, popular }: PackageCardProps) => {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
 
   return (
@@ -35,28 +34,10 @@ const PackageCard = ({ name, price, subtitle, description, features, popular }: 
             {name}
           </CardTitle>
           <div className="text-center">
-            {price === "On Consult" ? (
-              <>
-                <span className="text-4xl font-bold text-rose-600">{price}</span>
-                {subtitle && (
-                  <div className="mt-2">
-                    <span className="inline-block bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-sm font-medium">
-                      {subtitle}
-                    </span>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <span className="text-4xl font-bold text-rose-600">
-                  <span className="font-extrabold">{price.split('–')[0]}</span>
-                  {price.includes('–') && <span className="font-semibold">–{price.split('–')[1]}</span>}
-                </span>
-                <div className="mt-2">
-                  <EstimatedPriceBadge />
-                </div>
-              </>
-            )}
+            <span className="text-4xl font-bold text-rose-600">{price}</span>
+            <div className="mt-2">
+              <EstimatedPriceBadge />
+            </div>
           </div>
           <p className="text-center text-gray-600 italic">{description}</p>
         </CardHeader>

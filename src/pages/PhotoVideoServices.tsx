@@ -33,10 +33,10 @@ const PhotoVideoServices = () => {
   const familyPhotographyPackages = [
     {
       name: "Family Portrait Session",
-      price: "$250–$450",
+      price: "$450",
       description: "Capture beautiful family memories in a relaxed setting.",
       features: [
-        "1–3 hour session",
+        "1-2 hour session",
         "Location of your choice",
         "50+ edited high-resolution images",
         "Online gallery access",
@@ -46,10 +46,10 @@ const PhotoVideoServices = () => {
     },
     {
       name: "Extended Family Experience",
-      price: "$450–$850",
+      price: "$750",
       description: "Perfect for larger families and special occasions.",
       features: [
-        "3–6 hour session",
+        "2-3 hour session",
         "Multiple locations available",
         "100+ edited high-resolution images",
         "Professional styling consultation",
@@ -60,14 +60,13 @@ const PhotoVideoServices = () => {
     },
     {
       name: "Milestone Photography",
-      price: "On Consult",
-      subtitle: "Personalized Package",
+      price: "$350",
       description: "Celebrate special moments and achievements together.",
       features: [
-        "Up to 1 hour session",
+        "1 hour session",
         "Indoor or outdoor location",
         "30+ edited high-resolution images",
-        "Perfect for graduations, birthdays, anniversaries",
+        "Perfect for graduations, anniversaries",
         "Online gallery access",
         "Print release rights"
       ],
@@ -192,7 +191,6 @@ const PhotoVideoServices = () => {
                 key={index}
                 name={pkg.name}
                 price={pkg.price}
-                subtitle={pkg.subtitle}
                 description={pkg.description}
                 features={pkg.features}
                 popular={pkg.popular}
