@@ -169,7 +169,7 @@ const PhotoVideoServices = () => {
           <div className="text-center mb-12">
             <Building className="w-12 h-12 text-rose-500 mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Business Photography
+              Business Contents
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Professional imagery that elevates your brand and showcases your business in its best light.
