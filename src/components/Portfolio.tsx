@@ -35,8 +35,8 @@ const Portfolio = ({
   }, {
     id: 1,
     category: "video",
-    title: "Corporate Brand Story",
-    location: "San Francisco, CA",
+    title: "Jeferson & Fernanda",
+    location: "Carlsbad, CA",
     date: "Winter 2024",
     type: "Photo & Video",
     image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
