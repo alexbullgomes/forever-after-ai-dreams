@@ -66,11 +66,11 @@ export const photoVideoGalleryItems: MediaItemType[] = [
   {
     id: 8,
     type: "video",
-    title: "Business Promotional Video",
+    title: "Birthday Event Celebration",
     desc: "Engaging promotional content for brands",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
-    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
-    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.webp",
     span: "col-span-1 sm:col-span-2 row-span-2"
   },
   {
