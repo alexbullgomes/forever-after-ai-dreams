@@ -46,7 +46,7 @@ const PhotoVideoServices = () => {
     },
     {
       name: "Extended Family Experience",
-      price: "$450–$850",
+      price: "$450–$750",
       description: "Perfect for larger families and special occasions.",
       features: [
         "3–6 hour session",
