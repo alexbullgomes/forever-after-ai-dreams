@@ -117,48 +117,6 @@ const PhotoVideoServices = () => {
     }
   ];
 
-  // Family Video Services
-  const familyVideoPackages = [
-    {
-      name: "Family Documentary",
-      price: "$800",
-      description: "A day-in-the-life video capturing your family's story.",
-      features: [
-        "4-6 hours of filming",
-        "3-5 minute edited film",
-        "Natural, candid moments",
-        "Music and professional editing",
-        "4K resolution"
-      ],
-      popular: false
-    },
-    {
-      name: "Milestone Celebration Film",
-      price: "$650",
-      description: "Document special family celebrations and milestones.",
-      features: [
-        "3-4 hours of filming",
-        "2-3 minute highlight reel",
-        "Perfect for birthdays, graduations",
-        "Professional editing with music",
-        "HD resolution delivery"
-      ],
-      popular: true
-    },
-    {
-      name: "Legacy Story Video",
-      price: "$1,200",
-      description: "Create a timeless family story for future generations.",
-      features: [
-        "Full day filming",
-        "5-8 minute cinematic film",
-        "Interviews with family members",
-        "Multiple location shoots",
-        "4K resolution with premium editing"
-      ],
-      popular: false
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
@@ -230,31 +188,6 @@ const PhotoVideoServices = () => {
           </div>
         </div>
 
-        {/* Family Video Services */}
-        <div className="mb-16">
-          <div className="text-center mb-12">
-            <Video className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Family Videography
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Cinematic storytelling that brings your family's unique story to life through motion and emotion.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {familyVideoPackages.map((pkg, index) => (
-              <PackageCard
-                key={index}
-                name={pkg.name}
-                price={pkg.price}
-                description={pkg.description}
-                features={pkg.features}
-                popular={pkg.popular}
-              />
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
