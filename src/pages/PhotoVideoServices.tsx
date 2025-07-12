@@ -45,20 +45,6 @@ const PhotoVideoServices = () => {
       popular: false
     },
     {
-      name: "Videography Session",
-      price: "$350–$1200",
-      description: "Cinematic coverage for events, memories, and stories.",
-      features: [
-        "1–6 hour session",
-        "Location of your choice",
-        "Highlight video (1–4 minutes)",
-        "Full-length edit (optional)",
-        "Professionally edited and color-graded",
-        "Digital delivery + download link"
-      ],
-      popular: false
-    },
-    {
       name: "Photo & Video Combo",
       price: "Personalize",
       description: "Complete storytelling with both photo and video coverage.",
@@ -72,6 +58,20 @@ const PhotoVideoServices = () => {
         "Online + full rights"
       ],
       popular: true
+    },
+    {
+      name: "Videography Session",
+      price: "$350–$1200",
+      description: "Cinematic coverage for events, memories, and stories.",
+      features: [
+        "1–6 hour session",
+        "Location of your choice",
+        "Highlight video (1–4 minutes)",
+        "Full-length edit (optional)",
+        "Professionally edited and color-graded",
+        "Digital delivery + download link"
+      ],
+      popular: false
     }
   ];
 
