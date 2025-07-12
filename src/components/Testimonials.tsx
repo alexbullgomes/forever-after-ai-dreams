@@ -6,7 +6,7 @@ const Testimonials = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Sarah & Michael",
+      name: "Alana & Michael",
       location: "Napa Valley Wedding",
       rating: 5,
       text: "Absolutely breathtaking! They captured every moment perfectly. Our wedding film brings tears of joy every time we watch it. The attention to detail and artistic vision exceeded all our expectations.",
