@@ -25,9 +25,9 @@ const Portfolio = ({
   const portfolioItems = [{
     id: 4,
     category: "photo",
-    title: "Sarah & Michael's Napa Valley Wedding",
-    location: "Napa Valley, CA",
-    date: "Summer 2024",
+    title: "Alana & Michael",
+    location: "San Diego, CA",
+    date: "Summer 2025",
     type: "Wedding",
     video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
     videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
