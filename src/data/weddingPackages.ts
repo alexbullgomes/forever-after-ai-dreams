@@ -10,44 +10,47 @@ export interface WeddingPackage {
 export const combinedPackages: WeddingPackage[] = [
   {
     name: "Essential Love",
-    price: "$2,999",
+    price: "$850-$3900",
     description: "Perfect for intimate ceremonies",
     features: [
-      "4 hours of coverage",
-      "1 videographer + 1 photographer",
-      "Highlight reel (2–5 minutes)",
-      "150 edited photos",
+      "Our most luxurious photography package",
+      "2-6 hours of coverage",
+      "1-2 photographers",
+      "Social media highlights pack",
+      "50 Priority photo editing (Same Day)",
+      "100-350 edited photos",
+      "Web + USB drive delivery",
       "Online gallery access"
     ],
     popular: false
   },
   {
-    name: "Dream Wedding",
-    price: "$4,999",
-    description: "Our most popular package",
+    name: "Dream Wedding Photos & Videos",
+    price: "Personalize",
+    description: "The ultimate wedding documentation",
     features: [
-      "8 hours of coverage",
-      "2 videographers + 1 photographers",
-      "Cinematic wedding film (3–7 minutes)",
-      "Ceremony + reception footage",
-      "200+ edited photos",
+      "8+ hours of coverage",
+      "1-3 videographers + 1-2 photographer",
+      "Highlight reel (1-2min) + Drone",
+      "Cinematic wedding film (3–6 minutes)",
+      "Ceremony + reception footage + Party",
+      "100-350 edited photos",
       "USB drive with all content"
     ],
     popular: true
   },
   {
-    name: "Luxury Experience",
-    price: "$8,999",
+    name: "Every Moment Videos",
+    price: "$900-$5900",
     description: "The ultimate wedding documentation",
     features: [
-      "Full day coverage (12+ hours)",
-      "3 videographers + 2 photographers",
-      "Cinematic wedding film (6–15 minutes)",
+      "1-6 hours of coverage",
+      "1-3 videographers",
+      "5–25 minute cinematic wedding film",
+      "1-2 minute social media teaser",
+      "Full ceremony + reception videos + audio",
       "Drone footage",
-      "500+ edited photos",
-      "Engagement session included",
-      "Premium album + USB",
-      "Raw footage access"
+      "4K video + HD audio"
     ],
     popular: false
   }
