@@ -66,10 +66,10 @@ const PhotoVideoServices = () => {
         "8+ hour session",
         "Photo + Video coverage",
         "Location(s) of your choice",
-        "Full edited image gallery + video highlights",
-        "Story-driven edit (long format optional)",
-        "Ideal for big celebrations, and full-day events",
-        "Online delivery + print & video rights"
+        "Full gallery + Video Highlights",
+        "Documentary Style (Opcional)",
+        "For all-day celebrations",
+        "Online + full rights"
       ],
       popular: true
     }
