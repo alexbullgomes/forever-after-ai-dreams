@@ -10,8 +10,9 @@ const Services = ({
   onBookingClick
 }: ServicesProps) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   const handleServiceClick = (route: string) => {
     if (user) {
       navigate(route);
@@ -19,7 +20,6 @@ const Services = ({
       onBookingClick();
     }
   };
-  
   const services = [{
     icon: Heart,
     title: "Personalized Planner",
@@ -57,7 +57,7 @@ const Services = ({
               Every Frame
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Professional celebration videography and photography services designed to tell your unique love story.</p>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Professional  videography and photography services designed to tell your unique story.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
