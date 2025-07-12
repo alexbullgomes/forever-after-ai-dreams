@@ -9,7 +9,7 @@ export interface WeddingPackage {
 // Combined Photo & Video Packages
 export const combinedPackages: WeddingPackage[] = [
   {
-    name: "Essential Love",
+    name: "Essential Love Photos",
     price: "$850-$3900",
     description: "Perfect for intimate ceremonies",
     features: [
