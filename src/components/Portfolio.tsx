@@ -43,7 +43,7 @@ const Portfolio = ({
   }, {
     id: 5,
     category: "video",
-    title: "Libs Corporate Event",
+    title: "Libbs Health Corporate Event",
     location: "San Diego, CA",
     date: "Fall 2024",
     type: "Photo & Video",
