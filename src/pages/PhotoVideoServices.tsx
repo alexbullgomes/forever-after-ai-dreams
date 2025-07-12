@@ -82,7 +82,7 @@ const PhotoVideoServices = () => {
     {
       name: "Corporate Headshots",
       price: "$200–$1200",
-      description: "Professional headshots tailored to your business needs.",
+      description: "Professional headshots tailored to elevate your business.",
       features: [
         "1-6 Hour Session",
         "Ideal for Professionals & Events",
