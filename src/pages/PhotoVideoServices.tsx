@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Camera, Video, Users, Building } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageCard } from "@/components/wedding/PackageCard";
+import { CustomPackageCard } from "@/components/wedding/CustomPackageCard";
 import PhotoVideoGallery from "@/components/galleries/PhotoVideoGallery";
 import BusinessGallery from "@/components/galleries/BusinessGallery";
 
@@ -180,16 +181,32 @@ const PhotoVideoServices = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {businessPhotographyPackages.map((pkg, index) => (
-              <PackageCard
-                key={index}
-                name={pkg.name}
-                price={pkg.price}
-                description={pkg.description}
-                features={pkg.features}
-                popular={pkg.popular}
-              />
-            ))}
+            {businessPhotographyPackages.map((pkg, index) => {
+              // Use CustomPackageCard for "Photo & Video Coverage" card
+              if (pkg.name === "Photo & Video Coverage") {
+                return (
+                  <CustomPackageCard
+                    key={index}
+                    name={pkg.name}
+                    price={pkg.price}
+                    description={pkg.description}
+                    features={pkg.features}
+                    popular={pkg.popular}
+                  />
+                );
+              }
+              // Use regular PackageCard for all other cards
+              return (
+                <PackageCard
+                  key={index}
+                  name={pkg.name}
+                  price={pkg.price}
+                  description={pkg.description}
+                  features={pkg.features}
+                  popular={pkg.popular}
+                />
+              );
+            })}
           </div>
         </div>
 
