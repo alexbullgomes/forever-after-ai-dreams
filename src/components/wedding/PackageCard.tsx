@@ -34,7 +34,7 @@ const PackageCard = ({ name, price, description, features, popular }: PackageCar
             {name}
           </CardTitle>
           <div className="text-center">
-            <span className="text-4xl font-bold text-rose-600">{price}</span>
+            <span className="text-3xl font-bold text-rose-600">{price}</span>
             <div className="mt-2">
               <EstimatedPriceBadge />
             </div>
