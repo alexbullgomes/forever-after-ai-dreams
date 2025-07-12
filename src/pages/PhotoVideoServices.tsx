@@ -33,10 +33,10 @@ const PhotoVideoServices = () => {
   const familyPhotographyPackages = [
     {
       name: "Family Portrait Session",
-      price: "$450",
+      price: "$250–$450",
       description: "Capture beautiful family memories in a relaxed setting.",
       features: [
-        "1-2 hour session",
+        "1–3 hour session",
         "Location of your choice",
         "50+ edited high-resolution images",
         "Online gallery access",
@@ -46,10 +46,10 @@ const PhotoVideoServices = () => {
     },
     {
       name: "Extended Family Experience",
-      price: "$750",
+      price: "$450–$850",
       description: "Perfect for larger families and special occasions.",
       features: [
-        "2-3 hour session",
+        "3–6 hour session",
         "Multiple locations available",
         "100+ edited high-resolution images",
         "Professional styling consultation",
@@ -60,10 +60,10 @@ const PhotoVideoServices = () => {
     },
     {
       name: "Milestone Photography",
-      price: "$350",
+      price: "On Consult",
       description: "Celebrate special moments and achievements together.",
       features: [
-        "1 hour session",
+        "8+ hour session",
         "Indoor or outdoor location",
         "30+ edited high-resolution images",
         "Perfect for graduations, anniversaries",
