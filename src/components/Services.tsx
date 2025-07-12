@@ -31,7 +31,7 @@ const Services = ({
     icon: Camera,
     title: "Photo & Video Services",
     description: "Professional photography and videography for families, businesses, and special occasions.",
-    features: ["Family Portraits", "Business Photography", "Corporate Events", "Milestone Celebrations"],
+    features: ["Family Portraits", "Business Photography", "Corporate Events", "Milestone and Celebrations"],
     gradient: "from-purple-500 to-pink-500",
     route: "/photo-video-services"
   }, {
