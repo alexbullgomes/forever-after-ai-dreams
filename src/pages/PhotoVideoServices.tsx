@@ -29,48 +29,49 @@ const PhotoVideoServices = () => {
     return null;
   }
 
-  // Family Photography Services
-  const familyPhotographyPackages = [
+  // Family Milestones Services
+  const familyMilestonePackages = [
     {
-      name: "Family Portrait Session",
-      price: "$250–$450",
-      description: "Capture beautiful family memories in a relaxed setting.",
+      name: "Photography Session",
+      price: "$250–$850",
+      description: "Capture timeless moments with professional photography.",
       features: [
-        "1–3 hour session",
+        "1–6 hour session",
         "Location of your choice",
-        "50+ edited high-resolution images",
+        "50-150 edited images",
         "Online gallery access",
         "Print release rights"
       ],
       popular: false
     },
     {
-      name: "Extended Family Experience",
-      price: "$450–$750",
-      description: "Perfect for larger families and special occasions.",
+      name: "Videography Session",
+      price: "$350–$1200",
+      description: "Cinematic coverage for events, memories, and stories.",
       features: [
-        "3–6 hour session",
-        "Multiple locations available",
-        "100+ edited high-resolution images",
-        "Professional styling consultation",
-        "Custom USB drive",
-        "Print release rights"
+        "1–6 hour session",
+        "Location of your choice",
+        "Highlight video (1–4 minutes)",
+        "Full-length edit (optional)",
+        "Professionally edited and color-graded",
+        "Digital delivery + download link"
       ],
-      popular: true
+      popular: false
     },
     {
-      name: "Milestone Photography",
-      price: "On Consult",
-      description: "Celebrate special moments and achievements together.",
+      name: "Photo & Video Combo",
+      price: "Personalize",
+      description: "Complete storytelling with both photo and video coverage.",
       features: [
         "8+ hour session",
-        "Indoor or outdoor location",
-        "30+ edited high-resolution images",
-        "Perfect for graduations, anniversaries",
-        "Online gallery access",
-        "Print release rights"
+        "Photo + Video coverage",
+        "Location(s) of your choice",
+        "Full edited image gallery + video highlights",
+        "Story-driven edit (long format optional)",
+        "Ideal for big celebrations, and full-day events",
+        "Online delivery + print & video rights"
       ],
-      popular: false
+      popular: true
     }
   ];
 
@@ -131,12 +132,12 @@ const PhotoVideoServices = () => {
           </p>
         </div>
 
-        {/* Family Photography */}
+        {/* Family Milestones */}
         <div className="mb-16">
           <div className="text-center mb-12">
             <Users className="w-12 h-12 text-rose-500 mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Family Photography
+              Family Milestones
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Preserve your family's love and connection with timeless portraits that you'll treasure forever.
@@ -144,7 +145,7 @@ const PhotoVideoServices = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {familyPhotographyPackages.map((pkg, index) => (
+            {familyMilestonePackages.map((pkg, index) => (
               <PackageCard
                 key={index}
                 name={pkg.name}
