@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Heart, Camera, Video } from "lucide-react";
+import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageSection } from "@/components/wedding/PackageSection";
 import { CTASection } from "@/components/wedding/CTASection";
 import WeddingGallery from "@/components/galleries/WeddingGallery";
 import WeddingPackagesHeader from "@/components/wedding/WeddingPackagesHeader";
 import LoadingState from "@/components/wedding/LoadingState";
-import { combinedPackages, photographyPackages, videographyPackages } from "@/data/weddingPackages";
+import { combinedPackages } from "@/data/weddingPackages";
 
 const WeddingPackages = () => {
   const { user, loading } = useAuth();
@@ -48,25 +48,6 @@ const WeddingPackages = () => {
           <WeddingGallery />
         </div>
 
-        {/* Photography Packages */}
-        <div id="photography">
-          <PackageSection 
-            title="Wedding Photography Packages" 
-            subtitle="Your wedding day is filled with moments that deserve to be remembered forever — the nervous smiles, the quiet glances, the joyful tears." 
-            packages={photographyPackages} 
-            icon={Camera} 
-          />
-        </div>
-
-        {/* Videography Packages */}
-        <div id="videography">
-          <PackageSection 
-            title="Wedding Videography Packages" 
-            subtitle="Every wedding tells a story — and we're here to capture yours, frame by frame." 
-            packages={videographyPackages} 
-            icon={Video} 
-          />
-        </div>
 
         {/* CTA Section */}
         <div id="contact-cta">
