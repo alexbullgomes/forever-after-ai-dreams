@@ -95,7 +95,7 @@ const PhotoVideoServices = () => {
     {
       name: "Photo & Video Coverage",
       price: "Personalize",
-      description: "Professional documentation of your business events and activations.",
+      description: "Professional coverage of your business events and activations with photos and videos.",
       features: [
         "8+ hour session",
         "Photo + Video coverage",
