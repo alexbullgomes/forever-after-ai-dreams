@@ -4,7 +4,6 @@ import { Heart, Camera, Video, Users, Building } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageCard } from "@/components/wedding/PackageCard";
 import PhotoVideoGallery from "@/components/galleries/PhotoVideoGallery";
-import BusinessGallery from "@/components/galleries/BusinessGallery";
 
 const PhotoVideoServices = () => {
   const { user, loading } = useAuth();
@@ -188,11 +187,6 @@ const PhotoVideoServices = () => {
               />
             ))}
           </div>
-        </div>
-
-        {/* Business Gallery */}
-        <div id="business-gallery" className="my-16">
-          <BusinessGallery />
         </div>
 
       </div>
