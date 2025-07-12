@@ -37,7 +37,7 @@ const Services = ({
   }, {
     icon: Sparkles,
     title: "Wedding Packages",
-    description: "Complete wedding documentation combining both videography and photography for your special day.",
+    description: "Complete wedding coverage combining both videography and photography for your special day.",
     features: ["Photo + Video Packages", "Wedding Photography", "Wedding Videography", "Premium Collections"],
     gradient: "from-pink-500 to-rose-500",
     route: "/wedding-packages"
