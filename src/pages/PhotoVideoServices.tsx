@@ -80,42 +80,45 @@ const PhotoVideoServices = () => {
   const businessPhotographyPackages = [
     {
       name: "Corporate Headshots",
-      price: "$200",
-      description: "Professional headshots for your business needs.",
+      price: "$200–$1200",
+      description: "Professional headshots tailored to your business needs.",
       features: [
-        "30-minute session per person",
-        "Studio or office location",
-        "5+ edited images per person",
+        "1-6 Hour Session",
+        "Ideal for Professionals & Events",
+        "100-300 Edited images",
         "Professional retouching",
-        "High-resolution files"
+        "High-resolution delivery"
       ],
       popular: false
     },
     {
-      name: "Brand Photography Package",
-      price: "$1,200",
-      description: "Complete visual branding for your business.",
+      name: "Photo & Video Coverage",
+      price: "Personalize",
+      description: "Professional documentation of your business events and activations.",
       features: [
-        "4-hour session",
-        "Product and lifestyle photography",
-        "100+ edited images",
-        "Usage rights for marketing",
-        "Brand consultation included"
-      ],
-      popular: false
-    },
-    {
-      name: "Commercial Event Coverage",
-      price: "$850",
-      description: "Professional documentation of your business events.",
-      features: [
-        "Full event coverage",
-        "Candid and posed shots",
-        "75+ edited high-resolution images",
-        "Same-day preview selection",
-        "Marketing usage rights"
+        "8+ hour session",
+        "Photo + Video coverage",
+        "Location(s) of your choice",
+        "Full gallery + Video Highlights",
+        "Documentary Style (Optional)",
+        "For all-day celebrations",
+        "Online + full rights"
       ],
       popular: true
+    },
+    {
+      name: "Video & Event Coverage",
+      price: "$450–$3300",
+      description: "Professional documentation of your business events and activations.",
+      features: [
+        "1–6 hour session",
+        "Location of your choice",
+        "Highlight video (1–4 minutes)",
+        "Full-length edit (optional)",
+        "Professionally edited and color-graded",
+        "Digital delivery + download link"
+      ],
+      popular: false
     }
   ];
 
