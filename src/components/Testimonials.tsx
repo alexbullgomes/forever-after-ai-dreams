@@ -7,7 +7,7 @@ const Testimonials = () => {
     {
       id: 1,
       name: "Alana & Michael",
-      location: "San Diego Wedding Couple Documentary",
+      location: "San Diego Couple Family Documentary",
       rating: 5,
       text: "Absolutely breathtaking! They captured every moment perfectly. Our wedding film brings tears of joy every time we watch it. The attention to detail and artistic vision exceeded all our expectations.",
       image: "/lovable-uploads/8218160d-57f7-4efa-9bcf-f22f3074d54a.png"
