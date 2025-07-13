@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EstimatedPriceBadge } from "@/components/ui/estimated-price-badge";
+import { CreatePackageBadge } from "@/components/ui/create-package-badge";
 import { Star, Camera } from "lucide-react";
 import { useState } from "react";
 import PersonalizedConsultationForm from "../PersonalizedConsultationForm";
@@ -36,7 +37,7 @@ const PackageCard = ({ name, price, description, features, popular }: PackageCar
           <div className="text-center">
             <span className="text-3xl font-bold text-rose-600">{price}</span>
             <div className="mt-2">
-              <EstimatedPriceBadge />
+              {name === "Photo & Video Combo" ? <CreatePackageBadge /> : <EstimatedPriceBadge />}
             </div>
           </div>
           <p className="text-center text-gray-600 italic">{description}</p>
