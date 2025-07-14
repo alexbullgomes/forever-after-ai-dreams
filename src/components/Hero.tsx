@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Play, Heart, Camera } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import ConsultationForm from "./ConsultationForm";
 interface HeroProps {
   onBookingClick: () => void;
@@ -9,6 +11,16 @@ const Hero = ({
   onBookingClick
 }: HeroProps) => {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleBookingClick = () => {
+    if (user) {
+      navigate('/planner');
+    } else {
+      onBookingClick();
+    }
+  };
   return <>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Video Background */}
@@ -38,7 +50,7 @@ const Hero = ({
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">California-based visual storytelling brand specialized in cinematic photography and videography for weddings, families, and businesses. </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button onClick={onBookingClick} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
+            <Button onClick={handleBookingClick} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
               <Camera className="w-5 h-5 mr-2" />
               View Packages & Book
             </Button>
