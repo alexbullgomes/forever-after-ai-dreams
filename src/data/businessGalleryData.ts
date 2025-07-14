@@ -3,10 +3,12 @@ import { MediaItemType } from "@/components/ui/gallery/types";
 export const businessGalleryItems: MediaItemType[] = [
   {
     id: 1,
-    type: "image", 
+    type: "video", 
     title: "Corporate Team Building",
     desc: "Professional team photography capturing company culture",
-    url: "/lovable-uploads/8e45f91c-791f-43b0-8364-50054ece61a5.png",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Fashionweb.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Fashionweb.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Fashion.webp",
     span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
   },
   {
