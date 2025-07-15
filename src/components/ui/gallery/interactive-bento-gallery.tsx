@@ -138,4 +138,6 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
     );
 });
 
+InteractiveBentoGallery.displayName = 'InteractiveBentoGallery';
+
 export default InteractiveBentoGallery;
