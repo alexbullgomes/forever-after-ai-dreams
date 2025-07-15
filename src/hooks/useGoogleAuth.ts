@@ -31,9 +31,8 @@ export const useGoogleAuth = ({ onClose }: UseGoogleAuthProps) => {
               fullName
             );
             
-            // Close modal and redirect
+            // Close modal - let OAuth redirectTo handle the redirect
             onClose();
-            window.location.href = '/wedding-packages';
           }
         }
       }
