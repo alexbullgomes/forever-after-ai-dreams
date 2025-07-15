@@ -64,15 +64,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  const cleanupAuthState = () => {
+    // Remove all Supabase auth keys from localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Remove from sessionStorage if in use
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  };
+
   const signOut = async () => {
     try {
       console.log('Signing out user...');
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      console.log('Sign out successful');
+      
+      // Clean up auth state first
+      cleanupAuthState();
+      
+      // Attempt global sign out (ignore errors since session might be missing)
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+        console.log('Sign out successful');
+      } catch (error) {
+        console.log('Sign out completed (session was already missing)');
+      }
+      
+      // Force page refresh for a clean state
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
-      throw error;
+      // Even if there's an error, force refresh to clean state
+      window.location.href = '/';
     }
   };
 
