@@ -1,4 +1,4 @@
-import React, { useState, memo, useMemo, useCallback } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MediaItemType } from './types';
 import MediaItem from './MediaItem';
@@ -21,7 +21,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
     const [items] = useState(mediaItems);
     const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
 
-    const toggleLikeItem = useCallback((itemId: number) => {
+    const toggleLikeItem = useMemo(() => (itemId: number) => {
         setLikedItems(prev => {
             const newLikedItems = new Set(prev);
             if (newLikedItems.has(itemId)) {
@@ -137,7 +137,5 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
         </div>
     );
 });
-
-InteractiveBentoGallery.displayName = 'InteractiveBentoGallery';
 
 export default InteractiveBentoGallery;

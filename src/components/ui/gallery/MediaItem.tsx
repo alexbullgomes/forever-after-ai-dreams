@@ -124,6 +124,4 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
     );
 });
 
-MediaItem.displayName = 'MediaItem';
-
 export default MediaItem;
