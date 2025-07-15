@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, memo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MediaItemType } from './types';
 
 interface MediaItemProps {
@@ -7,7 +7,7 @@ interface MediaItemProps {
     onClick?: (e?: any) => void;
 }
 
-const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) => {
+const MediaItem: React.FC<MediaItemProps> = ({ item, className, onClick }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [isBuffering, setIsBuffering] = useState(true);
@@ -91,7 +91,7 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                     playsInline
                     muted
                     loop
-                    preload="metadata"
+                    preload="auto"
                     poster={item.posterUrl}
                     style={{
                         opacity: isBuffering ? 0.8 : 1,
@@ -122,6 +122,6 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
             decoding="async"
         />
     );
-});
+};
 
 export default MediaItem;

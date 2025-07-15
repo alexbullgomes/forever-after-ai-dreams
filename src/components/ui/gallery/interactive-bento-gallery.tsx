@@ -1,4 +1,4 @@
-import React, { useState, memo, useMemo } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MediaItemType } from './types';
 import MediaItem from './MediaItem';
@@ -11,17 +11,17 @@ interface InteractiveBentoGalleryProps {
     pageSource?: string;
 }
 
-const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({ 
+const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ 
     mediaItems, 
     title, 
     description,
     pageSource 
 }) => {
     const [selectedItem, setSelectedItem] = useState<MediaItemType | null>(null);
-    const [items] = useState(mediaItems);
+    const [items, setItems] = useState(mediaItems);
     const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
 
-    const toggleLikeItem = useMemo(() => (itemId: number) => {
+    const toggleLikeItem = (itemId: number) => {
         setLikedItems(prev => {
             const newLikedItems = new Set(prev);
             if (newLikedItems.has(itemId)) {
@@ -31,30 +31,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
             }
             return newLikedItems;
         });
-    }, []);
-
-    // Optimized variant settings
-    const containerVariants = useMemo(() => ({
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.05 }
-        }
-    }), []);
-
-    const itemVariants = useMemo(() => ({
-        hidden: { y: 30, scale: 0.95, opacity: 0 },
-        visible: {
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            transition: {
-                type: "spring" as const,
-                stiffness: 400,
-                damping: 30
-            }
-        }
-    }), []);
+    };
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -97,7 +74,13 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
-                        variants={containerVariants}
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: {
+                                opacity: 1,
+                                transition: { staggerChildren: 0.1 }
+                            }
+                        }}
                     >
                         {items.map((item, index) => (
                             <motion.div
@@ -105,7 +88,20 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                                 layoutId={`media-${item.id}`}
                                 className={`relative overflow-hidden rounded-xl cursor-pointer ${item.span}`}
                                 onClick={() => setSelectedItem(item)}
-                                variants={itemVariants}
+                                variants={{
+                                    hidden: { y: 50, scale: 0.9, opacity: 0 },
+                                    visible: {
+                                        y: 0,
+                                        scale: 1,
+                                        opacity: 1,
+                                        transition: {
+                                            type: "spring",
+                                            stiffness: 350,
+                                            damping: 25,
+                                            delay: index * 0.05
+                                        }
+                                    }
+                                }}
                                 whileHover={{ scale: 1.02 }}
                             >
                                 <MediaItem
@@ -136,6 +132,6 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
             </AnimatePresence>
         </div>
     );
-});
+};
 
 export default InteractiveBentoGallery;
