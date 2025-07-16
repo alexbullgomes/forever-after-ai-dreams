@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MediaItemType } from './types';
 import MediaItem from './MediaItem';
@@ -11,7 +11,7 @@ interface InteractiveBentoGalleryProps {
     pageSource?: string;
 }
 
-const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ 
+const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({ 
     mediaItems, 
     title, 
     description,
@@ -21,7 +21,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
     const [items, setItems] = useState(mediaItems);
     const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
 
-    const toggleLikeItem = (itemId: number) => {
+    const toggleLikeItem = useCallback((itemId: number) => {
         setLikedItems(prev => {
             const newLikedItems = new Set(prev);
             if (newLikedItems.has(itemId)) {
@@ -31,7 +31,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
             }
             return newLikedItems;
         });
-    };
+    }, []);
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -78,7 +78,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
                             hidden: { opacity: 0 },
                             visible: {
                                 opacity: 1,
-                                transition: { staggerChildren: 0.1 }
+                                transition: { staggerChildren: 0.05 }
                             }
                         }}
                     >
@@ -89,16 +89,13 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
                                 className={`relative overflow-hidden rounded-xl cursor-pointer ${item.span}`}
                                 onClick={() => setSelectedItem(item)}
                                 variants={{
-                                    hidden: { y: 50, scale: 0.9, opacity: 0 },
+                                    hidden: { y: 20, opacity: 0 },
                                     visible: {
                                         y: 0,
-                                        scale: 1,
                                         opacity: 1,
                                         transition: {
-                                            type: "spring",
-                                            stiffness: 350,
-                                            damping: 25,
-                                            delay: index * 0.05
+                                            duration: 0.3,
+                                            ease: "easeOut"
                                         }
                                     }
                                 }}
@@ -132,6 +129,6 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({
             </AnimatePresence>
         </div>
     );
-};
+});
 
 export default InteractiveBentoGallery;
