@@ -5,6 +5,7 @@ import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation"
 import { PackageCard } from "@/components/wedding/PackageCard";
 import { CustomPackageCard } from "@/components/wedding/CustomPackageCard";
 import BusinessGallery from "@/components/galleries/BusinessGallery";
+import MilestonesGallery from "@/components/galleries/MilestonesGallery";
 
 const PhotoVideoServices = () => {
   const { user, loading } = useAuth();
@@ -162,6 +163,10 @@ const PhotoVideoServices = () => {
           </div>
         </div>
 
+        {/* Milestones Gallery */}
+        <div id="milestones-gallery" className="my-16">
+          <MilestonesGallery />
+        </div>
 
         {/* Business Photography */}
         <div className="mb-16">
