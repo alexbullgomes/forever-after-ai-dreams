@@ -70,7 +70,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                     />
                 ) : (
                     <motion.div
-                        className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 auto-rows-[200px]"
+                        className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 auto-rows-[60px]"
                         initial="hidden"
                         animate="visible"
                         exit="hidden"
