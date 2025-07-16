@@ -2,32 +2,6 @@ import { MediaItemType } from "@/components/ui/gallery/types";
 
 export const photoVideoGalleryItems: MediaItemType[] = [
   {
-    id: 1,
-    type: "image",
-    title: "Family Portrait Session",
-    desc: "Beautiful family memories captured in natural light",
-    url: "https://images.unsplash.com/photo-1511895426328-dc8714191300",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-  },
-  {
-    id: 2,
-    type: "video",
-    title: "Corporate Brand Story",
-    desc: "Professional business storytelling",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
-    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
-    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp",
-    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
-  },
-  {
-    id: 3,
-    type: "image",
-    title: "Business Headshots",
-    desc: "Professional corporate photography",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Coporatepotratil.webp",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-  },
-  {
     id: 4,
     type: "image",
     title: "Corporate Photography Event",
