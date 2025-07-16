@@ -1,8 +1,9 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MediaItemType } from './types';
 import MediaItem from './MediaItem';
 import GalleryModal from './GalleryModal';
+import { useGalleryAnimation } from '@/hooks/useGalleryAnimation';
 
 interface InteractiveBentoGalleryProps {
     mediaItems: MediaItemType[];
@@ -20,6 +21,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
     const [selectedItem, setSelectedItem] = useState<MediaItemType | null>(null);
     const [items, setItems] = useState(mediaItems);
     const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
+    const { shouldAnimate, markAsAnimated } = useGalleryAnimation(pageSource || 'default');
 
     const toggleLikeItem = useCallback((itemId: number) => {
         setLikedItems(prev => {
@@ -33,6 +35,16 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
         });
     }, []);
 
+    useEffect(() => {
+        if (shouldAnimate) {
+            // Mark as animated after the animation completes
+            const timer = setTimeout(() => {
+                markAsAnimated();
+            }, 1000); // Adjust timing based on your longest animation
+            return () => clearTimeout(timer);
+        }
+    }, [shouldAnimate, markAsAnimated]);
+
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <div className="mb-8 text-center">
@@ -40,17 +52,17 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                     className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent 
                              bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900
                              dark:from-white dark:via-gray-200 dark:to-white"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={shouldAnimate ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    transition={shouldAnimate ? { duration: 0.5 } : { duration: 0 }}
                 >
                     {title}
                 </motion.h1>
                 <motion.p
                     className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={shouldAnimate ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
+                    transition={shouldAnimate ? { duration: 0.5, delay: 0.1 } : { duration: 0 }}
                 >
                     {description}
                 </motion.p>
@@ -71,14 +83,14 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                 ) : (
                     <motion.div
                         className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 auto-rows-[60px]"
-                        initial="hidden"
+                        initial={shouldAnimate ? "hidden" : "visible"}
                         animate="visible"
                         exit="hidden"
                         variants={{
                             hidden: { opacity: 0 },
                             visible: {
                                 opacity: 1,
-                                transition: { staggerChildren: 0.05 }
+                                transition: shouldAnimate ? { staggerChildren: 0.05 } : { duration: 0 }
                             }
                         }}
                     >
@@ -93,10 +105,10 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                                     visible: {
                                         y: 0,
                                         opacity: 1,
-                                        transition: {
+                                        transition: shouldAnimate ? {
                                             duration: 0.3,
                                             ease: "easeOut"
-                                        }
+                                        } : { duration: 0 }
                                     }
                                 }}
                                 whileHover={{ scale: 1.02 }}
