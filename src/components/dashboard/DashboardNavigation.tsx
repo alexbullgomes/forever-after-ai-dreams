@@ -52,21 +52,22 @@ const DashboardNavigation = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex space-x-8">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) =>
-                  `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            {navLinks.map((link) => {
+              const isActive = window.location.pathname === link.to;
+              return (
+                <button
+                  key={link.to}
+                  onClick={() => window.location.href = link.to}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                  }`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Right side - Desktop User info and Sign out */}
@@ -106,22 +107,25 @@ const DashboardNavigation = () => {
             <div className="space-y-4">
               {/* Mobile Navigation Links */}
               <div className="space-y-2">
-                {navLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `block px-4 py-3 rounded-md text-base font-medium transition-colors ${
+                {navLinks.map((link) => {
+                  const isActive = window.location.pathname === link.to;
+                  return (
+                    <button
+                      key={link.to}
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        window.location.href = link.to;
+                      }}
+                      className={`block w-full text-left px-4 py-3 rounded-md text-base font-medium transition-colors ${
                         isActive
                           ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white"
                           : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      }`
-                    }
-                  >
-                    {link.label}
-                  </NavLink>
-                ))}
+                      }`}
+                    >
+                      {link.label}
+                    </button>
+                  );
+                })}
               </div>
               
               {/* Mobile User info and Sign out */}
