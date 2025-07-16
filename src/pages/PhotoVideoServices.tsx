@@ -4,7 +4,6 @@ import { Heart, Camera, Video, Users, Building } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageCard } from "@/components/wedding/PackageCard";
 import { CustomPackageCard } from "@/components/wedding/CustomPackageCard";
-import PhotoVideoGallery from "@/components/galleries/PhotoVideoGallery";
 import BusinessGallery from "@/components/galleries/BusinessGallery";
 
 const PhotoVideoServices = () => {
@@ -163,10 +162,6 @@ const PhotoVideoServices = () => {
           </div>
         </div>
 
-        {/* Portfolio Gallery */}
-        <div id="portfolio-gallery" className="my-16">
-          <PhotoVideoGallery />
-        </div>
 
         {/* Business Photography */}
         <div className="mb-16">
