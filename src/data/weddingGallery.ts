@@ -3,10 +3,12 @@ import { MediaItemType } from "@/components/ui/gallery/types";
 export const weddingGalleryItems: MediaItemType[] = [
   {
     id: 1,
-    type: "image",
+    type: "video",
     title: "Romantic Ceremony",
     desc: "Beautiful outdoor ceremony captured in golden hour light",
-    url: "/lovable-uploads/160fe8f9-dfe9-4e38-880c-72c42ac5fbdb.png",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//giovannaeclaudioweb.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//GIovanaandclaudio.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//giovannaeclaudio.webp",
     span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
