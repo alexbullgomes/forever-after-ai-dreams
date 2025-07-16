@@ -7,7 +7,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     title: "Family Portrait Session",
     desc: "Beautiful family memories captured in natural light",
     url: "https://images.unsplash.com/photo-1511895426328-dc8714191300",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    span: "col-span-1 row-span-1",
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
     posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp",
-    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+    span: "col-span-2 row-span-1",
   },
   {
     id: 3,
@@ -25,7 +25,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     title: "Business Headshots",
     desc: "Professional corporate photography",
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Coporatepotratil.webp",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    span: "col-span-1 row-span-1",
   },
   {
     id: 5,
@@ -35,7 +35,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
     posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp",
-    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+    span: "col-span-1 row-span-1",
   },
   {
     id: 6,
@@ -45,7 +45,7 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.webm",
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.mp4",
     fullVideoUrl: "https://www.youtube.com/watch?v=tMiU9NhmtZE",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+    span: "col-span-2 row-span-1",
   },
   {
     id: 8,
@@ -55,6 +55,6 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.webm",
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.mp4",
     posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.webp",
-    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+    span: "col-span-1 row-span-1",
   }
 ];
