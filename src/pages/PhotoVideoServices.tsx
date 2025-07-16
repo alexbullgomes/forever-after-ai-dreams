@@ -4,8 +4,8 @@ import { Heart, Camera, Video, Users, Building } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageCard } from "@/components/wedding/PackageCard";
 import { CustomPackageCard } from "@/components/wedding/CustomPackageCard";
+import PhotoVideoGallery from "@/components/galleries/PhotoVideoGallery";
 import BusinessGallery from "@/components/galleries/BusinessGallery";
-import MilestonesGallery from "@/components/galleries/MilestonesGallery";
 
 const PhotoVideoServices = () => {
   const { user, loading } = useAuth();
@@ -163,9 +163,9 @@ const PhotoVideoServices = () => {
           </div>
         </div>
 
-        {/* Milestones Gallery */}
-        <div id="milestones-gallery" className="my-16">
-          <MilestonesGallery />
+        {/* Portfolio Gallery */}
+        <div id="portfolio-gallery" className="my-16">
+          <PhotoVideoGallery />
         </div>
 
         {/* Business Photography */}
