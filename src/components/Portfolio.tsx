@@ -72,10 +72,10 @@ const Portfolio = ({
     id: 3,
     category: "video",
     title: "Business Achievement Portrait",
-    location: "San Diego, CA",
+    location: "Los Angeles, CA",
     date: "Summer 2024",
     type: "Photo & Video",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
+    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//stenio.webp"
   }];
   const filteredItems = activeFilter === "all" ? portfolioItems : portfolioItems.filter(item => item.category === activeFilter);
   const filters = [{
