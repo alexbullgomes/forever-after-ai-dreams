@@ -28,14 +28,6 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
-    id: 4,
-    type: "image",
-    title: "Corporate Photography Event",
-    desc: "Capturing life's special moments",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libswidephoto.webp",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-  },
-  {
     id: 5,
     type: "video",
     title: "Family Documentary",
@@ -56,14 +48,6 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
-    id: 7,
-    type: "image",
-    title: "Family Lifestyle Session",
-    desc: "Natural family moments captured beautifully",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Tavi.webp",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-  },
-  {
     id: 8,
     type: "video",
     title: "Birthday Event Celebration",
@@ -72,13 +56,5 @@ export const photoVideoGalleryItems: MediaItemType[] = [
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.mp4",
     posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nicole.webp",
     span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
-  },
-  {
-    id: 9,
-    type: "image",
-    title: "Corporate Team Photos",
-    desc: "Professional team photography for businesses",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//stenio.webp",
-    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   }
 ];
