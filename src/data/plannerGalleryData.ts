@@ -7,7 +7,7 @@ export const plannerGalleryItems: MediaItemType[] = [
     title: "Romantic Ceremony",
     desc: "Capturing precious wedding moments",
     url: "https://images.unsplash.com/photo-1519741497674-611481863552",
-    span: "col-span-1 row-span-1",
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
     id: 2,
@@ -16,7 +16,7 @@ export const plannerGalleryItems: MediaItemType[] = [
     desc: "Elegant celebration memories",
     url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everafter.webm",
     mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Homeeverafte.mp4",
-    span: "col-span-2 row-span-1",
+    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
   },
   {
     id: 3,
@@ -24,7 +24,7 @@ export const plannerGalleryItems: MediaItemType[] = [
     title: "Portrait Magic",
     desc: "Beautiful couple portraits",
     url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc",
-    span: "col-span-1 row-span-1",
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
     id: 4,
@@ -32,7 +32,7 @@ export const plannerGalleryItems: MediaItemType[] = [
     title: "Golden Hour",
     desc: "Romantic sunset photography",
     url: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92",
-    span: "col-span-1 row-span-1",
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
     id: 5,
@@ -40,7 +40,7 @@ export const plannerGalleryItems: MediaItemType[] = [
     title: "Wedding Details",
     desc: "Every detail perfectly captured",
     url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf",
-    span: "col-span-2 row-span-1",
+    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
   },
   {
     id: 6,
@@ -48,6 +48,30 @@ export const plannerGalleryItems: MediaItemType[] = [
     title: "Celebration Joy",
     desc: "Dancing and joyful moments",
     url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a",
-    span: "col-span-1 row-span-1",
-  }
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+  },
+  {
+    id: 7,
+    type: "image",
+    title: "Intimate Moments",
+    desc: "Quiet, precious moments together",
+    url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b",
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+  },
+  {
+    id: 8,
+    type: "image",
+    title: "Family Celebrations",
+    desc: "Milestone moments with loved ones",
+    url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc",
+    span: "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+  },
+  {
+    id: 9,
+    type: "image",
+    title: "Corporate Events",
+    desc: "Professional event photography",
+    url: "https://images.unsplash.com/photo-1505236858219-8359eb29e329",
+    span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+  },
 ];
