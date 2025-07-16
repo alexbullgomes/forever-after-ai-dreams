@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState, memo } from 'react';
 import { MediaItemType } from './types';
 
@@ -7,10 +8,17 @@ interface MediaItemProps {
     onClick?: (e?: any) => void;
 }
 
+// Simple mobile detection utility
+const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
+};
+
 const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [isBuffering, setIsBuffering] = useState(true);
+    const [isMobile] = useState(isMobileDevice());
 
     // Intersection Observer to detect if video is in view and play/pause accordingly
     useEffect(() => {
@@ -100,8 +108,13 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                         willChange: 'transform',
                     }}
                 >
-                    <source src={item.url} type="video/webm" />
+                    {/* For mobile devices, prioritize MP4 format */}
+                    {isMobile && item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
+                    {!isMobile && <source src={item.url} type="video/webm" />}
+                    {/* Fallback to MP4 for non-mobile or if WebM fails */}
                     {item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
+                    {/* Additional fallback if no MP4 is available */}
+                    {!item.mp4Url && <source src={item.url} type="video/mp4" />}
                 </video>
                 {isBuffering && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/10">
