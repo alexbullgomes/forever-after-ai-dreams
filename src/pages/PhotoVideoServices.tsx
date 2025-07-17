@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Heart, Camera, Video, Users, Building } from "lucide-react";
+import { Heart, Camera, Video, Users, Building, Bot } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageCard } from "@/components/wedding/PackageCard";
 import { CustomPackageCard } from "@/components/wedding/CustomPackageCard";
@@ -253,7 +253,7 @@ const PhotoVideoServices = () => {
             <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Camera className="w-8 h-8 text-white" />
+                  <Bot className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Assistant Planner</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed">
