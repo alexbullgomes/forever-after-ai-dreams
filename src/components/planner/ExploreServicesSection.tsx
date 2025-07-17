@@ -16,7 +16,7 @@ const ExploreServicesSection = () => {
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Photo & Video Services Card */}
-        <div onClick={() => { window.location.assign('/photo-video'); }} className="group cursor-pointer">
+        <div onClick={() => { window.location.assign('/photo-video-services'); }} className="group cursor-pointer">
           <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-gradient-to-br from-rose-50 to-pink-50 overflow-hidden">
             <CardContent className="p-8 relative">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-rose-500/10 to-pink-500/10 rounded-full -translate-y-8 translate-x-8"></div>
