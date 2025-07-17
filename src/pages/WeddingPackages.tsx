@@ -70,7 +70,7 @@ const WeddingPackages = () => {
                   Discover our complete photo and video sessions for weddings, families, and brands. Beautifully crafted visuals for every story.
                 </p>
                 <button
-                  onClick={() => window.location.href = '/photo-video-services'}
+                  onClick={() => { window.location.assign('/photo-video-services'); }}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   View gallery
@@ -92,7 +92,7 @@ const WeddingPackages = () => {
                   Get real-time planning help, timeline tips, and creative ideas — your wedding co-pilot is ready.
                 </p>
                 <button
-                  onClick={() => window.location.href = '/planner'}
+                  onClick={() => { window.location.assign('/planner'); }}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Ask anything

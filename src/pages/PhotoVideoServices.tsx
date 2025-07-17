@@ -238,7 +238,7 @@ const PhotoVideoServices = () => {
                   Exclusive wedding photography and videography collections. Premium packages designed for your special day.
                 </p>
                 <button
-                  onClick={() => window.location.href = '/wedding-packages'}
+                  onClick={() => { window.location.assign('/wedding-packages'); }}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Explore Services
@@ -260,7 +260,7 @@ const PhotoVideoServices = () => {
                   Your personal wedding assistant — get real-time answers, ideas, and timeline support to help you plan with confidence.
                 </p>
                 <button
-                  onClick={() => window.location.href = '/planner'}
+                  onClick={() => { window.location.assign('/planner'); }}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Ask anything
