@@ -249,21 +249,21 @@ const PhotoVideoServices = () => {
               </div>
             </div>
 
-            {/* Planner Card */}
+            {/* Assistant Planner Card */}
             <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Camera className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Event Planning</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Assistant Planner</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  Professional event planning services to make your special occasions seamless and memorable. From concept to execution.
+                  Your personal wedding assistant — get real-time answers, ideas, and timeline support to help you plan with confidence.
                 </p>
                 <button
                   onClick={() => window.location.href = '/planner'}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
-                  View Services
+                  Ask anything
                   <svg className="w-5 h-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
                   </svg>
