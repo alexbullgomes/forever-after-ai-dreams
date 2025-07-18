@@ -135,7 +135,7 @@ export function ExpandableChatAssistant() {
       size="lg"
       position="bottom-right"
       icon={<Bot className="h-6 w-6" />}
-      className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-2xl"
+      className="border-0 shadow-2xl bg-transparent"
     >
       <ExpandableChatHeader className="flex-col text-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0">
         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
