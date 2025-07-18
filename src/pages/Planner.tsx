@@ -5,6 +5,7 @@ import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation"
 import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
 import PlannerGallery from "@/components/galleries/PlannerGallery";
+import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 
 const Planner = () => {
   const { user, loading } = useAuth();
@@ -52,6 +53,9 @@ const Planner = () => {
         {/* Gallery Section */}
         <PlannerGallery />
       </div>
+      
+      {/* Expandable Chat Assistant - Additional Entry Point */}
+      <ExpandableChatAssistant />
     </div>
   );
 };
