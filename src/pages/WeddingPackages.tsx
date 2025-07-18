@@ -8,6 +8,7 @@ import WeddingGallery from "@/components/galleries/WeddingGallery";
 import WeddingPackagesHeader from "@/components/wedding/WeddingPackagesHeader";
 import LoadingState from "@/components/wedding/LoadingState";
 import { combinedPackages } from "@/data/weddingPackages";
+import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 
 const WeddingPackages = () => {
   const { user, loading } = useAuth();
@@ -110,6 +111,9 @@ const WeddingPackages = () => {
           <CTASection />
         </div>
       </div>
+      
+      {/* Expandable Chat Assistant - Available on all authenticated pages */}
+      <ExpandableChatAssistant />
     </div>
   );
 };

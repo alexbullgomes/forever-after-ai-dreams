@@ -6,6 +6,7 @@ import { PackageCard } from "@/components/wedding/PackageCard";
 import { CustomPackageCard } from "@/components/wedding/CustomPackageCard";
 import PhotoVideoGallery from "@/components/galleries/PhotoVideoGallery";
 import BusinessGallery from "@/components/galleries/BusinessGallery";
+import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 
 const PhotoVideoServices = () => {
   const { user, loading } = useAuth();
@@ -274,6 +275,9 @@ const PhotoVideoServices = () => {
         </div>
 
       </div>
+      
+      {/* Expandable Chat Assistant - Available on all authenticated pages */}
+      <ExpandableChatAssistant />
     </div>
   );
 };
