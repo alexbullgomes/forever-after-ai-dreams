@@ -135,23 +135,27 @@ export function ExpandableChatAssistant() {
       size="lg"
       position="bottom-right"
       icon={<Bot className="h-6 w-6" />}
+      className="bg-gradient-to-br from-rose-50 to-pink-50 border-0 shadow-2xl"
     >
-      <ExpandableChatHeader className="flex-col text-center justify-center">
-        <h1 className="text-xl font-semibold">Planner Assistant ✨</h1>
-        <p className="text-sm text-muted-foreground">
+      <ExpandableChatHeader className="flex-col text-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0">
+        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+          <Bot className="w-6 h-6 text-white" />
+        </div>
+        <h1 className="text-xl font-bold text-white">Assistant Planner</h1>
+        <p className="text-sm text-rose-100">
           Get personalized photo & video package recommendations
         </p>
       </ExpandableChatHeader>
 
-      <ExpandableChatBody>
-        <ChatMessageList>
+      <ExpandableChatBody className="bg-gradient-to-br from-rose-50 to-pink-50 p-4">
+        <ChatMessageList className="h-full">
           {messages.map((message) => (
             <ChatBubble
               key={message.id}
               variant={message.sender === "user" ? "sent" : "received"}
             >
               <ChatBubbleAvatar
-                className="h-8 w-8 shrink-0"
+                className="h-8 w-8 shrink-0 border-2 border-white shadow-md"
                 src={
                   message.sender === "user"
                     ? user?.user_metadata?.avatar_url || undefined
@@ -161,6 +165,10 @@ export function ExpandableChatAssistant() {
               />
               <ChatBubbleMessage
                 variant={message.sender === "user" ? "sent" : "received"}
+                className={message.sender === "user" 
+                  ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg" 
+                  : "bg-white text-gray-800 border border-rose-100 shadow-md"
+                }
               >
                 {message.content}
               </ChatBubbleMessage>
@@ -170,25 +178,28 @@ export function ExpandableChatAssistant() {
           {isLoading && (
             <ChatBubble variant="received">
               <ChatBubbleAvatar
-                className="h-8 w-8 shrink-0"
+                className="h-8 w-8 shrink-0 border-2 border-white shadow-md"
                 fallback="AI"
               />
-              <ChatBubbleMessage isLoading />
+              <ChatBubbleMessage 
+                isLoading 
+                className="bg-white text-gray-800 border border-rose-100 shadow-md"
+              />
             </ChatBubble>
           )}
         </ChatMessageList>
       </ExpandableChatBody>
 
-      <ExpandableChatFooter>
+      <ExpandableChatFooter className="bg-white border-t border-rose-100 p-4">
         {selectedFiles.length > 0 && (
           <div className="mb-2">
             <div className="flex flex-wrap gap-2">
               {selectedFiles.map((file, index) => (
-                <div key={index} className="flex items-center gap-2 bg-muted rounded-lg px-2 py-1 text-xs">
-                  <span>{file.name}</span>
+                <div key={index} className="flex items-center gap-2 bg-gradient-to-r from-rose-100 to-pink-100 border border-rose-200 rounded-lg px-3 py-1 shadow-sm">
+                  <span className="text-sm text-rose-700 truncate max-w-32">{file.name}</span>
                   <button
                     onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-rose-400 hover:text-rose-600 transition-colors"
                   >
                     ×
                   </button>
@@ -200,13 +211,13 @@ export function ExpandableChatAssistant() {
         
         <form
           onSubmit={handleSubmit}
-          className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring p-1"
+          className="relative rounded-xl border border-rose-200 bg-white focus-within:ring-2 focus-within:ring-rose-500 focus-within:border-rose-500 p-1 shadow-md"
         >
           <ChatInput
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Tell me about your photo/video needs..."
-            className="min-h-12 resize-none rounded-lg bg-background border-0 p-3 shadow-none focus-visible:ring-0"
+            className="min-h-12 resize-none rounded-xl bg-white border-0 p-3 shadow-none focus-visible:ring-0 placeholder:text-rose-400"
           />
           <div className="flex items-center p-3 pt-0 justify-between">
             <div className="flex">
@@ -215,6 +226,7 @@ export function ExpandableChatAssistant() {
                 size="icon"
                 type="button"
                 onClick={handleAttachFile}
+                className="text-rose-500 hover:text-rose-600 hover:bg-rose-50"
               >
                 <Paperclip className="size-4" />
               </Button>
@@ -224,6 +236,7 @@ export function ExpandableChatAssistant() {
                 size="icon"
                 type="button"
                 onClick={handleMicrophoneClick}
+                className="text-rose-500 hover:text-rose-600 hover:bg-rose-50"
               >
                 <Mic className="size-4" />
               </Button>
@@ -231,7 +244,7 @@ export function ExpandableChatAssistant() {
             <Button 
               type="submit" 
               size="sm" 
-              className="ml-auto gap-1.5"
+              className="ml-auto gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg transition-all duration-200"
               disabled={isLoading || (!input.trim() && selectedFiles.length === 0)}
             >
               Send Message
