@@ -44,7 +44,7 @@ const Testimonials = () => {
             <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Families & Brands</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Don't just take our word for it. Here's what couples across California are saying about their experience.
+            See why people across California trust Ever After to capture their most meaningful moments.
           </p>
         </div>
 
