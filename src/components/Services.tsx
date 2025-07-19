@@ -23,7 +23,7 @@ const Services = ({
   const services = [{
     icon: Heart,
     title: "Personalized Planner",
-    description: "Not sure where to start? EVA, our smart assistant, helps you build the perfect package for your event, style, and budget — and she loves giving rewards and special discounts.",
+    description: "Meet EVA — our smart assistant who builds your ideal package and unlocks exclusive deals.",
     features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
     gradient: "from-rose-500 to-pink-500",
     route: "/planner"
