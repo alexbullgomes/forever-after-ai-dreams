@@ -1,45 +1,36 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, Heart, Quote } from "lucide-react";
-
 const Testimonials = () => {
-  const testimonials = [
-    {
-      id: 1,
-      name: "Alana & Michael",
-      location: "San Diego Couple Family Documentary",
-      rating: 5,
-      text: "Absolutely breathtaking! They captured every moment perfectly. Our wedding film brings tears of joy every time we watch it. The attention to detail and artistic vision exceeded all our expectations.",
-      image: "/lovable-uploads/8218160d-57f7-4efa-9bcf-f22f3074d54a.png"
-    },
-    {
-      id: 2,
-      name: "Emma & David",
-      location: "Malibu Beach Ceremony",
-      rating: 5,
-      text: "Professional, creative, and so much fun to work with! They made us feel comfortable and the results were simply magical. Our photos are like artwork - we display them proudly in our home.",
-      image: "/lovable-uploads/a7af5164-9a69-4921-87dc-4d167dc3b382.png"
-    },
-    {
-      id: 3,
-      name: "Jessica & Ryan",
-      location: "Sonoma Garden Wedding",
-      rating: 5,
-      text: "The best investment we made for our wedding! The cinematic quality and storytelling approach created memories we'll treasure forever. They truly understand how to capture love.",
-      image: "/lovable-uploads/16b44735-6be5-41eb-b64a-a9cd4a2c8571.png"
-    },
-    {
-      id: 4,
-      name: "Lauren & James",
-      location: "San Francisco City Wedding",
-      rating: 5,
-      text: "Incredible team with amazing artistic vision. They captured moments we didn't even know were happening. The final film was beyond our wildest dreams - it's our love story told beautifully.",
-      image: "/lovable-uploads/e4d4b04a-7d06-4b7d-9e8c-4b85c7039d41.png"
-    }
-  ];
-
-  return (
-    <section className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+  const testimonials = [{
+    id: 1,
+    name: "Alana & Michael",
+    location: "San Diego Couple Family Documentary",
+    rating: 5,
+    text: "Absolutely breathtaking! They captured every moment perfectly. Our wedding film brings tears of joy every time we watch it. The attention to detail and artistic vision exceeded all our expectations.",
+    image: "/lovable-uploads/8218160d-57f7-4efa-9bcf-f22f3074d54a.png"
+  }, {
+    id: 2,
+    name: "Emma & David",
+    location: "Malibu Beach Ceremony",
+    rating: 5,
+    text: "Professional, creative, and so much fun to work with! They made us feel comfortable and the results were simply magical. Our photos are like artwork - we display them proudly in our home.",
+    image: "/lovable-uploads/a7af5164-9a69-4921-87dc-4d167dc3b382.png"
+  }, {
+    id: 3,
+    name: "Jessica & Ryan",
+    location: "Sonoma Garden Wedding",
+    rating: 5,
+    text: "The best investment we made for our wedding! The cinematic quality and storytelling approach created memories we'll treasure forever. They truly understand how to capture love.",
+    image: "/lovable-uploads/16b44735-6be5-41eb-b64a-a9cd4a2c8571.png"
+  }, {
+    id: 4,
+    name: "Lauren & James",
+    location: "San Francisco City Wedding",
+    rating: 5,
+    text: "Incredible team with amazing artistic vision. They captured moments we didn't even know were happening. The final film was beyond our wildest dreams - it's our love story told beautifully.",
+    image: "/lovable-uploads/e4d4b04a-7d06-4b7d-9e8c-4b85c7039d41.png"
+  }];
+  return <section className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -50,9 +41,7 @@ const Testimonials = () => {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             What Our Couples
-            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
-              Are Saying
-            </span>
+            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Families & Brands</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Don't just take our word for it. Here's what couples across California are saying about their experience.
@@ -60,15 +49,10 @@ const Testimonials = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
+          {testimonials.map((testimonial, index) => <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
-                  <img 
-                    src={testimonial.image} 
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover mr-4 ring-2 ring-rose-200"
-                  />
+                  <img src={testimonial.image} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover mr-4 ring-2 ring-rose-200" />
                   <div>
                     <h4 className="text-lg font-bold text-gray-900">{testimonial.name}</h4>
                     <p className="text-rose-600 text-sm font-medium">{testimonial.location}</p>
@@ -76,9 +60,7 @@ const Testimonials = () => {
                 </div>
 
                 <div className="flex items-center mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                  ))}
+                  {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />)}
                 </div>
 
                 <div className="relative">
@@ -88,8 +70,7 @@ const Testimonials = () => {
                   </p>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Stats section */}
@@ -120,8 +101,6 @@ const Testimonials = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Testimonials;
