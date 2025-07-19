@@ -23,22 +23,22 @@ const Services = ({
   const services = [{
     icon: Heart,
     title: "Personalized Planner",
-    description: "Chat with the \"Planner Assistant\" and let it help you find the perfect package for your special moments and needs.",
-    features: ["AI-Powered Recommendations", "Custom Package Planning", "Event Type Matching", "Budget Optimization"],
+    description: "Not sure where to start? EVA, our smart assistant, helps you build the perfect package for your event, style, and budget — and she loves giving rewards and special discounts.",
+    features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
     gradient: "from-rose-500 to-pink-500",
     route: "/planner"
   }, {
     icon: Camera,
     title: "Photo & Video Services",
-    description: "Professional photography and videography for families, businesses, and special occasions.",
-    features: ["Family Portraits", "Business Photography", "Corporate Events", "Milestone and Celebrations"],
+    description: "Life moves fast, but memories don't have to fade. We capture moments you'll want to hold onto forever.",
+    features: ["Genuine Family Portraits", "Stories Behind Your Business", "Corporate Gatherings", "Celebrations and Milestones"],
     gradient: "from-purple-500 to-pink-500",
     route: "/photo-video-services"
   }, {
     icon: Sparkles,
     title: "Wedding Packages",
-    description: "Complete wedding coverage combining both videography and photography for your special day.",
-    features: ["Photo + Video Packages", "Wedding Photography", "Wedding Videography", "Premium Collections"],
+    description: "Your love story feels like a movie — we'll film the moment that matters most.",
+    features: ["Photos + Video Packages", "Artistic & Emotional Photography", "Cinematic Wedding Films", "Personalized & Fast Delivery"],
     gradient: "from-pink-500 to-rose-500",
     route: "/wedding-packages"
   }];
