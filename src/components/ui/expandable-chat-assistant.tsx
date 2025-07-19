@@ -141,7 +141,7 @@ export function ExpandableChatAssistant() {
         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
           <Bot className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-xl font-bold text-white">Assistant Planner</h1>
+        <h1 className="text-xl font-bold text-white">EVA Assistant Planner</h1>
         <p className="text-sm text-rose-100">
           Get personalized photo & video package recommendations
         </p>
