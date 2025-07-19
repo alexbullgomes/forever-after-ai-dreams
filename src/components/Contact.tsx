@@ -84,7 +84,7 @@ const Contact = () => {
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Let's Create Something
+            Loved By Couples
             <span className="block bg-gradient-to-r from-rose-400 to-pink-400 bg-clip-text text-transparent">Families & Brands</span>
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
