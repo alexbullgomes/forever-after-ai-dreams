@@ -40,7 +40,7 @@ const Testimonials = () => {
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            What Our Couples
+            Loved by Couples
             <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Families & Brands</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
