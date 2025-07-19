@@ -52,7 +52,7 @@ const Hero = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button onClick={handleBookingClick} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
               <Camera className="w-5 h-5 mr-2" />
-              View Packages & Book
+              Build & View Packages
             </Button>
             
             <Button variant="outline" size="lg" className="border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300" onClick={() => setIsConsultationFormOpen(true)}>
