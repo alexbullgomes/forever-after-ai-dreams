@@ -39,7 +39,7 @@ const PhotoVideoServices = () => {
       price: "$250–$850",
       description: "Capture timeless moments with professional photography.",
       features: [
-        "2-6 hours session",
+        "1-6 hours session",
         "Location of your choice",
         "50-150 edited images",
         "Online gallery access",
@@ -85,7 +85,7 @@ const PhotoVideoServices = () => {
       price: "$200–$1200",
       description: "Professional headshots tailored to elevate your business.",
       features: [
-        "2-6 hours session",
+        "1-6 hours session",
         "Ideal for Professionals & Events",
         "100-300 Edited images",
         "Professional retouching",
