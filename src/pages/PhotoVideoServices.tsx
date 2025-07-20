@@ -39,7 +39,7 @@ const PhotoVideoServices = () => {
       price: "$250–$850",
       description: "Capture timeless moments with professional photography.",
       features: [
-        "1–6 hour session",
+        "2-6 hours session",
         "Location of your choice",
         "50-150 edited images",
         "Online gallery access",
@@ -67,7 +67,7 @@ const PhotoVideoServices = () => {
       price: "$350–$1200",
       description: "Cinematic coverage for events, memories, and stories.",
       features: [
-        "1–6 hour session",
+        "2-6 hours session",
         "Location of your choice",
         "Highlight video (1–4 minutes)",
         "Full-length edit (optional)",
@@ -85,7 +85,7 @@ const PhotoVideoServices = () => {
       price: "$200–$1200",
       description: "Professional headshots tailored to elevate your business.",
       features: [
-        "1-6 Hour Session",
+        "2-6 hours session",
         "Ideal for Professionals & Events",
         "100-300 Edited images",
         "Professional retouching",
@@ -113,7 +113,7 @@ const PhotoVideoServices = () => {
       price: "$450–$3300",
       description: "Professional video coverage of your business events and brand content.",
       features: [
-        "1–6 hour session",
+        "2-6 hours session",
         "Location of your choice",
         "Highlight video (1–4 minutes)",
         "Full-length edit (optional)",
