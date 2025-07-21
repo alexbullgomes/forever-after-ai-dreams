@@ -109,7 +109,7 @@ const PhotoVideoServices = () => {
       popular: true
     },
     {
-      name: "Videos Event Coverage",
+      name: "Brand & Corporate Events",
       price: "$450–$3300",
       description: "Professional video coverage of your business events and brand content.",
       features: [
