@@ -72,6 +72,22 @@ const Contact = () => {
     }
   };
 
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 3) {
+      return numbers;
+    }
+    if (numbers.length <= 6) {
+      return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
+    }
+    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -145,7 +161,7 @@ const Contact = () => {
                       name="phone"
                       type="tel"
                       value={formData.phone}
-                      onChange={handleChange}
+                      onChange={handlePhoneChange}
                       className="bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-rose-400"
                       placeholder="(555) 123-4567"
                     />
