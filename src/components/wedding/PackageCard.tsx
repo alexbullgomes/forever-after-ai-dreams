@@ -35,7 +35,7 @@ const PackageCard = ({ name, price, description, features, popular }: PackageCar
             {name}
           </CardTitle>
           <div className="text-center">
-            <span className="text-3xl font-bold text-rose-600">$950-$5900</span>
+            <span className="text-3xl font-bold text-rose-600">{price}</span>
             <div className="mt-2">
               {name === "Photo & Video Combo" ? <CreatePackageBadge /> : <EstimatedPriceBadge />}
             </div>
