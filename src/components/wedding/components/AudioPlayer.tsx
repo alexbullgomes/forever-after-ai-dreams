@@ -63,26 +63,26 @@ export const AudioPlayer = ({
   }, [isPlaying]);
 
   return (
-    <div className={`flex items-center gap-3 p-4 rounded-lg w-full max-w-sm ${
+    <div className={`flex items-center gap-3 p-3 rounded-lg ${
       isUserMessage ? 'bg-rose-600' : 'bg-gray-100'
     }`}>
       <button
         onClick={() => onPlay(fileUrl, fileId)}
-        className={`flex-shrink-0 p-2 rounded-full hover:bg-opacity-80 transition ${
+        className={`flex-shrink-0 p-1.5 rounded-full hover:bg-opacity-80 transition ${
           isUserMessage ? 'hover:bg-rose-700' : 'hover:bg-gray-200'
         }`}
       >
         {isPlaying ? (
-          <Pause size={18} className={isUserMessage ? 'text-white' : 'text-gray-700'} />
+          <Pause size={16} className={isUserMessage ? 'text-white' : 'text-gray-700'} />
         ) : (
-          <Play size={18} className={isUserMessage ? 'text-white' : 'text-gray-700'} />
+          <Play size={16} className={isUserMessage ? 'text-white' : 'text-gray-700'} />
         )}
       </button>
-      <div className="flex-1 min-w-0 flex-grow">
+      <div className="flex-1 min-w-0">
         <div 
           ref={waveformRef} 
           className="w-full"
-          style={{ minHeight: '32px' }}
+          style={{ minHeight: '30px' }}
         />
       </div>
       <audio 
