@@ -230,28 +230,28 @@ export function ExpandableChatAssistant() {
                 <div className="space-y-2">
                   {message.content}
                   
-                  {/* File previews */}
-                  {message.files && message.files.map((file, fileIndex) => (
-                    <div key={fileIndex} className="mt-2">
-                      {file.fileType.startsWith('image/') ? (
-                        <img 
-                          src={file.fileUrl} 
-                          alt={file.fileName}
-                          className="max-w-48 max-h-32 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => window.open(file.fileUrl, '_blank')}
-                        />
-                      ) : file.fileType.startsWith('audio/') ? (
-                        <AudioPlayer
-                          fileUrl={file.fileUrl}
-                          fileName={file.fileName}
-                          fileId={`audio-${message.id}-${fileIndex}`}
-                          playingAudio={playingAudio}
-                          onPlay={handleAudioPlay}
-                          isUserMessage={message.sender === "user"}
-                        />
-                      ) : null}
-                    </div>
-                  ))}
+                   {/* File previews */}
+                   {message.files && message.files.map((file, fileIndex) => (
+                     <div key={fileIndex} className={`mt-2 ${file.fileType.startsWith('audio/') ? 'w-full' : ''}`}>
+                       {file.fileType.startsWith('image/') ? (
+                         <img 
+                           src={file.fileUrl} 
+                           alt={file.fileName}
+                           className="max-w-48 max-h-32 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                           onClick={() => window.open(file.fileUrl, '_blank')}
+                         />
+                       ) : file.fileType.startsWith('audio/') ? (
+                         <AudioPlayer
+                           fileUrl={file.fileUrl}
+                           fileName={file.fileName}
+                           fileId={`audio-${message.id}-${fileIndex}`}
+                           playingAudio={playingAudio}
+                           onPlay={handleAudioPlay}
+                           isUserMessage={message.sender === "user"}
+                         />
+                       ) : null}
+                     </div>
+                   ))}
                 </div>
               </ChatBubbleMessage>
             </ChatBubble>
