@@ -18,6 +18,7 @@ import {
 import { ChatMessageList } from "@/components/ui/chat-message-list";
 import { useAuth } from "@/contexts/AuthContext";
 import { sendWebhookMessage } from "@/components/wedding/utils/webhookService";
+import { AudioPlayer } from "@/components/wedding/components/AudioPlayer";
 
 interface ChatMessage {
   id: number;
@@ -240,34 +241,14 @@ export function ExpandableChatAssistant() {
                           onClick={() => window.open(file.fileUrl, '_blank')}
                         />
                       ) : file.fileType.startsWith('audio/') ? (
-                        <div className={`flex items-center gap-2 p-2 rounded ${
-                          message.sender === "user" ? 'bg-rose-600' : 'bg-gray-100'
-                        }`}>
-                          <button
-                            onClick={() => handleAudioPlay(file.fileUrl, `audio-${message.id}-${fileIndex}`)}
-                            className={`p-1 rounded-full hover:bg-opacity-80 transition ${
-                              message.sender === "user" ? 'hover:bg-rose-700' : 'hover:bg-gray-200'
-                            }`}
-                          >
-                            {playingAudio === `audio-${message.id}-${fileIndex}` ? (
-                              <Pause size={16} className={message.sender === "user" ? 'text-white' : 'text-gray-700'} />
-                            ) : (
-                              <Play size={16} className={message.sender === "user" ? 'text-white' : 'text-gray-700'} />
-                            )}
-                          </button>
-                          <div className="flex-1">
-                            <p className={`text-xs ${
-                              message.sender === "user" ? 'text-rose-100' : 'text-gray-600'
-                            }`}>
-                              {file.fileName}
-                            </p>
-                            <audio 
-                              id={`audio-${message.id}-${fileIndex}`}
-                              src={file.fileUrl}
-                              className="hidden"
-                            />
-                          </div>
-                        </div>
+                        <AudioPlayer
+                          fileUrl={file.fileUrl}
+                          fileName={file.fileName}
+                          fileId={`audio-${message.id}-${fileIndex}`}
+                          playingAudio={playingAudio}
+                          onPlay={handleAudioPlay}
+                          isUserMessage={message.sender === "user"}
+                        />
                       ) : null}
                     </div>
                   ))}
