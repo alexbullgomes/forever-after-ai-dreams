@@ -154,12 +154,12 @@ export function ExpandableChatAssistant() {
       setIsRecording(true);
       setMediaRecorder(newMediaRecorder);
       
-      // Auto-stop after 10 seconds
+      // Auto-stop after 3 minutes
       setTimeout(() => {
         if (newMediaRecorder.state === 'recording') {
           newMediaRecorder.stop();
         }
-      }, 10000);
+      }, 180000);
     } catch (error) {
       console.error('Error accessing microphone:', error);
       setIsRecording(false);
