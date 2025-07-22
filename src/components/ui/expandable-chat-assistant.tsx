@@ -115,7 +115,18 @@ export function ExpandableChatAssistant() {
     input.multiple = true;
     input.onchange = (e) => {
       const files = Array.from((e.target as HTMLInputElement).files || []);
-      setSelectedFiles(prev => [...prev, ...files]);
+      const maxImageSize = 5 * 1024 * 1024; // 5MB for images
+      
+      const validFiles = files.filter(file => {
+        // Check image file size (5MB limit for images)
+        if (file.type.startsWith('image/') && file.size > maxImageSize) {
+          console.warn(`Image file ${file.name} exceeds 5MB limit`);
+          return false;
+        }
+        return true;
+      });
+      
+      setSelectedFiles(prev => [...prev, ...validFiles]);
     };
     input.click();
   };

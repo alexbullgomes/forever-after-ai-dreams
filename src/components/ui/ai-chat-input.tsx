@@ -66,10 +66,22 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     const allowedTypes = ['image/', 'audio/'];
+    const maxImageSize = 5 * 1024 * 1024; // 5MB for images
     
-    const validFiles = files.filter(file => 
-      allowedTypes.some(type => file.type.startsWith(type))
-    );
+    const validFiles = files.filter(file => {
+      // Check file type
+      if (!allowedTypes.some(type => file.type.startsWith(type))) {
+        return false;
+      }
+      
+      // Check image file size (5MB limit for images)
+      if (file.type.startsWith('image/') && file.size > maxImageSize) {
+        console.warn(`Image file ${file.name} exceeds 5MB limit`);
+        return false;
+      }
+      
+      return true;
+    });
     
     setSelectedFiles(prev => [...prev, ...validFiles]);
     
