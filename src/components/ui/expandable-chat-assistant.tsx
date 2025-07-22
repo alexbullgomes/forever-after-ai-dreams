@@ -111,15 +111,20 @@ export function ExpandableChatAssistant() {
   const handleAttachFile = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*,audio/*';
+    input.accept = 'image/*,audio/*,.heic,.heif'; // Include HEIC/HEIF for iPhone photos
     input.multiple = true;
     input.onchange = (e) => {
       const files = Array.from((e.target as HTMLInputElement).files || []);
       const maxImageSize = 5 * 1024 * 1024; // 5MB for images
+      const allowedExtensions = ['.heic', '.heif'];
       
       const validFiles = files.filter(file => {
+        // Check if file is an image (including HEIC/HEIF)
+        const isImageFile = file.type.startsWith('image/') || 
+          allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
         // Check image file size (5MB limit for images)
-        if (file.type.startsWith('image/') && file.size > maxImageSize) {
+        if (isImageFile && file.size > maxImageSize) {
           console.warn(`Image file ${file.name} exceeds 5MB limit`);
           return false;
         }
