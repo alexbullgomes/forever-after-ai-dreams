@@ -77,6 +77,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
       );
       
       if (!isValidType && !isValidExtension) {
+        console.warn(`File ${file.name} rejected: unsupported type ${file.type}`);
         return false;
       }
       
@@ -85,10 +86,11 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
       
       if (isImageFile && file.size > maxImageSize) {
-        console.warn(`Image file ${file.name} exceeds 5MB limit`);
+        console.warn(`Image file ${file.name} exceeds 5MB limit (${Math.round(file.size / 1024 / 1024)}MB)`);
         return false;
       }
       
+      console.log(`File ${file.name} accepted: type=${file.type}, size=${Math.round(file.size / 1024)}KB`);
       return true;
     });
     
@@ -255,7 +257,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               <div className="flex flex-wrap gap-2">
                 {selectedFiles.map((file, index) => (
                   <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1">
-                    {file.type.startsWith('image/') ? (
+                    {(file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) ? (
                       <Image size={16} className="text-gray-600" />
                     ) : (
                       <MicIcon size={16} className="text-gray-600" />
@@ -297,7 +299,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,audio/*"
+              accept="image/*,audio/*,.heic,.heif"
               multiple
               onChange={handleFileSelect}
               className="hidden"

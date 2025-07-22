@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { Send, Bot, Paperclip, Mic, CornerDownLeft, Play, Pause } from "lucide-react";
+import { Send, Bot, Paperclip, Mic, CornerDownLeft, Play, Pause, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ChatBubble,
@@ -119,15 +119,28 @@ export function ExpandableChatAssistant() {
       const allowedExtensions = ['.heic', '.heif'];
       
       const validFiles = files.filter(file => {
+        // Check file type or extension for HEIC/HEIF support
+        const isValidType = file.type.startsWith('image/') || file.type.startsWith('audio/');
+        const isValidExtension = allowedExtensions.some(ext => 
+          file.name.toLowerCase().endsWith(ext)
+        );
+        
+        if (!isValidType && !isValidExtension) {
+          console.warn(`File ${file.name} rejected: unsupported type ${file.type}`);
+          return false;
+        }
+        
         // Check if file is an image (including HEIC/HEIF)
         const isImageFile = file.type.startsWith('image/') || 
           allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
         
         // Check image file size (5MB limit for images)
         if (isImageFile && file.size > maxImageSize) {
-          console.warn(`Image file ${file.name} exceeds 5MB limit`);
+          console.warn(`Image file ${file.name} exceeds 5MB limit (${Math.round(file.size / 1024 / 1024)}MB)`);
           return false;
         }
+        
+        console.log(`File ${file.name} accepted: type=${file.type}, size=${Math.round(file.size / 1024)}KB`);
         return true;
       });
       
@@ -249,7 +262,7 @@ export function ExpandableChatAssistant() {
                    {/* File previews */}
                    {message.files && message.files.map((file, fileIndex) => (
                      <div key={fileIndex} className={`mt-2 ${file.fileType.startsWith('audio/') ? 'w-full' : ''}`}>
-                       {file.fileType.startsWith('image/') ? (
+                       {(file.fileType.startsWith('image/') || file.fileName.toLowerCase().endsWith('.heic') || file.fileName.toLowerCase().endsWith('.heif')) ? (
                          <img 
                            src={file.fileUrl} 
                            alt={file.fileName}
@@ -297,6 +310,11 @@ export function ExpandableChatAssistant() {
                   {file.type.startsWith('audio/') ? (
                     <div className="flex items-center gap-2">
                       <Mic className="size-3 text-rose-600" />
+                      <span className="text-sm text-rose-700 truncate max-w-32">{file.name}</span>
+                    </div>
+                  ) : (file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) ? (
+                    <div className="flex items-center gap-2">
+                      <Image className="size-3 text-rose-600" />
                       <span className="text-sm text-rose-700 truncate max-w-32">{file.name}</span>
                     </div>
                   ) : (
