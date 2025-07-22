@@ -102,7 +102,7 @@ const PersonalizedConsultationForm = ({
         packageName: packageName,
         packagePrice: packagePrice,
         timestamp: new Date().toISOString(),
-        source: 'wedding_package_consultation_form'
+        source: packageName
       };
 
       console.log('Sending package consultation request:', payload);
