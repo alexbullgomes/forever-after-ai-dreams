@@ -31,10 +31,12 @@ export const weddingGalleryItems: MediaItemType[] = [
   },
   {
     id: 4,
-    type: "image",
+    type: "video",
     title: "Bridal Portrait",
     desc: "Stunning bridal portrait with natural lighting",
-    url: "/lovable-uploads/8218160d-57f7-4efa-9bcf-f22f3074d54a.png",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everton & Nath.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everton & Nath.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nath&bigu.webp",
     span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
