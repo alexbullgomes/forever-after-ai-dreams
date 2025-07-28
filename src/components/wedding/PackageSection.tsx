@@ -8,6 +8,7 @@ interface Package {
   description: string;
   features: string[];
   popular: boolean;
+  idealFor?: string;
 }
 
 interface PackageSectionProps {
@@ -39,6 +40,7 @@ const PackageSection = ({ title, subtitle, packages, icon: Icon }: PackageSectio
             description={pkg.description}
             features={pkg.features}
             popular={pkg.popular}
+            idealFor={pkg.idealFor}
           />
         ))}
       </div>
