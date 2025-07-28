@@ -333,7 +333,9 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="flex-1 border-0 outline-0 rounded-md py-2 text-base bg-transparent w-full font-normal"
+                className={`flex-1 border-0 outline-0 rounded-md bg-transparent w-full font-normal ${
+                  isMobile ? 'py-1 text-sm' : 'py-2 text-base'
+                }`}
                 style={{ position: "relative", zIndex: 1 }}
                 onFocus={handleActivate}
                 disabled={isLoading}
