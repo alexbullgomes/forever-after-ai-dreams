@@ -45,9 +45,9 @@ const PhotoVideoServices = () => {
         "Location of your choice",
         "25 –200 edited images",
         "Fast Delivery",
-        "Print release rights",
-        "Ideal for: Couples & Families; Pregnancy Photoshoot; Children Photoshoots; Milestone Celebrations; Greeting Cards; Lifestyle Sessions; Anniversary and Birthdays."
+        "Print release rights"
       ],
+      idealFor: "Ideal for: Couples & Families; Pregnancy Photoshoots; Children Photoshoots; Milestone Celebrations; Greeting Cards; Lifestyle Sessions; Anniversary and Birthdays.",
       popular: false
     },
     {
@@ -61,9 +61,9 @@ const PhotoVideoServices = () => {
         "Full-day Highlights & Storytelling",
         "Location of your choice",
         "Full rights and Fast delivery",
-        "Special add-ons (f.e. Drone footage)",
-        "Ideal for: Save the Date, Anniversaries and Birthdays, Pregnancy moments, Friends and Family Testimonials and Reunions."
+        "Special add-ons (f.e. Drone footage)"
       ],
+      idealFor: "Ideal for: Save the Date, Anniversaries and Birthdays, Pregnancy moments, Friends and Family Testimonials and Reunions.",
       popular: true
     },
     {
@@ -77,9 +77,9 @@ const PhotoVideoServices = () => {
         "Highlights & Storytelling videos",
         "Professionally editing and color-grading",
         "Full rights and Fast delivery",
-        "Special Add-ons",
-        "Ideal for: Couples, Anniversaries, Birthdays, Baby showers, Pregnancy moments, Gifting."
+        "Special Add-ons"
       ],
+      idealFor: "Ideal for: Couples, Anniversaries, Birthdays, Baby showers, Pregnancy moments, Gifting.",
       popular: false
     }
   ];
@@ -165,6 +165,7 @@ const PhotoVideoServices = () => {
                 description={pkg.description}
                 features={pkg.features}
                 popular={pkg.popular}
+                idealFor={pkg.idealFor}
               />
             ))}
           </div>
