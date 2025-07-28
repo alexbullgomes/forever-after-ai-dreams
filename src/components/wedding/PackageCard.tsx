@@ -57,7 +57,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
           </ul>
           
           {idealFor && (
-            <div className="pt-2 pb-2">
+            <div className="pt-2 pb-2 text-center">
               <span className="text-sm font-bold text-gray-800">{idealFor}</span>
             </div>
           )}
