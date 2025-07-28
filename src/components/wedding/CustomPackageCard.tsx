@@ -11,9 +11,10 @@ interface CustomPackageCardProps {
   description: string;
   features: string[];
   popular: boolean;
+  idealFor?: string;
 }
 
-const CustomPackageCard = ({ name, price, description, features, popular }: CustomPackageCardProps) => {
+const CustomPackageCard = ({ name, price, description, features, popular, idealFor }: CustomPackageCardProps) => {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
 
   return (
@@ -53,7 +54,13 @@ const CustomPackageCard = ({ name, price, description, features, popular }: Cust
             ))}
           </ul>
           
-          <Button 
+          {idealFor && (
+            <div className="text-center">
+              <span className="text-sm font-bold text-gray-700">{idealFor}</span>
+            </div>
+          )}
+          
+          <Button
             onClick={() => setIsConsultationFormOpen(true)}
             className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
           >

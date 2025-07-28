@@ -88,44 +88,50 @@ const PhotoVideoServices = () => {
   const businessPhotographyPackages = [
     {
       name: "Corporate Headshots",
-      price: "$200–$1200",
-      description: "Professional headshots tailored to elevate your business.",
+      price: "$250–$1450",
+      description: "Professional headshots tailored to elevate you or your business & Personalized Packages.",
       features: [
-        "1-6 hours session",
-        "Ideal for Professionals & Events",
-        "100-300 Edited images",
-        "Professional retouching",
-        "High-resolution delivery"
+        "1–8 hours session",
+        "1-2 Photographer",
+        "10–150 Edited images",
+        "High-resolution delivery",
+        "Location of your choice",
+        "Full rights and Fast delivery",
+        "Special add-ons (optional)"
       ],
+      idealFor: "Ideal for: Social Media, Product activations, Business events, Department photos, Team headshots, Social Media, Influencers Product Felling Shots & company contents.",
       popular: false
     },
     {
       name: "Photo & Video Coverage",
       price: "Personalize",
-      description: "Professional coverage of your business events and activations with photos and videos.",
+      description: "Personalized Professional video+photo coverage of your business events and brand activations.",
       features: [
-        "8+ hour session",
-        "Photo + Video coverage",
-        "Location(s) of your choice",
-        "Full gallery + Video Highlights",
-        "Documentary Style (Optional)",
-        "For all-day celebrations",
-        "Online + full rights"
+        "1-8+ hour session",
+        "2 Professionals",
+        "Edits Photo + Video coverage",
+        "Video format of your choice",
+        "Location of your choice",
+        "Full rights and Fast delivery",
+        "Special add-ons (optional)"
       ],
+      idealFor: "Ideal for: Video Highlights, Institutional Documentary, Social Media, Event coverage, Brand Activations, Full-day video coverage.",
       popular: true
     },
     {
-      name: "Brand & Corporate Events",
+      name: "Brand & Events Video Coverage",
       price: "$450–$3300",
-      description: "Professional video coverage of your business events and brand content.",
+      description: "Personalized Professional video coverage of your business events and brand content.",
       features: [
-        "2-6 hours session",
+        "1–8 hours session",
+        "1- 2 Professionals",
+        "Video format of your choice",
         "Location of your choice",
-        "Highlight video (1–4 minutes)",
-        "Full-length edit (optional)",
-        "Professionally edited and color-graded",
-        "Digital delivery + download link"
+        "Video Highlights, Institutional Documentary",
+        "Full rights and Fast delivery",
+        "Special add-ons (optional)"
       ],
+      idealFor: "Ideal for: Social media Brand Product launching, Conferences, Workshops, Masterclasses, Landing Pages and Startups, Video Gallery footages.",
       popular: false
     }
   ];
@@ -200,6 +206,7 @@ const PhotoVideoServices = () => {
                     description={pkg.description}
                     features={pkg.features}
                     popular={pkg.popular}
+                    idealFor={pkg.idealFor}
                   />
                 );
               }
@@ -212,6 +219,7 @@ const PhotoVideoServices = () => {
                   description={pkg.description}
                   features={pkg.features}
                   popular={pkg.popular}
+                  idealFor={pkg.idealFor}
                 />
               );
             })}
