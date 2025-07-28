@@ -109,7 +109,7 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
 
             <div>
               <Label htmlFor="weddingDate" className="text-base font-medium">
-                Wedding Date (Optional)
+                Event Date (Optional)
               </Label>
               <Input
                 id="weddingDate"

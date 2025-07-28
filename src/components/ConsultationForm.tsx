@@ -145,7 +145,7 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Wedding Date</Label>
+            <Label>Event Date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
