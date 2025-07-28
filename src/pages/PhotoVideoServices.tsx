@@ -36,43 +36,49 @@ const PhotoVideoServices = () => {
   const familyMilestonePackages = [
     {
       name: "Photography Session",
-      price: "$250–$850",
-      description: "Capture timeless moments with professional photography.",
+      price: "$250–$1200",
+      description: "Personalize timeless moments with professional photography.",
       features: [
-        "1-6 hours session",
+        "Personalize your package",
+        "1-8 hours session",
+        "1–2 photographers",
         "Location of your choice",
-        "50-150 edited images",
-        "Online gallery access",
-        "Print release rights"
+        "25 –200 edited images",
+        "Fast Delivery",
+        "Print release rights",
+        "Ideal for: Couples & Families; Pregnancy Photoshoot; Children Photoshoots; Milestone Celebrations; Greeting Cards; Lifestyle Sessions; Anniversary and Birthdays."
       ],
       popular: false
     },
     {
       name: "Photo & Video Combo",
       price: "Personalize",
-      description: "Complete storytelling with both photo and video coverage.",
+      description: "Personalize a full storytelling with both photo and video coverage.",
       features: [
-        "8+ hour session",
-        "Photo + Video coverage",
-        "Location(s) of your choice",
-        "Full gallery + Video Highlights",
-        "Documentary Style (Opcional)",
-        "For all-day celebrations",
-        "Online + full rights"
+        "1-8+ hour session",
+        "Photo + 4K Video Full Coverage",
+        "2 Professionals",
+        "Full-day Highlights & Storytelling",
+        "Location of your choice",
+        "Full rights and Fast delivery",
+        "Special add-ons (f.e. Drone footage)",
+        "Ideal for: Save the Date, Anniversaries and Birthdays, Pregnancy moments, Friends and Family Testimonials and Reunions."
       ],
       popular: true
     },
     {
       name: "Videography Session",
       price: "$350–$1200",
-      description: "Cinematic coverage for events, memories, and stories.",
+      description: "Personalize cinematic coverage for events, memories, and stories.",
       features: [
-        "2-6 hours session",
+        "1–8 hours session",
         "Location of your choice",
-        "Highlight video (1–4 minutes)",
-        "Full-length edit (optional)",
-        "Professionally edited and color-graded",
-        "Digital delivery + download link"
+        "4K Video full coverage",
+        "Highlights & Storytelling videos",
+        "Professionally editing and color-grading",
+        "Full rights and Fast delivery",
+        "Special Add-ons",
+        "Ideal for: Couples, Anniversaries, Birthdays, Baby showers, Pregnancy moments, Gifting."
       ],
       popular: false
     }
