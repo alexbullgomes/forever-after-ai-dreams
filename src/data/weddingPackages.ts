@@ -4,54 +4,58 @@ export interface WeddingPackage {
   description: string;
   features: string[];
   popular: boolean;
+  idealFor?: string;
 }
 
 // Combined Photo & Video Packages
 export const combinedPackages: WeddingPackage[] = [
   {
     name: "Essential Love Photos",
-    price: "$750-$3900",
-    description: "Perfect for intimate ceremonies",
+    price: "$850–$3900",
+    description: "Personalized for intimate photos of your ceremony.",
     features: [
       "Our most luxurious photography package",
-      "2-6 hours of coverage",
-      "1-2 photographers",
+      "1–8 hours of coverage",
+      "1–2 photographers",
       "Social media highlights pack",
       "50 Priority photo editing (Same Day)",
-      "100-350 edited photos",
-      "Web + USB drive delivery",
-      "Online gallery access"
+      "100–350 edited photos",
+      "Full rights and Fast delivery"
     ],
+    idealFor: "Ideal for: Elopements, Couple portraits, Bride and groom moments, full coverage of ceremony and reception.",
     popular: false
   },
   {
     name: "Dream Wedding Photos & Videos",
     price: "Personalize",
-    description: "The ultimate wedding documentation",
+    description: "Our best seller personalized ultimate wedding packages made your own way.",
     features: [
-      "8+ hours of coverage",
-      "1-3 videographers + 1-2 photographer",
-      "Highlight reel (1-2min) + Drone",
-      "Cinematic wedding film (3–6 minutes)",
-      "Ceremony + reception footage + Party",
-      "100-350 edited photos",
-      "USB drive with all content"
+      "1-8+ hours of coverage",
+      "1 videographers + 1 photographers",
+      "100–350 edited photos",
+      "Highlight reel (1–2 min)",
+      "5–25 minute cinematic wedding film",
+      "Ceremony + reception footage + party",
+      "Full rights and Fast delivery"
     ],
+    idealFor: "Ideal for: Making of, Bridal and groom preparations, Courthouse ceremonies, Coverage of ceremony and reception, and interviews with wedding party.",
     popular: true
   },
   {
     name: "Every Moment Videos",
-    price: "$950-$5900",
-    description: "The ultimate wedding documentation",
+    price: "$900–$5900",
+    description: "The ultimate personalized wedding film documentation",
     features: [
-      "1-6 hours of coverage",
-      "1-3 videographers",
+      "1–8 hours of coverage",
+      "1–2 videographers",
+      "Highlight reel (1–2 min) + Drone",
       "5–25 minute cinematic wedding film",
-      "1-2 minute social media teaser",
-      "Full ceremony + reception videos + audio",
+      "Ceremony + Reception footage + party",
       "Drone footage",
-      "4K video + HD audio"
+      "4K video + HD audio",
+      "Full rights and Fast delivery"
     ],
+    idealFor: "Ideal for Intimate Weddings, Courthouse ceremonies, Full-day coverage of ceremony and reception, and interviews with wedding party.",
     popular: false
   }
 ];
