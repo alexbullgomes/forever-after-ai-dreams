@@ -4,14 +4,32 @@ import * as React from "react"
 import { useState, useEffect, useRef } from "react";
 import { Mic, Paperclip, Send, X, Image, MicIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const PLACEHOLDERS = [
-  "Tell us about your dream wedding vision...",
-  "What's your ideal wedding style?",
-  "How many guests are you planning for?",
-  "What's your wedding budget range?",
-  "Do you have a preferred venue type?",
-  "Any specific photography style in mind?",
+const DESKTOP_PLACEHOLDERS = [
+  "Tell us a bit about your event or session — what are you planning?",
+  "How many hours of coverage do you think you'll need?",
+  "Do you need photography, videography, or both?",
+  "Roughly how many people will be at your event?",
+  "Do you already have a date and location in mind?",
+  "What's your estimated budget for this special occasion?",
+  "Would you prefer one creative or a full team to capture everything?",
+  "Is this for personal, family, or professional purposes?",
+  "What kind of result are you hoping for — digital gallery, video highlights, or both?",
+  "Do you have any ideas or inspiration you'd like to share with us?"
+];
+
+const MOBILE_PLACEHOLDERS = [
+  "What are you planning?",
+  "How many hours do you need?",
+  "Photo, video, or both?",
+  "How many guests?",
+  "Date and location set?",
+  "What's your budget?",
+  "Solo or full team?",
+  "Personal, family, or business?",
+  "Photos, videos, or both?",
+  "Got any ideas or inspo?"
 ];
 
 interface AIChatInputProps {
@@ -19,6 +37,9 @@ interface AIChatInputProps {
 }
 
 const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
+  const isMobile = useIsMobile();
+  const currentPlaceholders = isMobile ? MOBILE_PLACEHOLDERS : DESKTOP_PLACEHOLDERS;
+  
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [showPlaceholder, setShowPlaceholder] = useState(true);
   const [isActive, setIsActive] = useState(false);
@@ -38,13 +59,13 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     const interval = setInterval(() => {
       setShowPlaceholder(false);
       setTimeout(() => {
-        setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length);
+        setPlaceholderIndex((prev) => (prev + 1) % currentPlaceholders.length);
         setShowPlaceholder(true);
       }, 400);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isActive, inputValue]);
+  }, [isActive, inputValue, currentPlaceholders.length]);
 
   // Close input when clicking outside
   useEffect(() => {
@@ -335,7 +356,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                       animate="animate"
                       exit="exit"
                     >
-                      {PLACEHOLDERS[placeholderIndex]
+                      {currentPlaceholders[placeholderIndex]
                         .split("")
                         .map((char, i) => (
                           <motion.span
