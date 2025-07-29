@@ -62,7 +62,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         setPlaceholderIndex((prev) => (prev + 1) % currentPlaceholders.length);
         setShowPlaceholder(true);
       }, 400);
-    }, 3000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [isActive, inputValue, currentPlaceholders.length]);
