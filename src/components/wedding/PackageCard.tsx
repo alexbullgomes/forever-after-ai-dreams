@@ -56,12 +56,6 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
             ))}
           </ul>
           
-          {idealFor && (
-            <div className="pt-2 pb-2 text-center">
-              <span className="text-sm font-bold text-gray-800">{idealFor}</span>
-            </div>
-          )}
-          
           <Button
             onClick={() => setIsConsultationFormOpen(true)}
             className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
@@ -69,6 +63,12 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
             <Camera className="w-5 h-5 mr-2" />
             Book Consultation
           </Button>
+          
+          {idealFor && (
+            <div className="pt-2 pb-2 text-center">
+              <span className="text-sm font-bold text-gray-800">{idealFor}</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
