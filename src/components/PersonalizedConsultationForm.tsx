@@ -33,31 +33,7 @@ const PersonalizedConsultationForm = ({
   });
 
   const getPersonalizedMessage = () => {
-    if (packageName.includes('Essential Love')) {
-      return `Perfect choice for your intimate celebration! The ${packageName} package is ideal for capturing those precious moments in a beautiful, personal way.`;
-    }
-    if (packageName.includes('Dream Wedding')) {
-      return `Excellent selection! The ${packageName} package is our most popular choice, offering comprehensive coverage to capture every magical moment of your special day.`;
-    }
-    if (packageName.includes('Luxury Experience') || packageName.includes('Forever Yours')) {
-      return `Outstanding choice! The ${packageName} package represents the ultimate in wedding documentation - every detail, every emotion, perfectly preserved forever.`;
-    }
-    if (packageName.includes('Intimate Moments')) {
-      return `Beautiful choice! The ${packageName} package will capture the essence of your love story with elegance and artistry.`;
-    }
-    if (packageName.includes('Ever After')) {
-      return `Wonderful selection! The ${packageName} package provides complete coverage from ceremony to celebration.`;
-    }
-    if (packageName.includes('Highlight Reel')) {
-      return `Great choice! The ${packageName} package will create a stunning cinematic summary of your wedding day.`;
-    }
-    if (packageName.includes('Legacy Film')) {
-      return `Excellent decision! The ${packageName} package ensures every important moment is beautifully documented.`;
-    }
-    if (packageName.includes('Cinematic Love Story')) {
-      return `Perfect selection! The ${packageName} package will create an epic, Hollywood-style film of your wedding day.`;
-    }
-    return `Excellent choice! The ${packageName} package will beautifully capture your love story in stunning detail.`;
+    return `Perfect choice! Let's capture your special day beautifully.`;
   };
 
   const formatPhoneNumber = (value: string) => {
