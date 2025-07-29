@@ -17,11 +17,10 @@ interface ConsultationFormProps {
 }
 
 const ConsultationForm = ({ userEmail, packageInfo, onClose }: ConsultationFormProps) => {
-  const [email, setEmail] = useState(userEmail || "");
   const [cellphone, setCellphone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isFormValid = validateConsultationForm(email, cellphone);
+  const isFormValid = validateConsultationForm(userEmail || "", cellphone);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +29,7 @@ const ConsultationForm = ({ userEmail, packageInfo, onClose }: ConsultationFormP
     setIsSubmitting(true);
 
     try {
-      await submitConsultationRequest(email, cellphone, packageInfo);
+      await submitConsultationRequest(userEmail || "", cellphone, packageInfo);
       onClose();
       console.log('Consultation request submitted successfully');
       // Redirect to planner page with auto-open chat
@@ -45,9 +44,7 @@ const ConsultationForm = ({ userEmail, packageInfo, onClose }: ConsultationFormP
   return (
     <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
       <ConsultationFormFields
-        email={email}
         cellphone={cellphone}
-        onEmailChange={setEmail}
         onCellphoneChange={setCellphone}
       />
 

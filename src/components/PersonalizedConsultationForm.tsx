@@ -28,7 +28,6 @@ const PersonalizedConsultationForm = ({
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    email: user?.email || '',
     phone: '',
     city: '',
     weddingDate: undefined as Date | undefined,
@@ -81,7 +80,7 @@ const PersonalizedConsultationForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.phone || !formData.city || !formData.weddingDate) {
+    if (!formData.phone || !formData.city || !formData.weddingDate) {
       toast({
         title: "Missing Information",
         description: "Please fill in all fields to schedule your consultation.",
@@ -95,7 +94,7 @@ const PersonalizedConsultationForm = ({
     try {
       const payload = {
         userId: user?.id || null,
-        email: formData.email,
+        email: user?.email || '',
         phone: formData.phone,
         city: formData.city,
         weddingDate: format(formData.weddingDate, 'yyyy-MM-dd'),
@@ -123,7 +122,6 @@ const PersonalizedConsultationForm = ({
         
         // Reset form and close
         setFormData({
-          email: user?.email || '',
           phone: '',
           city: '',
           weddingDate: undefined,
@@ -172,18 +170,6 @@ const PersonalizedConsultationForm = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Confirm Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="your@email.com"
-              required
-            />
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="phone">Cellphone</Label>
             <Input
