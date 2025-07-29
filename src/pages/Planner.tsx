@@ -55,7 +55,7 @@ const Planner = () => {
       </div>
       
       {/* Expandable Chat Assistant - Additional Entry Point */}
-      <ExpandableChatAssistant />
+      <ExpandableChatAssistant autoOpen={!!new URLSearchParams(window.location.search).get('openChat')} />
     </div>
   );
 };

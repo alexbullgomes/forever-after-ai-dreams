@@ -76,6 +76,8 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
           weddingDate: undefined,
         });
         onClose();
+        // Redirect to planner page with auto-open chat
+        window.location.href = '/planner?openChat=true';
       } else {
         throw new Error('Failed to submit consultation request');
       }
