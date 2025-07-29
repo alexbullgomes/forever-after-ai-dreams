@@ -115,7 +115,7 @@ const PhotoVideoServices = () => {
         "Full rights and Fast delivery",
         "Special add-ons (optional)"
       ],
-      idealFor: "Ideal for: Video Highlights, Institutional Documentary, Social Media, Event coverage, Brand Activations, Full-day video coverage.",
+      idealFor: "Ideal for Branding, Products Activations, Business Events & Team Headshots",
       popular: true
     },
     {
