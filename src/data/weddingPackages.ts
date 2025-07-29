@@ -26,7 +26,7 @@ export const combinedPackages: WeddingPackage[] = [
     popular: false
   },
   {
-    name: "Dream Wedding Photos & Videos",
+    name: "Wedding Photos & Videos",
     price: "Personalize",
     description: "Our best seller personalized ultimate wedding packages made your own way.",
     features: [
