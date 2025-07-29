@@ -129,9 +129,9 @@ const PersonalizedConsultationForm = ({
             </div>
           </div>
           <div className="text-center space-y-3">
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
-              {packageName} - {packagePrice}
-            </DialogTitle>
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            {packageName}
+          </DialogTitle>
           </div>
           <p className="text-gray-600 mt-4 text-sm leading-relaxed text-center">
             {getPersonalizedMessage()}
