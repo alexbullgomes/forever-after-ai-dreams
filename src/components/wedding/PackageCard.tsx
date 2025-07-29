@@ -33,7 +33,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
         
         <CardHeader className={popular ? 'pt-12' : ''}>
           <CardTitle className="text-2xl font-bold text-center text-gray-900">
-            {name}
+            Wedding Photos & Videos
           </CardTitle>
           <div className="text-center">
             <span className="text-3xl font-bold text-rose-600">{price}</span>
