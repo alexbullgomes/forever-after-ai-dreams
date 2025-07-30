@@ -99,7 +99,7 @@ const PhotoVideoServices = () => {
         "Full rights and Fast delivery",
         "Special add-ons (optional)"
       ],
-      idealFor: "Ideal for: Social Media, Product activations, Business events, Department photos, Team headshots, Social Media, Influencers Product Felling Shots & company contents.",
+      idealFor: "Ideal for team photos, product shoots and event coverage.",
       popular: false
     },
     {
@@ -115,7 +115,7 @@ const PhotoVideoServices = () => {
         "Full rights and Fast delivery",
         "Special add-ons (optional)"
       ],
-      idealFor: "Ideal for: Video Highlights, Institutional Documentary, Social Media, Event coverage, Brand Activations, Full-day video coverage.",
+      idealFor: "Ideal for brand content, activations, and photo & video event coverage.",
       popular: true
     },
     {
@@ -131,7 +131,7 @@ const PhotoVideoServices = () => {
         "Full rights and Fast delivery",
         "Special add-ons (optional)"
       ],
-      idealFor: "Ideal for: Social media Brand Product launching, Conferences, Workshops, Masterclasses, Landing Pages and Startups, Video Gallery footages.",
+      idealFor: "Ideal for video campaigns, brand activations and event storytelling.",
       popular: false
     }
   ];
