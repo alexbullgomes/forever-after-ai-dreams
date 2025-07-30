@@ -133,7 +133,7 @@ const PersonalizedConsultationForm = ({
             {packageName}
           </DialogTitle>
           </div>
-          <p className="text-gray-600 mt-4 text-sm leading-relaxed text-center">
+          <p className="text-gray-600 mt-4 text-xs text-center whitespace-nowrap">
             {getPersonalizedMessage()}
           </p>
           <p className="text-rose-600 font-medium text-sm mt-2 text-center">
