@@ -22,7 +22,7 @@ export const combinedPackages: WeddingPackage[] = [
       "100–350 edited photos",
       "Full rights and Fast delivery"
     ],
-    idealFor: "Ideal for: Elopements, Couple portraits, Bride and groom moments, full coverage of ceremony and reception.",
+    idealFor: "Ideal for elopements, portraits and full wedding photo coverage",
     popular: false
   },
   {
@@ -38,7 +38,7 @@ export const combinedPackages: WeddingPackage[] = [
       "Ceremony + reception footage + party",
       "Full rights and Fast delivery"
     ],
-    idealFor: "Ideal for: Making of, Bridal and groom preparations, Courthouse ceremonies, Coverage of ceremony and reception, and interviews with wedding party.",
+    idealFor: "Ideal for wedding day storytelling with photo and video coverage",
     popular: true
   },
   {
@@ -55,7 +55,7 @@ export const combinedPackages: WeddingPackage[] = [
       "4K video + HD audio",
       "Full rights and Fast delivery"
     ],
-    idealFor: "Ideal for Intimate Weddings, Courthouse ceremonies, Full-day coverage of ceremony and reception, and interviews with wedding party.",
+    idealFor: "Ideal for intimate weddings and full video coverage of ceremony and reception",
     popular: false
   }
 ];
