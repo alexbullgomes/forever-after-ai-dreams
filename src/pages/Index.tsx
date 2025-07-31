@@ -2,6 +2,7 @@
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
 import Portfolio from "@/components/Portfolio";
+import WhatsAppSection from "@/components/WhatsAppSection";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import AuthModal from "@/components/AuthModal";
@@ -15,6 +16,7 @@ const Index = () => {
       <Hero onBookingClick={() => setIsAuthModalOpen(true)} />
       <Services onBookingClick={() => setIsAuthModalOpen(true)} />
       <Portfolio onBookingClick={() => setIsAuthModalOpen(true)} />
+      <WhatsAppSection />
       <Testimonials />
       <Contact />
       <AuthModal 
