@@ -48,11 +48,11 @@ export const photoVideoGalleryItems: MediaItemType[] = [
   {
     id: 6,
     type: "video",
-    title: "Corporate Meeting Event",
-    desc: "Professional corporate event coverage",
-    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.webm",
-    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//masterhouse.mp4",
-    fullVideoUrl: "https://www.youtube.com/watch?v=tMiU9NhmtZE",
+    title: "Couple Intimate",
+    desc: "Cinematic Couple Intimate",
+    url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everton%20&%20Nath.webm",
+    mp4Url: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Everton%20&%20Nath.mp4",
+    posterUrl: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Nath&bigu.webp",
     span: "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
   },
   {
