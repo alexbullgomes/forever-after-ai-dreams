@@ -303,28 +303,6 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
 
           {/* Input Row */}
           <div className="flex items-center gap-2 p-3 rounded-full bg-white max-w-3xl w-full">
-            <button
-              className="p-3 rounded-full hover:bg-gray-100 transition"
-              title="Attach file"
-              type="button"
-              tabIndex={-1}
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-            >
-              <Paperclip size={20} />
-            </button>
-
-            {/* Hidden file input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,audio/*,.heic,.heif"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
 
             {/* Text Input & Placeholder */}
             <div className="relative flex-1">

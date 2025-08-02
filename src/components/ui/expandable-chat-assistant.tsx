@@ -360,16 +360,6 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
                 variant="ghost"
                 size="icon"
                 type="button"
-                onClick={handleAttachFile}
-                className="text-rose-500 hover:text-rose-600 hover:bg-rose-50"
-              >
-                <Paperclip className="size-4" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
                 onClick={handleMicrophoneClick}
                 className={`${isRecording 
                   ? 'text-red-500 hover:text-red-600 hover:bg-red-50 bg-red-50' 
