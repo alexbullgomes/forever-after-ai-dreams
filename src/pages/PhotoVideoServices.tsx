@@ -68,7 +68,7 @@ const PhotoVideoServices = () => {
     },
     {
       name: "Videography Session",
-      price: "$350–$1200",
+      price: "$350–$1750",
       description: "Personalize cinematic coverage for events, memories, and stories.",
       features: [
         "1–8 hours session",
