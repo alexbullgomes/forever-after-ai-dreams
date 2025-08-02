@@ -41,7 +41,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
-      content: "Hi There! I'm EVA your planner assistant.\n🎤 Send a voice note or message — I'll help you find the perfect photo/video package",
+      content: "Hi there! I'm EVA. You don't need to have it all figured out. Just share what you're thinking — a voice note 🎤, a message 💬, anything. I'm here to help shape your ideas into something beautiful. ✨",
       sender: "ai",
       timestamp: new Date().toISOString(),
     },
