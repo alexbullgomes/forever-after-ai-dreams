@@ -100,7 +100,7 @@ const AIAssistantSection = () => {
         </p>
         
         <div className="mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">🎤 Voice note   📸 Upload image   💬 Ask anything</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">🎤 Voice note   💬 Ask anything</h3>
           <span className="text-gray-600 italic">
             Get personalized options, plus exclusive deals or a free consultation.
           </span>
