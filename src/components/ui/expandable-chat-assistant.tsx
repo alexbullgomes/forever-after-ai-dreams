@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect, useRef } from "react";
 import { Send, Bot, Paperclip, Mic, CornerDownLeft, Play, Pause, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +17,20 @@ import {
 } from "@/components/ui/expandable-chat";
 import { ChatMessageList } from "@/components/ui/chat-message-list";
 import { useAuth } from "@/contexts/AuthContext";
-import { sendWebhookMessage } from "@/components/wedding/utils/webhookService";
+import { supabase } from "@/integrations/supabase/client";
 import { AudioPlayer } from "@/components/wedding/components/AudioPlayer";
+import { toast } from "sonner";
+
+interface DatabaseMessage {
+  id: number;
+  conversation_id: string;
+  user_id: string | null;
+  role: 'user' | 'ai' | 'human';
+  type: 'text' | 'audio';
+  content: string | null;
+  audio_url: string | null;
+  created_at: string;
+}
 
 interface ChatMessage {
   id: number;
@@ -38,77 +50,274 @@ interface ExpandableChatAssistantProps {
 }
 
 export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssistantProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 1,
-      content: "Hi there! I'm EVA. You don't need to have it all figured out. Just share what you're thinking — a voice note 🎤, a message 💬, anything. I'm here to help shape your ideas into something beautiful. ✨",
-      sender: "ai",
-      timestamp: new Date().toISOString(),
-    },
-  ]);
-
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const { user } = useAuth();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize conversation and load messages
+  useEffect(() => {
+    if (user) {
+      initializeConversation();
+    }
+  }, [user]);
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const channel = supabase
+      .channel('messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`
+        },
+        (payload) => {
+          const newMessage = payload.new as any;
+          // Type assertion after runtime validation
+          if (newMessage.role && ['user', 'ai', 'human'].includes(newMessage.role)) {
+            const dbMessage: DatabaseMessage = newMessage as DatabaseMessage;
+            if (dbMessage.role !== 'user') { // Only add non-user messages from realtime
+              addMessageToUI(dbMessage);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
+
+  const initializeConversation = async () => {
+    if (!user) return;
+
+    try {
+      // First, try to find existing conversation for this user
+      const { data: existingConversations } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('customer_id', user.id)
+        .limit(1);
+
+      let convId: string;
+
+      if (existingConversations && existingConversations.length > 0) {
+        convId = existingConversations[0].id;
+      } else {
+        // Create new conversation
+        const { data: newConversation, error } = await supabase
+          .from('conversations')
+          .insert({
+            customer_id: user.id,
+            mode: 'ai'
+          })
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('Error creating conversation:', error);
+          toast.error('Failed to initialize chat');
+          return;
+        }
+
+        convId = newConversation.id;
+      }
+
+      setConversationId(convId);
+      await loadMessages(convId);
+    } catch (error) {
+      console.error('Error initializing conversation:', error);
+      toast.error('Failed to initialize chat');
+    }
+  };
+
+  const loadMessages = async (convId: string) => {
+    try {
+      const { data: dbMessages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading messages:', error);
+        return;
+      }
+
+      const chatMessages: ChatMessage[] = [];
+
+      // Add initial AI greeting if no messages exist
+      if (!dbMessages || dbMessages.length === 0) {
+        chatMessages.push({
+          id: 0,
+          content: "Hi there! I'm EVA. You don't need to have it all figured out. Just share what you're thinking — a voice note 🎤, a message 💬, anything. I'm here to help shape your ideas into something beautiful. ✨",
+          sender: "ai",
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        // Convert database messages to UI format
+        dbMessages.forEach(msg => {
+          // Type assertion with validation
+          if (msg.role && ['user', 'ai', 'human'].includes(msg.role)) {
+            chatMessages.push(convertDBMessageToUI(msg as DatabaseMessage));
+          }
+        });
+      }
+
+      setMessages(chatMessages);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
+  };
+
+  const convertDBMessageToUI = (dbMessage: DatabaseMessage): ChatMessage => {
+    const files: Array<{ fileUrl: string; fileType: string; fileName: string; fileSize: number; }> = [];
+    
+    if (dbMessage.audio_url) {
+      files.push({
+        fileUrl: dbMessage.audio_url,
+        fileType: 'audio/webm',
+        fileName: 'voice-message.webm',
+        fileSize: 0
+      });
+    }
+
+    return {
+      id: dbMessage.id,
+      content: dbMessage.content || 'Audio message',
+      sender: dbMessage.role === 'user' ? 'user' : 'ai',
+      timestamp: dbMessage.created_at,
+      files: files.length > 0 ? files : undefined
+    };
+  };
+
+  const addMessageToUI = (dbMessage: DatabaseMessage) => {
+    const chatMessage = convertDBMessageToUI(dbMessage);
+    setMessages(prev => [...prev, chatMessage]);
+  };
+
+  const uploadAudioFile = async (file: File, convId: string): Promise<string | null> => {
+    try {
+      const timestamp = Date.now();
+      const fileName = `${timestamp}.webm`;
+      const filePath = `${convId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('chat-audios')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error uploading audio:', uploadError);
+        return null;
+      }
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('chat-audios')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading audio file:', error);
+      return null;
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!input.trim() && selectedFiles.length === 0) return;
-
-    // Process files to create URLs for preview
-    const processedFiles = selectedFiles.map(file => ({
-      fileUrl: URL.createObjectURL(file),
-      fileType: file.type,
-      fileName: file.name,
-      fileSize: file.size,
-    }));
-
-    const userMessage: ChatMessage = {
-      id: messages.length + 1,
-      content: input || "Shared files",
-      sender: "user",
-      timestamp: new Date().toISOString(),
-      files: processedFiles.length > 0 ? processedFiles : undefined,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
+    if (!conversationId || !user) return;
 
     try {
-      // Send message using the same webhook service as the main chat
-      // Only send files once - prevent duplicate uploads
-      const filesToSend = selectedFiles.length > 0 ? [...selectedFiles] : undefined;
-      const result = await sendWebhookMessage(userMessage.content, user, filesToSend);
+      let audioUrl: string | null = null;
       
-      // Add AI response
-      const aiMessage: ChatMessage = {
-        id: messages.length + 2,
-        content: result.output || result.message || "Thank you for your message! I'll help you find the perfect package for your needs.",
-        sender: "ai",
+      // Handle audio files
+      const audioFiles = selectedFiles.filter(file => file.type.startsWith('audio/'));
+      if (audioFiles.length > 0) {
+        // Upload the first audio file (for simplicity, we handle one audio at a time)
+        audioUrl = await uploadAudioFile(audioFiles[0], conversationId);
+        if (!audioUrl) {
+          toast.error('Failed to upload audio file');
+          return;
+        }
+      }
+
+      // Process files to create URLs for preview (optimistic UI)
+      const processedFiles = selectedFiles.map(file => ({
+        fileUrl: URL.createObjectURL(file),
+        fileType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+      }));
+
+      // Add user message to UI immediately (optimistic UI)
+      const tempUserMessage: ChatMessage = {
+        id: Date.now(), // Temporary ID
+        content: input || (audioUrl ? "Audio message" : "Message"),
+        sender: "user",
         timestamp: new Date().toISOString(),
+        files: processedFiles.length > 0 ? processedFiles : undefined,
       };
-      
-      setMessages((prev) => [...prev, aiMessage]);
+
+      setMessages((prev) => [...prev, tempUserMessage]);
+      setInput("");
+      setSelectedFiles([]);
+      setIsLoading(true);
+
+      // Insert message into database
+      const { error: insertError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          user_id: user.id,
+          role: 'user',
+          type: audioUrl ? 'audio' : 'text',
+          content: input || null,
+          audio_url: audioUrl
+        });
+
+      if (insertError) {
+        console.error('Error inserting message:', insertError);
+        toast.error('Failed to send message');
+        // Remove the optimistic message
+        setMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
+        return;
+      }
+
+      // Simulate AI response (in a real implementation, this would come via webhook/realtime)
+      setTimeout(async () => {
+        const { error: aiError } = await supabase
+          .from('messages')
+          .insert({
+            conversation_id: conversationId,
+            role: 'ai',
+            type: 'text',
+            content: "Thank you for your message! I'll help you find the perfect package for your needs. Our team will review your requirements and get back to you soon."
+          });
+
+        if (aiError) {
+          console.error('Error inserting AI response:', aiError);
+        }
+        
+        setIsLoading(false);
+      }, 1000);
+
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Add error message
-      const errorMessage: ChatMessage = {
-        id: messages.length + 2,
-        content: "Sorry, I'm having trouble responding right now. Please try again.",
-        sender: "ai",
-        timestamp: new Date().toISOString(),
-      };
-      
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
+      toast.error('Failed to send message');
       setIsLoading(false);
-      setSelectedFiles([]);
     }
   };
 

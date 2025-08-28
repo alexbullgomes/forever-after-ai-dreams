@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -50,6 +50,77 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          mode: string | null
+          public_code: string | null
+          taken_at: string | null
+          taken_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          mode?: string | null
+          public_code?: string | null
+          taken_at?: string | null
+          taken_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          mode?: string | null
+          public_code?: string | null
+          taken_at?: string | null
+          taken_by?: string | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          audio_url: string | null
+          content: string | null
+          conversation_id: string
+          created_at: string
+          id: number
+          role: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          content?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: number
+          role: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          content?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: number
+          role?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       n8n_chat_histories: {
         Row: {
           id: number
@@ -72,23 +143,41 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          email: string | null
+          event_city: string | null
+          event_date: string | null
           id: string
           name: string | null
+          package_consultation: string | null
+          promotional_phone: string | null
           updated_at: string
+          user_number: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          event_city?: string | null
+          event_date?: string | null
           id: string
           name?: string | null
+          package_consultation?: string | null
+          promotional_phone?: string | null
           updated_at?: string
+          user_number?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          event_city?: string | null
+          event_date?: string | null
           id?: string
           name?: string | null
+          package_consultation?: string | null
+          promotional_phone?: string | null
           updated_at?: string
+          user_number?: string | null
         }
         Relationships: []
       }
