@@ -59,6 +59,8 @@ export type Database = {
           public_code: string | null
           taken_at: string | null
           taken_by: string | null
+          user_email: string | null
+          user_name: string | null
         }
         Insert: {
           created_at?: string
@@ -68,6 +70,8 @@ export type Database = {
           public_code?: string | null
           taken_at?: string | null
           taken_by?: string | null
+          user_email?: string | null
+          user_name?: string | null
         }
         Update: {
           created_at?: string
@@ -77,6 +81,8 @@ export type Database = {
           public_code?: string | null
           taken_at?: string | null
           taken_by?: string | null
+          user_email?: string | null
+          user_name?: string | null
         }
         Relationships: []
       }

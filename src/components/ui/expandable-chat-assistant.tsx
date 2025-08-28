@@ -121,7 +121,9 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
           .from('conversations')
           .insert({
             customer_id: user.id,
-            mode: 'ai'
+            mode: 'ai',
+            user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            user_email: user.email
           })
           .select('id')
           .single();
@@ -296,23 +298,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
         return;
       }
 
-      // Simulate AI response (in a real implementation, this would come via webhook/realtime)
-      setTimeout(async () => {
-        const { error: aiError } = await supabase
-          .from('messages')
-          .insert({
-            conversation_id: conversationId,
-            role: 'ai',
-            type: 'text',
-            content: "Thank you for your message! I'll help you find the perfect package for your needs. Our team will review your requirements and get back to you soon."
-          });
-
-        if (aiError) {
-          console.error('Error inserting AI response:', aiError);
-        }
-        
-        setIsLoading(false);
-      }, 1000);
+      setIsLoading(false);
 
     } catch (error) {
       console.error('Error sending message:', error);
