@@ -95,7 +95,9 @@ export type Database = {
           id: number
           role: string
           type: string
+          user_email: string | null
           user_id: string | null
+          user_name: string | null
         }
         Insert: {
           audio_url?: string | null
@@ -105,7 +107,9 @@ export type Database = {
           id?: number
           role: string
           type: string
+          user_email?: string | null
           user_id?: string | null
+          user_name?: string | null
         }
         Update: {
           audio_url?: string | null
@@ -115,7 +119,9 @@ export type Database = {
           id?: number
           role?: string
           type?: string
+          user_email?: string | null
           user_id?: string | null
+          user_name?: string | null
         }
         Relationships: [
           {

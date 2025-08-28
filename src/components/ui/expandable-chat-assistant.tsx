@@ -287,7 +287,9 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
           role: 'user',
           type: audioUrl ? 'audio' : 'text',
           content: input || null,
-          audio_url: audioUrl
+          audio_url: audioUrl,
+          user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          user_email: user.email
         });
 
       if (insertError) {
