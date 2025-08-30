@@ -58,6 +58,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -101,47 +102,42 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
   }, [conversationId]);
 
   const initializeConversation = async () => {
-    if (!user) return;
-
+    if (!user || isInitializing) return;
+    
+    setIsInitializing(true);
+    
     try {
-      // First, try to find existing conversation for this user
-      const { data: existingConversations } = await supabase
+      // Use upsert to handle race conditions and ensure only one conversation per user
+      const { data: conversation, error } = await supabase
         .from('conversations')
-        .select('id')
-        .eq('customer_id', user.id)
-        .limit(1);
-
-      let convId: string;
-
-      if (existingConversations && existingConversations.length > 0) {
-        convId = existingConversations[0].id;
-      } else {
-        // Create new conversation
-        const { data: newConversation, error } = await supabase
-          .from('conversations')
-          .insert({
+        .upsert(
+          {
             customer_id: user.id,
             mode: 'ai',
             user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
             user_email: user.email
-          })
-          .select('id')
-          .single();
+          },
+          {
+            onConflict: 'customer_id',
+            ignoreDuplicates: false
+          }
+        )
+        .select('id')
+        .single();
 
-        if (error) {
-          console.error('Error creating conversation:', error);
-          toast.error('Failed to initialize chat');
-          return;
-        }
-
-        convId = newConversation.id;
+      if (error) {
+        console.error('Error initializing conversation:', error);
+        toast.error('Failed to initialize chat');
+        return;
       }
 
-      setConversationId(convId);
-      await loadMessages(convId);
+      setConversationId(conversation.id);
+      await loadMessages(conversation.id);
     } catch (error) {
       console.error('Error initializing conversation:', error);
       toast.error('Failed to initialize chat');
+    } finally {
+      setIsInitializing(false);
     }
   };
 
