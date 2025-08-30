@@ -46,7 +46,7 @@ serve(async (req) => {
       throw new Error('Failed to fetch conversation mode');
     }
 
-    const role = 'ai'; // Always use 'ai' for responses
+    const role = conversation.mode || 'ai'; // Use conversation mode as role, default to 'ai'
 
     // Insert the AI/human response message
     const { data: message, error: insertError } = await supabase
