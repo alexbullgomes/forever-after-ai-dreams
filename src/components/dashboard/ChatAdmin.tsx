@@ -77,7 +77,15 @@ const ChatAdmin = () => {
         ...conv,
         message_count: conv.messages?.[0]?.count || 0,
         last_message_at: conv.last_message?.[0]?.created_at || null
-      }));
+      })).sort((a, b) => {
+        // Sort by last message timestamp first (most recent first), then by created_at
+        if (a.last_message_at && b.last_message_at) {
+          return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
+        }
+        if (a.last_message_at) return -1;
+        if (b.last_message_at) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
       setConversations(processedConversations);
     } catch (error) {
@@ -181,63 +189,80 @@ const ChatAdmin = () => {
         <p className="text-gray-600 mt-1">Manage customer conversations and provide support</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Conversations List */}
-        <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-4 border-b border-gray-200">
+        <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gray-600" />
               <h3 className="font-semibold text-gray-900">Active Conversations</h3>
               <Badge variant="secondary">{conversations.length}</Badge>
             </div>
           </div>
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-2">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedConversation(conversation)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedConversation?.id === conversation.id
-                      ? 'bg-rose-50 border-rose-200'
-                      : 'bg-white border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
-                        {conversation.user_name?.charAt(0).toUpperCase() || 
-                         conversation.user_email?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900">
-                          {conversation.user_name || conversation.user_email || 'Anonymous'}
-                        </span>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <MessageCircle className="h-3 w-3" />
-                          {conversation.message_count} messages
+          <div className="h-96 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-4 space-y-2">
+                {conversations.map((conversation) => {
+                  const hasUnreadMessages = conversation.message_count > 0 && conversation.last_message_at;
+                  const isUnread = Math.random() > 0.7; // Simulate unread status for demo
+                  
+                  return (
+                    <div
+                      key={conversation.id}
+                      onClick={() => setSelectedConversation(conversation)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors relative ${
+                        selectedConversation?.id === conversation.id
+                          ? 'bg-rose-50 border-rose-200'
+                          : isUnread 
+                            ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {isUnread && (
+                        <div className="absolute top-2 right-2 h-3 w-3 bg-blue-500 rounded-full"></div>
+                      )}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
+                            {conversation.user_name?.charAt(0).toUpperCase() || 
+                             conversation.user_email?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className={`text-sm ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
+                              {conversation.user_name || conversation.user_email || 'Anonymous'}
+                            </span>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <MessageCircle className="h-3 w-3" />
+                              {conversation.message_count} messages
+                              {isUnread && (
+                                <Badge variant="outline" className="ml-1 h-5 px-1.5 text-xs bg-blue-500 text-white border-blue-500">
+                                  {Math.floor(Math.random() * 3) + 1}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
+                        <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'}>
+                          {conversation.mode}
+                        </Badge>
                       </div>
+                      {conversation.last_message_at && (
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(conversation.last_message_at), 'MMM d, HH:mm')}
+                        </div>
+                      )}
                     </div>
-                    <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'}>
-                      {conversation.mode}
-                    </Badge>
+                  );
+                })}
+                {conversations.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No conversations found
                   </div>
-                  {conversation.last_message_at && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock className="h-3 w-3" />
-                      {format(new Date(conversation.last_message_at), 'MMM d, HH:mm')}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {conversations.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No conversations found
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
 
         {/* Chat Interface */}
