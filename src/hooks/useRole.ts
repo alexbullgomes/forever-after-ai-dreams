@@ -9,35 +9,54 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
 
   useEffect(() => {
     const checkRole = async () => {
-      console.log('🔍 Checking role for user:', user?.id, 'Required role:', requiredRole);
+      console.log('🔍 Starting role check for user:', user?.id, 'Required role:', requiredRole);
+      console.log('📧 User email:', user?.email);
       
       if (!user) {
-        console.log('❌ No user found');
+        console.log('❌ No user found - setting hasRole to false');
         setHasRole(false);
         setLoading(false);
         return;
       }
 
       try {
+        console.log('🔍 Querying user_roles table...');
         const { data, error } = await supabase
           .from('user_roles')
-          .select('role')
+          .select('role, user_id')
           .eq('user_id', user.id)
           .eq('role', requiredRole)
           .maybeSingle();
 
-        console.log('🔍 Role query result:', { data, error, userId: user.id, requiredRole });
+        console.log('📊 Role query details:', {
+          userId: user.id,
+          userEmail: user.email,
+          requiredRole,
+          queryData: data,
+          queryError: error,
+          hasData: !!data
+        });
 
         if (error) {
-          console.error('❌ Error checking role:', error);
+          console.error('❌ Supabase error during role check:', error);
+          console.error('Error details:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
           setHasRole(false);
         } else {
           const hasRoleResult = !!data;
-          console.log('✅ Has role result:', hasRoleResult);
+          console.log('✅ Role check complete:', {
+            hasRole: hasRoleResult,
+            data: data,
+            userEmail: user.email
+          });
           setHasRole(hasRoleResult);
         }
       } catch (error) {
-        console.error('❌ Error in role check:', error);
+        console.error('❌ Unexpected error during role check:', error);
         setHasRole(false);
       } finally {
         setLoading(false);
