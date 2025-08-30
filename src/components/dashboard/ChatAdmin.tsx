@@ -241,11 +241,11 @@ const ChatAdmin = () => {
         </div>
 
         {/* Chat Interface */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200">
+              <div className="p-4 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white font-medium">
@@ -265,8 +265,8 @@ const ChatAdmin = () => {
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-hidden">
+              {/* Messages - Fixed height with internal scroll */}
+              <div className="flex-1 min-h-0">
                 <ScrollArea className="h-full">
                   <div className="p-4 space-y-4">
                     {messages.map((message) => (
@@ -299,10 +299,10 @@ const ChatAdmin = () => {
                 </ScrollArea>
               </div>
 
-              <Separator />
+              <Separator className="flex-shrink-0" />
 
-              {/* Message Input */}
-              <div className="p-4">
+              {/* Message Input - Fixed at bottom */}
+              <div className="p-4 flex-shrink-0">
                 <div className="flex gap-2">
                   <Input
                     placeholder="Type your message..."
