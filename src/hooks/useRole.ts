@@ -16,6 +16,8 @@ export const useRole = () => {
       return;
     }
 
+    setLoading(true); // Ensure loading is true when starting fetch
+    
     const fetchRole = async () => {
       try {
         console.log('Fetching role for user:', user.id, user.email);
