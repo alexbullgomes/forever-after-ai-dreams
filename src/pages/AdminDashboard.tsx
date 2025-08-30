@@ -30,6 +30,7 @@ const AdminDashboard = () => {
     recentCustomers: []
   });
   const [loading, setLoading] = useState(true);
+  const [redirectChecked, setRedirectChecked] = useState(false);
 
   useEffect(() => {
     console.log('🚦 AdminDashboard redirect check:', {
@@ -37,10 +38,13 @@ const AdminDashboard = () => {
       roleLoading,
       user: user?.email,
       hasRole,
+      redirectChecked,
     });
 
-    // Only redirect after auth and role loading is complete
-    if (!authLoading && !roleLoading) {
+    // Only check redirect once after both loading states are complete
+    if (!authLoading && !roleLoading && !redirectChecked) {
+      setRedirectChecked(true);
+      
       if (!user) {
         console.log('❌ Redirecting: No user');
         navigate('/');
@@ -53,7 +57,7 @@ const AdminDashboard = () => {
       }
       console.log('✅ Access granted to admin dashboard');
     }
-  }, [user, hasRole, authLoading, roleLoading, navigate]);
+  }, [user, hasRole, authLoading, roleLoading, navigate, redirectChecked]);
 
   useEffect(() => {
     if (hasRole && user) {
