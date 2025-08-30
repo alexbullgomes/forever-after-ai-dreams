@@ -36,10 +36,12 @@ export default function AdminInbox() {
 
   // Redirect if not admin
   useEffect(() => {
+    console.log('AdminInbox - Role loading:', roleLoading, 'Is Admin:', isAdmin, 'User:', user?.email);
     if (!roleLoading && !isAdmin) {
+      console.log('Redirecting to home - user is not admin');
       navigate('/');
     }
-  }, [isAdmin, roleLoading, navigate]);
+  }, [isAdmin, roleLoading, navigate, user]);
 
   // Fetch conversations
   useEffect(() => {
