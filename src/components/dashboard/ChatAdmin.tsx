@@ -52,18 +52,14 @@ const ChatAdmin = () => {
 
   const fetchConversations = async () => {
     try {
-      // Fetch conversations with message count and last message timestamp
-      const { data, error } = await supabase
+      // Fetch ALL conversations for admin view with basic info
+      const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
-        .select(`
-          *,
-          messages(count),
-          last_message:messages(created_at)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching conversations:', error);
+      if (conversationsError) {
+        console.error('Error fetching conversations:', conversationsError);
         toast({
           title: "Error loading conversations",
           description: "Failed to load chat conversations.",
@@ -72,12 +68,29 @@ const ChatAdmin = () => {
         return;
       }
 
-      // Process the data to get proper conversation list
-      const processedConversations = data.map(conv => ({
-        ...conv,
-        message_count: conv.messages?.[0]?.count || 0,
-        last_message_at: conv.last_message?.[0]?.created_at || null
-      }));
+      // For each conversation, get message count and last message
+      const processedConversations = await Promise.all(
+        (conversationsData || []).map(async (conv) => {
+          const { count } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('conversation_id', conv.id);
+
+          const { data: lastMessage } = await supabase
+            .from('messages')
+            .select('created_at')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...conv,
+            message_count: count || 0,
+            last_message_at: lastMessage?.created_at || null
+          };
+        })
+      );
 
       setConversations(processedConversations);
     } catch (error) {
