@@ -77,7 +77,7 @@ const DashboardNavigation = () => {
             {isAdmin && (
               <Button 
                 variant="outline" 
-                onClick={() => window.location.href = '/admin/dashboard'} 
+                onClick={() => window.location.href = '/dashboard'} 
                 className="text-gray-600 hover:text-gray-900"
               >
                 <Shield className="w-4 h-4 mr-2" />
@@ -152,7 +152,7 @@ const DashboardNavigation = () => {
                     variant="outline" 
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      window.location.href = '/admin/dashboard';
+                      window.location.href = '/dashboard';
                     }} 
                     className="w-full mx-4 text-gray-600 hover:text-gray-900 max-w-none"
                     style={{ width: 'calc(100% - 2rem)' }}

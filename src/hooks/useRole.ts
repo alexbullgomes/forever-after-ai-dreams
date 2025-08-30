@@ -9,7 +9,10 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
 
   useEffect(() => {
     const checkRole = async () => {
+      console.log('🔍 Checking role for user:', user?.id, 'Required role:', requiredRole);
+      
       if (!user) {
+        console.log('❌ No user found');
         setHasRole(false);
         setLoading(false);
         return;
@@ -23,14 +26,18 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
           .eq('role', requiredRole)
           .maybeSingle();
 
+        console.log('🔍 Role query result:', { data, error, userId: user.id, requiredRole });
+
         if (error) {
-          console.error('Error checking role:', error);
+          console.error('❌ Error checking role:', error);
           setHasRole(false);
         } else {
-          setHasRole(!!data);
+          const hasRoleResult = !!data;
+          console.log('✅ Has role result:', hasRoleResult);
+          setHasRole(hasRoleResult);
         }
       } catch (error) {
-        console.error('Error in role check:', error);
+        console.error('❌ Error in role check:', error);
         setHasRole(false);
       } finally {
         setLoading(false);

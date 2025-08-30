@@ -32,16 +32,26 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🚦 AdminDashboard redirect check:', {
+      authLoading,
+      roleLoading,
+      user: user?.email,
+      hasRole,
+    });
+
     // Only redirect after auth and role loading is complete
     if (!authLoading && !roleLoading) {
       if (!user) {
+        console.log('❌ Redirecting: No user');
         navigate('/');
         return;
       }
       if (!hasRole) {
+        console.log('❌ Redirecting: No admin role');
         navigate('/');
         return;
       }
+      console.log('✅ Access granted to admin dashboard');
     }
   }, [user, hasRole, authLoading, roleLoading, navigate]);
 

@@ -32,7 +32,7 @@ const AppContent = () => {
             <Route path="/photo-video-services" element={<PhotoVideoServices />} />
             <Route path="/wedding-packages" element={<WeddingPackages />} />
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/dashboard" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
