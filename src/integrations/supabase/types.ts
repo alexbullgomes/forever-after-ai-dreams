@@ -162,6 +162,7 @@ export type Database = {
           name: string | null
           package_consultation: string | null
           promotional_phone: string | null
+          role: string | null
           updated_at: string
           user_number: string | null
         }
@@ -175,6 +176,7 @@ export type Database = {
           name?: string | null
           package_consultation?: string | null
           promotional_phone?: string | null
+          role?: string | null
           updated_at?: string
           user_number?: string | null
         }
@@ -188,6 +190,7 @@ export type Database = {
           name?: string | null
           package_consultation?: string | null
           promotional_phone?: string | null
+          role?: string | null
           updated_at?: string
           user_number?: string | null
         }

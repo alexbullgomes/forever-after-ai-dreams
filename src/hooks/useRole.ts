@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [hasRole, setHasRole] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -11,6 +11,13 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
     const checkRole = async () => {
       console.log('🔍 Starting role check for user:', user?.id, 'Required role:', requiredRole);
       console.log('📧 User email:', user?.email);
+      console.log('🔄 Auth loading:', authLoading);
+      
+      // Wait for auth to fully load before checking role
+      if (authLoading) {
+        console.log('⏳ Auth still loading, waiting...');
+        return;
+      }
       
       if (!user) {
         console.log('❌ No user found - setting hasRole to false');
@@ -20,12 +27,11 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
       }
 
       try {
-        console.log('🔍 Querying user_roles table...');
+        console.log('🔍 Querying profiles table for role...');
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role, user_id')
-          .eq('user_id', user.id)
-          .eq('role', requiredRole)
+          .from('profiles')
+          .select('role, id')
+          .eq('id', user.id)
           .maybeSingle();
 
         console.log('📊 Role query details:', {
@@ -34,7 +40,7 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
           requiredRole,
           queryData: data,
           queryError: error,
-          hasData: !!data
+          userRole: data?.role || 'user'
         });
 
         if (error) {
@@ -47,10 +53,13 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
           });
           setHasRole(false);
         } else {
-          const hasRoleResult = !!data;
+          // If no profile exists, default role is 'user'
+          const userRole = data?.role || 'user';
+          const hasRoleResult = userRole === requiredRole;
           console.log('✅ Role check complete:', {
             hasRole: hasRoleResult,
-            data: data,
+            userRole: userRole,
+            requiredRole: requiredRole,
             userEmail: user.email
           });
           setHasRole(hasRoleResult);
@@ -64,7 +73,7 @@ export const useRole = (requiredRole: 'admin' | 'moderator' | 'user') => {
     };
 
     checkRole();
-  }, [user, requiredRole]);
+  }, [user, requiredRole, authLoading]);
 
   return { hasRole, loading };
 };
