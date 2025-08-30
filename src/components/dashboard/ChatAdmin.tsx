@@ -9,6 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/hooks/useRole';
 
 interface Conversation {
   id: string;
@@ -34,6 +36,8 @@ interface Message {
 }
 
 const ChatAdmin = () => {
+  const { user } = useAuth();
+  const { hasRole, loading: roleLoading } = useRole('admin');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -219,10 +223,30 @@ const ChatAdmin = () => {
     }
   };
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-500">Please log in to access the chat admin panel.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasRole) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-500">Access denied. Admin privileges required.</p>
+        </div>
       </div>
     );
   }
@@ -330,15 +354,23 @@ const ChatAdmin = () => {
                       <p className="text-sm text-gray-600">{selectedConversation.user_email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">AI</span>
-                    <Switch
-                      checked={selectedConversation.mode === 'human'}
-                      onCheckedChange={handleModeToggle}
-                      className="data-[state=checked]:bg-rose-500"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Human</span>
-                  </div>
+                  {roleLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500"></div>
+                  ) : hasRole ? (
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-gray-700">AI</span>
+                      <Switch
+                        checked={selectedConversation.mode === 'human'}
+                        onCheckedChange={handleModeToggle}
+                        className="data-[state=checked]:bg-rose-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Human</span>
+                    </div>
+                  ) : (
+                    <Badge variant={selectedConversation.mode === 'ai' ? 'default' : 'secondary'}>
+                      {selectedConversation.mode} mode
+                    </Badge>
+                  )}
                 </div>
               </div>
 
