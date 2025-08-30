@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { Send, Users, MessageCircle, Clock } from 'lucide-react';
@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
+import { useAutoScroll } from '@/hooks/use-auto-scroll';
 
 interface Conversation {
   id: string;
@@ -45,9 +46,21 @@ const ChatAdmin = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  
+  // Auto-scroll functionality for messages
+  const { scrollRef, scrollToBottom } = useAutoScroll({
+    smooth: true
+  });
 
   useEffect(() => {
     fetchConversations();
+    
+    // Set up periodic refresh every 15 seconds
+    const refreshInterval = setInterval(() => {
+      fetchConversations();
+    }, 15000);
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   useEffect(() => {
@@ -56,6 +69,16 @@ const ChatAdmin = () => {
       markConversationAsRead(selectedConversation.id);
     }
   }, [selectedConversation]);
+
+  // Auto-scroll when messages change or conversation is selected
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Use setTimeout to ensure DOM has updated
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [messages, scrollToBottom]);
 
   const fetchConversations = async () => {
     try {
@@ -85,7 +108,11 @@ const ChatAdmin = () => {
         message_count: conv.messages?.[0]?.count || 0,
         last_message_at: conv.last_message?.[0]?.created_at || null
       })).sort((a, b) => {
-        // Sort by last message timestamp first (most recent first), then by created_at
+        // First, sort by unread status (unread conversations first)
+        if (a.new_msg === 'unread' && b.new_msg !== 'unread') return -1;
+        if (b.new_msg === 'unread' && a.new_msg !== 'unread') return 1;
+        
+        // Then sort by last message timestamp (most recent first)
         if (a.last_message_at && b.last_message_at) {
           return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
         }
@@ -403,7 +430,7 @@ const ChatAdmin = () => {
 
               {/* Messages - Fixed height with internal scroll */}
               <div className="h-80 overflow-hidden">
-                <ScrollArea className="h-full">
+                <div ref={scrollRef} className="h-full overflow-y-auto">
                   <div className="p-4 space-y-4">
                     {messages.map((message) => (
                       <div
@@ -432,7 +459,7 @@ const ChatAdmin = () => {
                       </div>
                     )}
                   </div>
-                </ScrollArea>
+                </div>
               </div>
 
               <Separator className="flex-shrink-0" />
