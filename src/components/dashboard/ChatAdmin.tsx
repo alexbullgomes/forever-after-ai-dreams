@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 
 interface Conversation {
@@ -173,6 +174,51 @@ const ChatAdmin = () => {
     }
   };
 
+  const handleModeToggle = async (checked: boolean) => {
+    if (!selectedConversation) return;
+
+    const newMode = checked ? 'human' : 'ai';
+    
+    try {
+      const { error } = await supabase
+        .from('conversations')
+        .update({ mode: newMode })
+        .eq('id', selectedConversation.id);
+
+      if (error) {
+        console.error('Error updating conversation mode:', error);
+        toast({
+          title: "Error updating mode",
+          description: "Failed to update conversation mode.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
+      setSelectedConversation(prev => prev ? { ...prev, mode: newMode } : null);
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === selectedConversation.id 
+            ? { ...conv, mode: newMode }
+            : conv
+        )
+      );
+
+      toast({
+        title: "Mode updated",
+        description: `Conversation mode changed to ${newMode}.`,
+      });
+    } catch (error) {
+      console.error('Error updating conversation mode:', error);
+      toast({
+        title: "Error updating mode",
+        description: "Failed to update conversation mode.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -284,9 +330,15 @@ const ChatAdmin = () => {
                       <p className="text-sm text-gray-600">{selectedConversation.user_email}</p>
                     </div>
                   </div>
-                  <Badge variant={selectedConversation.mode === 'ai' ? 'default' : 'secondary'}>
-                    {selectedConversation.mode} mode
-                  </Badge>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-700">AI</span>
+                    <Switch
+                      checked={selectedConversation.mode === 'human'}
+                      onCheckedChange={handleModeToggle}
+                      className="data-[state=checked]:bg-rose-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Human</span>
+                  </div>
                 </div>
               </div>
 
