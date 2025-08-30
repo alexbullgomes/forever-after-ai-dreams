@@ -181,67 +181,69 @@ const ChatAdmin = () => {
         <p className="text-gray-600 mt-1">Manage customer conversations and provide support</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-300px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
         {/* Conversations List */}
-        <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm">
-          <div className="p-4 border-b border-gray-200">
+        <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gray-600" />
               <h3 className="font-semibold text-gray-900">Active Conversations</h3>
               <Badge variant="secondary">{conversations.length}</Badge>
             </div>
           </div>
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-2">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedConversation(conversation)}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedConversation?.id === conversation.id
-                      ? 'bg-rose-50 border-rose-200'
-                      : 'bg-white border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
-                        {conversation.user_name?.charAt(0).toUpperCase() || 
-                         conversation.user_email?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900">
-                          {conversation.user_name || conversation.user_email || 'Anonymous'}
-                        </span>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <MessageCircle className="h-3 w-3" />
-                          {conversation.message_count} messages
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-4 space-y-2">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    onClick={() => setSelectedConversation(conversation)}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedConversation?.id === conversation.id
+                        ? 'bg-rose-50 border-rose-200'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
+                          {conversation.user_name?.charAt(0).toUpperCase() || 
+                           conversation.user_email?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-sm font-medium text-gray-900 truncate">
+                            {conversation.user_name || conversation.user_email || 'Anonymous'}
+                          </span>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <MessageCircle className="h-3 w-3" />
+                            {conversation.message_count} messages
+                          </div>
                         </div>
                       </div>
+                      <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'} className="flex-shrink-0">
+                        {conversation.mode}
+                      </Badge>
                     </div>
-                    <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'}>
-                      {conversation.mode}
-                    </Badge>
+                    {conversation.last_message_at && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock className="h-3 w-3" />
+                        {format(new Date(conversation.last_message_at), 'MMM d, HH:mm')}
+                      </div>
+                    )}
                   </div>
-                  {conversation.last_message_at && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock className="h-3 w-3" />
-                      {format(new Date(conversation.last_message_at), 'MMM d, HH:mm')}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {conversations.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No conversations found
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                ))}
+                {conversations.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No conversations found
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
 
         {/* Chat Interface */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
           {selectedConversation ? (
             <>
               {/* Chat Header */}
@@ -266,41 +268,43 @@ const ChatAdmin = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full p-4">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
                       <div
-                        className={`max-w-[70%] p-3 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-rose-500 text-white'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}
+                        key={message.id}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <p className="text-sm">{message.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.role === 'user' ? 'text-rose-100' : 'text-gray-500'
-                        }`}>
-                          {format(new Date(message.created_at), 'MMM d, HH:mm')}
-                        </p>
+                        <div
+                          className={`max-w-[70%] p-3 rounded-lg ${
+                            message.role === 'user'
+                              ? 'bg-rose-500 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <p className={`text-xs mt-1 ${
+                            message.role === 'user' ? 'text-rose-100' : 'text-gray-500'
+                          }`}>
+                            {format(new Date(message.created_at), 'MMM d, HH:mm')}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {messages.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      No messages in this conversation yet
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+                    ))}
+                    {messages.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        No messages in this conversation yet
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
 
-              <Separator />
+              <Separator className="flex-shrink-0" />
 
-              {/* Message Input */}
-              <div className="p-4">
+              {/* Message Input - Fixed at Bottom */}
+              <div className="p-4 flex-shrink-0 bg-white">
                 <div className="flex gap-2">
                   <Input
                     placeholder="Type your message..."
@@ -308,11 +312,12 @@ const ChatAdmin = () => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={sendingMessage}
+                    className="flex-1"
                   />
                   <Button 
                     onClick={sendMessage} 
                     disabled={!newMessage.trim() || sendingMessage}
-                    className="bg-rose-500 hover:bg-rose-600"
+                    className="bg-rose-500 hover:bg-rose-600 flex-shrink-0"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
