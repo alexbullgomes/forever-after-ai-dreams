@@ -13,6 +13,7 @@ import WeddingPackages from "./pages/WeddingPackages";
 import WeddingQuiz from "./pages/WeddingQuiz";
 import Planner from "./pages/Planner";
 import PhotoVideoServices from "./pages/PhotoVideoServices";
+import AdminInbox from "./pages/AdminInbox";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const AppContent = () => {
             <Route path="/photo-video-services" element={<PhotoVideoServices />} />
             <Route path="/wedding-packages" element={<WeddingPackages />} />
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
+            <Route path="/admin/inbox" element={<AdminInbox />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

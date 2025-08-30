@@ -1,12 +1,14 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, Menu, X } from "lucide-react";
+import { ArrowLeft, LogOut, Menu, X, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 const DashboardNavigation = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useRole();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -72,6 +74,16 @@ const DashboardNavigation = () => {
 
           {/* Right side - Desktop User info and Sign out */}
           <div className="hidden md:flex items-center space-x-4">
+            {isAdmin && (
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/admin/inbox'} 
+                className="text-primary hover:text-primary/80 border-primary"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Inbox
+              </Button>
+            )}
             <span className="text-sm text-gray-600 max-w-48 truncate">
               Welcome, {user?.user_metadata?.full_name || user?.email}!
             </span>
@@ -135,6 +147,20 @@ const DashboardNavigation = () => {
                     Welcome, {user?.user_metadata?.full_name || user?.email}!
                   </span>
                 </div>
+                {isAdmin && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      window.location.href = '/admin/inbox';
+                    }} 
+                    className="w-full mx-4 text-primary hover:text-primary/80 border-primary max-w-none"
+                    style={{ width: 'calc(100% - 2rem)' }}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin Inbox
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   onClick={handleSignOut} 
