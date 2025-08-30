@@ -23,6 +23,7 @@ interface Conversation {
   taken_at: string | null;
   message_count: number;
   last_message_at: string | null;
+  new_msg: string;
 }
 
 interface Message {
@@ -52,6 +53,7 @@ const ChatAdmin = () => {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.id);
+      markConversationAsRead(selectedConversation.id);
     }
   }, [selectedConversation]);
 
@@ -121,6 +123,37 @@ const ChatAdmin = () => {
       setMessages(data || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
+    }
+  };
+
+  const markConversationAsRead = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('conversations')
+        .update({ new_msg: 'read' })
+        .eq('id', conversationId);
+
+      if (error) {
+        console.error('Error marking conversation as read:', error);
+        return;
+      }
+
+      // Update local state to reflect the change
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === conversationId 
+            ? { ...conv, new_msg: 'read' }
+            : conv
+        )
+      );
+      
+      setSelectedConversation(prev => 
+        prev?.id === conversationId 
+          ? { ...prev, new_msg: 'read' }
+          : prev
+      );
+    } catch (error) {
+      console.error('Error marking conversation as read:', error);
     }
   };
 
@@ -273,8 +306,7 @@ const ChatAdmin = () => {
             <ScrollArea className="h-full">
               <div className="p-4 space-y-2">
                 {conversations.map((conversation) => {
-                  const hasUnreadMessages = conversation.message_count > 0 && conversation.last_message_at;
-                  const isUnread = Math.random() > 0.7; // Simulate unread status for demo
+                  const isUnread = conversation.new_msg === 'unread';
                   
                   return (
                     <div
@@ -304,11 +336,6 @@ const ChatAdmin = () => {
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <MessageCircle className="h-3 w-3" />
                               {conversation.message_count} messages
-                              {isUnread && (
-                                <Badge variant="outline" className="ml-1 h-5 px-1.5 text-xs bg-blue-500 text-white border-blue-500">
-                                  {Math.floor(Math.random() * 3) + 1}
-                                </Badge>
-                              )}
                             </div>
                           </div>
                         </div>

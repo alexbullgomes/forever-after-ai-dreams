@@ -56,6 +56,7 @@ export type Database = {
           customer_id: string
           id: string
           mode: string | null
+          new_msg: string | null
           public_code: string | null
           taken_at: string | null
           taken_by: string | null
@@ -67,6 +68,7 @@ export type Database = {
           customer_id: string
           id?: string
           mode?: string | null
+          new_msg?: string | null
           public_code?: string | null
           taken_at?: string | null
           taken_by?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           customer_id?: string
           id?: string
           mode?: string | null
+          new_msg?: string | null
           public_code?: string | null
           taken_at?: string | null
           taken_by?: string | null
@@ -93,6 +96,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: number
+          new_msg: string | null
           role: string
           type: string
           user_email: string | null
@@ -105,6 +109,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: number
+          new_msg?: string | null
           role: string
           type: string
           user_email?: string | null
@@ -117,6 +122,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: number
+          new_msg?: string | null
           role?: string
           type?: string
           user_email?: string | null
