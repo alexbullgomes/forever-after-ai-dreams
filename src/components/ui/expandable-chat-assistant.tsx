@@ -107,32 +107,44 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
     setIsInitializing(true);
     
     try {
-      // Use upsert to handle race conditions and ensure only one conversation per user
-      const { data: conversation, error } = await supabase
+      // First, try to find existing conversation
+      const { data: existingConversation, error: selectError } = await supabase
         .from('conversations')
-        .upsert(
-          {
+        .select('id')
+        .eq('customer_id', user.id)
+        .single();
+
+      let conversationId: string;
+
+      if (existingConversation && !selectError) {
+        // Use existing conversation
+        conversationId = existingConversation.id;
+        console.log('Found existing conversation:', conversationId);
+      } else {
+        // Create new conversation only if none exists
+        const { data: newConversation, error: insertError } = await supabase
+          .from('conversations')
+          .insert({
             customer_id: user.id,
             mode: 'ai',
             user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
             user_email: user.email
-          },
-          {
-            onConflict: 'customer_id',
-            ignoreDuplicates: false
-          }
-        )
-        .select('id')
-        .single();
+          })
+          .select('id')
+          .single();
 
-      if (error) {
-        console.error('Error initializing conversation:', error);
-        toast.error('Failed to initialize chat');
-        return;
+        if (insertError) {
+          console.error('Error creating conversation:', insertError);
+          toast.error('Failed to initialize chat');
+          return;
+        }
+
+        conversationId = newConversation.id;
+        console.log('Created new conversation:', conversationId);
       }
 
-      setConversationId(conversation.id);
-      await loadMessages(conversation.id);
+      setConversationId(conversationId);
+      await loadMessages(conversationId);
     } catch (error) {
       console.error('Error initializing conversation:', error);
       toast.error('Failed to initialize chat');
