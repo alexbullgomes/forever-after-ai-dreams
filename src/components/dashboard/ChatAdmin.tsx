@@ -266,36 +266,38 @@ const ChatAdmin = () => {
               </div>
 
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-4 space-y-4">
+                    {messages.map((message) => (
                       <div
-                        className={`max-w-[70%] p-3 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-rose-500 text-white'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}
+                        key={message.id}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <p className="text-sm">{message.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.role === 'user' ? 'text-rose-100' : 'text-gray-500'
-                        }`}>
-                          {format(new Date(message.created_at), 'MMM d, HH:mm')}
-                        </p>
+                        <div
+                          className={`max-w-[70%] p-3 rounded-lg ${
+                            message.role === 'user'
+                              ? 'bg-rose-500 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          <p className="text-sm">{message.content}</p>
+                          <p className={`text-xs mt-1 ${
+                            message.role === 'user' ? 'text-rose-100' : 'text-gray-500'
+                          }`}>
+                            {format(new Date(message.created_at), 'MMM d, HH:mm')}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  {messages.length === 0 && (
-                    <div className="text-center py-8 text-gray-500">
-                      No messages in this conversation yet
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+                    ))}
+                    {messages.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        No messages in this conversation yet
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
 
               <Separator />
 
