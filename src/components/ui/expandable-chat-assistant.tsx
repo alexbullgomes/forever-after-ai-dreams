@@ -58,6 +58,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationMode, setConversationMode] = useState<string>('ai');
   const [isInitializing, setIsInitializing] = useState(false);
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -110,7 +111,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
       // First, try to find existing conversation
       const { data: existingConversation, error: selectError } = await supabase
         .from('conversations')
-        .select('id')
+        .select('id, mode')
         .eq('customer_id', user.id)
         .single();
 
@@ -119,7 +120,8 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
       if (existingConversation && !selectError) {
         // Use existing conversation
         conversationId = existingConversation.id;
-        console.log('Found existing conversation:', conversationId);
+        setConversationMode(existingConversation.mode || 'ai');
+        console.log('Found existing conversation:', conversationId, 'mode:', existingConversation.mode);
       } else {
         // Create new conversation only if none exists
         const { data: newConversation, error: insertError } = await supabase
@@ -130,7 +132,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
             user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
             user_email: user.email
           })
-          .select('id')
+          .select('id, mode')
           .single();
 
         if (insertError) {
@@ -140,7 +142,8 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
         }
 
         conversationId = newConversation.id;
-        console.log('Created new conversation:', conversationId);
+        setConversationMode(newConversation.mode || 'ai');
+        console.log('Created new conversation:', conversationId, 'mode:', newConversation.mode);
       }
 
       setConversationId(conversationId);
