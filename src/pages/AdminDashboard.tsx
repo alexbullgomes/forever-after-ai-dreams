@@ -32,6 +32,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Only redirect after auth and role loading is complete
     if (!authLoading && !roleLoading) {
       if (!user) {
         navigate('/');
