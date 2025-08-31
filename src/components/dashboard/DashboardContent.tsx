@@ -92,35 +92,53 @@ const DashboardContent = () => {
     );
   }
 
-  const MetricCard = ({ title, value, icon: Icon, description, color = "blue", onClick = null }) => (
-    <div 
-      className={`p-6 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow ${
-        onClick ? 'cursor-pointer hover:border-gray-300' : ''
-      }`}
-      onClick={onClick}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-2 rounded-lg ${
-          color === 'blue' ? 'bg-blue-50' :
-          color === 'green' ? 'bg-green-50' :
-          color === 'purple' ? 'bg-purple-50' :
-          'bg-orange-50'
-        }`}>
-          <Icon className={`h-5 w-5 ${
-            color === 'blue' ? 'text-blue-600' :
-            color === 'green' ? 'text-green-600' :
-            color === 'purple' ? 'text-purple-600' :
-            'text-orange-600'
-          }`} />
+  const MetricCard = ({ title, value, icon: Icon, description, color = "blue", onClick = null }) => {
+    const isUnreadMessages = title === "Unread Messages";
+    
+    return (
+      <div 
+        className={`p-6 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 ${
+          isUnreadMessages 
+            ? 'bg-gradient-to-br from-rose-500 to-pink-500 border-rose-400 text-white hover:shadow-rose-200 hover:scale-105' 
+            : 'border-gray-200 bg-white'
+        } ${
+          onClick ? 'cursor-pointer hover:border-gray-300' : ''
+        }`}
+        onClick={onClick}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-2 rounded-lg ${
+            isUnreadMessages 
+              ? 'bg-white/20 backdrop-blur-sm' 
+              : color === 'blue' ? 'bg-blue-50' :
+                color === 'green' ? 'bg-green-50' :
+                color === 'purple' ? 'bg-purple-50' :
+                'bg-orange-50'
+          }`}>
+            <Icon className={`h-5 w-5 ${
+              isUnreadMessages 
+                ? 'text-white' 
+                : color === 'blue' ? 'text-blue-600' :
+                  color === 'green' ? 'text-green-600' :
+                  color === 'purple' ? 'text-purple-600' :
+                  'text-orange-600'
+            }`} />
+          </div>
         </div>
+        <h3 className={`font-medium mb-1 ${
+          isUnreadMessages ? 'text-white/90' : 'text-gray-600'
+        }`}>{title}</h3>
+        <p className={`text-2xl font-bold ${
+          isUnreadMessages ? 'text-white' : 'text-gray-900'
+        }`}>{value}</p>
+        {description && (
+          <p className={`text-sm mt-1 ${
+            isUnreadMessages ? 'text-white/80' : 'text-gray-500'
+          }`}>{description}</p>
+        )}
       </div>
-      <h3 className="font-medium text-gray-600 mb-1">{title}</h3>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      {description && (
-        <p className="text-sm text-gray-500 mt-1">{description}</p>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="p-8">
