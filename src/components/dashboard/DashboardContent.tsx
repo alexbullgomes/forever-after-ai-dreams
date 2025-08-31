@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 interface CustomerMetrics {
   totalCustomers: number;
   newLeadsThisMonth: number;
-  totalAppointments: number;
+  usersWithPhoneNumbers: number;
   recentCustomers: Array<{
     id: string;
     name: string | null;
@@ -22,7 +22,7 @@ const DashboardContent = () => {
   const [metrics, setMetrics] = useState<CustomerMetrics>({
     totalCustomers: 0,
     newLeadsThisMonth: 0,
-    totalAppointments: 0,
+    usersWithPhoneNumbers: 0,
     recentCustomers: []
   });
   const [loading, setLoading] = useState(true);
@@ -61,10 +61,14 @@ const DashboardContent = () => {
         new Date(profile.created_at) >= thisMonth
       ).length || 0;
 
+      const usersWithPhoneNumbers = profiles?.filter(profile => 
+        profile.user_number && profile.user_number.trim() !== ''
+      ).length || 0;
+
       setMetrics({
         totalCustomers: profiles?.length || 0,
         newLeadsThisMonth,
-        totalAppointments: appointments?.length || 0,
+        usersWithPhoneNumbers,
         recentCustomers: profiles?.slice(0, 10) || []
       });
     } catch (error) {
@@ -133,10 +137,10 @@ const DashboardContent = () => {
           color="green"
         />
         <MetricCard
-          title="Total Appointments"
-          value={metrics.totalAppointments}
+          title="Users with Phone Numbers"
+          value={metrics.usersWithPhoneNumbers}
           icon={Calendar}
-          description="Scheduled sessions"
+          description="Registered phone contacts"
           color="purple"
         />
         <MetricCard
