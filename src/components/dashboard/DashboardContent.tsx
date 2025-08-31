@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, UserCheck, Calendar, TrendingUp } from 'lucide-react';
+import { Users, UserCheck, Calendar, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CustomerMetrics {
   totalCustomers: number;
   newLeadsThisMonth: number;
   usersWithPhoneNumbers: number;
+  unreadMessages: number;
   recentCustomers: Array<{
     id: string;
     name: string | null;
@@ -19,10 +21,12 @@ interface CustomerMetrics {
 }
 
 const DashboardContent = () => {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<CustomerMetrics>({
     totalCustomers: 0,
     newLeadsThisMonth: 0,
     usersWithPhoneNumbers: 0,
+    unreadMessages: 0,
     recentCustomers: []
   });
   const [loading, setLoading] = useState(true);
@@ -44,13 +48,14 @@ const DashboardContent = () => {
         return;
       }
 
-      // Get appointments count
-      const { data: appointments, error: appointmentsError } = await supabase
-        .from('appointments')
-        .select('id');
+      // Get unread messages count
+      const { data: conversations, error: conversationsError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('new_msg', 'unread');
 
-      if (appointmentsError) {
-        console.error('Error fetching appointments:', appointmentsError);
+      if (conversationsError) {
+        console.error('Error fetching conversations:', conversationsError);
       }
 
       // Calculate metrics
@@ -69,6 +74,7 @@ const DashboardContent = () => {
         totalCustomers: profiles?.length || 0,
         newLeadsThisMonth,
         usersWithPhoneNumbers,
+        unreadMessages: conversations?.length || 0,
         recentCustomers: profiles?.slice(0, 10) || []
       });
     } catch (error) {
@@ -86,8 +92,13 @@ const DashboardContent = () => {
     );
   }
 
-  const MetricCard = ({ title, value, icon: Icon, description, color = "blue" }) => (
-    <div className="p-6 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+  const MetricCard = ({ title, value, icon: Icon, description, color = "blue", onClick = null }) => (
+    <div 
+      className={`p-6 rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow ${
+        onClick ? 'cursor-pointer hover:border-gray-300' : ''
+      }`}
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between mb-4">
         <div className={`p-2 rounded-lg ${
           color === 'blue' ? 'bg-blue-50' :
@@ -102,7 +113,6 @@ const DashboardContent = () => {
             'text-orange-600'
           }`} />
         </div>
-        <TrendingUp className="h-4 w-4 text-green-500" />
       </div>
       <h3 className="font-medium text-gray-600 mb-1">{title}</h3>
       <p className="text-2xl font-bold text-gray-900">{value}</p>
@@ -144,11 +154,12 @@ const DashboardContent = () => {
           color="purple"
         />
         <MetricCard
-          title="Conversion Rate"
-          value="24%"
-          icon={TrendingUp}
-          description="Leads to appointments"
+          title="Unread Messages"
+          value={metrics.unreadMessages}
+          icon={MessageCircle}
+          description="Pending responses"
           color="orange"
+          onClick={() => navigate('/dashboard/chat-admin')}
         />
       </div>
 
