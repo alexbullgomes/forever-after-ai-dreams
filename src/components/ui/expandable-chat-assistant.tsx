@@ -19,6 +19,7 @@ import { ChatMessageList } from "@/components/ui/chat-message-list";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { AudioPlayer } from "@/components/wedding/components/AudioPlayer";
+import { VoiceInput } from "@/components/ui/voice-input";
 import { toast } from "sonner";
 
 interface DatabaseMessage {
@@ -361,15 +362,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
     input.click();
   };
 
-  const handleMicrophoneClick = async () => {
-    if (isRecording && mediaRecorder) {
-      // Stop recording
-      mediaRecorder.stop();
-      setIsRecording(false);
-      setMediaRecorder(null);
-      return;
-    }
-
+  const handleVoiceStart = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const newMediaRecorder = new MediaRecorder(stream);
@@ -379,15 +372,16 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
         audioChunks.push(event.data);
       };
 
-      newMediaRecorder.onstop = () => {
+      newMediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioFile = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
-        setSelectedFiles(prev => [...prev, audioFile]);
         
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
-        setIsRecording(false);
         setMediaRecorder(null);
+        
+        // Auto-send the audio message
+        await sendAudioMessage(audioFile);
       };
 
       // Start recording
@@ -405,6 +399,73 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
       console.error('Error accessing microphone:', error);
       setIsRecording(false);
       setMediaRecorder(null);
+      toast.error('Failed to access microphone');
+    }
+  };
+
+  const handleVoiceStop = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const sendAudioMessage = async (audioFile: File) => {
+    if (!conversationId || !user) return;
+
+    try {
+      setIsLoading(true);
+
+      // Upload audio file
+      const audioUrl = await uploadAudioFile(audioFile, conversationId);
+      if (!audioUrl) {
+        toast.error('Failed to upload audio file');
+        return;
+      }
+
+      // Add optimistic message to UI
+      const tempUserMessage: ChatMessage = {
+        id: Date.now(),
+        content: "Audio message",
+        sender: "user",
+        timestamp: new Date().toISOString(),
+        files: [{
+          fileUrl: URL.createObjectURL(audioFile),
+          fileType: audioFile.type,
+          fileName: audioFile.name,
+          fileSize: audioFile.size,
+        }],
+      };
+
+      setMessages((prev) => [...prev, tempUserMessage]);
+
+      // Insert message into database
+      const { error: insertError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          user_id: user.id,
+          role: 'user',
+          type: 'audio',
+          content: null,
+          audio_url: audioUrl,
+          user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          user_email: user.email
+        });
+
+      if (insertError) {
+        console.error('Error inserting audio message:', insertError);
+        toast.error('Failed to send audio message');
+        // Remove the optimistic message
+        setMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
+        return;
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error sending audio message:', error);
+      toast.error('Failed to send audio message');
+      setIsLoading(false);
     }
   };
 
@@ -570,18 +631,11 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
           />
           <div className="flex items-center p-3 pt-0 justify-between">
             <div className="flex">
-              <Button
-                variant="ghost"
-                size="icon"
-                type="button"
-                onClick={handleMicrophoneClick}
-                className={`${isRecording 
-                  ? 'text-red-500 hover:text-red-600 hover:bg-red-50 bg-red-50' 
-                  : 'text-rose-500 hover:text-rose-600 hover:bg-rose-50'
-                }`}
-              >
-                <Mic className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
-              </Button>
+              <VoiceInput
+                onStart={handleVoiceStart}
+                onStop={handleVoiceStop}
+                className="text-rose-500 hover:text-rose-600"
+              />
             </div>
             <Button 
               type="submit" 
