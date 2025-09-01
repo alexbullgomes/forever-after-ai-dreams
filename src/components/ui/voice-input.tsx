@@ -48,7 +48,10 @@ export function VoiceInput({
   return (
     <div className={cn("flex flex-col items-center justify-center", className)}>
       <motion.div
-        className="flex p-2 border items-center justify-center rounded-full cursor-pointer"
+        className={cn(
+          "flex p-2 border items-center justify-center rounded-full cursor-pointer transition-colors",
+          _listening ? "border-rose-500 bg-rose-50" : "border-border"
+        )}
         layout
         transition={{
           layout: {
@@ -60,7 +63,7 @@ export function VoiceInput({
         <div className="h-6 w-6 items-center justify-center flex ">
           {_listening ? (
             <motion.div
-              className="w-4 h-4 bg-primary rounded-sm"
+              className="w-4 h-4 bg-rose-500 rounded-sm"
               animate={{
                 rotate: [0, 180, 360],
               }}
@@ -71,7 +74,7 @@ export function VoiceInput({
               }}
             />
           ) : (
-            <Mic />
+            <Mic className={_listening ? "text-rose-500" : ""} />
           )}
         </div>
         <AnimatePresence mode="wait">
@@ -87,10 +90,10 @@ export function VoiceInput({
             >
               {/* Frequency Animation */}
               <div className="flex gap-0.5 items-center justify-center">
-                {[...Array(12)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-0.5 bg-primary rounded-full"
+                 {[...Array(12)].map((_, i) => (
+                   <motion.div
+                     key={i}
+                     className="w-0.5 bg-rose-500 rounded-full"
                     initial={{ height: 2 }}
                     animate={{
                       height: _listening
