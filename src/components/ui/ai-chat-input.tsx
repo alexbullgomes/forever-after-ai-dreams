@@ -144,6 +144,11 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
+        
+        // Auto-send audio when recording stops
+        setTimeout(() => {
+          handleSend();
+        }, 100); // Small delay to ensure file is processed
       };
 
       mediaRecorderRef.current.start();
@@ -209,8 +214,11 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      if (inputValue.trim()) {
+        handleSend();
+      }
     }
+    // Shift+Enter allows new line (default input behavior)
   };
 
   const containerVariants = {
@@ -306,17 +314,17 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
 
             {/* Text Input & Placeholder */}
             <div className="relative flex-1">
-              <input
-                type="text"
+              <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className={`flex-1 border-0 outline-0 rounded-md bg-transparent w-full font-normal ${
+                className={`flex-1 border-0 outline-0 rounded-md bg-transparent w-full font-normal resize-none overflow-hidden ${
                   isMobile ? 'py-1 text-sm' : 'py-2 text-base'
                 }`}
-                style={{ position: "relative", zIndex: 1 }}
+                style={{ position: "relative", zIndex: 1, minHeight: "1.5em" }}
                 onFocus={handleActivate}
                 disabled={isLoading}
+                rows={1}
               />
               <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
                 <AnimatePresence mode="wait">
