@@ -559,6 +559,12 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
           <ChatInput
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e as any);
+              }
+            }}
             placeholder="Tell me about your photo/video needs..."
             className="min-h-12 resize-none rounded-xl bg-white border-0 p-3 shadow-none focus-visible:ring-0 placeholder:text-rose-400"
           />
