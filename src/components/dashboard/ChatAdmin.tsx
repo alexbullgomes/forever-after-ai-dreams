@@ -70,15 +70,15 @@ const ChatAdmin = () => {
     }
   }, [selectedConversation]);
 
-  // Auto-scroll when messages change or conversation is selected
+  // Auto-scroll only when conversation is first opened
   useEffect(() => {
-    if (messages.length > 0) {
+    if (selectedConversation && messages.length > 0) {
       // Use setTimeout to ensure DOM has updated
       setTimeout(() => {
         scrollToBottom();
       }, 100);
     }
-  }, [messages, scrollToBottom]);
+  }, [selectedConversation?.id, scrollToBottom]);
 
   const fetchConversations = async () => {
     try {
@@ -214,6 +214,11 @@ const ChatAdmin = () => {
       // Refresh messages and clear input
       await fetchMessages(selectedConversation.id);
       setNewMessage('');
+      
+      // Auto-scroll to bottom after sending message
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
       
       toast({
         title: "Message sent",
