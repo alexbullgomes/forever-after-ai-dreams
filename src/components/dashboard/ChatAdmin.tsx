@@ -508,7 +508,7 @@ const ChatAdmin = () => {
                 {messages.length > 0 && (
                   <Button
                     onClick={scrollToBottom}
-                    className={`absolute bottom-4 right-4 h-10 w-10 rounded-full shadow-lg transition-all duration-200 ${
+                    className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 h-10 w-10 rounded-full shadow-lg transition-all duration-200 ${
                       isAtBottom && !hasNewMessage
                         ? 'bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50' 
                         : 'bg-rose-500 text-white hover:bg-rose-600'
