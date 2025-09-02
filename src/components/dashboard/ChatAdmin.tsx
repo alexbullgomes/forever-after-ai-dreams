@@ -185,7 +185,7 @@ const ChatAdmin = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || sendingMessage) return;
+    if (!newMessage.trim() || !selectedConversation || sendingMessage || selectedConversation.mode === 'ai') return;
 
     setSendingMessage(true);
     try {
@@ -232,7 +232,7 @@ const ChatAdmin = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && selectedConversation?.mode === 'human') {
       e.preventDefault();
       sendMessage();
     }
@@ -468,15 +468,15 @@ const ChatAdmin = () => {
               <div className="p-4 flex-shrink-0">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Type your message..."
+                    placeholder={selectedConversation.mode === 'ai' ? "AI mode active - messages disabled" : "Type your message..."}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    disabled={sendingMessage}
+                    disabled={sendingMessage || selectedConversation.mode === 'ai'}
                   />
                   <Button 
                     onClick={sendMessage} 
-                    disabled={!newMessage.trim() || sendingMessage}
+                    disabled={!newMessage.trim() || sendingMessage || selectedConversation.mode === 'ai'}
                     className="bg-rose-500 hover:bg-rose-600"
                   >
                     <Send className="h-4 w-4" />
