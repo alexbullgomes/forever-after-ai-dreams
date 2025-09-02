@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
-import { useAutoScroll } from '@/hooks/use-auto-scroll';
+
 
 interface Conversation {
   id: string;
@@ -47,10 +47,14 @@ const ChatAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   
-  // Auto-scroll functionality for messages
-  const { scrollRef, scrollToBottom } = useAutoScroll({
-    smooth: true
-  });
+  // Manual scroll control
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     fetchConversations();
@@ -78,7 +82,7 @@ const ChatAdmin = () => {
         scrollToBottom();
       }, 100);
     }
-  }, [selectedConversation?.id, scrollToBottom]);
+  }, [selectedConversation?.id]);
 
   const fetchConversations = async () => {
     try {
