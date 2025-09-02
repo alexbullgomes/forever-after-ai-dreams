@@ -47,6 +47,7 @@ const ChatAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [hasNewMessage, setHasNewMessage] = useState(false);
   
   // Manual scroll control
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -54,6 +55,7 @@ const ChatAdmin = () => {
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      setHasNewMessage(false); // Reset new message indicator when manually scrolled
     }
   };
 
@@ -150,6 +152,8 @@ const ChatAdmin = () => {
 
   const fetchMessages = async (conversationId: string) => {
     try {
+      const currentMessageCount = messages.length;
+      
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -166,7 +170,14 @@ const ChatAdmin = () => {
         return;
       }
 
-      setMessages(data || []);
+      const newMessages = data || [];
+      
+      // Check if there are new messages
+      if (currentMessageCount > 0 && newMessages.length > currentMessageCount) {
+        setHasNewMessage(true);
+      }
+      
+      setMessages(newMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
@@ -489,12 +500,12 @@ const ChatAdmin = () => {
                   </div>
                 </div>
                 
-                {/* Scroll to Bottom Button */}
-                {!isAtBottom && messages.length > 0 && (
+                {/* Scroll to Bottom Button - Always visible */}
+                {messages.length > 0 && (
                   <Button
                     onClick={scrollToBottom}
                     className={`absolute bottom-4 right-4 h-10 w-10 rounded-full shadow-lg transition-all duration-200 ${
-                      isAtBottom 
+                      isAtBottom && !hasNewMessage
                         ? 'bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50' 
                         : 'bg-rose-500 text-white hover:bg-rose-600'
                     }`}
