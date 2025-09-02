@@ -172,9 +172,13 @@ const ChatAdmin = () => {
 
       const newMessages = data || [];
       
-      // Check if there are new messages
-      if (currentMessageCount > 0 && newMessages.length > currentMessageCount) {
+      // Check if there are new messages and auto-scroll if conversation is active
+      if (currentMessageCount > 0 && newMessages.length > currentMessageCount && selectedConversation?.id === conversationId) {
         setHasNewMessage(true);
+        // Auto-scroll to new messages
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
       }
       
       setMessages(newMessages);
