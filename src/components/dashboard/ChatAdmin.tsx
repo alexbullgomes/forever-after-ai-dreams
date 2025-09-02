@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Send, Users, MessageCircle, Clock } from 'lucide-react';
+import { Send, Users, MessageCircle, Clock, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,6 +46,7 @@ const ChatAdmin = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
   
   // Manual scroll control
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -54,6 +55,20 @@ const ChatAdmin = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+  };
+
+  // Check if user is at bottom of chat
+  const checkIfAtBottom = () => {
+    if (scrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const isBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+      setIsAtBottom(isBottom);
+    }
+  };
+
+  // Handle scroll events
+  const handleScroll = () => {
+    checkIfAtBottom();
   };
 
   useEffect(() => {
@@ -438,8 +453,12 @@ const ChatAdmin = () => {
               </div>
 
               {/* Messages - Fixed height with internal scroll */}
-              <div className="h-80 overflow-hidden">
-                <div ref={scrollRef} className="h-full overflow-y-auto">
+              <div className="h-80 overflow-hidden relative">
+                <div 
+                  ref={scrollRef} 
+                  className="h-full overflow-y-auto"
+                  onScroll={handleScroll}
+                >
                   <div className="p-4 space-y-4">
                     {messages.map((message) => (
                       <div
@@ -469,6 +488,21 @@ const ChatAdmin = () => {
                     )}
                   </div>
                 </div>
+                
+                {/* Scroll to Bottom Button */}
+                {!isAtBottom && messages.length > 0 && (
+                  <Button
+                    onClick={scrollToBottom}
+                    className={`absolute bottom-4 right-4 h-10 w-10 rounded-full shadow-lg transition-all duration-200 ${
+                      isAtBottom 
+                        ? 'bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50' 
+                        : 'bg-rose-500 text-white hover:bg-rose-600'
+                    }`}
+                    size="sm"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               <Separator className="flex-shrink-0" />
