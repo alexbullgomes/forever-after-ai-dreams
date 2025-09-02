@@ -504,15 +504,11 @@ const ChatAdmin = () => {
                   </div>
                 </div>
                 
-                {/* Scroll to Bottom Button - Always visible */}
-                {messages.length > 0 && (
+                {/* Scroll to Bottom Button - Hidden when at bottom */}
+                {messages.length > 0 && !isAtBottom && (
                   <Button
                     onClick={scrollToBottom}
-                    className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 h-10 w-10 rounded-full shadow-lg transition-all duration-200 ${
-                      isAtBottom && !hasNewMessage
-                        ? 'bg-white border-2 border-rose-500 text-rose-500 hover:bg-rose-50' 
-                        : 'bg-rose-500 text-white hover:bg-rose-600'
-                    }`}
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 h-10 w-10 rounded-full shadow-lg transition-all duration-200 bg-rose-500 text-white hover:bg-rose-600"
                     size="sm"
                   >
                     <ArrowDown className="h-4 w-4" />
