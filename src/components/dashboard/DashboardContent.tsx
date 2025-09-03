@@ -14,9 +14,8 @@ interface CustomerMetrics {
     name: string | null;
     email: string | null;
     created_at: string;
-    package_consultation: string | null;
     user_number: string | null;
-    event_date: string | null;
+    status: string | null;
   }>;
 }
 
@@ -40,7 +39,7 @@ const DashboardContent = () => {
       // Get total customers
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, name, email, created_at, package_consultation, user_number, event_date')
+        .select('id, name, email, created_at, user_number, status')
         .order('created_at', { ascending: false });
 
       if (profilesError) {
@@ -203,64 +202,62 @@ const DashboardContent = () => {
                   Phone
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Package Interest
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Event Date
+                  Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Sign-up Date
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {metrics.recentCustomers.length > 0 ? (
-                metrics.recentCustomers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
-                          {customer.name ? customer.name.charAt(0).toUpperCase() : customer.email?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">
-                            {customer.name || 'Anonymous User'}
+          </table>
+          <div className="max-h-96 overflow-y-auto">
+            <table className="w-full">
+              <tbody className="bg-white divide-y divide-gray-200">
+                {metrics.recentCustomers.length > 0 ? (
+                  metrics.recentCustomers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
+                            {customer.name ? customer.name.charAt(0).toUpperCase() : customer.email?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div className="ml-3">
+                            <div className="text-sm font-medium text-gray-900">
+                              {customer.name || 'Anonymous User'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{customer.email || 'N/A'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{customer.user_number || 'N/A'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        customer.package_consultation 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {customer.package_consultation || 'No preference'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {customer.event_date ? format(new Date(customer.event_date), 'MMM d, yyyy') : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(new Date(customer.created_at), 'MMM d, yyyy')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{customer.email || 'N/A'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{customer.user_number || 'N/A'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          customer.status 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {customer.status || 'New Lead'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {format(new Date(customer.created_at), 'MMM d, yyyy')}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      No customers found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    No customers found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Mobile & Tablet Card View */}
@@ -296,22 +293,15 @@ const DashboardContent = () => {
                   )}
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Package Interest:</span>
+                    <span className="text-gray-600">Status:</span>
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      customer.package_consultation 
+                      customer.status 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {customer.package_consultation || 'No preference'}
+                      {customer.status || 'New Lead'}
                     </span>
                   </div>
-                  
-                  {customer.event_date && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Event Date:</span>
-                      <span className="text-gray-900">{format(new Date(customer.event_date), 'MMM d, yyyy')}</span>
-                    </div>
-                  )}
                 </div>
               </div>
             ))
