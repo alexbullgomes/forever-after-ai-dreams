@@ -105,13 +105,13 @@ const ChatAdmin = () => {
 
   const fetchConversations = async () => {
     try {
-      // Fetch conversations with message count and last message timestamp
+      // Fetch conversations with message count and actual last message timestamp
       const { data, error } = await supabase
         .from('conversations')
         .select(`
           *,
-          messages(count),
-          last_message:messages(created_at)
+          messages!inner(count),
+          last_message_timestamp:messages(created_at)
         `)
         .order('created_at', { ascending: false });
 
@@ -125,23 +125,36 @@ const ChatAdmin = () => {
         return;
       }
 
-      // Process the data to get proper conversation list
-      const processedConversations = data.map(conv => ({
-        ...conv,
-        message_count: conv.messages?.[0]?.count || 0,
-        last_message_at: conv.last_message?.[0]?.created_at || null
-      })).sort((a, b) => {
+      // Get the actual last message timestamp for each conversation
+      const conversationsWithLastMessage = await Promise.all(
+        data.map(async (conv) => {
+          // Get the most recent message for this conversation
+          const { data: lastMessage } = await supabase
+            .from('messages')
+            .select('created_at')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...conv,
+            message_count: conv.messages?.[0]?.count || 0,
+            last_message_at: lastMessage?.created_at || conv.created_at
+          };
+        })
+      );
+
+      // Sort conversations by last message timestamp (most recent first)
+      const processedConversations = conversationsWithLastMessage.sort((a, b) => {
         // First, sort by unread status (unread conversations first)
         if (a.new_msg === 'unread' && b.new_msg !== 'unread') return -1;
         if (b.new_msg === 'unread' && a.new_msg !== 'unread') return 1;
         
         // Then sort by last message timestamp (most recent first)
-        if (a.last_message_at && b.last_message_at) {
-          return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime();
-        }
-        if (a.last_message_at) return -1;
-        if (b.last_message_at) return 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        const aTime = new Date(a.last_message_at).getTime();
+        const bTime = new Date(b.last_message_at).getTime();
+        return bTime - aTime;
       });
 
       setConversations(processedConversations);
