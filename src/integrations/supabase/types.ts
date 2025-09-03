@@ -160,6 +160,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          briefing: string | null
           created_at: string
           email: string | null
           event_city: string | null
@@ -169,11 +170,13 @@ export type Database = {
           package_consultation: string | null
           promotional_phone: string | null
           role: string | null
+          status: string | null
           updated_at: string
           user_number: string | null
         }
         Insert: {
           avatar_url?: string | null
+          briefing?: string | null
           created_at?: string
           email?: string | null
           event_city?: string | null
@@ -183,11 +186,13 @@ export type Database = {
           package_consultation?: string | null
           promotional_phone?: string | null
           role?: string | null
+          status?: string | null
           updated_at?: string
           user_number?: string | null
         }
         Update: {
           avatar_url?: string | null
+          briefing?: string | null
           created_at?: string
           email?: string | null
           event_city?: string | null
@@ -197,6 +202,7 @@ export type Database = {
           package_consultation?: string | null
           promotional_phone?: string | null
           role?: string | null
+          status?: string | null
           updated_at?: string
           user_number?: string | null
         }

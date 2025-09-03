@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
+import { UserProfileModal } from './UserProfileModal';
 
 
 interface Conversation {
@@ -48,6 +49,7 @@ const ChatAdmin = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
   // Manual scroll control
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -322,6 +324,10 @@ const ChatAdmin = () => {
     }
   };
 
+  const handleOpenProfileModal = () => {
+    setIsProfileModalOpen(true);
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -435,16 +441,21 @@ const ChatAdmin = () => {
               {/* Chat Header */}
               <div className="p-4 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div 
+                    className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+                    onClick={handleOpenProfileModal}
+                  >
                     <div className="h-10 w-10 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white font-medium">
                       {selectedConversation.user_name?.charAt(0).toUpperCase() || 
                        selectedConversation.user_email?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-gray-900 hover:text-rose-600 transition-colors">
                         {selectedConversation.user_name || selectedConversation.user_email || 'Anonymous User'}
                       </h3>
-                      <p className="text-sm text-gray-600">{selectedConversation.user_email}</p>
+                      <p className="text-sm text-gray-600 hover:text-rose-500 transition-colors">
+                        {selectedConversation.user_email}
+                      </p>
                     </div>
                   </div>
                   {roleLoading ? (
@@ -548,6 +559,17 @@ const ChatAdmin = () => {
           )}
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      {selectedConversation && (
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          customerId={selectedConversation.customer_id}
+          userName={selectedConversation.user_name}
+          userEmail={selectedConversation.user_email}
+        />
+      )}
     </div>
   );
 };
