@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, UserCheck, Calendar, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { UserProfileModal } from './UserProfileModal';
 
 interface CustomerMetrics {
   totalCustomers: number;
@@ -29,6 +30,11 @@ const DashboardContent = () => {
     recentCustomers: []
   });
   const [loading, setLoading] = useState(true);
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    id: string;
+    name: string | null;
+    email: string | null;
+  } | null>(null);
 
   useEffect(() => {
     fetchMetrics();
@@ -213,7 +219,7 @@ const DashboardContent = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {metrics.recentCustomers.length > 0 ? (
                   metrics.recentCustomers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-50">
+                    <tr key={customer.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCustomer({ id: customer.id, name: customer.name, email: customer.email })}>
                       <td className="px-6 py-4 whitespace-nowrap w-1/4">
                         <div className="flex items-center">
                           <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
@@ -262,7 +268,7 @@ const DashboardContent = () => {
         <div className="lg:hidden p-4 space-y-4">
           {metrics.recentCustomers.length > 0 ? (
             metrics.recentCustomers.map((customer) => (
-              <div key={customer.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div key={customer.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 cursor-pointer hover:bg-gray-100" onClick={() => setSelectedCustomer({ id: customer.id, name: customer.name, email: customer.email })}>
                 <div className="flex items-center mb-3">
                   <div className="h-10 w-10 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
                     {customer.name ? customer.name.charAt(0).toUpperCase() : customer.email?.charAt(0).toUpperCase() || 'U'}
@@ -310,6 +316,17 @@ const DashboardContent = () => {
           )}
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {selectedCustomer && (
+        <UserProfileModal
+          isOpen={!!selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+          customerId={selectedCustomer.id}
+          userName={selectedCustomer.name || 'Anonymous User'}
+          userEmail={selectedCustomer.email || ''}
+        />
+      )}
     </div>
   );
 };
