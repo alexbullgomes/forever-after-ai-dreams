@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, User, Mail, Phone, Calendar, FileText, Activity } from 'lucide-react';
+import { Save, User, Mail, Phone, Calendar, FileText, Activity, Bot } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -28,6 +28,7 @@ interface UserProfile {
   updated_at: string;
   avatar_url: string | null;
   role: string | null;
+  chat_summarize: string | null;
 }
 
 interface UserProfileModalProps {
@@ -62,6 +63,7 @@ export const UserProfileModal = ({
   const [saving, setSaving] = useState(false);
   const [briefing, setBriefing] = useState('');
   const [status, setStatus] = useState('');
+  const [generatingAISummary, setGeneratingAISummary] = useState(false);
 
   useEffect(() => {
     if (isOpen && customerId) {
@@ -109,7 +111,8 @@ export const UserProfileModal = ({
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           avatar_url: null,
-          role: 'user'
+          role: 'user',
+          chat_summarize: null
         });
         setBriefing('');
         setStatus('New Lead');
@@ -195,6 +198,88 @@ export const UserProfileModal = ({
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAISummary = async () => {
+    if (!profile) return;
+    
+    try {
+      setGeneratingAISummary(true);
+      
+      // Fetch conversation and messages data
+      const { data: conversation, error: conversationError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('customer_id', customerId)
+        .single();
+
+      if (conversationError) {
+        console.error('Error fetching conversation:', conversationError);
+        toast({
+          title: "Error",
+          description: "Could not find conversation for this user.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: messages, error: messagesError } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('conversation_id', conversation.id)
+        .limit(1);
+
+      if (messagesError) {
+        console.error('Error fetching messages:', messagesError);
+        toast({
+          title: "Error", 
+          description: "Could not fetch messages for this conversation.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare webhook payload
+      const webhookPayload = {
+        conversation_id: conversation.id,
+        id: messages?.[0]?.id || null,
+        email: profile.email,
+        user_id: profile.id,
+        name: profile.name,
+        status: profile.status,
+        briefing: profile.briefing,
+        event_date: profile.event_date,
+        event_city: profile.event_city,
+        package_consultation: profile.package_consultation
+      };
+
+      // Send webhook to n8n
+      const response = await fetch('https://agcreationmkt.cloud/webhook/edc35eb2-12c7-4d57-ab83-5d7d2b2b8f42', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "AI Summary Requested",
+          description: "AI summary generation has been triggered. The summary will be updated shortly.",
+        });
+      } else {
+        throw new Error('Webhook request failed');
+      }
+    } catch (error) {
+      console.error('Error triggering AI summary:', error);
+      toast({
+        title: "Error",
+        description: "Failed to trigger AI summary generation.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingAISummary(false);
     }
   };
 
@@ -378,6 +463,25 @@ export const UserProfileModal = ({
                     rows={4}
                     className="resize-none"
                   />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                    <Bot className="h-3 w-3" />
+                    Conversation Summary
+                  </Label>
+                  <div className="bg-gray-50 p-3 rounded-md border text-sm text-gray-900 min-h-[60px]">
+                    {profile?.chat_summarize || 'No conversation summary available'}
+                  </div>
+                  <Button
+                    onClick={handleAISummary}
+                    disabled={generatingAISummary}
+                    className="mt-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+                    size="sm"
+                  >
+                    <Bot className="h-4 w-4 mr-2" />
+                    {generatingAISummary ? 'Generating...' : 'AI Summary'}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

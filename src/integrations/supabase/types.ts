@@ -161,6 +161,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           briefing: string | null
+          chat_summarize: string | null
           created_at: string
           email: string | null
           event_city: string | null
@@ -177,6 +178,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           briefing?: string | null
+          chat_summarize?: string | null
           created_at?: string
           email?: string | null
           event_city?: string | null
@@ -193,6 +195,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           briefing?: string | null
+          chat_summarize?: string | null
           created_at?: string
           email?: string | null
           event_city?: string | null
