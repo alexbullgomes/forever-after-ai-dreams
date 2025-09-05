@@ -5,6 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import { Mic, Paperclip, Send, X, Image, MicIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VoiceInput } from "@/components/ui/voice-input";
+import { toast } from "sonner";
 
 const DESKTOP_PLACEHOLDERS = [
   "Tell us a bit about your event or session — what are you planning?",
@@ -47,10 +49,9 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
 
   // Cycle placeholder text when input is inactive
   useEffect(() => {
@@ -127,44 +128,65 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const startRecording = async () => {
+  const handleVoiceStart = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
+      const newMediaRecorder = new MediaRecorder(stream);
+      const audioChunks: Blob[] = [];
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+      newMediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
       };
 
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      newMediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         const audioFile = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
-        setSelectedFiles(prev => [...prev, audioFile]);
         
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
+        setMediaRecorder(null);
+        
+        // Auto-send the audio message
+        await sendAudioMessage(audioFile);
       };
 
-      mediaRecorderRef.current.start();
+      // Start recording
+      newMediaRecorder.start();
       setIsRecording(true);
+      setMediaRecorder(newMediaRecorder);
+      
+      // Auto-stop after 3 minutes
+      setTimeout(() => {
+        if (newMediaRecorder.state === 'recording') {
+          newMediaRecorder.stop();
+        }
+      }, 180000);
     } catch (error) {
-      console.error('Error starting recording:', error);
+      console.error('Error accessing microphone:', error);
+      setIsRecording(false);
+      setMediaRecorder(null);
+      toast.error('Failed to access microphone');
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+  const handleVoiceStop = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
       setIsRecording(false);
     }
   };
 
-  const handleVoiceToggle = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
+  const sendAudioMessage = async (audioFile: File) => {
+    if (!onSendMessage) return;
+    
+    try {
+      setIsLoading(true);
+      await onSendMessage("Audio message", [audioFile]);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error sending audio message:', error);
+      toast.error('Failed to send audio message');
+      setIsLoading(false);
     }
   };
 
@@ -272,6 +294,16 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
         onClick={handleActivate}
       >
         <div className="flex flex-col items-stretch w-full h-full">
+          {/* Recording Indicator */}
+          {isRecording && (
+            <div className="px-4 pt-3">
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-red-700 font-medium">Recording... (click mic to stop)</span>
+              </div>
+            </div>
+          )}
+
           {/* Selected Files Display */}
           {selectedFiles.length > 0 && (
             <div className="px-4 pt-3">
@@ -353,19 +385,11 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
               </div>
             </div>
 
-            <button
-              className={`p-3 rounded-full transition ${
-                isRecording 
-                  ? 'bg-red-500 text-white hover:bg-red-600' 
-                  : 'hover:bg-gray-100'
-              }`}
-              title={isRecording ? "Stop recording" : "Voice input"}
-              type="button"
-              tabIndex={-1}
-              onClick={handleVoiceToggle}
-            >
-              <Mic size={20} />
-            </button>
+            <VoiceInput
+              onStart={handleVoiceStart}
+              onStop={handleVoiceStop}
+              className="text-rose-500 hover:text-rose-600"
+            />
             
             <button
               className={`flex items-center gap-1 bg-black hover:bg-zinc-700 text-white p-3 rounded-full font-medium justify-center transition ${
