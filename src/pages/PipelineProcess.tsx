@@ -184,12 +184,11 @@ export default function PipelineProcess() {
                     name={profile.name || 'Unknown'}
                     parent={status.id}
                     index={index}
-                    className="cursor-pointer hover:bg-accent/50 transition-colors"
                   >
                     <div 
-                      className="p-3"
+                      className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={(e) => {
-                        // Prevent opening modal during drag operations
+                        e.preventDefault();
                         e.stopPropagation();
                         handleProfileClick(profile);
                       }}
