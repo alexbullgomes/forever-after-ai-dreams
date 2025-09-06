@@ -13,8 +13,6 @@ import {
 } from '@/components/ui/kanban';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { useToast } from '@/hooks/use-toast';
-import { Eye } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface Profile {
   id: string;
@@ -188,7 +186,14 @@ export default function PipelineProcess() {
                     index={index}
                     className="cursor-pointer hover:bg-accent/50 transition-colors"
                   >
-                    <div className="p-3">
+                    <div 
+                      className="p-3"
+                      onClick={(e) => {
+                        // Prevent opening modal during drag operations
+                        e.stopPropagation();
+                        handleProfileClick(profile);
+                      }}
+                    >
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={profile.avatar_url || undefined} />
@@ -209,17 +214,6 @@ export default function PipelineProcess() {
                             </Badge>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 shrink-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProfileClick(profile);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
                       </div>
                     </div>
                   </KanbanCard>
