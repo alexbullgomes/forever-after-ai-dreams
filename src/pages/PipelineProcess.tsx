@@ -12,6 +12,7 @@ import {
   KanbanProvider,
 } from '@/components/ui/kanban';
 import type { DragEndEvent } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -184,7 +185,7 @@ export default function PipelineProcess() {
                     name={profile.name || 'Unknown'}
                     parent={status.id}
                     index={index}
-                    className="cursor-grab hover:bg-accent/50 transition-colors"
+                    className="hover:bg-accent/50 transition-colors overflow-hidden"
                   >
                     <div 
                       className="p-3 cursor-pointer"
@@ -193,18 +194,28 @@ export default function PipelineProcess() {
                         e.stopPropagation();
                         handleProfileClick(profile);
                       }}
-                      onMouseDown={(e) => {
-                        // Allow drag to work by not preventing default on mouse down
-                        e.stopPropagation();
-                      }}
                     >
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={profile.avatar_url || undefined} />
-                          <AvatarFallback>
-                            {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div
+                          className="cursor-grab active:cursor-grabbing"
+                          {...((() => {
+                            const { attributes, listeners } = useDraggable({
+                              id: profile.id,
+                              data: { index, parent: status.id },
+                            });
+                            return { ...listeners, ...attributes };
+                          })())}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                          }}
+                        >
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={profile.avatar_url || undefined} />
+                            <AvatarFallback>
+                              {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">
                             {profile.name || 'Unknown Name'}
