@@ -184,19 +184,17 @@ export default function PipelineProcess() {
                     name={profile.name || 'Unknown'}
                     parent={status.id}
                     index={index}
-                    className="hover:bg-accent/50 transition-colors relative"
+                    className="hover:bg-accent/50 transition-colors cursor-pointer"
                   >
                     <div 
-                      className="p-3 cursor-pointer absolute inset-0 z-10"
+                      className="p-3"
                       onClick={(e) => {
-                        e.preventDefault();
                         e.stopPropagation();
                         handleProfileClick(profile);
                       }}
-                    />
-                    <div className="p-3 relative pointer-events-none">
+                    >
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 pointer-events-auto cursor-grab">
+                        <Avatar className="h-10 w-10">
                           <AvatarImage src={profile.avatar_url || undefined} />
                           <AvatarFallback>
                             {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
