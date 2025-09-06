@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { Save, User, Mail, Phone, Calendar, FileText, Activity, Bot } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -29,6 +30,8 @@ interface UserProfile {
   avatar_url: string | null;
   role: string | null;
   chat_summarize: string | null;
+  pipeline_profile: string | null;
+  pipeline_status: string | null;
 }
 
 interface UserProfileModalProps {
@@ -112,7 +115,9 @@ export const UserProfileModal = ({
           updated_at: new Date().toISOString(),
           avatar_url: null,
           role: 'user',
-          chat_summarize: null
+          chat_summarize: null,
+          pipeline_profile: 'Disable',
+          pipeline_status: 'New Lead & Negotiation'
         });
         setBriefing('');
         setStatus('New Lead');
@@ -448,6 +453,28 @@ export const UserProfileModal = ({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="flex items-center justify-between py-2 px-1">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Add to Pipeline
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      Enable to show this customer in the pipeline process
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile?.pipeline_profile === 'Enable'}
+                    onCheckedChange={(checked) => {
+                      if (profile) {
+                        setProfile({
+                          ...profile,
+                          pipeline_profile: checked ? 'Enable' : 'Disable'
+                        });
+                      }
+                    }}
+                  />
                 </div>
 
                 <div>

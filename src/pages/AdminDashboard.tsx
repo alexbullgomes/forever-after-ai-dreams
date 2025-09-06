@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import ChatAdmin from "@/components/dashboard/ChatAdmin";
+import PipelineProcess from "@/pages/PipelineProcess";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -80,6 +81,7 @@ const AdminDashboard = () => {
             <Routes>
               <Route path="/" element={<DashboardContent />} />
               <Route path="/chat-admin" element={<ChatAdmin />} />
+              <Route path="/pipeline-process" element={<PipelineProcess />} />
             </Routes>
           </main>
         </div>

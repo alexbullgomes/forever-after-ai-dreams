@@ -169,6 +169,8 @@ export type Database = {
           id: string
           name: string | null
           package_consultation: string | null
+          pipeline_profile: string | null
+          pipeline_status: string | null
           promotional_phone: string | null
           role: string | null
           status: string | null
@@ -186,6 +188,8 @@ export type Database = {
           id: string
           name?: string | null
           package_consultation?: string | null
+          pipeline_profile?: string | null
+          pipeline_status?: string | null
           promotional_phone?: string | null
           role?: string | null
           status?: string | null
@@ -203,6 +207,8 @@ export type Database = {
           id?: string
           name?: string | null
           package_consultation?: string | null
+          pipeline_profile?: string | null
+          pipeline_status?: string | null
           promotional_phone?: string | null
           role?: string | null
           status?: string | null
