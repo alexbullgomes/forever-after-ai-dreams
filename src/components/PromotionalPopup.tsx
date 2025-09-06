@@ -124,7 +124,7 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
         sessionStorage.setItem("promotional_popup_submitted", "true");
         toast({
           title: "🎉 Discount Claimed!",
-          description: "Your 30% wedding package discount has been secured! We'll contact you soon.",
+          description: "Your 20% first order discount has been secured! We'll contact you soon.",
         });
         onClose();
       } else {
@@ -158,10 +158,10 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
               </div>
             </div>
             <DialogTitle className="text-center text-2xl font-bold">
-              Unlock 30% OFF on Your Wedding Package!
+              🎁 Unlock 20% OFF on Your First Order!
             </DialogTitle>
             <p className="text-center text-rose-100 text-sm">
-              Personalize your experience with just your phone number.
+              Enjoy an exclusive discount on any package and personalize your experience in seconds.
             </p>
           </DialogHeader>
         </div>
@@ -170,7 +170,7 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
           {/* Countdown Timer */}
           <div className="text-center mb-6">
             <p className="text-sm font-medium text-gray-600 mb-2">
-              Your 30% OFF offer expires in:
+              ⏳ Your 20% OFF offer expires in:
             </p>
             <div className="flex justify-center space-x-2 text-2xl font-bold text-rose-600">
               <span>{String(timeLeft.hours).padStart(2, '0')}</span>
@@ -186,7 +186,7 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                    📱 Cellphone
+                    📱 Phone Number
                   </label>
                   <Input
                     id="phone"
@@ -209,7 +209,10 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
                 </Button>
               </form>
 
-              <div className="text-center">
+              <div className="text-center space-y-2">
+                <p className="text-xs text-gray-600">
+                  👉 Valid on any package for your first purchase.
+                </p>
                 <button
                   type="button"
                   onClick={handleMaybeLater}
