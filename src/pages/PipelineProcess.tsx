@@ -184,41 +184,38 @@ export default function PipelineProcess() {
                     name={profile.name || 'Unknown'}
                     parent={status.id}
                     index={index}
+                    className="cursor-pointer hover:bg-accent/50 transition-colors"
                   >
-                    <Card 
-                      className="border-0 shadow-none cursor-pointer hover:bg-accent/50 transition-colors"
+                    <div 
+                      className="p-3"
                       onClick={(e) => {
                         // Prevent opening modal during drag operations
-                        if ((e.target as HTMLElement).closest('[data-dnd-dragging]')) {
-                          return;
-                        }
+                        e.stopPropagation();
                         handleProfileClick(profile);
                       }}
                     >
-                      <CardContent className="p-0">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={profile.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">
-                              {profile.name || 'Unknown Name'}
-                            </p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {profile.email || 'No email'}
-                            </p>
-                            {profile.status && (
-                              <Badge variant="outline" className="text-xs mt-1">
-                                {profile.status}
-                              </Badge>
-                            )}
-                          </div>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={profile.avatar_url || undefined} />
+                          <AvatarFallback>
+                            {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {profile.name || 'Unknown Name'}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {profile.email || 'No email'}
+                          </p>
+                          {profile.status && (
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {profile.status}
+                            </Badge>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   </KanbanCard>
                 ))}
             </KanbanCards>
