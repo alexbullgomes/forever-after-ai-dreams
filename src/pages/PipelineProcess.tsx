@@ -92,10 +92,14 @@ export default function PipelineProcess() {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
+    if (!over) return;
 
     const newStatus = over.id as string;
     const profileId = active.id as string;
+    
+    // Find the current status of the profile being dragged
+    const currentProfile = profiles.find(profile => profile.id === profileId);
+    if (!currentProfile || currentProfile.pipeline_status === newStatus) return;
 
     // Optimistic update
     setProfiles(prevProfiles =>
