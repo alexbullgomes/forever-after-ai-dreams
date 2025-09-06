@@ -12,7 +12,6 @@ import {
   KanbanProvider,
 } from '@/components/ui/kanban';
 import type { DragEndEvent } from '@dnd-kit/core';
-import { useDraggable } from '@dnd-kit/core';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -185,37 +184,24 @@ export default function PipelineProcess() {
                     name={profile.name || 'Unknown'}
                     parent={status.id}
                     index={index}
-                    className="hover:bg-accent/50 transition-colors overflow-hidden"
+                    className="hover:bg-accent/50 transition-colors relative"
                   >
                     <div 
-                      className="p-3 cursor-pointer"
+                      className="p-3 cursor-pointer absolute inset-0 z-10"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         handleProfileClick(profile);
                       }}
-                    >
+                    />
+                    <div className="p-3 relative pointer-events-none">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="cursor-grab active:cursor-grabbing"
-                          {...((() => {
-                            const { attributes, listeners } = useDraggable({
-                              id: profile.id,
-                              data: { index, parent: status.id },
-                            });
-                            return { ...listeners, ...attributes };
-                          })())}
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                          }}
-                        >
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={profile.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
+                        <Avatar className="h-10 w-10 pointer-events-auto cursor-grab">
+                          <AvatarImage src={profile.avatar_url || undefined} />
+                          <AvatarFallback>
+                            {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm truncate">
                             {profile.name || 'Unknown Name'}
