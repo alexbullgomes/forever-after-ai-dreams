@@ -466,11 +466,48 @@ export const UserProfileModal = ({
                   </div>
                   <Switch
                     checked={profile?.pipeline_profile === 'Enable'}
-                    onCheckedChange={(checked) => {
-                      if (profile) {
+                    onCheckedChange={async (checked) => {
+                      if (!profile) return;
+                      
+                      const newPipelineProfile = checked ? 'Enable' : 'Disable';
+                      
+                      try {
+                        // Update database immediately
+                        const { error } = await supabase
+                          .from('profiles')
+                          .update({ 
+                            pipeline_profile: newPipelineProfile,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('id', customerId);
+
+                        if (error) {
+                          console.error('Error updating pipeline status:', error);
+                          toast({
+                            title: "Error updating pipeline",
+                            description: "Failed to update pipeline status.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        // Update local state
                         setProfile({
                           ...profile,
-                          pipeline_profile: checked ? 'Enable' : 'Disable'
+                          pipeline_profile: newPipelineProfile,
+                          updated_at: new Date().toISOString()
+                        });
+
+                        toast({
+                          title: "Pipeline updated",
+                          description: `User ${checked ? 'added to' : 'removed from'} pipeline successfully.`,
+                        });
+                      } catch (error) {
+                        console.error('Error updating pipeline status:', error);
+                        toast({
+                          title: "Error updating pipeline",
+                          description: "Failed to update pipeline status.",
+                          variant: "destructive",
                         });
                       }
                     }}
