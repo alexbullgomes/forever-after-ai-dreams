@@ -68,6 +68,8 @@ export type KanbanCardProps = Pick<Feature, 'id' | 'name'> & {
   parent: string;
   children?: ReactNode;
   className?: string;
+  onProfileClick?: () => void;
+  profile?: any;
 };
 
 export const KanbanCard = ({
@@ -77,6 +79,8 @@ export const KanbanCard = ({
   parent,
   children,
   className,
+  onProfileClick,
+  profile,
 }: KanbanCardProps) => {
   const {
     attributes,
@@ -100,19 +104,66 @@ export const KanbanCard = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  // Default card content with drag handle
+  const defaultContent = onProfileClick && profile ? (
+    <div className="relative">
+      {/* Drag handle - only this area responds to drag */}
+      <div 
+        className="absolute top-2 right-2 w-4 h-4 cursor-grab hover:bg-muted rounded flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity"
+        {...attributes}
+        {...listeners}
+      >
+        <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+      </div>
+      
+      {/* Clickable content area */}
+      <div 
+        className="p-3 cursor-pointer pr-8"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onProfileClick();
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+            ) : (
+              <span className="text-sm font-medium">
+                {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+              </span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm truncate">
+              {profile.name || 'Unknown Name'}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {profile.email || 'No email'}
+            </p>
+            {profile.status && (
+              <div className="text-xs mt-1 px-2 py-1 bg-muted rounded-sm inline-block">
+                {profile.status}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <Card
       ref={setNodeRef}
       style={style}
       className={cn(
-        'rounded-md shadow-sm transition-all cursor-grab',
-        isDragging && 'cursor-grabbing z-50',
+        'rounded-md shadow-sm transition-all',
+        isDragging && 'z-50 rotate-2 scale-105',
         className
       )}
-      {...attributes}
-      {...listeners}
     >
-      {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
+      {children ?? defaultContent ?? <p className="m-0 font-medium text-sm">{name}</p>}
     </Card>
   );
 };
