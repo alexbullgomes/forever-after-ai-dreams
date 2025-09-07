@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar-simple';
+import { Badge } from '@/components/ui/badge-simple';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import {
+  Kanban,
   KanbanBoard,
-  KanbanCard,
-  KanbanCards,
-  KanbanHeader,
-  KanbanProvider,
-} from '@/components/ui/kanban';
-import type { DragEndEvent } from '@dnd-kit/core';
+  KanbanColumn,
+  KanbanColumnContent,
+  KanbanItem,
+  KanbanItemHandle,
+  KanbanOverlay,
+} from '@/components/ui/kanban-new';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -89,14 +89,7 @@ export default function PipelineProcess() {
     };
   }, []);
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const newStatus = over.id as string;
-    const profileId = active.id as string;
-    
+  const handleDragEnd = async (profileId: string, newStatus: string) => {
     // Find the current status of the profile being dragged
     const currentProfile = profiles.find(profile => profile.id === profileId);
     if (!currentProfile || currentProfile.pipeline_status === newStatus) return;
@@ -134,6 +127,12 @@ export default function PipelineProcess() {
     }
   };
 
+  const handleKanbanMove = (event: any) => {
+    const profileId = event.event.active.id;
+    const newStatus = event.overContainer;
+    handleDragEnd(profileId, newStatus);
+  };
+
   const getStatusCount = (statusId: string) => {
     return profiles.filter(profile => profile.pipeline_status === statusId).length;
   };
@@ -156,6 +155,15 @@ export default function PipelineProcess() {
     );
   }
 
+  // Transform profiles into column structure for new Kanban
+  const kanbanColumns = React.useMemo(() => {
+    const columns: Record<string, Profile[]> = {};
+    pipelineStatuses.forEach(status => {
+      columns[status.id] = profiles.filter(profile => profile.pipeline_status === status.id);
+    });
+    return columns;
+  }, [profiles]);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col gap-4">
@@ -165,67 +173,77 @@ export default function PipelineProcess() {
         </p>
       </div>
 
-      <KanbanProvider onDragEnd={handleDragEnd} className="min-h-[600px]">
-        {pipelineStatuses.map(status => (
-          <KanbanBoard key={status.id} id={status.id}>
-            <div className="flex items-center justify-between mb-2">
-              <KanbanHeader name={status.name} color={status.color} />
-              <Badge variant="secondary" className="text-xs">
-                {getStatusCount(status.id)}
-              </Badge>
-            </div>
-            <KanbanCards>
-              {profiles
-                .filter(profile => profile.pipeline_status === status.id)
-                .map((profile, index) => (
-                  <KanbanCard
-                    key={profile.id}
-                    id={profile.id}
-                    name={profile.name || 'Unknown'}
-                    parent={status.id}
-                    index={index}
-                    className="cursor-grab hover:bg-accent/50 transition-colors"
-                  >
-                    <div 
-                      className="p-3 cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleProfileClick(profile);
-                      }}
-                      onMouseDown={(e) => {
-                        // Allow drag to work by not preventing default on mouse down
-                        e.stopPropagation();
-                      }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={profile.avatar_url || undefined} />
-                          <AvatarFallback>
-                            {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
-                            {profile.name || 'Unknown Name'}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {profile.email || 'No email'}
-                          </p>
-                          {profile.status && (
-                            <Badge variant="outline" className="text-xs mt-1">
-                              {profile.status}
-                            </Badge>
-                          )}
+      <Kanban
+        value={kanbanColumns}
+        onValueChange={() => {}} // Managed through onMove
+        getItemValue={(profile: Profile) => profile.id}
+        onMove={handleKanbanMove}
+        className="min-h-[600px]"
+      >
+        <KanbanBoard>
+          {pipelineStatuses.map(status => (
+            <KanbanColumn key={status.id} value={status.id}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: status.color }}
+                  />
+                  <h3 className="font-semibold text-sm">{status.name}</h3>
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {getStatusCount(status.id)}
+                </Badge>
+              </div>
+              
+              <KanbanColumnContent value={status.id}>
+                {profiles
+                  .filter(profile => profile.pipeline_status === status.id)
+                  .map((profile) => (
+                    <KanbanItem key={profile.id} value={profile.id}>
+                      <KanbanItemHandle>
+                        <div 
+                          className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleProfileClick(profile);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={profile.avatar_url || undefined} />
+                              <AvatarFallback>
+                                {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">
+                                {profile.name || 'Unknown Name'}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {profile.email || 'No email'}
+                              </p>
+                              {profile.status && (
+                                <Badge variant="outline" className="text-xs mt-1">
+                                  {profile.status}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </KanbanCard>
-                ))}
-            </KanbanCards>
-          </KanbanBoard>
-        ))}
-      </KanbanProvider>
+                      </KanbanItemHandle>
+                    </KanbanItem>
+                  ))}
+              </KanbanColumnContent>
+            </KanbanColumn>
+          ))}
+        </KanbanBoard>
+        
+        <KanbanOverlay>
+          <div className="bg-card border rounded-md shadow-sm opacity-60 w-full h-full" />
+        </KanbanOverlay>
+      </Kanban>
 
       {selectedProfile && (
         <UserProfileModal
