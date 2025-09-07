@@ -380,6 +380,32 @@ function KanbanItem({ value, asChild = false, className, children, disabled }: K
   );
 }
 
+export interface KanbanColumnHandleProps {
+  asChild?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+  cursor?: boolean;
+}
+
+function KanbanColumnHandle({ asChild, className, children, cursor = true }: KanbanColumnHandleProps) {
+  const { attributes, listeners, isDragging, disabled } = React.useContext(ColumnContext);
+
+  const Comp = asChild ? Slot : 'div';
+
+  return (
+    <Comp
+      {...attributes}
+      {...listeners}
+      className={cn(
+        cursor && (isDragging ? 'cursor-grabbing' : 'cursor-grab'),
+        className
+      )}
+    >
+      {children}
+    </Comp>
+  );
+}
+
 export interface KanbanItemHandleProps {
   asChild?: boolean;
   className?: string;
@@ -457,6 +483,7 @@ export {
   Kanban,
   KanbanBoard,
   KanbanColumn,
+  KanbanColumnHandle,
   KanbanItem,
   KanbanItemHandle,
   KanbanColumnContent,
