@@ -15,12 +15,10 @@ function Avatar({ className, ...props }: React.ComponentProps<typeof AvatarPrimi
 
 function AvatarImage({ className, ...props }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   return (
-    <div className={cn('relative overflow-hidden rounded-full', className)}>
-      <AvatarPrimitive.Image 
-        className={cn('aspect-square h-full w-full')} 
-        {...props} 
-      />
-    </div>
+    <AvatarPrimitive.Image 
+      className={cn('aspect-square h-full w-full rounded-full', className)} 
+      {...props} 
+    />
   );
 }
 
