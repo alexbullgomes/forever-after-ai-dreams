@@ -173,6 +173,7 @@ export type Database = {
           pipeline_status: string | null
           promotional_phone: string | null
           role: string | null
+          sort_order: number | null
           status: string | null
           updated_at: string
           user_number: string | null
@@ -192,6 +193,7 @@ export type Database = {
           pipeline_status?: string | null
           promotional_phone?: string | null
           role?: string | null
+          sort_order?: number | null
           status?: string | null
           updated_at?: string
           user_number?: string | null
@@ -211,6 +213,7 @@ export type Database = {
           pipeline_status?: string | null
           promotional_phone?: string | null
           role?: string | null
+          sort_order?: number | null
           status?: string | null
           updated_at?: string
           user_number?: string | null
