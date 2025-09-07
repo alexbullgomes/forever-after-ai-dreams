@@ -11,7 +11,7 @@ import {
   KanbanHeader,
   KanbanProvider,
 } from '@/components/ui/kanban';
-import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useToast } from '@/hooks/use-toast';
 
@@ -93,6 +93,15 @@ export default function PipelineProcess() {
     };
   }, []);
 
+  // Utility function to normalize sort orders in a column
+  const normalizeSortOrders = (columnProfiles: Profile[]): { id: string; sort_order: number }[] => {
+    return columnProfiles.map((profile, index) => ({
+      id: profile.id,
+      sort_order: index + 1
+    }));
+  };
+
+  // Enhanced drag end handler with cross-column positioning
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -103,126 +112,165 @@ export default function PipelineProcess() {
     
     if (!draggedProfile) return;
 
-    // Get the drop target information
-    const isDroppedOnColumn = pipelineStatuses.some(status => status.id === over.id);
-    const isDroppedOnCard = !isDroppedOnColumn;
-    
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    // Determine drop target type
+    const isDroppedOnColumn = overData?.type === 'column' || pipelineStatuses.some(status => status.id === over.id);
+    const isDroppedOnCard = overData?.type === 'card';
+
     if (isDroppedOnColumn) {
-      // Dropped on a column - change status
+      // Scenario 1: Dropped on column header - move to end of column
       const newStatus = over.id as string;
       
       if (draggedProfile.pipeline_status === newStatus) return;
 
-      // Get profiles in the target column and find the highest sort_order
-      const targetColumnProfiles = profiles.filter(
-        profile => profile.pipeline_status === newStatus
-      );
-      const maxSortOrder = targetColumnProfiles.length > 0 
-        ? Math.max(...targetColumnProfiles.map(p => p.sort_order)) 
-        : 0;
-
-      // Optimistic update - move to end of target column
-      setProfiles(prevProfiles =>
-        prevProfiles.map(profile =>
-          profile.id === profileId
-            ? { ...profile, pipeline_status: newStatus, sort_order: maxSortOrder + 1 }
-            : profile
-        )
-      );
-
-      try {
-        const { error } = await supabase
-          .from('profiles')
-          .update({ 
-            pipeline_status: newStatus,
-            sort_order: maxSortOrder + 1
-          })
-          .eq('id', profileId);
-
-        if (error) throw error;
-
-        toast({
-          title: 'Status Updated',
-          description: 'Profile moved successfully',
-        });
-      } catch (error) {
-        console.error('Error updating pipeline status:', error);
-        fetchProfiles();
-        toast({
-          title: 'Error',
-          description: 'Failed to update pipeline status',
-          variant: 'destructive',
-        });
-      }
-    } else {
-      // Dropped on another card - reorder within same column
+      await handleMoveToColumn(profileId, newStatus);
+    } else if (isDroppedOnCard) {
       const targetProfile = profiles.find(profile => profile.id === over.id);
       
-      if (!targetProfile || targetProfile.pipeline_status !== draggedProfile.pipeline_status) {
-        return;
+      if (!targetProfile) return;
+
+      if (targetProfile.pipeline_status === draggedProfile.pipeline_status) {
+        // Scenario 2: Reorder within same column
+        await handleReorderWithinColumn(profileId, targetProfile.id, draggedProfile.pipeline_status);
+      } else {
+        // Scenario 3: Move to different column at specific position
+        await handleMoveToPosition(profileId, targetProfile.id, targetProfile.pipeline_status);
       }
+    }
+  };
 
-      // Get all profiles in the same column
-      const columnProfiles = profiles
-        .filter(profile => profile.pipeline_status === draggedProfile.pipeline_status)
-        .sort((a, b) => a.sort_order - b.sort_order);
+  // Handle moving profile to end of column
+  const handleMoveToColumn = async (profileId: string, newStatus: string) => {
+    const targetColumnProfiles = profiles
+      .filter(profile => profile.pipeline_status === newStatus)
+      .sort((a, b) => a.sort_order - b.sort_order);
+    
+    const newSortOrder = targetColumnProfiles.length + 1;
 
-      const oldIndex = columnProfiles.findIndex(p => p.id === profileId);
-      const newIndex = columnProfiles.findIndex(p => p.id === over.id);
+    // Optimistic update
+    setProfiles(prevProfiles =>
+      prevProfiles.map(profile =>
+        profile.id === profileId
+          ? { ...profile, pipeline_status: newStatus, sort_order: newSortOrder }
+          : profile
+      )
+    );
 
-      if (oldIndex === newIndex) return;
-
-      // Reorder the profiles array
-      const reorderedProfiles = arrayMove(columnProfiles, oldIndex, newIndex);
-      
-      // Update sort_order values
-      const updatesData = reorderedProfiles.map((profile, index) => ({
-        id: profile.id,
-        sort_order: index + 1
-      }));
-
-      // Optimistic update
-      setProfiles(prevProfiles => 
-        prevProfiles.map(profile => {
-          const update = updatesData.find(u => u.id === profile.id);
-          return update 
-            ? { ...profile, sort_order: update.sort_order }
-            : profile;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          pipeline_status: newStatus,
+          sort_order: newSortOrder
         })
-      );
+        .eq('id', profileId);
 
-      try {
-        // Update sort_order for all affected profiles
-        const { error } = await (supabase.rpc as any)('update_profile_sort_orders', {
-          updates: updatesData
-        });
+      if (error) throw error;
 
-        // If RPC doesn't exist, fall back to individual updates
-        if (error && error.message.includes('function "update_profile_sort_orders" does not exist')) {
-          // Sequential updates as fallback
-          for (const update of updatesData) {
-            await supabase
-              .from('profiles')
-              .update({ sort_order: update.sort_order })
-              .eq('id', update.id);
-          }
-        } else if (error) {
-          throw error;
+      toast({
+        title: 'Status Updated',
+        description: 'Profile moved to new column successfully',
+      });
+    } catch (error) {
+      console.error('Error updating pipeline status:', error);
+      fetchProfiles();
+      toast({
+        title: 'Error',
+        description: 'Failed to update pipeline status',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handle reordering within same column
+  const handleReorderWithinColumn = async (profileId: string, targetProfileId: string, columnStatus: string) => {
+    const columnProfiles = profiles
+      .filter(profile => profile.pipeline_status === columnStatus)
+      .sort((a, b) => a.sort_order - b.sort_order);
+
+    const oldIndex = columnProfiles.findIndex(p => p.id === profileId);
+    const newIndex = columnProfiles.findIndex(p => p.id === targetProfileId);
+
+    if (oldIndex === newIndex) return;
+
+    const reorderedProfiles = arrayMove(columnProfiles, oldIndex, newIndex);
+    const updatesData = normalizeSortOrders(reorderedProfiles);
+
+    // Optimistic update
+    setProfiles(prevProfiles => 
+      prevProfiles.map(profile => {
+        const update = updatesData.find(u => u.id === profile.id);
+        return update 
+          ? { ...profile, sort_order: update.sort_order }
+          : profile;
+      })
+    );
+
+    await updateSortOrders(updatesData, 'Profile reordered successfully');
+  };
+
+  // Handle moving to specific position in different column
+  const handleMoveToPosition = async (profileId: string, targetProfileId: string, newStatus: string) => {
+    const targetColumnProfiles = profiles
+      .filter(profile => profile.pipeline_status === newStatus)
+      .sort((a, b) => a.sort_order - b.sort_order);
+
+    const targetIndex = targetColumnProfiles.findIndex(p => p.id === targetProfileId);
+    
+    // Insert at target position
+    const newProfiles = [...targetColumnProfiles];
+    const draggedProfile = profiles.find(p => p.id === profileId)!;
+    
+    newProfiles.splice(targetIndex, 0, { ...draggedProfile, pipeline_status: newStatus });
+    const updatesData = normalizeSortOrders(newProfiles);
+
+    // Optimistic update
+    setProfiles(prevProfiles =>
+      prevProfiles.map(profile => {
+        if (profile.id === profileId) {
+          return { ...profile, pipeline_status: newStatus, sort_order: updatesData.find(u => u.id === profileId)!.sort_order };
         }
+        const update = updatesData.find(u => u.id === profile.id);
+        return update ? { ...profile, sort_order: update.sort_order } : profile;
+      })
+    );
 
-        toast({
-          title: 'Order Updated',
-          description: 'Profile reordered successfully',
-        });
-      } catch (error) {
-        console.error('Error updating sort order:', error);
-        fetchProfiles();
-        toast({
-          title: 'Error',
-          description: 'Failed to update sort order',
-          variant: 'destructive',
-        });
+    await updateSortOrders(updatesData, 'Profile moved and positioned successfully');
+  };
+
+  // Helper function to update sort orders
+  const updateSortOrders = async (updatesData: { id: string; sort_order: number }[], successMessage: string) => {
+    try {
+      const { error } = await (supabase.rpc as any)('update_profile_sort_orders', {
+        updates: updatesData
+      });
+
+      if (error && error.message.includes('function "update_profile_sort_orders" does not exist')) {
+        // Fallback to individual updates
+        for (const update of updatesData) {
+          await supabase
+            .from('profiles')
+            .update({ sort_order: update.sort_order })
+            .eq('id', update.id);
+        }
+      } else if (error) {
+        throw error;
       }
+
+      toast({
+        title: 'Order Updated',
+        description: successMessage,
+      });
+    } catch (error) {
+      console.error('Error updating sort order:', error);
+      fetchProfiles();
+      toast({
+        title: 'Error',
+        description: 'Failed to update sort order',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -266,7 +314,13 @@ export default function PipelineProcess() {
                 {getStatusCount(status.id)}
               </Badge>
             </div>
-            <KanbanCards>
+            <KanbanCards 
+              items={profiles
+                .filter(profile => profile.pipeline_status === status.id)
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map(profile => profile.id)
+              }
+            >
               {profiles
                 .filter(profile => profile.pipeline_status === status.id)
                 .sort((a, b) => a.sort_order - b.sort_order)
@@ -277,7 +331,7 @@ export default function PipelineProcess() {
                     name={profile.name || 'Unknown'}
                     parent={status.id}
                     index={index}
-                    className="cursor-grab hover:bg-accent/50 transition-colors"
+                    className="hover:bg-accent/50 transition-colors"
                   >
                     <div 
                       className="p-3 cursor-pointer"
@@ -285,10 +339,6 @@ export default function PipelineProcess() {
                         e.preventDefault();
                         e.stopPropagation();
                         handleProfileClick(profile);
-                      }}
-                      onMouseDown={(e) => {
-                        // Allow drag to work by not preventing default on mouse down
-                        e.stopPropagation();
                       }}
                     >
                       <div className="flex items-center gap-3">

@@ -7,9 +7,21 @@ import {
   rectIntersection,
   useDraggable,
   useDroppable,
+  DragOverlay,
+  closestCenter,
+  pointerWithin,
+  getFirstCollision,
+  type CollisionDetection,
 } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 
 export type Status = {
   id: string;
@@ -32,7 +44,10 @@ export type KanbanBoardProps = {
 };
 
 export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
-  const { isOver, setNodeRef } = useDroppable({ id });
+  const { isOver, setNodeRef } = useDroppable({ 
+    id,
+    data: { type: 'column' }
+  });
 
   return (
     <div
@@ -63,27 +78,39 @@ export const KanbanCard = ({
   children,
   className,
 }: KanbanCardProps) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id,
-      data: { index, parent },
-    });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id,
+    data: { 
+      type: 'card',
+      index, 
+      parent 
+    },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   return (
     <Card
+      ref={setNodeRef}
+      style={style}
       className={cn(
-        'rounded-md p-3 shadow-sm',
-        isDragging && 'cursor-grabbing',
+        'rounded-md shadow-sm transition-all cursor-grab',
+        isDragging && 'cursor-grabbing z-50',
         className
       )}
-      style={{
-        transform: transform
-          ? `translateX(${transform.x}px) translateY(${transform.y}px)`
-          : 'none',
-      }}
-      {...listeners}
       {...attributes}
-      ref={setNodeRef}
+      {...listeners}
     >
       {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
     </Card>
@@ -93,10 +120,15 @@ export const KanbanCard = ({
 export type KanbanCardsProps = {
   children: ReactNode;
   className?: string;
+  items: string[]; // Array of item IDs for sortable context
 };
 
-export const KanbanCards = ({ children, className }: KanbanCardsProps) => (
-  <div className={cn('flex flex-1 flex-col gap-2', className)}>{children}</div>
+export const KanbanCards = ({ children, className, items }: KanbanCardsProps) => (
+  <SortableContext items={items} strategy={verticalListSortingStrategy}>
+    <div className={cn('flex flex-1 flex-col gap-2', className)}>
+      {children}
+    </div>
+  </SortableContext>
 );
 
 export type KanbanHeaderProps =
@@ -125,19 +157,54 @@ export const KanbanHeader = (props: KanbanHeaderProps) =>
 export type KanbanProviderProps = {
   children: ReactNode;
   onDragEnd: (event: DragEndEvent) => void;
+  onDragOver?: (event: DragOverEvent) => void;
   className?: string;
+};
+
+// Custom collision detection for better drop zone detection
+const customCollisionDetection: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  
+  if (pointerCollisions.length > 0) {
+    return pointerCollisions;
+  }
+
+  const centerCollisions = closestCenter(args);
+  return centerCollisions;
 };
 
 export const KanbanProvider = ({
   children,
   onDragEnd,
+  onDragOver,
   className,
-}: KanbanProviderProps) => (
-  <DndContext collisionDetection={rectIntersection} onDragEnd={onDragEnd}>
-    <div
-      className={cn('grid w-full auto-cols-fr grid-flow-col gap-4', className)}
+}: KanbanProviderProps) => {
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  return (
+    <DndContext 
+      collisionDetection={customCollisionDetection}
+      onDragStart={(event) => setActiveId(event.active.id as string)}
+      onDragEnd={(event) => {
+        setActiveId(null);
+        onDragEnd(event);
+      }}
+      onDragOver={onDragOver}
     >
-      {children}
-    </div>
-  </DndContext>
-);
+      <div
+        className={cn('grid w-full auto-cols-fr grid-flow-col gap-4', className)}
+      >
+        {children}
+      </div>
+      <DragOverlay>
+        {activeId ? (
+          <Card className="rounded-md shadow-lg opacity-80 rotate-2 scale-105">
+            <div className="p-3">
+              <div className="h-4 bg-muted rounded animate-pulse" />
+            </div>
+          </Card>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
+  );
+};
