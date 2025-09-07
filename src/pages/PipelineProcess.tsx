@@ -3,15 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar-simple';
 import { Badge } from '@/components/ui/badge-simple';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
-import {
-  Kanban,
-  KanbanBoard,
-  KanbanColumn,
-  KanbanColumnContent,
-  KanbanItem,
-  KanbanItemHandle,
-  KanbanOverlay,
-} from '@/components/ui/kanban-new';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -173,77 +164,58 @@ export default function PipelineProcess() {
         </p>
       </div>
 
-      <Kanban
-        value={kanbanColumns}
-        onValueChange={() => {}} // Managed through onMove
-        getItemValue={(profile: Profile) => profile.id}
-        onMove={handleKanbanMove}
-        className="min-h-[600px]"
-      >
-        <KanbanBoard>
-          {pipelineStatuses.map(status => (
-            <KanbanColumn key={status.id} value={status.id}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: status.color }}
-                  />
-                  <h3 className="font-semibold text-sm">{status.name}</h3>
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {getStatusCount(status.id)}
-                </Badge>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 min-h-[600px]">
+        {pipelineStatuses.map(status => (
+          <div key={status.id} className="bg-secondary rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: status.color }}
+                />
+                <h3 className="font-semibold text-sm">{status.name}</h3>
               </div>
-              
-              <KanbanColumnContent value={status.id}>
-                {profiles
-                  .filter(profile => profile.pipeline_status === status.id)
-                  .map((profile) => (
-                    <KanbanItem key={profile.id} value={profile.id}>
-                      <KanbanItemHandle>
-                        <div 
-                          className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleProfileClick(profile);
-                          }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={profile.avatar_url || undefined} />
-                              <AvatarFallback>
-                                {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">
-                                {profile.name || 'Unknown Name'}
-                              </p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {profile.email || 'No email'}
-                              </p>
-                              {profile.status && (
-                                <Badge variant="outline" className="text-xs mt-1">
-                                  {profile.status}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </KanbanItemHandle>
-                    </KanbanItem>
-                  ))}
-              </KanbanColumnContent>
-            </KanbanColumn>
-          ))}
-        </KanbanBoard>
-        
-        <KanbanOverlay>
-          <div className="bg-card border rounded-md shadow-sm opacity-60 w-full h-full" />
-        </KanbanOverlay>
-      </Kanban>
+              <Badge variant="secondary" className="text-xs">
+                {getStatusCount(status.id)}
+              </Badge>
+            </div>
+            
+            <div className="space-y-2">
+              {profiles
+                .filter(profile => profile.pipeline_status === status.id)
+                .map((profile) => (
+                  <div 
+                    key={profile.id}
+                    className="bg-card border rounded-md shadow-sm p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => handleProfileClick(profile)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={profile.avatar_url || undefined} />
+                        <AvatarFallback>
+                          {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {profile.name || 'Unknown Name'}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {profile.email || 'No email'}
+                        </p>
+                        {profile.status && (
+                          <Badge variant="outline" className="text-xs mt-1">
+                            {profile.status}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
       {selectedProfile && (
         <UserProfileModal
