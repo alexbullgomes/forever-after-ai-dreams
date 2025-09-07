@@ -231,6 +231,10 @@ export type Database = {
           | { _role: string; _user_id: string }
         Returns: boolean
       }
+      update_profile_sort_orders: {
+        Args: { updates: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

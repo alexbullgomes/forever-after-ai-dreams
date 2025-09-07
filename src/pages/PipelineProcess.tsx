@@ -193,7 +193,7 @@ export default function PipelineProcess() {
 
       try {
         // Update sort_order for all affected profiles
-        const { error } = await supabase.rpc('update_profile_sort_orders', {
+        const { error } = await (supabase.rpc as any)('update_profile_sort_orders', {
           updates: updatesData
         });
 
@@ -269,6 +269,7 @@ export default function PipelineProcess() {
             <KanbanCards>
               {profiles
                 .filter(profile => profile.pipeline_status === status.id)
+                .sort((a, b) => a.sort_order - b.sort_order)
                 .map((profile, index) => (
                   <KanbanCard
                     key={profile.id}
