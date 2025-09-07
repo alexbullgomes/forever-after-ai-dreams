@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar-simple';
-import { Badge } from '@/components/ui/badge-simple';
-import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -175,9 +172,9 @@ export default function PipelineProcess() {
                 />
                 <h3 className="font-semibold text-sm">{status.name}</h3>
               </div>
-              <Badge variant="secondary" className="text-xs">
+              <span className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded">
                 {getStatusCount(status.id)}
-              </Badge>
+              </span>
             </div>
             
             <div className="space-y-2">
@@ -190,12 +187,9 @@ export default function PipelineProcess() {
                     onClick={() => handleProfileClick(profile)}
                   >
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={profile.avatar_url || undefined} />
-                        <AvatarFallback>
-                          {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                        {profile.name?.slice(0, 2)?.toUpperCase() || 'UN'}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">
                           {profile.name || 'Unknown Name'}
@@ -204,9 +198,9 @@ export default function PipelineProcess() {
                           {profile.email || 'No email'}
                         </p>
                         {profile.status && (
-                          <Badge variant="outline" className="text-xs mt-1">
+                          <span className="inline-block bg-muted text-muted-foreground text-xs px-1.5 py-0.5 rounded mt-1">
                             {profile.status}
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     </div>
@@ -218,13 +212,19 @@ export default function PipelineProcess() {
       </div>
 
       {selectedProfile && (
-        <UserProfileModal
-          isOpen={!!selectedProfile}
-          onClose={() => setSelectedProfile(null)}
-          customerId={selectedProfile.id}
-          userName={selectedProfile.name}
-          userEmail={selectedProfile.email}
-        />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h2 className="text-lg font-semibold mb-2">Profile Details</h2>
+            <p><strong>Name:</strong> {selectedProfile.name}</p>
+            <p><strong>Email:</strong> {selectedProfile.email}</p>
+            <button 
+              onClick={() => setSelectedProfile(null)}
+              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
