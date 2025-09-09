@@ -336,31 +336,32 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <div className="flex-1 relative">
-              <ChatInput
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                placeholder="Type your message..."
-                disabled={isLoading}
-              />
-            </div>
-            
-
+          <form onSubmit={handleSubmit} className="flex items-center gap-2 p-3 rounded-full bg-background border border-input">
             <VoiceInput
               onStart={() => {
                 setIsListening(true);
                 handleVoiceStart();
               }}
               onStop={handleVoiceStop}
+              className="text-rose-500 hover:text-rose-600"
             />
+            
+            <div className="flex-1 relative">
+              <ChatInput
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                placeholder="Tell me about your photo/video needs..."
+                disabled={isLoading}
+                className="border-0 bg-transparent focus-visible:ring-0 resize-none h-auto py-2 px-0"
+              />
+            </div>
 
             <Button
               type="submit"
-              size="icon"
               disabled={isLoading || (!userInput.trim() && selectedFiles.length === 0)}
-              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-4 py-2 rounded-full flex items-center gap-1"
             >
+              Send Message
               <Send className="h-4 w-4" />
             </Button>
           </form>
