@@ -346,15 +346,6 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
               />
             </div>
             
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={handleAttachFile}
-              disabled={isLoading}
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
 
             <VoiceInput
               onStart={() => {
