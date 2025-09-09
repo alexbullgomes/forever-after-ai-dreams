@@ -5,10 +5,13 @@ import Portfolio from "@/components/Portfolio";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import AuthModal from "@/components/AuthModal";
+import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-white">
@@ -21,6 +24,9 @@ const Index = () => {
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
       />
+      
+      {/* Expandable chatbot for non-registered users only */}
+      {!user && <ExpandableChatWebhook />}
     </div>
   );
 };
