@@ -331,14 +331,6 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
                     <Play className="h-3 w-3 mr-1" />
                     Preview
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={sendAudioMessage}
-                    disabled={isLoading}
-                    className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
-                  >
-                    Send Audio
-                  </Button>
                 </div>
               )}
             </div>
