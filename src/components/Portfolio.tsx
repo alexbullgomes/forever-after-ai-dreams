@@ -112,7 +112,17 @@ const Portfolio = ({
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {filteredItems.map(item => <Card key={item.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white">
+          {filteredItems.map(item => <Card 
+              key={item.id} 
+              className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white cursor-pointer" 
+              onClick={() => {
+                if (user) {
+                  navigate("/planner");
+                } else if (onBookingClick) {
+                  onBookingClick();
+                }
+              }}
+            >
               <div className="relative overflow-hidden">
                 {item.video ? <video className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" autoPlay muted loop playsInline poster={item.image}>
                     <source src={item.video} type="video/webm" />
