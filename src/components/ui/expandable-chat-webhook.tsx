@@ -52,16 +52,6 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Add welcome message on component mount
-  useEffect(() => {
-    const welcomeMessage: ChatMessage = {
-      id: 'welcome',
-      content: "Hello! I'm your Everafter assistant. How can I help you today?",
-      sender: 'assistant',
-      timestamp: new Date(),
-    };
-    setMessages([welcomeMessage]);
-  }, []);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -86,32 +76,34 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     setIsLoading(true);
 
     try {
-      // Send to webhook
-      await sendHomepageWebhookMessage(messageContent, selectedFiles);
-
-      // Simulate assistant response for better UX
-      setTimeout(() => {
-        const assistantMessage: ChatMessage = {
-          id: generateId(),
-          content: "Thank you for your message! Our team will get back to you soon. Is there anything else I can help you with?",
-          sender: 'assistant',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1500);
-
-      toast({
-        title: "Message sent!",
-        description: "Your message has been received. We'll get back to you soon.",
+      // Send to webhook with 20s timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), 20000);
       });
+
+      const response = await Promise.race([
+        sendHomepageWebhookMessage(messageContent, selectedFiles),
+        timeoutPromise
+      ]);
+
+      // Display webhook response
+      const assistantMessage: ChatMessage = {
+        id: generateId(),
+        content: response?.output || "Thank you for your message! Our team will get back to you soon.",
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error sending message:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
+      const errorMessage: ChatMessage = {
+        id: generateId(),
+        content: "We couldn't reach the assistant. Please try again.",
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
       setIsLoading(false);
     }
 
@@ -139,11 +131,56 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         chunks.push(e.data);
       };
 
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/wav' });
         const audioFile = new File([audioBlob], 'voice-message.wav', { type: 'audio/wav' });
-        setSelectedFiles([audioFile]);
-        setAudioUrl(URL.createObjectURL(audioBlob));
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Auto-send audio message immediately
+        const userMessage: ChatMessage = {
+          id: generateId(),
+          content: "Voice message",
+          sender: 'user',
+          timestamp: new Date(),
+          fileUrl: audioUrl,
+          fileType: "audio/wav",
+          fileName: "voice-message.wav",
+        };
+
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+
+        try {
+          // Send to webhook with 20s timeout
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('timeout')), 20000);
+          });
+
+          const response = await Promise.race([
+            sendHomepageWebhookMessage("Voice message", [audioFile]),
+            timeoutPromise
+          ]);
+
+          // Display webhook response
+          const assistantMessage: ChatMessage = {
+            id: generateId(),
+            content: response?.output || "I received your voice message. Our team will review it and get back to you soon!",
+            sender: 'assistant',
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, assistantMessage]);
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error sending voice message:", error);
+          const errorMessage: ChatMessage = {
+            id: generateId(),
+            content: "We couldn't reach the assistant. Please try again.",
+            sender: 'assistant',
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, errorMessage]);
+          setIsLoading(false);
+        }
       };
 
       recorder.start();
@@ -186,30 +223,34 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     setIsLoading(true);
 
     try {
-      await sendHomepageWebhookMessage("Voice message", selectedFiles);
-
-      setTimeout(() => {
-        const assistantMessage: ChatMessage = {
-          id: generateId(),
-          content: "I received your voice message. Our team will review it and get back to you soon!",
-          sender: 'assistant',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1500);
-
-      toast({
-        title: "Voice message sent!",
-        description: "Your voice message has been received.",
+      // Send to webhook with 20s timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), 20000);
       });
+
+      const response = await Promise.race([
+        sendHomepageWebhookMessage("Voice message", selectedFiles),
+        timeoutPromise
+      ]);
+
+      // Display webhook response
+      const assistantMessage: ChatMessage = {
+        id: generateId(),
+        content: response?.output || "I received your voice message. Our team will review it and get back to you soon!",
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error sending voice message:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send voice message. Please try again.",
-        variant: "destructive",
-      });
+      const errorMessage: ChatMessage = {
+        id: generateId(),
+        content: "We couldn't reach the assistant. Please try again.",
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
       setIsLoading(false);
     }
 
