@@ -52,15 +52,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Add welcome message on component mount
+  // Initialize with empty messages array
   useEffect(() => {
-    const welcomeMessage: ChatMessage = {
-      id: 'welcome',
-      content: "Hello! I'm your Everafter assistant. How can I help you today?",
-      sender: 'assistant',
-      timestamp: new Date(),
-    };
-    setMessages([welcomeMessage]);
+    setMessages([]);
   }, []);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -86,25 +80,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     setIsLoading(true);
 
     try {
-      // Send to webhook
+      // Send to webhook - response will be handled by webhook integration
       await sendHomepageWebhookMessage(messageContent, selectedFiles);
-
-      // Simulate assistant response for better UX
-      setTimeout(() => {
-        const assistantMessage: ChatMessage = {
-          id: generateId(),
-          content: "Thank you for your message! Our team will get back to you soon. Is there anything else I can help you with?",
-          sender: 'assistant',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1500);
-
-      toast({
-        title: "Message sent!",
-        description: "Your message has been received. We'll get back to you soon.",
-      });
+      setIsLoading(false);
     } catch (error) {
       console.error("Error sending message:", error);
       toast({
@@ -166,6 +144,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       mediaRecorder.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
       setIsListening(false);
+      // Auto-send the audio message when recording stops
+      setTimeout(() => sendAudioMessage(), 100);
     }
   };
 
@@ -186,23 +166,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     setIsLoading(true);
 
     try {
+      // Send to webhook - response will be handled by webhook integration
       await sendHomepageWebhookMessage("Voice message", selectedFiles);
-
-      setTimeout(() => {
-        const assistantMessage: ChatMessage = {
-          id: generateId(),
-          content: "I received your voice message. Our team will review it and get back to you soon!",
-          sender: 'assistant',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1500);
-
-      toast({
-        title: "Voice message sent!",
-        description: "Your voice message has been received.",
-      });
+      setIsLoading(false);
     } catch (error) {
       console.error("Error sending voice message:", error);
       toast({
