@@ -124,7 +124,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const handleVoiceStart = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm; codecs=opus" });
       const chunks: Blob[] = [];
 
       recorder.ondataavailable = (e) => {
@@ -132,8 +132,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       };
 
       recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/wav' });
-        const audioFile = new File([audioBlob], 'voice-message.wav', { type: 'audio/wav' });
+        const audioBlob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
+        const audioFile = new File([audioBlob], 'voice-message.webm', { type: 'audio/webm; codecs=opus' });
         const audioUrl = URL.createObjectURL(audioBlob);
         
         // Auto-send audio message immediately
@@ -143,8 +143,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           sender: 'user',
           timestamp: new Date(),
           fileUrl: audioUrl,
-          fileType: "audio/wav",
-          fileName: "voice-message.wav",
+          fileType: "audio/webm; codecs=opus",
+          fileName: "voice-message.webm",
         };
 
         setMessages(prev => [...prev, userMessage]);
