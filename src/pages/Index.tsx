@@ -6,6 +6,7 @@ import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import AuthModal from "@/components/AuthModal";
 import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
+import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -25,8 +26,12 @@ const Index = () => {
         onClose={() => setIsAuthModalOpen(false)} 
       />
       
-      {/* Expandable chatbot for non-registered users only */}
-      {!user && <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} />}
+      {/* Conditional chat based on login state */}
+      {user ? (
+        <ExpandableChatAssistant />
+      ) : (
+        <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} />
+      )}
     </div>
   );
 };
