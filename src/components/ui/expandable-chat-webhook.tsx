@@ -295,25 +295,13 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const renderMessage = (message: ChatMessage) => {
     const isUser = message.sender === 'user';
     
-    // Special intro message with login CTA
+    // Special intro message without login CTA (button moved to header)
     if (message.content === "intro-with-login") {
       return (
         <ChatBubble key={message.id} variant="received">
           <ChatBubbleAvatar fallback="EVA" />
           <ChatBubbleMessage variant="received">
-            <div className="space-y-3">
-              <p>Hi, I'm Eva 👋 How can I help you today? For the full experience — with portfolio, offers, and pricing — log in anytime.</p>
-              {onOpenLogin && (
-                <Button
-                  onClick={onOpenLogin}
-                  className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-sm px-4 py-2 rounded-lg w-full"
-                  role="button"
-                  aria-label="Log in for full experience"
-                >
-                  Log in for full experience
-                </Button>
-              )}
-            </div>
+            <p>Hi, I'm Eva 👋 How can I help you today? For the full experience — with portfolio, offers, and pricing — log in anytime.</p>
           </ChatBubbleMessage>
         </ChatBubble>
       );
@@ -367,14 +355,26 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         icon={<Bot className="h-6 w-6" />}
       >
         <ExpandableChatHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-              <Bot className="h-5 w-5" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <Bot className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-semibold">EVA Assistant</h3>
+                <p className="text-xs opacity-90">Here to help with your questions</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold">EVA Assistant</h3>
-              <p className="text-xs opacity-90">Here to help with your questions</p>
-            </div>
+            {onOpenLogin && (
+              <Button
+                onClick={onOpenLogin}
+                className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/20"
+                role="button"
+                aria-label="Log in for full experience"
+              >
+                Log in for full experience
+              </Button>
+            )}
           </div>
         </ExpandableChatHeader>
 
