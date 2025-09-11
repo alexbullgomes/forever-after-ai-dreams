@@ -26,7 +26,7 @@ const Index = () => {
       />
       
       {/* Expandable chatbot for non-registered users only */}
-      {!user && <ExpandableChatWebhook />}
+      {!user && <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} />}
     </div>
   );
 };

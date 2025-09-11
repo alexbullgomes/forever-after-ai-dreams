@@ -32,10 +32,12 @@ interface ChatMessage {
 
 interface ExpandableChatWebhookProps {
   autoOpen?: boolean;
+  onOpenLogin?: () => void;
 }
 
 const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   autoOpen = false,
+  onOpenLogin,
 }) => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -52,11 +54,23 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Add intro message on first render when chat is empty
+  useEffect(() => {
+    if (messages.length === 0) {
+      const introMessage: ChatMessage = {
+        id: generateId(),
+        content: "intro-with-login",
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages([introMessage]);
+    }
+  }, []);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     
     if ((!userInput.trim() && selectedFiles.length === 0) || isLoading) return;
 
@@ -271,13 +285,44 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   const renderMessage = (message: ChatMessage) => {
     const isUser = message.sender === 'user';
+    
+    // Special intro message with login CTA
+    if (message.content === "intro-with-login") {
+      return (
+        <ChatBubble key={message.id} variant="received">
+          <ChatBubbleAvatar fallback="EVA" />
+          <ChatBubbleMessage variant="received">
+            <div className="space-y-3">
+              <p>Hi, I'm Eva 👋 How can I help you today? For the full experience — with portfolio, offers, and pricing — log in anytime.</p>
+              {onOpenLogin && (
+                <Button
+                  onClick={onOpenLogin}
+                  className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-sm px-4 py-2 rounded-lg w-full"
+                  role="button"
+                  aria-label="Log in for full experience"
+                >
+                  Log in for full experience
+                </Button>
+              )}
+            </div>
+          </ChatBubbleMessage>
+        </ChatBubble>
+      );
+    }
     
     return (
       <ChatBubble key={message.id} variant={isUser ? "sent" : "received"}>
         {!isUser && (
-          <ChatBubbleAvatar fallback="EA" />
+          <ChatBubbleAvatar fallback="EVA" />
         )}
         <ChatBubbleMessage variant={isUser ? "sent" : "received"}>
           {message.fileType?.startsWith('audio/') ? (
@@ -327,7 +372,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
               <Bot className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold">Everafter Assistant</h3>
+              <h3 className="font-semibold">EVA Assistant</h3>
               <p className="text-xs opacity-90">Here to help with your questions</p>
             </div>
           </div>
@@ -338,7 +383,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             {messages.map(renderMessage)}
             {isLoading && (
               <ChatBubble variant="received">
-                <ChatBubbleAvatar fallback="EA" />
+                <ChatBubbleAvatar fallback="EVA" />
                 <ChatBubbleMessage variant="received" isLoading />
               </ChatBubble>
             )}
@@ -391,6 +436,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
               <ChatInput
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Tell me about your photo/video needs..."
                 disabled={isLoading}
                 className="border-0 bg-transparent focus-visible:ring-0 resize-none h-auto py-2 px-0"
