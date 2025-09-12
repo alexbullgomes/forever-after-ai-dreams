@@ -39,9 +39,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               {isLogin ? "Welcome Back" : "Join Our Family"}
             </DialogTitle>
             <p className="text-center text-rose-100 text-sm">
-              {isLogin 
-                ? "Sign in to access exclusive packages and pricing" 
-                : "Create your account to unlock our premium packages"}
+              Sign in to unlock promos, portfolio & full pricing.
             </p>
           </DialogHeader>
         </div>
