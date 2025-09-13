@@ -143,12 +143,6 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
         >
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-100">
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 rounded-full p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
             <h2 className="text-xl font-bold text-gray-900 pr-8">
               {selectedItem.title}
             </h2>
