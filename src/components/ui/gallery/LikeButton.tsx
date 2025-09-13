@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { MediaItemType } from './types';
+import GalleryConsultationForm from './GalleryConsultationForm';
 
 interface LikeButtonProps {
   selectedItem: MediaItemType;
@@ -14,6 +15,7 @@ interface LikeButtonProps {
 
 const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggleLike, pageSource }) => {
   const [isLiking, setIsLiking] = useState(false);
+  const [showConsultationForm, setShowConsultationForm] = useState(false);
   const { user } = useAuth();
 
   const sendLikeWebhook = async () => {
@@ -56,54 +58,61 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggle
   const handleLike = async () => {
     if (isLiking || !user) return;
     
-    setIsLiking(true);
-    try {
-      await sendLikeWebhook();
-      onToggleLike();
-    } catch (error) {
-      console.error('Error liking content:', error);
-    } finally {
-      setIsLiking(false);
-    }
+    // Open consultation form instead of just liking
+    setShowConsultationForm(true);
+  };
+
+  const handleConsultationFormClose = () => {
+    setShowConsultationForm(false);
+    // Toggle like after successful form submission
+    onToggleLike();
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="flex items-center justify-center"
-    >
-      <Button
-        onClick={handleLike}
-        disabled={isLiking || !user}
-        variant={isLiked ? "default" : "outline"}
-        size="lg"
-        className={`
-          flex items-center gap-2 px-6 py-3 rounded-full
-          transition-all duration-300 shadow-lg
-          ${isLiked 
-            ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600' 
-            : 'bg-white/90 text-gray-700 hover:bg-white border-2 border-rose-200 hover:border-rose-300'
-          }
-          ${!user ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="flex items-center justify-center"
       >
-        <Heart 
-          className={`w-5 h-5 transition-all duration-300 ${
-            isLiked ? 'fill-current text-white' : 'text-rose-500'
-          }`} 
-        />
-        <span className="font-medium">
-          {isLiking ? 'Liking...' : isLiked ? 'Liked' : 'Like'}
-        </span>
-      </Button>
-      {!user && (
-        <p className="text-sm text-gray-500 ml-4">
-          Sign in to like content
-        </p>
-      )}
-    </motion.div>
+        <Button
+          onClick={handleLike}
+          disabled={isLiking || !user}
+          variant={isLiked ? "default" : "outline"}
+          size="lg"
+          className={`
+            flex items-center gap-2 px-6 py-3 rounded-full
+            transition-all duration-300 shadow-lg
+            ${isLiked 
+              ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600' 
+              : 'bg-white/90 text-gray-700 hover:bg-white border-2 border-rose-200 hover:border-rose-300'
+            }
+            ${!user ? 'opacity-50 cursor-not-allowed' : ''}
+          `}
+        >
+          <Heart 
+            className={`w-5 h-5 transition-all duration-300 ${
+              isLiked ? 'fill-current text-white' : 'text-rose-500'
+            }`} 
+          />
+          <span className="font-medium">
+            {isLiking ? 'Liking...' : isLiked ? 'Liked' : 'Like'}
+          </span>
+        </Button>
+        {!user && (
+          <p className="text-sm text-gray-500 ml-4">
+            Sign in to like content
+          </p>
+        )}
+      </motion.div>
+
+      <GalleryConsultationForm
+        isOpen={showConsultationForm}
+        onClose={handleConsultationFormClose}
+        selectedItem={selectedItem}
+      />
+    </>
   );
 };
 

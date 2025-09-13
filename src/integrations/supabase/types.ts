@@ -166,6 +166,7 @@ export type Database = {
           email: string | null
           event_city: string | null
           event_date: string | null
+          gallery_event: string | null
           id: string
           name: string | null
           package_consultation: string | null
@@ -186,6 +187,7 @@ export type Database = {
           email?: string | null
           event_city?: string | null
           event_date?: string | null
+          gallery_event?: string | null
           id: string
           name?: string | null
           package_consultation?: string | null
@@ -206,6 +208,7 @@ export type Database = {
           email?: string | null
           event_city?: string | null
           event_date?: string | null
+          gallery_event?: string | null
           id?: string
           name?: string | null
           package_consultation?: string | null
