@@ -150,10 +150,10 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
               <X className="h-4 w-4" />
             </button>
             <h2 className="text-xl font-bold text-gray-900 pr-8">
-              Book Free Consultation
+              {selectedItem.title}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              For "{selectedItem.title}"
+              Request a Quotation or Book a Free Consultation.
             </p>
           </div>
 
@@ -232,17 +232,8 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
                     Submitting...
                   </div>
                 ) : (
-                  'Book Free Consultation'
+                  'Request Quotation'
                 )}
-              </Button>
-              
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3 rounded-lg font-medium transition-colors"
-              >
-                Maybe Later
               </Button>
             </div>
           </form>
