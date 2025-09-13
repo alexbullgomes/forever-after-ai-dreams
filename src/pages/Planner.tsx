@@ -44,14 +44,14 @@ const Planner = () => {
           </p>
         </div>
 
+        {/* Gallery Section */}
+        <PlannerGallery />
+
         {/* AI Assistant Section */}
         <AIAssistantSection />
         
         {/* Explore Services Section */}
         <ExploreServicesSection />
-        
-        {/* Gallery Section */}
-        <PlannerGallery />
       </div>
       
       {/* Expandable Chat Assistant - Additional Entry Point */}
