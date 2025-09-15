@@ -35,16 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        // Handle redirect after Google OAuth
-        if (event === 'SIGNED_IN' && session?.user) {
-          const urlParams = new URLSearchParams(window.location.hash.substring(1));
-          if (urlParams.get('access_token')) {
-            // Clear the URL fragments and redirect to planner
-            window.history.replaceState({}, document.title, window.location.pathname);
-            window.location.href = '/planner';
-          }
-        }
       }
     );
 
