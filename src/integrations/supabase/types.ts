@@ -178,7 +178,6 @@ export type Database = {
           status: string | null
           updated_at: string
           user_number: string | null
-          visitor_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -200,7 +199,6 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_number?: string | null
-          visitor_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -222,7 +220,6 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_number?: string | null
-          visitor_id?: string | null
         }
         Relationships: []
       }

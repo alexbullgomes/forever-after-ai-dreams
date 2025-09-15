@@ -50,22 +50,12 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [visitorId, setVisitorId] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Initialize visitor ID and add intro message on first render
+  // Add intro message on first render when chat is empty
   useEffect(() => {
-    // Get or create visitor ID
-    let storedVisitorId = localStorage.getItem('homepage-visitor-id');
-    if (!storedVisitorId) {
-      storedVisitorId = crypto.randomUUID();
-      localStorage.setItem('homepage-visitor-id', storedVisitorId);
-    }
-    setVisitorId(storedVisitorId);
-
-    // Add intro message when chat is empty
     if (messages.length === 0) {
       const introMessage: ChatMessage = {
         id: generateId(),
@@ -106,7 +96,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       });
 
       const response = await Promise.race([
-        sendHomepageWebhookMessage(messageContent, visitorId, selectedFiles),
+        sendHomepageWebhookMessage(messageContent, selectedFiles),
         timeoutPromise
       ]);
 
@@ -181,7 +171,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           });
 
           const response = await Promise.race([
-            sendHomepageWebhookMessage("Voice message", visitorId, [audioFile]),
+            sendHomepageWebhookMessage("Voice message", [audioFile]),
             timeoutPromise
           ]);
 
@@ -253,7 +243,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       });
 
       const response = await Promise.race([
-        sendHomepageWebhookMessage("Voice message", visitorId, selectedFiles),
+        sendHomepageWebhookMessage("Voice message", selectedFiles),
         timeoutPromise
       ]);
 

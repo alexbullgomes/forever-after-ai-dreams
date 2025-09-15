@@ -2,7 +2,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { linkVisitorIdToProfile } from '@/utils/linkVisitorId';
 
 interface AuthContextType {
   user: User | null;
@@ -35,14 +34,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Link visitorId to profile when user signs in
-        if (event === 'SIGNED_IN' && session?.user) {
-          setTimeout(() => {
-            linkVisitorIdToProfile(session.user.id);
-          }, 0);
-        }
-        
         setLoading(false);
       }
     );
