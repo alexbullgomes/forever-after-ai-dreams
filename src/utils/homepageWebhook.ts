@@ -3,6 +3,7 @@ interface HomepageWebhookPayload {
   timestamp: string;
   source: string;
   type: "text" | "audio" | "image";
+  visitorId: string;
   files?: Array<{
     fileUrl?: string;
     fileData?: string;
@@ -35,6 +36,7 @@ const getPacificTimestamp = (): string => {
 
 export const sendHomepageWebhookMessage = async (
   message: string,
+  visitorId: string,
   files?: File[]
 ): Promise<any> => {
   const WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/067583ff-25ca-4f0a-8f67-15d18e8a1264";
@@ -50,6 +52,7 @@ export const sendHomepageWebhookMessage = async (
         timestamp,
         source: "Homepage Visitor",
         type: messageType,
+        visitorId,
       };
 
       const response = await fetch(WEBHOOK_URL, {
@@ -72,6 +75,7 @@ export const sendHomepageWebhookMessage = async (
       formData.append("timestamp", timestamp);
       formData.append("source", "Homepage Visitor");
       formData.append("type", messageType);
+      formData.append("visitorId", visitorId);
 
       // Add files to FormData
       files.forEach((file, index) => {
