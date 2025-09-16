@@ -32,6 +32,7 @@ interface UserProfile {
   chat_summarize: string | null;
   pipeline_profile: string | null;
   pipeline_status: string | null;
+  visitor_id: string | null;
 }
 
 interface UserProfileModalProps {
@@ -67,6 +68,8 @@ export const UserProfileModal = ({
   const [briefing, setBriefing] = useState('');
   const [status, setStatus] = useState('');
   const [generatingAISummary, setGeneratingAISummary] = useState(false);
+  const [visitorConversationSummary, setVisitorConversationSummary] = useState('');
+  const [generatingVisitorAISummary, setGeneratingVisitorAISummary] = useState(false);
 
   useEffect(() => {
     if (isOpen && customerId) {
@@ -117,7 +120,8 @@ export const UserProfileModal = ({
           role: 'user',
           chat_summarize: null,
           pipeline_profile: 'Disable',
-          pipeline_status: 'New Lead & Negotiation'
+          pipeline_status: 'New Lead & Negotiation',
+          visitor_id: null
         });
         setBriefing('');
         setStatus('New Lead');
@@ -285,6 +289,49 @@ export const UserProfileModal = ({
       });
     } finally {
       setGeneratingAISummary(false);
+    }
+  };
+
+  const handleVisitorAISummary = async () => {
+    if (!profile) return;
+    
+    try {
+      setGeneratingVisitorAISummary(true);
+      
+      // Prepare webhook payload with User ID and Visitor ID
+      const webhookPayload = {
+        user_id: profile.id,
+        visitor_id: profile.visitor_id
+      };
+
+      // Send webhook to the specified URL
+      const response = await fetch('https://agcreationmkt.cloud/webhook/c3927752-91fc-4737-ade9-eed13cb77928', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookPayload),
+      });
+
+      if (response.ok) {
+        const responseText = await response.text();
+        setVisitorConversationSummary(responseText);
+        toast({
+          title: "Visitor AI Summary Generated",
+          description: "Visitor conversation summary has been generated successfully.",
+        });
+      } else {
+        throw new Error('Webhook request failed');
+      }
+    } catch (error) {
+      console.error('Error generating visitor AI summary:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate visitor AI summary.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingVisitorAISummary(false);
     }
   };
 
@@ -545,6 +592,43 @@ export const UserProfileModal = ({
                   >
                     <Bot className="h-4 w-4 mr-2" />
                     {generatingAISummary ? 'Generating...' : 'AI Summary'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Visitor Conversation */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Bot className="h-4 w-4" />
+                  Visitor Conversation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Visitor ID</Label>
+                  <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border">
+                    {profile.visitor_id || 'Not provided'}
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                    <Bot className="h-3 w-3" />
+                    Visitor Conversation Summary
+                  </Label>
+                  <div className="bg-gray-50 p-3 rounded-md border text-sm text-gray-900 min-h-[60px]">
+                    {visitorConversationSummary || 'No visitor conversation summary available'}
+                  </div>
+                  <Button
+                    onClick={handleVisitorAISummary}
+                    disabled={generatingVisitorAISummary || !profile.visitor_id}
+                    className="mt-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+                    size="sm"
+                  >
+                    <Bot className="h-4 w-4 mr-2" />
+                    {generatingVisitorAISummary ? 'Generating...' : 'AI Summary'}
                   </Button>
                 </div>
               </CardContent>
