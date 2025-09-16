@@ -34,6 +34,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Link visitorId to user profile when signing in
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(() => {
+            linkVisitorIdToProfile(session.user.id);
+          }, 0);
+        }
+        
         setLoading(false);
       }
     );
@@ -63,6 +71,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  const linkVisitorIdToProfile = async (userId: string) => {
+    try {
+      // Check if visitorId exists in localStorage
+      const visitorId = localStorage.getItem('homepage-visitor-id');
+      
+      if (visitorId) {
+        console.log('Linking visitorId to profile:', visitorId);
+        
+        // Update the user's profile with the visitorId
+        const { error } = await supabase
+          .from('profiles')
+          .update({ visitor_id: visitorId })
+          .eq('id', userId);
+          
+        if (error) {
+          console.error('Error linking visitorId to profile:', error);
+        } else {
+          console.log('Successfully linked visitorId to profile');
+        }
+      }
+    } catch (error) {
+      console.error('Error in linkVisitorIdToProfile:', error);
+    }
+  };
 
   const cleanupAuthState = () => {
     // Remove all Supabase auth keys from localStorage
