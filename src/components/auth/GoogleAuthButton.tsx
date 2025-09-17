@@ -20,7 +20,7 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/planner`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       });
 
