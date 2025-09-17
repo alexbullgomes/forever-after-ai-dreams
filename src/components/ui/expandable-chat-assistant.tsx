@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AudioPlayer } from "@/components/wedding/components/AudioPlayer";
 import { VoiceInput } from "@/components/ui/voice-input";
 import { toast } from "sonner";
+import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
 
 interface DatabaseMessage {
   id: number;
@@ -51,6 +52,12 @@ interface ExpandableChatAssistantProps {
 }
 
 export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssistantProps) {
+  const { user } = useAuth();
+  const shouldAutoOpen = useAutoOpenChat({ 
+    sessionKey: 'everafter-chat-auto-opened-authenticated',
+    enabled: !!user 
+  });
+  
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +68,6 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversationMode, setConversationMode] = useState<string>('ai');
   const [isInitializing, setIsInitializing] = useState(false);
-  const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize conversation and load messages
@@ -495,7 +501,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
       position="bottom-right"
       icon={<Bot className="h-6 w-6" />}
       className="border-0 shadow-2xl bg-transparent"
-      autoOpen={autoOpen}
+      autoOpen={autoOpen || shouldAutoOpen}
     >
       <ExpandableChatHeader className="flex-col text-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0">
         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">

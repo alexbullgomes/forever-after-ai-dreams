@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/expandable-chat";
 import { useToast } from "@/components/ui/use-toast";
 import { sendHomepageWebhookMessage } from "@/utils/homepageWebhook";
+import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
 
 interface ChatMessage {
   id: string;
@@ -40,6 +41,10 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   onOpenLogin,
 }) => {
   const { toast } = useToast();
+  const shouldAutoOpen = useAutoOpenChat({ 
+    sessionKey: 'everafter-chat-auto-opened-visitor',
+    enabled: true 
+  });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -361,7 +366,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       <ExpandableChat 
         size="md" 
         position="bottom-right"
-        autoOpen={autoOpen}
+        autoOpen={autoOpen || shouldAutoOpen}
         icon={<Bot className="h-6 w-6" />}
       >
         <ExpandableChatHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
