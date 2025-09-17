@@ -49,13 +49,15 @@ const ExpandableChat: React.FC<ExpandableChatProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(autoOpen);
   const chatRef = useRef<HTMLDivElement>(null);
+  const hasAutoOpenedRef = useRef(false);
 
-  // Update isOpen when autoOpen prop changes
+  // One-shot auto-open when prop becomes true
   useEffect(() => {
-    if (autoOpen && !isOpen) {
+    if (autoOpen && !hasAutoOpenedRef.current) {
       setIsOpen(true);
+      hasAutoOpenedRef.current = true;
     }
-  }, [autoOpen, isOpen]);
+  }, [autoOpen]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
