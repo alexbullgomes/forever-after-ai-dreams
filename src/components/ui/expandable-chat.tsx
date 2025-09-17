@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,13 @@ const ExpandableChat: React.FC<ExpandableChatProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(autoOpen);
   const chatRef = useRef<HTMLDivElement>(null);
+
+  // Update isOpen when autoOpen prop changes
+  useEffect(() => {
+    if (autoOpen && !isOpen) {
+      setIsOpen(true);
+    }
+  }, [autoOpen, isOpen]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
