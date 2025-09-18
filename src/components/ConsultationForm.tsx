@@ -21,15 +21,14 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    name: '',
     phone: '',
-    city: '',
-    weddingDate: undefined as Date | undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.phone || !formData.city || !formData.weddingDate) {
+    if (!formData.name || !formData.phone) {
       toast({
         title: "Missing Information",
         description: "Please fill in all fields to schedule your consultation.",
@@ -44,9 +43,8 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
       const payload = {
         userId: user?.id || null,
         email: user?.email || '',
+        name: formData.name,
         phone: formData.phone,
-        city: formData.city,
-        weddingDate: format(formData.weddingDate, 'yyyy-MM-dd'),
         timestamp: new Date().toISOString(),
         source: 'wedding_consultation_form'
       };
@@ -69,9 +67,8 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
         
         // Reset form and close
         setFormData({
+          name: '',
           phone: '',
-          city: '',
-          weddingDate: undefined,
         });
         onClose();
         // Redirect to planner page with auto-open chat
@@ -110,6 +107,18 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
           <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Your full name"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="phone">Cellphone</Label>
             <Input
               id="phone"
@@ -119,49 +128,6 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
               placeholder="(555) 123-4567"
               required
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="city">City</Label>
-            <Input
-              id="city"
-              value={formData.city}
-              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              placeholder="Los Angeles, CA"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Event Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.weddingDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.weddingDate ? (
-                    format(formData.weddingDate, "PPP")
-                  ) : (
-                    <span>Pick your special date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={formData.weddingDate}
-                  onSelect={(date) => setFormData({ ...formData, weddingDate: date })}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -187,7 +153,7 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
               ) : (
                 <div className="flex items-center">
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Book Free Consultation
+                  Call in Seconds
                 </div>
               )}
             </Button>
