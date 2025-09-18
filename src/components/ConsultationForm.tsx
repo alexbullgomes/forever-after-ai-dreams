@@ -40,11 +40,19 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
     setIsSubmitting(true);
 
     try {
+      // Get or create visitor ID (same as used in Expandable Chat)
+      let visitorId = localStorage.getItem('homepage-visitor-id');
+      if (!visitorId) {
+        visitorId = crypto.randomUUID();
+        localStorage.setItem('homepage-visitor-id', visitorId);
+      }
+
       const payload = {
         userId: user?.id || null,
         email: user?.email || '',
         name: formData.name,
         phone: formData.phone,
+        visitorId: visitorId,
         timestamp: new Date().toISOString(),
         source: 'wedding_consultation_form'
       };
