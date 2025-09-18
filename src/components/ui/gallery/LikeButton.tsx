@@ -58,8 +58,13 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggle
   const handleLike = async () => {
     if (isLiking || !user) return;
     
-    // Open consultation form instead of just liking
-    setShowConsultationForm(true);
+    setIsLiking(true);
+    
+    // Wait 1 second before opening consultation form
+    setTimeout(() => {
+      setIsLiking(false);
+      setShowConsultationForm(true);
+    }, 1000);
   };
 
   const handleConsultationFormClose = () => {
