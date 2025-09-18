@@ -4,6 +4,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play, Heart, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import ConsultationForm from "@/components/ConsultationForm";
+
+interface PortfolioItem {
+  id: number;
+  category: string;
+  title: string;
+  location: string;
+  date: string;
+  type: string;
+  video?: string;
+  videoMp4?: string;
+  image: string;
+}
+
 interface PortfolioProps {
   onBookingClick?: () => void;
 }
@@ -11,6 +25,8 @@ const Portfolio = ({
   onBookingClick
 }: PortfolioProps = {}) => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
+  const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
   const {
     user
   } = useAuth();
@@ -20,6 +36,15 @@ const Portfolio = ({
       navigate("/planner");
     } else if (onBookingClick) {
       onBookingClick();
+    }
+  };
+
+  const handleCardClick = (item: PortfolioItem) => {
+    if (user) {
+      navigate("/planner");
+    } else {
+      setSelectedPortfolioItem(item);
+      setIsConsultationFormOpen(true);
     }
   };
   const portfolioItems = [{
@@ -115,13 +140,7 @@ const Portfolio = ({
           {filteredItems.map(item => <Card 
               key={item.id} 
               className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white cursor-pointer" 
-              onClick={() => {
-                if (user) {
-                  navigate("/planner");
-                } else if (onBookingClick) {
-                  onBookingClick();
-                }
-              }}
+              onClick={() => handleCardClick(item)}
             >
               <div className="relative overflow-hidden">
                 {item.video ? <video className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" autoPlay muted loop playsInline poster={item.image}>
@@ -167,6 +186,12 @@ const Portfolio = ({
           </Button>
         </div>
       </div>
+
+      <ConsultationForm 
+        isOpen={isConsultationFormOpen} 
+        onClose={() => setIsConsultationFormOpen(false)} 
+        portfolioItem={selectedPortfolioItem}
+      />
     </section>;
 };
 export default Portfolio;

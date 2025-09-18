@@ -12,12 +12,25 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
+interface PortfolioItem {
+  id: number;
+  category: string;
+  title: string;
+  location: string;
+  date: string;
+  type: string;
+  video?: string;
+  videoMp4?: string;
+  image: string;
+}
+
 interface ConsultationFormProps {
   isOpen: boolean;
   onClose: () => void;
+  portfolioItem?: PortfolioItem | null;
 }
 
-const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
+const ConsultationForm = ({ isOpen, onClose, portfolioItem }: ConsultationFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,12 +67,22 @@ const ConsultationForm = ({ isOpen, onClose }: ConsultationFormProps) => {
         phone: formData.phone,
         visitorId: visitorId,
         timestamp: new Date().toISOString(),
-        source: 'wedding_consultation_form'
+        source: portfolioItem ? 'portfolio_card_click' : 'wedding_consultation_form',
+        ...(portfolioItem && {
+          portfolioItem: {
+            id: portfolioItem.id,
+            title: portfolioItem.title,
+            location: portfolioItem.location,
+            date: portfolioItem.date,
+            type: portfolioItem.type,
+            category: portfolioItem.category
+          }
+        })
       };
 
       console.log('Sending consultation request:', payload);
 
-      const response = await fetch('https://automation.agcreationmkt.com/webhook/bb88400e-5a7e-47a4-89a1-d8f7171f3238', {
+      const response = await fetch('https://agcreationmkt.cloud/webhook/dc84492f-9c06-423a-b4fe-84a7e36f801f', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
