@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { MediaItemType } from './types';
-import GalleryConsultationForm from './GalleryConsultationForm';
+import GalleryLeadForm from './GalleryLeadForm';
 
 interface LikeButtonProps {
   selectedItem: MediaItemType;
@@ -112,10 +112,15 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggle
         )}
       </motion.div>
 
-      <GalleryConsultationForm
+      <GalleryLeadForm
         isOpen={showConsultationForm}
         onClose={handleConsultationFormClose}
-        selectedItem={selectedItem}
+        cardData={{
+          cardId: selectedItem.id,
+          cardTitle: selectedItem.title,
+          type: selectedItem.type,
+          category: pageSource || 'Gallery'
+        }}
       />
     </>
   );

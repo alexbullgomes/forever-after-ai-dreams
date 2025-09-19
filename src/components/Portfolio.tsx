@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play, Heart, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import ConsultationForm from "@/components/ConsultationForm";
+import GalleryLeadForm from "@/components/ui/gallery/GalleryLeadForm";
 
 interface PortfolioItem {
   id: number;
@@ -187,10 +187,18 @@ const Portfolio = ({
         </div>
       </div>
 
-      <ConsultationForm 
-        isOpen={isConsultationFormOpen} 
-        onClose={() => setIsConsultationFormOpen(false)} 
-        portfolioItem={selectedPortfolioItem}
+      <GalleryLeadForm
+        isOpen={isConsultationFormOpen}
+        onClose={() => setIsConsultationFormOpen(false)}
+        cardData={selectedPortfolioItem ? {
+          cardId: selectedPortfolioItem.id,
+          cardTitle: selectedPortfolioItem.title,
+          category: selectedPortfolioItem.category,
+          locationCity: selectedPortfolioItem.location,
+          eventSeasonOrDate: selectedPortfolioItem.date,
+          collectionSection: 'Portfolio',
+          type: selectedPortfolioItem.type
+        } : undefined}
       />
     </section>;
 };
