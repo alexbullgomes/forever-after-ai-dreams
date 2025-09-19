@@ -187,12 +187,12 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
             className="relative"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h1 className="text-xl font-bold text-gray-900 pr-8">
-                {getTitle()}
+            <div className="px-6 py-4 border-b border-gray-100 text-center">
+              <h1 className="text-xl font-bold text-gray-900">
+                Creating Memories That Last
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                Let our assistant guide you — fill out the form and get all your questions answered.
+                Let our assistant guide you and get all your questions answered.
               </p>
             </div>
 
