@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,24 +24,33 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    collection_key: editingCard?.collection_key || 'homepage',
-    slug: editingCard?.slug || '',
-    title: editingCard?.title || '',
-    subtitle: editingCard?.subtitle || '',
-    category: editingCard?.category || '',
-    location_city: editingCard?.location_city || '',
-    event_season_or_date: editingCard?.event_season_or_date || '',
-    thumbnail_url: editingCard?.thumbnail_url || '',
-    video_url: editingCard?.video_url || '',
-    video_mp4_url: editingCard?.video_mp4_url || '',
-    thumb_webm_url: editingCard?.thumb_webm_url || '',
-    thumb_mp4_url: editingCard?.thumb_mp4_url || '',
-    thumb_image_url: editingCard?.thumb_image_url || '',
-    order_index: editingCard?.order_index || 0,
-    featured: editingCard?.featured || false,
-    is_published: editingCard?.is_published ?? true,
+  const getInitialFormData = (card?: GalleryCard | null) => ({
+    collection_key: card?.collection_key || 'homepage',
+    slug: card?.slug || '',
+    title: card?.title || '',
+    subtitle: card?.subtitle || '',
+    category: card?.category || '',
+    location_city: card?.location_city || '',
+    event_season_or_date: card?.event_season_or_date || '',
+    thumbnail_url: card?.thumbnail_url || '',
+    video_url: card?.video_url || '',
+    video_mp4_url: card?.video_mp4_url || '',
+    thumb_webm_url: card?.thumb_webm_url || '',
+    thumb_mp4_url: card?.thumb_mp4_url || '',
+    thumb_image_url: card?.thumb_image_url || '',
+    order_index: card?.order_index || 0,
+    featured: card?.featured || false,
+    is_published: card?.is_published ?? true,
   });
+
+  const [formData, setFormData] = useState(() => getInitialFormData(editingCard));
+
+  // Update form data when editingCard changes
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(getInitialFormData(editingCard));
+    }
+  }, [editingCard, isOpen]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -96,24 +105,10 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
     try {
       await onSave(formData);
       onClose();
-      setFormData({
-        collection_key: 'homepage',
-        slug: '',
-        title: '',
-        subtitle: '',
-        category: '',
-        location_city: '',
-        event_season_or_date: '',
-        thumbnail_url: '',
-        video_url: '',
-        video_mp4_url: '',
-        thumb_webm_url: '',
-        thumb_mp4_url: '',
-        thumb_image_url: '',
-        order_index: 0,
-        featured: false,
-        is_published: true,
-      });
+      if (!editingCard) {
+        // Only reset form data if we were creating a new card
+        setFormData(getInitialFormData());
+      }
     } catch (error) {
       // Error handling is done in the parent component
     } finally {
@@ -121,8 +116,14 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
     }
   };
 
+  const handleClose = () => {
+    // Reset form to original values on cancel
+    setFormData(getInitialFormData(editingCard));
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
@@ -358,7 +359,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
           </div>
 
           <div className="flex justify-end space-x-2 pt-6">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
             <Button type="submit" disabled={submitting || uploading}>
