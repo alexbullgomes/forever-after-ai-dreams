@@ -142,7 +142,7 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
           className="relative"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-100">
+          <div className="px-6 py-4 border-b border-gray-100 text-center">
             <h2 className="text-xl font-bold text-gray-900 pr-8">
               {selectedItem.title}
             </h2>
