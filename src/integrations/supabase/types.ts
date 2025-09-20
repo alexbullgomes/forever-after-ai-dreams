@@ -89,6 +89,63 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_cards: {
+        Row: {
+          category: string
+          collection_key: string
+          created_at: string
+          event_season_or_date: string | null
+          featured: boolean
+          id: string
+          is_published: boolean
+          location_city: string | null
+          order_index: number
+          slug: string | null
+          subtitle: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_mp4_url: string | null
+          video_url: string | null
+        }
+        Insert: {
+          category: string
+          collection_key?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_mp4_url?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          category?: string
+          collection_key?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_mp4_url?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           audio_url: string | null
