@@ -102,6 +102,9 @@ export type Database = {
           order_index: number
           slug: string | null
           subtitle: string | null
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -120,6 +123,9 @@ export type Database = {
           order_index?: number
           slug?: string | null
           subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -138,6 +144,9 @@ export type Database = {
           order_index?: number
           slug?: string | null
           subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string

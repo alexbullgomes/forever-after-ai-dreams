@@ -14,6 +14,9 @@ export interface GalleryCard {
   thumbnail_url?: string;
   video_url?: string;
   video_mp4_url?: string;
+  thumb_webm_url?: string;
+  thumb_mp4_url?: string;
+  thumb_image_url?: string;
   order_index: number;
   featured: boolean;
   is_published: boolean;

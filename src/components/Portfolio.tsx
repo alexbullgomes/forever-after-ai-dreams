@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import GalleryLeadForm from "@/components/ui/gallery/GalleryLeadForm";
+import { VideoThumbnail } from "@/components/ui/gallery/VideoThumbnail";
 
 interface PortfolioItem {
   id: string;
@@ -17,6 +18,9 @@ interface PortfolioItem {
   video?: string;
   videoMp4?: string;
   image: string;
+  thumbWebm?: string;
+  thumbMp4?: string;
+  thumbImage?: string;
 }
 
 interface PortfolioProps {
@@ -71,7 +75,10 @@ const Portfolio = ({
           type: card.category === 'weddings' ? 'Wedding' : 'Photo & Video',
           video: card.video_url,
           videoMp4: card.video_mp4_url,
-          image: card.thumbnail_url || ''
+          image: card.thumbnail_url || '',
+          thumbWebm: card.thumb_webm_url,
+          thumbMp4: card.thumb_mp4_url,
+          thumbImage: card.thumb_image_url
         }));
 
         setPortfolioItems(formattedItems);
@@ -157,11 +164,14 @@ const Portfolio = ({
               onClick={() => handleCardClick(item)}
             >
               <div className="relative overflow-hidden">
-                {item.video ? <video className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" autoPlay muted loop playsInline poster={item.image}>
-                    <source src={item.video} type="video/webm" />
-                    <source src={item.videoMp4} type="video/mp4" />
-                    <img src={item.image} alt={item.title} className="w-full h-80 object-cover" />
-                  </video> : <img src={item.image} alt={item.title} className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110" />}
+                <VideoThumbnail
+                  webmUrl={item.thumbWebm}
+                  mp4Url={item.thumbMp4}
+                  imageUrl={item.thumbImage}
+                  fallbackImageUrl={item.image}
+                  alt={item.title}
+                  className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
                 {/* Play button for videos */}

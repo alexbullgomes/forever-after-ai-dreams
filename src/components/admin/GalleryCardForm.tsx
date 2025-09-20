@@ -35,6 +35,9 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
     thumbnail_url: editingCard?.thumbnail_url || '',
     video_url: editingCard?.video_url || '',
     video_mp4_url: editingCard?.video_mp4_url || '',
+    thumb_webm_url: editingCard?.thumb_webm_url || '',
+    thumb_mp4_url: editingCard?.thumb_mp4_url || '',
+    thumb_image_url: editingCard?.thumb_image_url || '',
     order_index: editingCard?.order_index || 0,
     featured: editingCard?.featured || false,
     is_published: editingCard?.is_published ?? true,
@@ -104,6 +107,9 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
         thumbnail_url: '',
         video_url: '',
         video_mp4_url: '',
+        thumb_webm_url: '',
+        thumb_mp4_url: '',
+        thumb_image_url: '',
         order_index: 0,
         featured: false,
         is_published: true,
@@ -233,6 +239,76 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
                 accept="image/*"
                 onChange={handleFileUpload}
               />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Thumbnail (Video Fallback)</Label>
+            <div className="space-y-4 border border-gray-200 rounded-lg p-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="thumb_webm_url">Video WEBM URL</Label>
+                  <Input
+                    id="thumb_webm_url"
+                    value={formData.thumb_webm_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, thumb_webm_url: e.target.value }))}
+                    placeholder="https://example.com/video.webm or upload below"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="thumb_mp4_url">Video MP4 URL</Label>
+                  <Input
+                    id="thumb_mp4_url"
+                    value={formData.thumb_mp4_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, thumb_mp4_url: e.target.value }))}
+                    placeholder="https://example.com/video.mp4 or upload below"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="thumb_image_url">Image Fallback URL</Label>
+                  <Input
+                    id="thumb_image_url"
+                    value={formData.thumb_image_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, thumb_image_url: e.target.value }))}
+                    placeholder="https://example.com/image.webp or upload below"
+                  />
+                </div>
+              </div>
+
+              {(formData.thumb_webm_url || formData.thumb_mp4_url || formData.thumb_image_url) && (
+                <div className="space-y-2">
+                  <Label>Preview</Label>
+                  <div className="w-32 h-20 border rounded-lg overflow-hidden">
+                    {(formData.thumb_webm_url || formData.thumb_mp4_url) ? (
+                      <video
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        poster={formData.thumb_image_url}
+                      >
+                        {formData.thumb_webm_url && <source src={formData.thumb_webm_url} type="video/webm" />}
+                        {formData.thumb_mp4_url && <source src={formData.thumb_mp4_url} type="video/mp4" />}
+                      </video>
+                    ) : formData.thumb_image_url ? (
+                      <img
+                        src={formData.thumb_image_url}
+                        alt="Thumbnail preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : null}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-gray-500">
+                <p>• If WEBM is present, MP4 OR Image must be present</p>
+                <p>• File uploads limited to 5MB</p>
+                <p>• Example URLs: https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/gallery/Libs.webm</p>
+              </div>
             </div>
           </div>
 
