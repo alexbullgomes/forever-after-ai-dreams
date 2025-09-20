@@ -128,11 +128,11 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem }: ConsultationFormPr
               <Heart className="w-8 h-8 text-white" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
-            Your Dream Wedding Awaits
+          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent text-center">
+            Creating Memories That Last
           </DialogTitle>
-          <p className="text-gray-600 mt-2">
-            Schedule your free consultation and let's create magic together! ✨
+          <p className="text-gray-600 mt-2 text-center">
+            Let our assistant guide you and get all your questions answered.
           </p>
         </DialogHeader>
 
