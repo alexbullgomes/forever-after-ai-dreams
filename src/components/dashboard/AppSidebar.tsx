@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -21,6 +21,11 @@ const navigationItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Gallery Cards",
+    url: "/dashboard/gallery-cards",
+    icon: Images,
   },
   {
     title: "Chat Admin",

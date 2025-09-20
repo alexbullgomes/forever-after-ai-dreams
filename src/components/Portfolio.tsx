@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Heart, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import GalleryLeadForm from "@/components/ui/gallery/GalleryLeadForm";
 
 interface PortfolioItem {
-  id: number;
+  id: string;
   category: string;
   title: string;
   location: string;
@@ -27,6 +28,8 @@ const Portfolio = ({
   const [activeFilter, setActiveFilter] = useState("all");
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const {
     user
   } = useAuth();
@@ -47,72 +50,83 @@ const Portfolio = ({
       setIsConsultationFormOpen(true);
     }
   };
-  const portfolioItems = [{
-    id: 4,
-    category: "photo",
-    title: "Alana & Michael",
-    location: "San Diego, CA",
-    date: "Summer 2025",
-    type: "Wedding",
-    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.webm",
-    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelportifolio.mp4",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//alanamichaelfoto.webp"
-  }, {
-    id: 1,
-    category: "video",
-    title: "Jeferson & Fernanda",
-    location: "Carlsbad, CA",
-    date: "Winter 2024",
-    type: "Photo & Video",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Jeverson.webp"
-  }, {
-    id: 5,
-    category: "video",
-    title: "Libbs Health Corporate Event",
-    location: "San Diego, CA",
-    date: "Fall 2024",
-    type: "Photo & Video",
-    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webm",
-    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.mp4",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Libs.webp"
-  }, {
-    id: 2,
-    category: "video",
-    title: "Family Milestone Celebration",
-    location: "Oceanside, CA",
-    date: "Fall 2024",
-    type: "Photo & Video",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//Tavi.webp"
-  }, {
-    id: 6,
-    category: "photo",
-    title: "Giovanna & Claudio Wedding",
-    location: "Malibu, CA",
-    date: "Spring 2024",
-    type: "Wedding",
-    video: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//giovannaeclaudioweb.webm",
-    videoMp4: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//GIovanaandclaudio.mp4",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//giovannaeclaudio.webp"
-  }, {
-    id: 3,
-    category: "video",
-    title: "Business Achievement Portrait",
-    location: "Los Angeles, CA",
-    date: "Summer 2024",
-    type: "Photo & Video",
-    image: "https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/weddingvideo//stenio.webp"
-  }];
-  const filteredItems = activeFilter === "all" ? portfolioItems : portfolioItems.filter(item => item.category === activeFilter);
+  // Fetch portfolio data from Supabase
+  useEffect(() => {
+    const fetchPortfolioData = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('gallery_cards')
+          .select('*')
+          .eq('is_published', true)
+          .order('order_index', { ascending: true });
+
+        if (error) throw error;
+
+        const formattedItems: PortfolioItem[] = (data || []).map(card => ({
+          id: card.id,
+          category: card.category,
+          title: card.title,
+          location: card.location_city || '',
+          date: card.event_season_or_date || '',
+          type: card.category === 'weddings' ? 'Wedding' : 'Photo & Video',
+          video: card.video_url,
+          videoMp4: card.video_mp4_url,
+          image: card.thumbnail_url || ''
+        }));
+
+        setPortfolioItems(formattedItems);
+      } catch (error) {
+        console.error('Error fetching portfolio data:', error);
+        // Fallback to empty array on error
+        setPortfolioItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolioData();
+  }, []);
+  const filteredItems = activeFilter === "all" ? portfolioItems : portfolioItems.filter(item => {
+    if (activeFilter === "photo") return item.category === "photo" || item.category === "weddings";
+    if (activeFilter === "video") return item.category === "video" || item.category === "photo";
+    return item.category === activeFilter;
+  });
+  
   const filters = [{
     id: "all",
     label: "All Stories"
   }, {
-    id: "video",
+    id: "photo",
     label: "Photo & Videos"
   }, {
-    id: "photo",
+    id: "weddings",
     label: "Weddings"
   }];
+
+  if (loading) {
+    return (
+      <section id="portfolio" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-4">
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-4 py-2">
+                <Heart className="w-5 h-5 text-rose-500" />
+                <span className="text-rose-700 text-sm font-medium">Our Portfolio</span>
+              </div>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Recent
+              <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Stories</span>
+            </h2>
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return <section id="portfolio" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
