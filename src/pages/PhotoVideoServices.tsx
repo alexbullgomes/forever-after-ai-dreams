@@ -144,7 +144,7 @@ const PhotoVideoServices = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Photo & Video Services</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Photo & Video</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Beyond weddings, we capture life's precious moments for families and businesses with the same artistic excellence.
           </p>
