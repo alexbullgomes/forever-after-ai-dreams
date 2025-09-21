@@ -15,6 +15,7 @@ interface PortfolioItem {
   location: string;
   date: string;
   type: string;
+  featured: boolean;
   video?: string;
   videoMp4?: string;
   image: string;
@@ -72,7 +73,8 @@ const Portfolio = ({
           title: card.title,
           location: card.location_city || '',
           date: card.event_season_or_date || '',
-          type: card.category === 'weddings' ? 'Wedding' : 'Photo & Video',
+          type: card.category === 'Weddings' ? 'Wedding' : 'Photo & Video',
+          featured: card.featured || false,
           video: card.video_url,
           videoMp4: card.video_mp4_url,
           image: card.thumbnail_url || '',
@@ -93,17 +95,19 @@ const Portfolio = ({
 
     fetchPortfolioData();
   }, []);
-  const filteredItems = activeFilter === "all" ? portfolioItems : portfolioItems.filter(item => {
-    if (activeFilter === "photo") return item.category === "photo" || item.category === "weddings";
-    if (activeFilter === "video") return item.category === "video" || item.category === "photo";
-    return item.category === activeFilter;
-  });
+  const filteredItems = activeFilter === "all" 
+    ? portfolioItems.filter(item => item.featured === true)
+    : portfolioItems.filter(item => {
+        if (activeFilter === "photo-videos") return item.category === "Photo & Videos";
+        if (activeFilter === "weddings") return item.category === "Weddings";
+        return false;
+      });
   
   const filters = [{
     id: "all",
     label: "All Stories"
   }, {
-    id: "photo",
+    id: "photo-videos",
     label: "Photo & Videos"
   }, {
     id: "weddings",
