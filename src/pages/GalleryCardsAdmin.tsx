@@ -5,6 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -12,12 +13,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Edit, Trash2, GripVertical, Search, Image as ImageIcon } from 'lucide-react';
 import { GalleryCardForm } from '@/components/admin/GalleryCardForm';
 import { useGalleryCards, type GalleryCard } from '@/hooks/useGalleryCards';
+import { useServiceGalleryCards, type ServiceGalleryCard } from '@/hooks/useServiceGalleryCards';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
+type CombinedGalleryCard = GalleryCard | ServiceGalleryCard;
+type GalleryType = 'homepage' | 'services';
+
 interface SortableCardItemProps {
-  card: GalleryCard;
-  onEdit: (card: GalleryCard) => void;
+  card: CombinedGalleryCard;
+  onEdit: (card: CombinedGalleryCard) => void;
   onDelete: (id: string) => void;
   onTogglePublished: (id: string, published: boolean) => void;
   onToggleFeatured: (id: string, featured: boolean) => void;
@@ -155,13 +160,41 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
 };
 
 export default function GalleryCardsAdmin() {
-  const { cards, loading, createCard, updateCard, deleteCard, reorderCards } = useGalleryCards();
-  const { toast } = useToast();
+  const [selectedGallery, setSelectedGallery] = useState<GalleryType>('homepage');
+  
+  // Homepage gallery hooks
+  const { 
+    cards: homepageCards, 
+    loading: homepageLoading, 
+    createCard: createHomepageCard, 
+    updateCard: updateHomepageCard, 
+    deleteCard: deleteHomepageCard, 
+    reorderCards: reorderHomepageCards 
+  } = useGalleryCards();
 
+  // Services gallery hooks
+  const { 
+    cards: serviceCards, 
+    loading: serviceLoading, 
+    createCard: createServiceCard, 
+    updateCard: updateServiceCard, 
+    deleteCard: deleteServiceCard, 
+    reorderCards: reorderServiceCards 
+  } = useServiceGalleryCards();
+
+  // Get current data based on selected gallery
+  const cards = selectedGallery === 'homepage' ? homepageCards : serviceCards;
+  const loading = selectedGallery === 'homepage' ? homepageLoading : serviceLoading;
+  const createCard = selectedGallery === 'homepage' ? createHomepageCard : createServiceCard;
+  const updateCard = selectedGallery === 'homepage' ? updateHomepageCard : updateServiceCard;
+  const deleteCard = selectedGallery === 'homepage' ? deleteHomepageCard : deleteServiceCard;
+  const reorderCards = selectedGallery === 'homepage' ? reorderHomepageCards : reorderServiceCards;
+
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<GalleryCard | null>(null);
+  const [editingCard, setEditingCard] = useState<CombinedGalleryCard | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -202,20 +235,20 @@ export default function GalleryCardsAdmin() {
     }
   };
 
-  const handleCreateCard = async (cardData: Omit<GalleryCard, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleCreateCard = async (cardData: any) => {
     await createCard({
       ...cardData,
       order_index: cards.length + 1
     });
   };
 
-  const handleUpdateCard = async (cardData: Omit<GalleryCard, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleUpdateCard = async (cardData: any) => {
     if (!editingCard) return;
     await updateCard(editingCard.id, cardData);
     setEditingCard(null);
   };
 
-  const handleEdit = (card: GalleryCard) => {
+  const handleEdit = (card: CombinedGalleryCard) => {
     setEditingCard(card);
     setIsFormOpen(true);
   };
@@ -250,7 +283,23 @@ export default function GalleryCardsAdmin() {
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Gallery Cards</h1>
-        <p className="text-gray-600">Manage homepage gallery cards and their display order</p>
+        <p className="text-gray-600">Manage gallery cards and their display order</p>
+      </div>
+
+      {/* Gallery Selector */}
+      <div className="mb-6">
+        <Label htmlFor="gallery-select" className="text-sm font-medium text-gray-700 mb-2 block">
+          Select Gallery
+        </Label>
+        <Select value={selectedGallery} onValueChange={(value: GalleryType) => setSelectedGallery(value)}>
+          <SelectTrigger className="w-64 bg-white border border-gray-300">
+            <SelectValue placeholder="Select gallery" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
+            <SelectItem value="homepage">Homepage Gallery</SelectItem>
+            <SelectItem value="services">EverAfter Gallery</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="mb-6 space-y-4">
@@ -277,14 +326,6 @@ export default function GalleryCardsAdmin() {
             </SelectContent>
           </Select>
 
-          <Select disabled value="homepage">
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="homepage">Homepage</SelectItem>
-            </SelectContent>
-          </Select>
 
           <Button onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />

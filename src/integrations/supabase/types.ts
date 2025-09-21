@@ -292,6 +292,69 @@ export type Database = {
         }
         Relationships: []
       }
+      service_gallery_cards: {
+        Row: {
+          category: string
+          created_at: string
+          event_season_or_date: string | null
+          featured: boolean
+          full_video_enabled: boolean
+          full_video_url: string | null
+          id: string
+          is_published: boolean
+          location_city: string | null
+          order_index: number
+          slug: string | null
+          subtitle: string | null
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

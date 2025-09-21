@@ -14,8 +14,8 @@ import type { GalleryCard } from '@/hooks/useGalleryCards';
 interface GalleryCardFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (cardData: Omit<GalleryCard, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
-  editingCard?: GalleryCard | null;
+  onSave: (cardData: any) => Promise<void>;
+  editingCard?: any;
 }
 
 export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: GalleryCardFormProps) => {
@@ -24,7 +24,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const getInitialFormData = (card?: GalleryCard | null) => ({
+  const getInitialFormData = (card?: any) => ({
     collection_key: card?.collection_key || 'homepage',
     slug: card?.slug || '',
     title: card?.title || '',
@@ -41,6 +41,8 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
     order_index: card?.order_index || 0,
     featured: card?.featured || false,
     is_published: card?.is_published ?? true,
+    full_video_enabled: card?.full_video_enabled || false,
+    full_video_url: card?.full_video_url || '',
   });
 
   const [formData, setFormData] = useState(() => getInitialFormData(editingCard));
@@ -355,6 +357,29 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
                 />
                 <Label htmlFor="published">Published</Label>
               </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="full_video_enabled"
+                  checked={formData.full_video_enabled}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, full_video_enabled: checked }))}
+                />
+                <Label htmlFor="full_video_enabled">Enable "Watch Full Video"</Label>
+              </div>
+
+              {formData.full_video_enabled && (
+                <div className="mt-4">
+                  <Label htmlFor="full_video_url">Full Video URL</Label>
+                  <Input
+                    id="full_video_url"
+                    type="url"
+                    value={formData.full_video_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, full_video_url: e.target.value }))}
+                    placeholder="https://youtube.com/watch?v=..."
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
           </div>
 
