@@ -22,14 +22,26 @@ const PlannerGallery = () => {
           return;
         }
 
-        // Transform database records to MediaItemType format
+        // Transform database records to MediaItemType format with Portfolio Gallery span patterns
+        const spanPatterns = [
+          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+          "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2", 
+          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+          "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
+          "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
+          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2"
+        ];
+
         const transformedItems: MediaItemType[] = (data || []).map((card, index) => ({
           id: index + 1,
           type: card.thumb_webm_url || card.thumb_mp4_url ? 'video' : 'image',
           title: card.title,
           desc: card.subtitle || '',
           url: card.thumbnail_url || '',
-          span: index % 3 === 0 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1',
+          span: spanPatterns[index % spanPatterns.length],
           mp4Url: card.thumb_mp4_url,
           posterUrl: card.thumb_image_url,
           fullVideoUrl: card.full_video_enabled ? card.full_video_url : undefined,

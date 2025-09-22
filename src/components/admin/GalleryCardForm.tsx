@@ -16,9 +16,10 @@ interface GalleryCardFormProps {
   onClose: () => void;
   onSave: (cardData: any) => Promise<void>;
   editingCard?: any;
+  galleryType?: 'homepage' | 'services';
 }
 
-export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: GalleryCardFormProps) => {
+export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryType = 'homepage' }: GalleryCardFormProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -157,9 +158,9 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="photo">Photo & Videos</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
                   <SelectItem value="weddings">Weddings</SelectItem>
-                </SelectContent>
+                  {galleryType === 'homepage' && <SelectItem value="video">Video</SelectItem>}
+            </SelectContent>
               </Select>
             </div>
           </div>
@@ -174,27 +175,29 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="location">Location/City</Label>
-              <Input
-                id="location"
-                value={formData.location_city}
-                onChange={(e) => setFormData(prev => ({ ...prev, location_city: e.target.value }))}
-                placeholder="e.g., San Francisco"
-              />
-            </div>
+          {galleryType === 'homepage' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="location">Location/City</Label>
+                <Input
+                  id="location"
+                  value={formData.location_city}
+                  onChange={(e) => setFormData(prev => ({ ...prev, location_city: e.target.value }))}
+                  placeholder="e.g., San Francisco"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="date">Season/Date</Label>
-              <Input
-                id="date"
-                value={formData.event_season_or_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, event_season_or_date: e.target.value }))}
-                placeholder="e.g., Spring 2024"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="date">Season/Date</Label>
+                <Input
+                  id="date"
+                  value={formData.event_season_or_date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, event_season_or_date: e.target.value }))}
+                  placeholder="e.g., Spring 2024"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label>Thumbnail Image</Label>
@@ -316,15 +319,17 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="video_url">Video URL (YouTube/Vimeo)</Label>
-              <Input
-                id="video_url"
-                value={formData.video_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                placeholder="https://youtube.com/watch?v=..."
-              />
-            </div>
+            {galleryType === 'homepage' && (
+              <div className="space-y-2">
+                <Label htmlFor="video_url">Video URL (YouTube/Vimeo)</Label>
+                <Input
+                  id="video_url"
+                  value={formData.video_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=..."
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="order">Order Index</Label>
@@ -340,14 +345,16 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
 
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
-                />
-                <Label htmlFor="featured">Featured</Label>
-              </div>
+              {galleryType === 'homepage' && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="featured"
+                    checked={formData.featured}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
+                  />
+                  <Label htmlFor="featured">Featured</Label>
+                </div>
+              )}
 
               <div className="flex items-center space-x-2">
                 <Switch
@@ -358,16 +365,18 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard }: Galler
                 <Label htmlFor="published">Published</Label>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="full_video_enabled"
-                  checked={formData.full_video_enabled}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, full_video_enabled: checked }))}
-                />
-                <Label htmlFor="full_video_enabled">Enable "Watch Full Video"</Label>
-              </div>
+              {galleryType === 'services' && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="full_video_enabled"
+                    checked={formData.full_video_enabled}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, full_video_enabled: checked }))}
+                  />
+                  <Label htmlFor="full_video_enabled">Enable "Watch Full Video"</Label>
+                </div>
+              )}
 
-              {formData.full_video_enabled && (
+              {galleryType === 'services' && formData.full_video_enabled && (
                 <div className="mt-4">
                   <Label htmlFor="full_video_url">Full Video URL</Label>
                   <Input

@@ -110,13 +110,15 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
               <span className="text-xs text-gray-600">Published</span>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={card.featured}
-                onCheckedChange={(checked) => onToggleFeatured(card.id, checked)}
-              />
-              <span className="text-xs text-gray-600">Featured</span>
-            </div>
+            {('featured' in card) && (
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={card.featured}
+                  onCheckedChange={(checked) => onToggleFeatured(card.id, checked)}
+                />
+                <span className="text-xs text-gray-600">Featured</span>
+              </div>
+            )}
 
             <div className="flex items-center space-x-1">
               <Button
@@ -385,6 +387,7 @@ export default function GalleryCardsAdmin() {
         onClose={handleCloseForm}
         onSave={editingCard ? handleUpdateCard : handleCreateCard}
         editingCard={editingCard}
+        galleryType={selectedGallery}
       />
     </div>
   );
