@@ -241,17 +241,70 @@ export default function GalleryCardsAdmin() {
     }
   };
 
+  // Data filtering functions for different gallery types
+  const filterHomepageData = (data: any) => {
+    const { full_video_enabled, full_video_url, ...homepageData } = data;
+    return {
+      ...homepageData,
+      collection_key: 'homepage',
+      order_index: data.order_index || cards.length + 1
+    };
+  };
+
+  const filterServiceData = (data: any) => {
+    const { collection_key, video_url, video_mp4_url, ...serviceData } = data;
+    return {
+      ...serviceData,
+      order_index: data.order_index || cards.length + 1
+    };
+  };
+
   const handleCreateCard = async (cardData: any) => {
-    await createCard({
-      ...cardData,
-      order_index: cards.length + 1
-    });
+    try {
+      const filteredData = selectedGallery === 'homepage' 
+        ? filterHomepageData(cardData)
+        : filterServiceData(cardData);
+      
+      await createCard(filteredData);
+      toast({
+        title: "Success",
+        description: "Gallery card created successfully"
+      });
+    } catch (error) {
+      console.error('Error creating gallery card:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create gallery card"
+      });
+    }
   };
 
   const handleUpdateCard = async (cardData: any) => {
     if (!editingCard) return;
-    await updateCard(editingCard.id, cardData);
-    setEditingCard(null);
+    
+    try {
+      const filteredData = selectedGallery === 'homepage' 
+        ? filterHomepageData(cardData)
+        : filterServiceData(cardData);
+      
+      // Remove order_index from update data to avoid changing it accidentally
+      const { order_index, ...updateData } = filteredData;
+      
+      await updateCard(editingCard.id, updateData);
+      setEditingCard(null);
+      toast({
+        title: "Success",
+        description: "Gallery card updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating gallery card:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update gallery card"
+      });
+    }
   };
 
   const handleEdit = (card: CombinedGalleryCard) => {
