@@ -15,6 +15,8 @@ import { GalleryCardForm } from '@/components/admin/GalleryCardForm';
 import { useGalleryCards, type GalleryCard } from '@/hooks/useGalleryCards';
 import { useServiceGalleryCards, type ServiceGalleryCard } from '@/hooks/useServiceGalleryCards';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/hooks/useRole';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 type CombinedGalleryCard = GalleryCard | ServiceGalleryCard;
@@ -162,6 +164,8 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
 };
 
 export default function GalleryCardsAdmin() {
+  const { user } = useAuth();
+  const { hasRole: isAdmin, loading: roleLoading } = useRole('admin');
   const [selectedGallery, setSelectedGallery] = useState<GalleryType>('homepage');
   
   // Homepage gallery hooks
@@ -268,7 +272,8 @@ export default function GalleryCardsAdmin() {
     await updateCard(id, { featured });
   };
 
-  if (loading) {
+  // Show loading while checking role
+  if (roleLoading || loading) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
@@ -276,6 +281,33 @@ export default function GalleryCardsAdmin() {
           <div className="h-32 bg-gray-200 rounded"></div>
           <div className="h-32 bg-gray-200 rounded"></div>
           <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if not authenticated or not admin
+  if (!user) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Authentication Required</h1>
+          <p className="text-gray-600">You must be logged in to access the gallery management.</p>
+          <p className="text-sm text-gray-500 mt-2">Please sign in with your admin account.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Admin Access Required</h1>
+          <p className="text-gray-600">You don't have permission to access gallery management.</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Current user: {user.email} | Required role: admin
+          </p>
         </div>
       </div>
     );
