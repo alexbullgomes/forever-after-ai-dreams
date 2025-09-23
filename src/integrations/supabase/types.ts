@@ -50,6 +50,69 @@ export type Database = {
         }
         Relationships: []
       }
+      business_contents_gallery: {
+        Row: {
+          category: string
+          created_at: string
+          event_season_or_date: string | null
+          featured: boolean
+          full_video_enabled: boolean
+          full_video_url: string | null
+          id: string
+          is_published: boolean
+          location_city: string | null
+          order_index: number
+          slug: string | null
+          subtitle: string | null
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -220,6 +283,132 @@ export type Database = {
           id?: number
           message?: Json
           session_id?: string
+        }
+        Relationships: []
+      }
+      our_portfolio_gallery: {
+        Row: {
+          category: string
+          created_at: string
+          event_season_or_date: string | null
+          featured: boolean
+          full_video_enabled: boolean
+          full_video_url: string | null
+          id: string
+          is_published: boolean
+          location_city: string | null
+          order_index: number
+          slug: string | null
+          subtitle: string | null
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      our_wedding_gallery: {
+        Row: {
+          category: string
+          created_at: string
+          event_season_or_date: string | null
+          featured: boolean
+          full_video_enabled: boolean
+          full_video_url: string | null
+          id: string
+          is_published: boolean
+          location_city: string | null
+          order_index: number
+          slug: string | null
+          subtitle: string | null
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

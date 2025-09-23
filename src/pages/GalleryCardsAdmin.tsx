@@ -14,13 +14,16 @@ import { Plus, Edit, Trash2, GripVertical, Search, Image as ImageIcon } from 'lu
 import { GalleryCardForm } from '@/components/admin/GalleryCardForm';
 import { useGalleryCards, type GalleryCard } from '@/hooks/useGalleryCards';
 import { useServiceGalleryCards, type ServiceGalleryCard } from '@/hooks/useServiceGalleryCards';
+import { useOurPortfolioGallery, type PortfolioGalleryCard } from '@/hooks/useOurPortfolioGallery';
+import { useBusinessContentsGallery, type BusinessContentsGalleryCard } from '@/hooks/useBusinessContentsGallery';
+import { useOurWeddingGallery, type OurWeddingGalleryCard } from '@/hooks/useOurWeddingGallery';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-type CombinedGalleryCard = GalleryCard | ServiceGalleryCard;
-type GalleryType = 'homepage' | 'services';
+type CombinedGalleryCard = GalleryCard | ServiceGalleryCard | PortfolioGalleryCard | BusinessContentsGalleryCard | OurWeddingGalleryCard;
+type GalleryType = 'homepage' | 'services' | 'portfolio' | 'business' | 'wedding';
 
 interface SortableCardItemProps {
   card: CombinedGalleryCard;
@@ -168,33 +171,33 @@ export default function GalleryCardsAdmin() {
   const { hasRole: isAdmin, loading: roleLoading } = useRole('admin');
   const [selectedGallery, setSelectedGallery] = useState<GalleryType>('homepage');
   
-  // Homepage gallery hooks
-  const { 
-    cards: homepageCards, 
-    loading: homepageLoading, 
-    createCard: createHomepageCard, 
-    updateCard: updateHomepageCard, 
-    deleteCard: deleteHomepageCard, 
-    reorderCards: reorderHomepageCards 
-  } = useGalleryCards();
+  // Gallery hooks
+  const homepageGallery = useGalleryCards();
+  const serviceGallery = useServiceGalleryCards();
+  const portfolioGallery = useOurPortfolioGallery();
+  const businessGallery = useBusinessContentsGallery();
+  const weddingGallery = useOurWeddingGallery();
 
-  // Services gallery hooks
-  const { 
-    cards: serviceCards, 
-    loading: serviceLoading, 
-    createCard: createServiceCard, 
-    updateCard: updateServiceCard, 
-    deleteCard: deleteServiceCard, 
-    reorderCards: reorderServiceCards 
-  } = useServiceGalleryCards();
+  // Get current gallery data based on selection
+  const getCurrentGallery = () => {
+    switch (selectedGallery) {
+      case 'homepage': return homepageGallery;
+      case 'services': return serviceGallery;
+      case 'portfolio': return portfolioGallery;
+      case 'business': return businessGallery;
+      case 'wedding': return weddingGallery;
+      default: return homepageGallery;
+    }
+  };
 
-  // Get current data based on selected gallery
-  const cards = selectedGallery === 'homepage' ? homepageCards : serviceCards;
-  const loading = selectedGallery === 'homepage' ? homepageLoading : serviceLoading;
-  const createCard = selectedGallery === 'homepage' ? createHomepageCard : createServiceCard;
-  const updateCard = selectedGallery === 'homepage' ? updateHomepageCard : updateServiceCard;
-  const deleteCard = selectedGallery === 'homepage' ? deleteHomepageCard : deleteServiceCard;
-  const reorderCards = selectedGallery === 'homepage' ? reorderHomepageCards : reorderServiceCards;
+  const { 
+    cards, 
+    loading, 
+    createCard, 
+    updateCard, 
+    deleteCard, 
+    reorderCards 
+  } = getCurrentGallery();
 
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -259,11 +262,17 @@ export default function GalleryCardsAdmin() {
     };
   };
 
+  const filterGalleryData = (data: any) => {
+    if (selectedGallery === 'homepage') {
+      return filterHomepageData(data);
+    } else {
+      return filterServiceData(data);
+    }
+  };
+
   const handleCreateCard = async (cardData: any) => {
     try {
-      const filteredData = selectedGallery === 'homepage' 
-        ? filterHomepageData(cardData)
-        : filterServiceData(cardData);
+      const filteredData = filterGalleryData(cardData);
       
       await createCard(filteredData);
       toast({
@@ -284,9 +293,7 @@ export default function GalleryCardsAdmin() {
     if (!editingCard) return;
     
     try {
-      const filteredData = selectedGallery === 'homepage' 
-        ? filterHomepageData(cardData)
-        : filterServiceData(cardData);
+      const filteredData = filterGalleryData(cardData);
       
       // Remove order_index from update data to avoid changing it accidentally
       const { order_index, ...updateData } = filteredData;
@@ -385,6 +392,9 @@ export default function GalleryCardsAdmin() {
           <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
             <SelectItem value="homepage">Homepage Gallery</SelectItem>
             <SelectItem value="services">EverAfter Gallery</SelectItem>
+            <SelectItem value="portfolio">Our Portfolio Gallery</SelectItem>
+            <SelectItem value="business">Business Contents</SelectItem>
+            <SelectItem value="wedding">Our Wedding Gallery</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -467,13 +477,13 @@ export default function GalleryCardsAdmin() {
         )}
       </div>
 
-      <GalleryCardForm
-        isOpen={isFormOpen}
-        onClose={handleCloseForm}
-        onSave={editingCard ? handleUpdateCard : handleCreateCard}
-        editingCard={editingCard}
-        galleryType={selectedGallery}
-      />
+        <GalleryCardForm
+          isOpen={isFormOpen}
+          onClose={handleCloseForm}
+          onSave={editingCard ? handleUpdateCard : handleCreateCard}
+          editingCard={editingCard}
+          galleryType={selectedGallery === 'homepage' ? 'homepage' : 'services'}
+        />
     </div>
   );
 }
