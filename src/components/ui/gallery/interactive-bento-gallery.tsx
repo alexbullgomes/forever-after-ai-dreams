@@ -104,8 +104,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                                 key={item.id}
                                 layoutId={`media-${item.id}`}
                                 className={`relative overflow-hidden rounded-xl cursor-pointer aspect-[4/3] ${
-                                    index % 7 === 0 ? "col-span-2 row-span-1" : 
-                                    index % 5 === 0 ? "col-span-1 row-span-1" : 
+                                    index === 0 ? "col-start-2 col-span-1 row-span-1" : 
                                     "col-span-1 row-span-1"
                                 }`}
                                 onClick={() => setSelectedItem(item)}
