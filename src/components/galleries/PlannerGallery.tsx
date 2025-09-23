@@ -1,62 +1,38 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import InteractiveBentoGallery from "@/components/ui/gallery/interactive-bento-gallery";
-import { supabase } from "@/integrations/supabase/client";
+import { useOurPortfolioGallery } from "@/hooks/useOurPortfolioGallery";
 import { MediaItemType } from "@/components/ui/gallery/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PlannerGallery = () => {
+  const { cards, loading } = useOurPortfolioGallery();
   const [mediaItems, setMediaItems] = useState<MediaItemType[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchGalleryCards = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('service_gallery_cards')
-          .select('*')
-          .eq('is_published', true)
-          .order('order_index', { ascending: true });
+      if (!loading && cards.length > 0) {
+        const publishedCards = cards.filter(card => card.is_published);
 
-        if (error) {
-          console.error('Error fetching service gallery cards:', error);
-          return;
-        }
-
-        // Transform database records to MediaItemType format with Portfolio Gallery span patterns
-        const spanPatterns = [
-          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-          "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2", 
-          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-          "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
-          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2",
-          "md:col-span-2 md:row-span-2 sm:col-span-2 sm:row-span-2",
-          "md:col-span-1 md:row-span-2 sm:col-span-1 sm:row-span-2"
-        ];
-
-        const transformedItems: MediaItemType[] = (data || []).map((card, index) => ({
+        const transformedItems: MediaItemType[] = publishedCards.map((card, index) => ({
           id: index + 1,
-          type: card.thumb_webm_url || card.thumb_mp4_url ? 'video' : 'image',
+          type: card.full_video_enabled ? "video" : "image",
           title: card.title,
-          desc: card.subtitle || '',
-          url: card.thumbnail_url || '',
-          span: spanPatterns[index % spanPatterns.length],
+          desc: card.subtitle || "",
+          url: card.thumbnail_url || "",
+          span: index % 7 === 0 || index % 11 === 0 ? "md:col-span-2 md:row-span-2" : 
+                index % 5 === 0 ? "md:col-span-2" : 
+                index % 3 === 0 ? "md:row-span-2" : "col-span-1",
           mp4Url: card.thumb_mp4_url,
           posterUrl: card.thumb_image_url,
-          fullVideoUrl: card.full_video_enabled ? card.full_video_url : undefined,
+          fullVideoUrl: card.full_video_url
         }));
-
+        
         setMediaItems(transformedItems);
-      } catch (error) {
-        console.error('Error fetching service gallery cards:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchGalleryCards();
-  }, []);
+  }, [cards, loading]);
 
   if (loading) {
     return (
@@ -79,8 +55,8 @@ const PlannerGallery = () => {
   return (
     <InteractiveBentoGallery
       mediaItems={mediaItems}
-      title="EverAfter Gallery"
-      description="Explore our collection of beautiful wedding, family milestone, or business event moments and memories"
+      title="Our Portfolio Gallery"
+      description="Explore our collection of stunning photography and videography work"
       pageSource="Planner"
     />
   );
