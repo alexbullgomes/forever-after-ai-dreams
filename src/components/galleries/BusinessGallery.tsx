@@ -15,16 +15,16 @@ const BusinessGallery = () => {
         
         const transformedItems: MediaItemType[] = publishedCards.map((card, index) => ({
           id: index + 1,
-          type: card.full_video_enabled ? "video" : "image",
+          type: card.thumb_webm_url || card.thumb_mp4_url ? 'video' : 'image',
           title: card.title,
           desc: card.subtitle || "",
-          url: card.thumbnail_url || "",
+          url: card.thumb_webm_url || card.thumb_mp4_url || card.thumb_image_url || card.thumbnail_url || "",
           span: index % 7 === 0 || index % 11 === 0 ? "md:col-span-2 md:row-span-2" : 
                 index % 5 === 0 ? "md:col-span-2" : 
                 index % 3 === 0 ? "md:row-span-2" : "col-span-1",
           mp4Url: card.thumb_mp4_url,
-          posterUrl: card.thumb_image_url,
-          fullVideoUrl: card.full_video_url
+          posterUrl: card.thumb_image_url || card.thumbnail_url,
+          fullVideoUrl: card.full_video_enabled ? card.full_video_url : undefined
         }));
         
         setMediaItems(transformedItems);

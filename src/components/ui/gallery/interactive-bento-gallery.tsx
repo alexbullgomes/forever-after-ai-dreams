@@ -23,6 +23,11 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
     const [likedItems, setLikedItems] = useState<Set<number>>(new Set());
     const { shouldAnimate, markAsAnimated } = useGalleryAnimation(pageSource || 'default');
 
+    // Update items when mediaItems prop changes
+    useEffect(() => {
+        setItems(mediaItems);
+    }, [mediaItems]);
+
     const toggleLikeItem = useCallback((itemId: number) => {
         setLikedItems(prev => {
             const newLikedItems = new Set(prev);
