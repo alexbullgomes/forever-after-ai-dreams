@@ -12,13 +12,13 @@ const PlannerGallery = () => {
     const fetchGalleryCards = async () => {
       try {
         const { data, error } = await supabase
-          .from('service_gallery_cards')
+          .from('our_portfolio_gallery')
           .select('*')
           .eq('is_published', true)
           .order('order_index', { ascending: true });
 
         if (error) {
-          console.error('Error fetching service gallery cards:', error);
+          console.error('Error fetching portfolio gallery cards:', error);
           return;
         }
 
@@ -49,7 +49,7 @@ const PlannerGallery = () => {
 
         setMediaItems(transformedItems);
       } catch (error) {
-        console.error('Error fetching service gallery cards:', error);
+        console.error('Error fetching portfolio gallery cards:', error);
       } finally {
         setLoading(false);
       }
@@ -79,7 +79,7 @@ const PlannerGallery = () => {
   return (
     <InteractiveBentoGallery
       mediaItems={mediaItems}
-      title="EverAfter Gallery"
+      title="Our Portfolio Gallery"
       description="Explore our collection of beautiful wedding, family milestone, or business event moments and memories"
       pageSource="Planner"
     />
