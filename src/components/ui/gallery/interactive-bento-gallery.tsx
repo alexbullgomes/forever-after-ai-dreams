@@ -87,7 +87,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                     />
                 ) : (
                     <motion.div
-                        className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-3 auto-rows-[60px]"
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
                         initial={shouldAnimate ? "hidden" : "visible"}
                         animate="visible"
                         exit="hidden"
@@ -103,7 +103,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                             <motion.div
                                 key={item.id}
                                 layoutId={`media-${item.id}`}
-                                className={`relative overflow-hidden rounded-xl cursor-pointer ${item.span}`}
+                                className="relative overflow-hidden rounded-xl cursor-pointer aspect-[4/3] h-64"
                                 onClick={() => setSelectedItem(item)}
                                 variants={{
                                     hidden: { y: 20, opacity: 0 },
