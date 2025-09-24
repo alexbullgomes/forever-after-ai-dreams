@@ -87,7 +87,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                     />
                 ) : (
                     <motion.div
-                        className="flex justify-center items-center gap-4"
+                        className="flex flex-col md:flex-row justify-center items-center gap-4"
                         initial={shouldAnimate ? "hidden" : "visible"}
                         animate="visible"
                         exit="hidden"
@@ -104,7 +104,10 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                                 key={item.id}
                                 layoutId={`media-${item.id}`}
                                 className={`relative overflow-hidden rounded-xl cursor-pointer ${
-                                    index === 1 ? "w-[424px] h-[153px]" : "w-[204px] h-[153px]"
+                                    // Desktop: keep original layout, Mobile: full width with consistent height
+                                    index === 1 
+                                        ? "w-full md:w-[424px] h-[200px] md:h-[153px]" 
+                                        : "w-full md:w-[204px] h-[200px] md:h-[153px]"
                                 }`}
                                 onClick={() => setSelectedItem(item)}
                                 variants={{
@@ -131,7 +134,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                                     whileHover={{ opacity: 1 }}
                                     transition={{ duration: 0.2 }}
                                 >
-                                    <div className="absolute bottom-0 left-0 w-[424px] h-[153px] flex flex-col justify-end p-4">
+                                    <div className="absolute bottom-0 left-0 w-full h-full flex flex-col justify-end p-4">
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                                         <h3 className="relative text-white text-sm font-medium line-clamp-1 mb-1">
                                             {item.title}
