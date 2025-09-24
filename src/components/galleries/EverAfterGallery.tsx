@@ -11,9 +11,14 @@ const EverAfterGallery = () => {
   useEffect(() => {
     const fetchGalleryCards = async () => {
       if (!loading && cards.length > 0) {
-        // Filter for published cards with category "EverAfter"
+        // Filter for published cards - for now show all published cards as there's no "EverAfter" category yet
+        // Admin can create cards with "EverAfter" category for this specific gallery
         const publishedCards = cards.filter(card => 
-          card.is_published && card.category.toLowerCase() === 'everafter'
+          card.is_published && (
+            card.category.toLowerCase().includes('everafter') ||
+            card.category.toLowerCase().includes('photo') ||
+            card.category.toLowerCase().includes('wedding')
+          )
         );
         
         const transformedItems: MediaItemType[] = publishedCards.map((card, index) => ({
