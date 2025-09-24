@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
-import PlannerGallery from "@/components/galleries/PlannerGallery";
+import EverAfterGallery from "@/components/galleries/EverAfterGallery";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 
 const Planner = () => {
@@ -44,8 +44,10 @@ const Planner = () => {
           </p>
         </div>
 
-        {/* Gallery Section */}
-        <PlannerGallery />
+        {/* EverAfter Gallery */}
+        <div id="everafter-gallery" className="my-16">
+          <EverAfterGallery />
+        </div>
 
         {/* AI Assistant Section */}
         <AIAssistantSection />
