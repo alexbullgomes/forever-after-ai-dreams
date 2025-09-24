@@ -134,12 +134,12 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                                     whileHover={{ opacity: 1 }}
                                     transition={{ duration: 0.2 }}
                                 >
-                                    <div className="absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4">
+                                    <div className="absolute bottom-0 left-0 w-[424px] h-[153px] flex flex-col justify-end p-4">
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                                        <h3 className="relative text-white text-xs sm:text-sm md:text-base font-medium line-clamp-1">
+                                        <h3 className="relative text-white text-sm md:text-base font-medium line-clamp-1 mb-2">
                                             {item.title}
                                         </h3>
-                                        <p className="relative text-white/70 text-[10px] sm:text-xs md:text-sm mt-0.5 line-clamp-2">
+                                        <p className="relative text-white/70 text-xs md:text-sm line-clamp-2">
                                             {item.desc}
                                         </p>
                                     </div>
