@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import InteractiveBentoGallery from "@/components/ui/gallery/interactive-bento-gallery";
-import { useServiceGalleryCards } from "@/hooks/useServiceGalleryCards";
+import { useOurPortfolioGallery } from "@/hooks/useOurPortfolioGallery";
 import { MediaItemType } from "@/components/ui/gallery/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PhotoVideoGallery = () => {
-  const { cards, loading } = useServiceGalleryCards();
+  const { cards, loading } = useOurPortfolioGallery();
   const [mediaItems, setMediaItems] = useState<MediaItemType[]>([]);
 
   useEffect(() => {
     const fetchGalleryCards = async () => {
       if (!loading && cards.length > 0) {
-        const everAfterCards = cards.filter(card => card.is_published && card.category === 'EverAfter');
+        const publishedCards = cards.filter(card => card.is_published);
         
-        const transformedItems: MediaItemType[] = everAfterCards.map((card, index) => ({
+        const transformedItems: MediaItemType[] = publishedCards.map((card, index) => ({
           id: index + 1,
           type: card.thumb_webm_url || card.thumb_mp4_url ? 'video' : 'image',
           title: card.title,
