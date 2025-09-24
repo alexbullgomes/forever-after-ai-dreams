@@ -87,7 +87,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                     />
                 ) : (
                     <motion.div
-                        className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4"
+                        className="flex justify-center items-center gap-4"
                         initial={shouldAnimate ? "hidden" : "visible"}
                         animate="visible"
                         exit="hidden"
@@ -99,15 +99,12 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                             }
                         }}
                     >
-                        {items.map((item, index) => (
+                        {items.slice(0, 3).map((item, index) => (
                             <motion.div
                                 key={item.id}
                                 layoutId={`media-${item.id}`}
-                                className={`relative overflow-hidden rounded-xl cursor-pointer aspect-[4/3] ${
-                                    index === 0 ? "col-span-1 sm:col-span-1" : 
-                                    index === 1 ? "col-span-1 sm:col-span-2" : 
-                                    index === 2 ? "col-span-1 sm:col-span-1" :
-                                    "col-span-1"
+                                className={`relative overflow-hidden rounded-xl cursor-pointer ${
+                                    index === 1 ? "w-[424px] h-[153px]" : "w-[204px] h-[153px]"
                                 }`}
                                 onClick={() => setSelectedItem(item)}
                                 variants={{
