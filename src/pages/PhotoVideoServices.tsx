@@ -150,6 +150,11 @@ const PhotoVideoServices = () => {
           </p>
         </div>
 
+        {/* Portfolio Gallery */}
+        <div id="portfolio-gallery" className="my-16">
+          <PhotoVideoGallery />
+        </div>
+
         {/* Family Milestones */}
         <div className="mb-16">
           <div className="text-center mb-12">
@@ -177,9 +182,9 @@ const PhotoVideoServices = () => {
           </div>
         </div>
 
-        {/* Portfolio Gallery */}
-        <div id="portfolio-gallery" className="my-16">
-          <PhotoVideoGallery />
+        {/* Business Gallery */}
+        <div id="business-gallery" className="my-16">
+          <BusinessGallery />
         </div>
 
         {/* Business Photography */}
@@ -224,11 +229,6 @@ const PhotoVideoServices = () => {
               );
             })}
           </div>
-        </div>
-
-        {/* Business Gallery */}
-        <div id="business-gallery" className="my-16">
-          <BusinessGallery />
         </div>
 
         {/* Explore Our Services Section */}

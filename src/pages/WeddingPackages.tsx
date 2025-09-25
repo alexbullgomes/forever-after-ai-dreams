@@ -34,6 +34,11 @@ const WeddingPackages = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <WeddingPackagesHeader />
 
+        {/* Wedding Gallery */}
+        <div id="wedding-gallery" className="my-16">
+          <WeddingGallery />
+        </div>
+
         {/* Combined Photo & Video Packages */}
         <div id="combined-packages">
           <PackageSection 
@@ -42,11 +47,6 @@ const WeddingPackages = () => {
             packages={combinedPackages} 
             icon={Heart} 
           />
-        </div>
-
-        {/* Wedding Gallery */}
-        <div id="wedding-gallery" className="my-16">
-          <WeddingGallery />
         </div>
 
 
