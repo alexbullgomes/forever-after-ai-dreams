@@ -157,8 +157,8 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="photo">Photo & Videos</SelectItem>
-                  <SelectItem value="weddings">Weddings</SelectItem>
+                  <SelectItem value="Photo & Videos">Photo & Videos</SelectItem>
+                  <SelectItem value="Weddings">Weddings</SelectItem>
                   {galleryType === 'homepage' && <SelectItem value="video">Video</SelectItem>}
             </SelectContent>
               </Select>
