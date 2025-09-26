@@ -31,7 +31,7 @@ const ExploreServicesSection = () => {
                 </h3>
                 
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  Professional photography and videography packages for all occasions. From intimate moments to grand celebrations.
+                  Professional photography and videography packages — perfect for families, businesses, and every celebration.
                 </p>
                 
                 <div className="flex items-center text-rose-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
