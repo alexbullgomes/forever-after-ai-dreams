@@ -96,7 +96,7 @@ const Portfolio = ({
     fetchPortfolioData();
   }, []);
   const filteredItems = activeFilter === "all" 
-    ? portfolioItems.filter(item => item.featured === true)
+    ? portfolioItems
     : portfolioItems.filter(item => {
         if (activeFilter === "photo-videos") return item.category === "Photo & Videos";
         if (activeFilter === "weddings") return item.category === "Weddings";

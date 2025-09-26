@@ -31,9 +31,10 @@ interface SortableCardItemProps {
   onDelete: (id: string) => void;
   onTogglePublished: (id: string, published: boolean) => void;
   onToggleFeatured: (id: string, featured: boolean) => void;
+  selectedGallery: GalleryType;
 }
 
-const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleFeatured }: SortableCardItemProps) => {
+const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleFeatured, selectedGallery }: SortableCardItemProps) => {
   const {
     attributes,
     listeners,
@@ -89,7 +90,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
               <h3 className="text-sm font-medium text-gray-900 truncate">
                 {card.title}
               </h3>
-              {card.featured && (
+              {card.featured && selectedGallery === 'homepage' && (
                 <Badge variant="secondary" className="text-xs">Featured</Badge>
               )}
             </div>
@@ -115,7 +116,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
               <span className="text-xs text-gray-600">Published</span>
             </div>
 
-            {('featured' in card) && (
+            {('featured' in card) && selectedGallery === 'homepage' && (
               <div className="flex items-center space-x-2">
                 <Switch
                   checked={card.featured}
@@ -450,6 +451,7 @@ export default function GalleryCardsAdmin() {
                 onDelete={deleteCard}
                 onTogglePublished={handleTogglePublished}
                 onToggleFeatured={handleToggleFeatured}
+                selectedGallery={selectedGallery}
               />
             ))}
           </SortableContext>
