@@ -39,6 +39,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(() => {
             linkVisitorIdToProfile(session.user.id);
+            
+            // Handle post-login redirect
+            const intendedRoute = localStorage.getItem('intendedRoute');
+            if (intendedRoute) {
+              localStorage.removeItem('intendedRoute');
+              window.location.href = intendedRoute;
+            }
           }, 0);
         }
         

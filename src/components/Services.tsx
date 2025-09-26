@@ -16,7 +16,11 @@ const Services = ({
   const handleServiceClick = (route: string) => {
     if (user) {
       navigate(route);
+      // Scroll to top after navigation
+      setTimeout(() => window.scrollTo(0, 0), 100);
     } else {
+      // Store intended route for post-login redirect
+      localStorage.setItem('intendedRoute', route);
       onBookingClick();
     }
   };
