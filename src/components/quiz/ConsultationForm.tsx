@@ -33,7 +33,7 @@ const ConsultationForm = ({ userEmail, packageInfo, onClose }: ConsultationFormP
       onClose();
       console.log('Consultation request submitted successfully');
       // Redirect to planner page with auto-open chat
-      window.location.href = '/planner?openChat=true';
+      window.location.href = '/services?openChat=true';
     } catch (error) {
       console.error('Failed to submit consultation request:', error);
     } finally {

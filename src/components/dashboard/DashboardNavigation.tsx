@@ -30,7 +30,7 @@ const DashboardNavigation = () => {
   };
 
   const navLinks = [
-    { to: "/planner", label: "Services" },
+    { to: "/services", label: "Services" },
     { to: "/photo-video-services", label: "Photo & Video" },
     { to: "/wedding-packages", label: "Wedding Packages" },
   ];

@@ -276,7 +276,7 @@ const PhotoVideoServices = () => {
                   Your personal wedding assistant — get real-time answers, ideas, and timeline support to help you plan with confidence.
                 </p>
                 <button
-                  onClick={() => { window.location.assign('/planner'); }}
+                  onClick={() => { window.location.assign('/services'); }}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Ask anything

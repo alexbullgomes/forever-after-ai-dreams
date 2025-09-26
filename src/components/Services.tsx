@@ -26,7 +26,7 @@ const Services = ({
     description: "Meet EVA — our smart assistant who builds your ideal package and unlocks exclusive deals.",
     features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
     gradient: "from-rose-500 to-pink-500",
-    route: "/planner"
+    route: "/services"
   }, {
     icon: Camera,
     title: "Photo & Video Services",

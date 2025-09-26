@@ -103,7 +103,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem }: ConsultationFormPr
         });
         onClose();
         // Redirect to planner page with auto-open chat
-        window.location.href = '/planner?openChat=true';
+        window.location.href = '/services?openChat=true';
       } else {
         throw new Error('Failed to submit consultation request');
       }

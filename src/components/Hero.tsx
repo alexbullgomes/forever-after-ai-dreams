@@ -16,7 +16,7 @@ const Hero = ({
 
   const handleBookingClick = () => {
     if (user) {
-      navigate('/planner');
+      navigate('/services');
     } else {
       onBookingClick();
     }

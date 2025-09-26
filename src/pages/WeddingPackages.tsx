@@ -93,7 +93,7 @@ const WeddingPackages = () => {
                   Get real-time planning help, timeline tips, and creative ideas — your wedding co-pilot is ready.
                 </p>
                 <button
-                  onClick={() => { window.location.assign('/planner'); }}
+                  onClick={() => { window.location.assign('/services'); }}
                   className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Ask anything

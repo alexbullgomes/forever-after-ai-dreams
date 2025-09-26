@@ -41,7 +41,7 @@ const Portfolio = ({
   const navigate = useNavigate();
   const handleViewPortfolioClick = () => {
     if (user) {
-      navigate("/planner");
+      navigate("/services");
     } else if (onBookingClick) {
       onBookingClick();
     }
@@ -49,7 +49,7 @@ const Portfolio = ({
 
   const handleCardClick = (item: PortfolioItem) => {
     if (user) {
-      navigate("/planner");
+      navigate("/services");
     } else {
       setSelectedPortfolioItem(item);
       setIsConsultationFormOpen(true);
