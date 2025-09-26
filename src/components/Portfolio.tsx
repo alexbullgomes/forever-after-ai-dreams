@@ -105,7 +105,7 @@ const Portfolio = ({
   
   const filters = [{
     id: "all",
-    label: "All Stories"
+    label: "Highlights"
   }, {
     id: "photo-videos",
     label: "Photo & Videos"
