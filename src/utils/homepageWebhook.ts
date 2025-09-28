@@ -1,3 +1,5 @@
+import { trackReferralConversion } from './affiliateTracking';
+
 interface HomepageWebhookPayload {
   message: string;
   timestamp: string;
@@ -67,6 +69,12 @@ export const sendHomepageWebhookMessage = async (
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      // Track referral conversion for form submission
+      await trackReferralConversion('form_submission', {
+        message_type: messageType,
+        source: 'homepage_chat'
+      });
+
       return await response.json();
     } else {
       // Message with files
@@ -93,6 +101,13 @@ export const sendHomepageWebhookMessage = async (
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      // Track referral conversion for form submission with files
+      await trackReferralConversion('form_submission', {
+        message_type: messageType,
+        source: 'homepage_chat',
+        files_count: files.length
+      });
 
       return await response.json();
     }

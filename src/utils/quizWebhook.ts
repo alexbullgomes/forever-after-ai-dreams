@@ -1,4 +1,6 @@
 
+import { trackReferralConversion } from './affiliateTracking';
+
 const QUIZ_WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/2807df9e-fe4b-4ee0-a4c0-e357960d1c31";
 
 export const sendQuizWebhook = async (
@@ -39,6 +41,14 @@ export const sendQuizWebhook = async (
         timestamp: new Date().toISOString()
       }),
     });
+    
+    // Track referral conversion for quiz completion
+    await trackReferralConversion('form_submission', {
+      source: 'wedding_quiz',
+      user_email: userLead.email,
+      package_recommendation: recommendation.packageName
+    });
+    
     console.log("Quiz webhook sent successfully");
   } catch (error) {
     console.error("Failed to send quiz webhook:", error);

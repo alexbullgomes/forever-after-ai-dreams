@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PromotionalPopup from "@/components/PromotionalPopup";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
+import { initializeReferralTracking } from "@/utils/affiliateTracking";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
@@ -14,11 +16,17 @@ import WeddingQuiz from "./pages/WeddingQuiz";
 import Planner from "./pages/Planner";
 import PhotoVideoServices from "./pages/PhotoVideoServices";
 import AdminDashboard from "./pages/AdminDashboard";
+import AffiliatePortal from "./components/affiliate/AffiliatePortal";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { showPopup, closePopup } = usePromotionalPopup();
+
+  useEffect(() => {
+    // Initialize referral tracking on app load
+    initializeReferralTracking();
+  }, []);
 
   return (
     <>
@@ -32,6 +40,13 @@ const AppContent = () => {
             <Route path="/photo-video-services" element={<PhotoVideoServices />} />
             <Route path="/wedding-packages" element={<WeddingPackages />} />
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
+            <Route path="/affiliate" element={
+              <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <AffiliatePortal />
+                </div>
+              </div>
+            } />
             <Route path="/dashboard/*" element={<AdminDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

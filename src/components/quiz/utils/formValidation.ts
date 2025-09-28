@@ -1,4 +1,6 @@
 
+import { trackReferralConversion } from '@/utils/affiliateTracking';
+
 export const validateConsultationForm = (email: string, cellphone: string): boolean => {
   return Boolean(email && cellphone);
 };
@@ -27,6 +29,14 @@ export const submitConsultationRequest = async (
   if (!response.ok) {
     throw new Error('Failed to submit consultation request');
   }
+
+  // Track referral conversion for consultation request
+  await trackReferralConversion('consultation', {
+    source: 'package_consultation',
+    user_email: email,
+    package_name: packageInfo.name,
+    package_price: packageInfo.price
+  });
 
   return response;
 };

@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { trackReferralConversion } from '@/utils/affiliateTracking';
 
 interface PersonalizedConsultationFormProps {
   isOpen: boolean;
@@ -90,6 +91,16 @@ const PersonalizedConsultationForm = ({
       });
 
       if (response.ok) {
+        // Track referral conversion for personalized consultation
+        await trackReferralConversion('consultation', {
+          source: 'package_consultation',
+          package_name: packageName,
+          package_price: packagePrice,
+          user_phone: formData.phone,
+          user_city: formData.city,
+          wedding_date: formData.weddingDate
+        });
+
         toast({
           title: "Consultation Scheduled! 🎉",
           description: `We'll contact you within 24 hours to discuss your ${packageName} package and plan your perfect wedding day.`,

@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { trackReferralConversion } from '@/utils/affiliateTracking';
 
 interface AuthContextType {
   user: User | null;
@@ -37,8 +38,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Link visitorId to user profile when signing in
         if (event === 'SIGNED_IN' && session?.user) {
-          setTimeout(() => {
+          setTimeout(async () => {
             linkVisitorIdToProfile(session.user.id);
+            
+            // Track referral conversion for new registrations
+            const isNewUser = session.user.created_at === session.user.last_sign_in_at;
+            if (isNewUser) {
+              await trackReferralConversion('registration', {
+                user_email: session.user.email,
+                user_name: session.user.user_metadata?.full_name || '',
+                auth_provider: session.user.app_metadata?.provider || 'email'
+              }, session.user.id);
+            }
             
             // Handle post-login redirect
             const intendedRoute = localStorage.getItem('intendedRoute');

@@ -7,6 +7,7 @@ import { Heart, Mail, Phone, MapPin, Instagram } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackReferralConversion } from "@/utils/affiliateTracking";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -44,6 +45,14 @@ const Contact = () => {
       });
 
       if (response.ok) {
+        // Track referral conversion for contact form
+        await trackReferralConversion('form_submission', {
+          source: 'contact_form',
+          user_name: formData.name,
+          user_email: formData.email,
+          event_date: formData.date
+        });
+
         toast({
           title: "Message Sent!",
           description: "We'll get back to you within 24 hours.",

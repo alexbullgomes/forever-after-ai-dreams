@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { trackReferralConversion } from '@/utils/affiliateTracking';
 
 interface PortfolioItem {
   id: number;
@@ -91,6 +92,17 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem }: ConsultationFormPr
       });
 
       if (response.ok) {
+        // Track referral conversion for consultation form
+        await trackReferralConversion('consultation', {
+          source: 'homepage_consultation',
+          user_name: formData.name,
+          user_phone: formData.phone,
+          portfolio_item: portfolioItem ? {
+            title: portfolioItem.title,
+            category: portfolioItem.category
+          } : null
+        });
+
         toast({
           title: "Consultation Scheduled! 🎉",
           description: "We'll contact you within 24 hours to confirm your free consultation.",
