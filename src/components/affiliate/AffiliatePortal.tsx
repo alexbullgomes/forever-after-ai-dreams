@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,6 @@ import { useAffiliate } from "@/hooks/useAffiliate";
 import { useAuth } from "@/contexts/AuthContext";
 import { Copy, ExternalLink, Users, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 
 const AffiliatePortal = () => {
   const { user } = useAuth();

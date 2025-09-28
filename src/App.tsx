@@ -1,4 +1,5 @@
 
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +9,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import PromotionalPopup from "@/components/PromotionalPopup";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 import { initializeReferralTracking } from "@/utils/affiliateTracking";
-import { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
