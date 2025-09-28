@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliates: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          referral_code: string
+          total_referrals: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          referral_code: string
+          total_referrals?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          referral_code?: string
+          total_referrals?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           address: string
@@ -428,6 +466,7 @@ export type Database = {
           pipeline_profile: string | null
           pipeline_status: string | null
           promotional_phone: string | null
+          referred_by: string | null
           role: string | null
           sort_order: number | null
           status: string | null
@@ -450,6 +489,7 @@ export type Database = {
           pipeline_profile?: string | null
           pipeline_status?: string | null
           promotional_phone?: string | null
+          referred_by?: string | null
           role?: string | null
           sort_order?: number | null
           status?: string | null
@@ -472,6 +512,7 @@ export type Database = {
           pipeline_profile?: string | null
           pipeline_status?: string | null
           promotional_phone?: string | null
+          referred_by?: string | null
           role?: string | null
           sort_order?: number | null
           status?: string | null
@@ -479,7 +520,63 @@ export type Database = {
           user_number?: string | null
           visitor_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          affiliate_id: string
+          conversion_data: Json | null
+          conversion_type: string
+          created_at: string
+          id: string
+          referral_code: string
+          referred_user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          conversion_data?: Json | null
+          conversion_type: string
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          conversion_data?: Json | null
+          conversion_type?: string
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referred_user_id_fkey"
+            columns: ["referred_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_gallery_cards: {
         Row: {
@@ -553,11 +650,25 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string
       }
+      generate_referral_code: {
+        Args: { user_name?: string }
+        Returns: string
+      }
       has_role: {
         Args:
           | { _role: Database["public"]["Enums"]["app_role"]; _user_id: string }
           | { _role: string; _user_id: string }
         Returns: boolean
+      }
+      track_referral_conversion: {
+        Args: {
+          p_conversion_data?: Json
+          p_conversion_type: string
+          p_referral_code: string
+          p_referred_user_id?: string
+          p_visitor_id?: string
+        }
+        Returns: string
       }
       update_profile_sort_orders: {
         Args: { updates: Json }
