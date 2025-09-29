@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import AuthModal from '@/components/AuthModal';
+import { trackReferralConversion } from '@/utils/affiliateTracking';
 
 // Card data interface for portfolio and gallery items
 interface CardData {
@@ -146,6 +147,16 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
       if (!response.ok) {
         throw new Error('Failed to submit consultation request');
       }
+
+      // Track referral conversion for affiliate program
+      await trackReferralConversion('consultation', {
+        source: 'gallery_lead_form',
+        user_name: name.trim(),
+        user_phone: phone.trim(),
+        card_title: cardData?.cardTitle || cardData?.title,
+        card_category: cardData?.category,
+        collection_section: cardData?.collectionSection
+      }, user?.id);
 
       toast({
         title: "Request Submitted!",
