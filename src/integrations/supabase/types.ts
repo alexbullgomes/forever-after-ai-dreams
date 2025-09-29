@@ -471,6 +471,7 @@ export type Database = {
           sort_order: number | null
           status: string | null
           updated_at: string
+          user_dashboard: boolean
           user_number: string | null
           visitor_id: string | null
         }
@@ -494,6 +495,7 @@ export type Database = {
           sort_order?: number | null
           status?: string | null
           updated_at?: string
+          user_dashboard?: boolean
           user_number?: string | null
           visitor_id?: string | null
         }
@@ -517,6 +519,7 @@ export type Database = {
           sort_order?: number | null
           status?: string | null
           updated_at?: string
+          user_dashboard?: boolean
           user_number?: string | null
           visitor_id?: string | null
         }

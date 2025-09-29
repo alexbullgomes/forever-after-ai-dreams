@@ -1,14 +1,16 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
+import { useUserDashboardAccess } from "@/hooks/useUserDashboardAccess";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, LogOut, Menu, X, Shield } from "lucide-react";
+import { ArrowLeft, LogOut, Menu, X, Shield, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 const DashboardNavigation = () => {
   const { user, signOut } = useAuth();
   const { hasRole: isAdmin } = useRole('admin');
+  const { hasAccess: hasUserDashboard } = useUserDashboardAccess();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -82,6 +84,16 @@ const DashboardNavigation = () => {
               >
                 <Shield className="w-4 h-4 mr-2" />
                 Admin
+              </Button>
+            )}
+            {hasUserDashboard && (
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/user-dashboard'} 
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                User Dashboard
               </Button>
             )}
             <span className="text-sm text-gray-600 max-w-48 truncate">
@@ -161,7 +173,21 @@ const DashboardNavigation = () => {
                     Admin Dashboard
                   </Button>
                 )}
-                <Button 
+                {hasUserDashboard && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      window.location.href = '/user-dashboard';
+                    }} 
+                    className="w-full mx-4 text-gray-600 hover:text-gray-900 max-w-none"
+                    style={{ width: 'calc(100% - 2rem)' }}
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    User Dashboard
+                  </Button>
+                )}
+                <Button
                   variant="outline" 
                   onClick={handleSignOut} 
                   className="w-full mx-4 text-gray-600 hover:text-gray-900 max-w-none"

@@ -33,6 +33,7 @@ interface UserProfile {
   pipeline_profile: string | null;
   pipeline_status: string | null;
   visitor_id: string | null;
+  user_dashboard: boolean | null;
 }
 
 interface UserProfileModalProps {
@@ -121,7 +122,8 @@ export const UserProfileModal = ({
           chat_summarize: null,
           pipeline_profile: 'Disable',
           pipeline_status: 'New Lead & Negotiation',
-          visitor_id: null
+          visitor_id: null,
+          user_dashboard: false
         });
         setBriefing('');
         setStatus('New Lead');
@@ -554,6 +556,63 @@ export const UserProfileModal = ({
                         toast({
                           title: "Error updating pipeline",
                           description: "Failed to update pipeline status.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between py-2 px-1">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium text-gray-700">
+                      User Dashboard Access
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      Enable to grant this user access to their personalized dashboard
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile?.user_dashboard === true}
+                    onCheckedChange={async (checked) => {
+                      if (!profile) return;
+                      
+                      try {
+                        // Update database immediately
+                        const { error } = await supabase
+                          .from('profiles')
+                          .update({ 
+                            user_dashboard: checked,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('id', customerId);
+
+                        if (error) {
+                          console.error('Error updating user dashboard access:', error);
+                          toast({
+                            title: "Error updating access",
+                            description: "Failed to update user dashboard access.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        // Update local state
+                        setProfile({
+                          ...profile,
+                          user_dashboard: checked,
+                          updated_at: new Date().toISOString()
+                        });
+
+                        toast({
+                          title: "Access updated",
+                          description: `User dashboard access ${checked ? 'granted' : 'revoked'} successfully.`,
+                        });
+                      } catch (error) {
+                        console.error('Error updating user dashboard access:', error);
+                        toast({
+                          title: "Error updating access",
+                          description: "Failed to update user dashboard access.",
                           variant: "destructive",
                         });
                       }

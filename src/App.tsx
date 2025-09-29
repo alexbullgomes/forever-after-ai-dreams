@@ -16,6 +16,7 @@ import WeddingQuiz from "./pages/WeddingQuiz";
 import Planner from "./pages/Planner";
 import PhotoVideoServices from "./pages/PhotoVideoServices";
 import AdminDashboard from "./pages/AdminDashboard";
+import UserDashboard from "./pages/UserDashboard";
 import AffiliatePortal from "./components/affiliate/AffiliatePortal";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const AppContent = () => {
               </div>
             } />
             <Route path="/dashboard/*" element={<AdminDashboard />} />
+            <Route path="/user-dashboard/*" element={<UserDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
