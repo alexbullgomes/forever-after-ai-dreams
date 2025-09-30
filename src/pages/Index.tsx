@@ -1,5 +1,5 @@
-
 import Hero from "@/components/Hero";
+import Header from "@/components/Header";
 import Services from "@/components/Services";
 import Portfolio from "@/components/Portfolio";
 import Testimonials from "@/components/Testimonials";
@@ -16,6 +16,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Header onLoginClick={() => setIsAuthModalOpen(true)} />
       <Hero onBookingClick={() => setIsAuthModalOpen(true)} />
       <Services onBookingClick={() => setIsAuthModalOpen(true)} />
       <Portfolio onBookingClick={() => setIsAuthModalOpen(true)} />
