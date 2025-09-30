@@ -99,7 +99,7 @@ const PersonalizedConsultationForm = ({
           user_phone: formData.phone,
           user_city: formData.city,
           wedding_date: formData.weddingDate
-        });
+        }, user?.id);
 
         toast({
           title: "Consultation Scheduled! 🎉",
