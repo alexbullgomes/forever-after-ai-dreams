@@ -5,6 +5,7 @@ import { useUserDashboardAccess } from '@/hooks/useUserDashboardAccess';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSidebar";
 import AffiliatePortal from "@/components/affiliate/AffiliatePortal";
+import ServiceTracking from "./ServiceTracking";
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -77,6 +78,7 @@ const UserDashboard = () => {
           <main className="flex-1 overflow-auto p-6">
             <Routes>
               <Route path="/" element={<AffiliatePortal />} />
+              <Route path="/service-tracking" element={<ServiceTracking />} />
             </Routes>
           </main>
         </div>

@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Users, LogOut } from "lucide-react";
+import { Users, LogOut, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -21,6 +21,11 @@ const navigationItems = [
     title: "Affiliate",
     url: "/user-dashboard",
     icon: Users,
+  },
+  {
+    title: "Service Tracking",
+    url: "/user-dashboard/service-tracking",
+    icon: BarChart3,
   },
 ];
 
