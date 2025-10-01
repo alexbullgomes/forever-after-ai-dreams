@@ -18,14 +18,14 @@ import {
 
 const navigationItems = [
   {
-    title: "Affiliate",
-    url: "/user-dashboard",
-    icon: Users,
-  },
-  {
     title: "Service Tracking",
     url: "/user-dashboard/service-tracking",
     icon: BarChart3,
+  },
+  {
+    title: "Affiliate",
+    url: "/user-dashboard",
+    icon: Users,
   },
 ];
 
