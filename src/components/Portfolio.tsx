@@ -48,13 +48,13 @@ const Portfolio = ({
   };
 
   const handleCardClick = (item: PortfolioItem) => {
-    if (user) {
-      navigate("/services");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      setSelectedPortfolioItem(item);
-      setIsConsultationFormOpen(true);
-    }
+    setSelectedPortfolioItem(item);
+    setIsConsultationFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    navigate("/services");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   // Fetch portfolio data from Supabase
   useEffect(() => {
@@ -219,6 +219,7 @@ const Portfolio = ({
       <GalleryLeadForm
         isOpen={isConsultationFormOpen}
         onClose={() => setIsConsultationFormOpen(false)}
+        onSuccess={handleFormSuccess}
         cardData={selectedPortfolioItem ? {
           cardId: selectedPortfolioItem.id,
           cardTitle: selectedPortfolioItem.title,

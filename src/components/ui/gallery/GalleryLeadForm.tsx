@@ -29,6 +29,7 @@ interface GalleryLeadFormProps {
   isOpen: boolean;
   onClose: () => void;
   cardData?: CardData;
+  onSuccess?: () => void;
 }
 
 export interface GalleryLeadFormRef {
@@ -38,7 +39,8 @@ export interface GalleryLeadFormRef {
 const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({ 
   isOpen: externalIsOpen, 
   onClose: externalOnClose, 
-  cardData: externalCardData 
+  cardData: externalCardData,
+  onSuccess 
 }, ref) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [internalCardData, setInternalCardData] = useState<CardData | undefined>();
@@ -165,6 +167,11 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
 
       resetForm();
       onClose();
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Error submitting consultation request:', error);
       toast({
