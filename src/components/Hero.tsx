@@ -26,8 +26,8 @@ const Hero = ({
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
           <video autoPlay muted loop playsInline poster="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homepicture.webp" className="absolute inset-0 w-full h-full object-cover">
-            <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homeeverafte.webm" type="video/webm" />
-            <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homeeverafte.mp4" type="video/mp4" />
+            <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/bannerhomepage.webm" type="video/webm" />
+            <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/bannerhomepage.mp4?t=2025-10-06T20%3A46%3A21.431Z" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           <div className="absolute inset-0 bg-black/40"></div>
