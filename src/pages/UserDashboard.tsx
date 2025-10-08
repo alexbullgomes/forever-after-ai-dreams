@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDashboardAccess } from '@/hooks/useUserDashboardAccess';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSidebar";
 import AffiliatePortal from "@/components/affiliate/AffiliatePortal";
@@ -11,6 +12,7 @@ const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { hasAccess, loading: accessLoading } = useUserDashboardAccess();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [redirectChecked, setRedirectChecked] = useState(false);
 
   useEffect(() => {
@@ -65,26 +67,28 @@ const UserDashboard = () => {
               <div>
                 <h1 className="text-xl font-bold text-gray-900">User Dashboard</h1>
               </div>
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => navigate('/dashboard')}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Admin Dashboard
-                </button>
-                <button 
-                  onClick={() => navigate('/services')}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Services
-                </button>
-                <button 
-                  onClick={() => navigate('/')}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Back to Site
-                </button>
-              </div>
+              {!isMobile && (
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => navigate('/dashboard')}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Admin Dashboard
+                  </button>
+                  <button 
+                    onClick={() => navigate('/services')}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Services
+                  </button>
+                  <button 
+                    onClick={() => navigate('/')}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Back to Site
+                  </button>
+                </div>
+              )}
             </div>
           </header>
 

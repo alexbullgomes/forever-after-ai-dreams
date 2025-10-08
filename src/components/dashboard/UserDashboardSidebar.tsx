@@ -1,6 +1,7 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { Users, LogOut, BarChart3 } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 import {
   Sidebar,
@@ -32,7 +33,9 @@ const navigationItems = [
 export function UserDashboardSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { signOut } = useAuth();
+  const isMobile = useIsMobile();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
@@ -99,6 +102,34 @@ export function UserDashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isMobile && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
+                    <ShieldCheck className="h-4 w-4" />
+                    {!collapsed && <span>Admin Dashboard</span>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => navigate('/services')} className="w-full">
+                    <Briefcase className="h-4 w-4" />
+                    {!collapsed && <span>Services</span>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => navigate('/')} className="w-full">
+                    <Home className="h-4 w-4" />
+                    {!collapsed && <span>Back to Site</span>}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-4">
