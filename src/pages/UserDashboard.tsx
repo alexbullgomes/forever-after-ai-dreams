@@ -65,12 +65,26 @@ const UserDashboard = () => {
               <div>
                 <h1 className="text-xl font-bold text-gray-900">User Dashboard</h1>
               </div>
-              <button 
-                onClick={() => navigate('/')}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Back to Site
-              </button>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Admin Dashboard
+                </button>
+                <button 
+                  onClick={() => navigate('/services')}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Back to Services
+                </button>
+                <button 
+                  onClick={() => navigate('/')}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Back to Site
+                </button>
+              </div>
             </div>
           </header>
 
