@@ -79,7 +79,7 @@ const AdminDashboard = () => {
                   onClick={() => navigate('/services')}
                   className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
-                  Account
+                  Services
                 </button>
                 <button 
                   onClick={() => navigate('/')}
