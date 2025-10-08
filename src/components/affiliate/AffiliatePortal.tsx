@@ -5,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAffiliate } from "@/hooks/useAffiliate";
 import { useAuth } from "@/contexts/AuthContext";
-import { Copy, ExternalLink, Users, DollarSign } from "lucide-react";
+import { Copy, ExternalLink, Users, DollarSign, Edit, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AffiliatePortal = () => {
   const { user } = useAuth();
-  const { affiliate, loading, createAffiliateAccount, getReferralUrl } = useAffiliate();
+  const { affiliate, loading, createAffiliateAccount, getReferralUrl, updateReferralCode } = useAffiliate();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [isEditingCode, setIsEditingCode] = useState(false);
+  const [editedCode, setEditedCode] = useState("");
 
   if (!user) {
     return (
@@ -46,6 +48,33 @@ const AffiliatePortal = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleEditCode = () => {
+    setEditedCode(affiliate?.referral_code || "");
+    setIsEditingCode(true);
+  };
+
+  const handleSaveCode = async () => {
+    const trimmedCode = editedCode.trim().toUpperCase();
+    if (!trimmedCode) {
+      toast({
+        title: "Invalid code",
+        description: "Referral code cannot be empty.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const success = await updateReferralCode(trimmedCode);
+    if (success) {
+      setIsEditingCode(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingCode(false);
+    setEditedCode("");
   };
 
   if (loading) {
@@ -117,9 +146,49 @@ const AffiliatePortal = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold mb-2">Your Referral Code</h3>
-              <Badge variant="outline" className="text-lg px-3 py-1 font-mono">
-                {affiliate.referral_code}
-              </Badge>
+              {!isEditingCode ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-lg px-3 py-1 font-mono">
+                    {affiliate.referral_code}
+                  </Badge>
+                  <Button
+                    onClick={handleEditCode}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editedCode}
+                    onChange={(e) => setEditedCode(e.target.value.toUpperCase())}
+                    placeholder="Enter new code"
+                    className="font-mono max-w-[200px]"
+                    maxLength={20}
+                  />
+                  <Button
+                    onClick={handleSaveCode}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                    disabled={loading}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={handleCancelEdit}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                    disabled={loading}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
             <div>
               <h3 className="font-semibold mb-2">Total Referrals</h3>

@@ -118,11 +118,101 @@ export const useAffiliate = () => {
     return `${window.location.origin}?ref=${affiliate.referral_code}`;
   };
 
+  const updateReferralCode = async (newCode: string) => {
+    if (!user || !affiliate) {
+      toast({
+        title: "Error",
+        description: "Unable to update referral code.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    try {
+      setLoading(true);
+
+      // Validate format (alphanumeric, 3-20 characters)
+      const codeRegex = /^[A-Z0-9]{3,20}$/;
+      if (!codeRegex.test(newCode)) {
+        toast({
+          title: "Invalid code",
+          description: "Code must be 3-20 uppercase letters/numbers only.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Check if code is already taken
+      const { data: existingAffiliate, error: checkError } = await supabase
+        .from('affiliates')
+        .select('id')
+        .eq('referral_code', newCode)
+        .neq('id', affiliate.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking code availability:', checkError);
+        toast({
+          title: "Error",
+          description: "Failed to verify code availability.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (existingAffiliate) {
+        toast({
+          title: "Code taken",
+          description: "This referral code is already in use. Please try another.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Update the code
+      const { error: updateError } = await supabase
+        .from('affiliates')
+        .update({ referral_code: newCode })
+        .eq('id', affiliate.id);
+
+      if (updateError) {
+        console.error('Error updating referral code:', updateError);
+        toast({
+          title: "Error",
+          description: "Failed to update referral code. Please try again.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Refresh affiliate data
+      await fetchAffiliateData();
+      
+      toast({
+        title: "Success!",
+        description: "Your referral code has been updated.",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error in updateReferralCode:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     affiliate,
     loading,
     createAffiliateAccount,
     getReferralUrl,
+    updateReferralCode,
     refetch: fetchAffiliateData
   };
 };
