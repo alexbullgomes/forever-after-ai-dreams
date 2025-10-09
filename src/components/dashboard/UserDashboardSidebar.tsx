@@ -31,13 +31,14 @@ const navigationItems = [
 ];
 
 export function UserDashboardSidebar() {
-  const { state } = useSidebar();
+  const { state, open } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const isMobile = useIsMobile();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const showText = (isMobile && open) || !collapsed;
 
   const handleSignOut = async () => {
     try {
@@ -88,14 +89,14 @@ export function UserDashboardSidebar() {
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/user-dashboard"}
-                      className={getNavCls(isActive(item.url))}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
+                  <NavLink
+                    to={item.url}
+                    end={item.url === "/user-dashboard"}
+                    className={getNavCls(isActive(item.url))}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {showText && <span>{item.title}</span>}
+                  </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -111,19 +112,19 @@ export function UserDashboardSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
                     <ShieldCheck className="h-4 w-4" />
-                    {!collapsed && <span>Admin Dashboard</span>}
+                    {showText && <span>Admin Dashboard</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/services')} className="w-full">
                     <Briefcase className="h-4 w-4" />
-                    {!collapsed && <span>Services</span>}
+                    {showText && <span>Services</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/')} className="w-full">
                     <Home className="h-4 w-4" />
-                    {!collapsed && <span>Back to Site</span>}
+                    {showText && <span>Back to Site</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -137,7 +138,7 @@ export function UserDashboardSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="w-full">
               <LogOut className="h-4 w-4" />
-              {!collapsed && <span>Sign Out</span>}
+              {showText && <span>Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

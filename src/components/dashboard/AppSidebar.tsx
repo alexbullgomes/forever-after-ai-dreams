@@ -41,13 +41,14 @@ const navigationItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, open } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const isMobile = useIsMobile();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const showText = (isMobile && open) || !collapsed;
 
   const handleSignOut = async () => {
     try {
@@ -98,14 +99,14 @@ export function AppSidebar() {
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/dashboard"}
-                      className={getNavCls(isActive(item.url))}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
+                  <NavLink
+                    to={item.url}
+                    end={item.url === "/dashboard"}
+                    className={getNavCls(isActive(item.url))}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {showText && <span>{item.title}</span>}
+                  </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -121,19 +122,19 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/user-dashboard')} className="w-full">
                     <User className="h-4 w-4" />
-                    {!collapsed && <span>User Dashboard</span>}
+                    {showText && <span>User Dashboard</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/services')} className="w-full">
                     <Briefcase className="h-4 w-4" />
-                    {!collapsed && <span>Services</span>}
+                    {showText && <span>Services</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/')} className="w-full">
                     <Home className="h-4 w-4" />
-                    {!collapsed && <span>Back to Site</span>}
+                    {showText && <span>Back to Site</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -147,7 +148,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="w-full">
               <LogOut className="h-4 w-4" />
-              {!collapsed && <span>Sign Out</span>}
+              {showText && <span>Sign Out</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
