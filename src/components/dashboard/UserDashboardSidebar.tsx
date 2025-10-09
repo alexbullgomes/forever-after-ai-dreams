@@ -38,7 +38,7 @@ export function UserDashboardSidebar() {
   const isMobile = useIsMobile();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
-  const showText = (isMobile && open) || !collapsed;
+  const showText = state !== "collapsed";
 
   const handleSignOut = async () => {
     try {
