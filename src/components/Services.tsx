@@ -46,7 +46,7 @@ const Services = ({
     gradient: "from-pink-500 to-rose-500",
     route: "/wedding-packages"
   }];
-  return <section id="services" className="py-20 bg-gradient-to-br from-gray-50 to-rose-50">
+  return <section id="services" className="hidden sm:block py-20 bg-gradient-to-br from-gray-50 to-rose-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
