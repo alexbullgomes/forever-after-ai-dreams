@@ -29,9 +29,10 @@ interface ConsultationFormProps {
   isOpen: boolean;
   onClose: () => void;
   portfolioItem?: PortfolioItem | null;
+  serviceName?: string;
 }
 
-const ConsultationForm = ({ isOpen, onClose, portfolioItem }: ConsultationFormProps) => {
+const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: ConsultationFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -68,7 +69,8 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem }: ConsultationFormPr
         phone: formData.phone,
         visitorId: visitorId,
         timestamp: new Date().toISOString(),
-        source: portfolioItem ? 'portfolio_card_click' : 'wedding_consultation_form',
+        source: portfolioItem ? 'portfolio_card_click' : serviceName ? 'service_card_click' : 'wedding_consultation_form',
+        ...(serviceName && { service: serviceName }),
         ...(portfolioItem && {
           portfolioItem: {
             id: portfolioItem.id,

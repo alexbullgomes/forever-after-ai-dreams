@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Video, Camera, Sparkles, Heart, Clock, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import ConsultationForm from "@/components/ConsultationForm";
 interface ServicesProps {
   onBookingClick: () => void;
 }
@@ -13,15 +15,18 @@ const Services = ({
   const {
     user
   } = useAuth();
-  const handleServiceClick = (route: string) => {
+  const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string>("");
+
+  const handleServiceClick = (route: string, serviceTitle: string) => {
     if (user) {
       navigate(route);
       // Scroll to top after navigation
       setTimeout(() => window.scrollTo(0, 0), 100);
     } else {
-      // Store intended route for post-login redirect
-      localStorage.setItem('intendedRoute', route);
-      onBookingClick();
+      // For non-logged-in users, open consultation form with service pre-filled
+      setSelectedService(serviceTitle);
+      setIsConsultationFormOpen(true);
     }
   };
   const services = [{
@@ -81,7 +86,7 @@ const Services = ({
                     </li>)}
                 </ul>
 
-                <Button onClick={() => handleServiceClick(service.route)} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
+                <Button onClick={() => handleServiceClick(service.route, service.title)} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
                   More Details
                 </Button>
               </CardContent>
@@ -115,6 +120,13 @@ const Services = ({
           </div>
         </div>
       </div>
+
+      <ConsultationForm
+        isOpen={isConsultationFormOpen}
+        onClose={() => setIsConsultationFormOpen(false)}
+        portfolioItem={null}
+        serviceName={selectedService}
+      />
     </section>;
 };
 export default Services;
