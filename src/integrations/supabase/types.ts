@@ -533,6 +533,123 @@ export type Database = {
           },
         ]
       }
+      promotional_campaigns: {
+        Row: {
+          banner_headline: string | null
+          banner_poster_url: string | null
+          banner_subheadline: string | null
+          banner_tagline: string | null
+          banner_video_url: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          meta_description: string | null
+          meta_image_url: string | null
+          meta_title: string | null
+          pricing_card_1_description: string | null
+          pricing_card_1_enabled: boolean | null
+          pricing_card_1_features: Json | null
+          pricing_card_1_ideal_for: string | null
+          pricing_card_1_popular: boolean | null
+          pricing_card_1_price: string | null
+          pricing_card_1_title: string | null
+          pricing_card_2_description: string | null
+          pricing_card_2_enabled: boolean | null
+          pricing_card_2_features: Json | null
+          pricing_card_2_ideal_for: string | null
+          pricing_card_2_popular: boolean | null
+          pricing_card_2_price: string | null
+          pricing_card_2_title: string | null
+          pricing_card_3_description: string | null
+          pricing_card_3_enabled: boolean | null
+          pricing_card_3_features: Json | null
+          pricing_card_3_ideal_for: string | null
+          pricing_card_3_popular: boolean | null
+          pricing_card_3_price: string | null
+          pricing_card_3_title: string | null
+          slug: string
+          title: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          banner_headline?: string | null
+          banner_poster_url?: string | null
+          banner_subheadline?: string | null
+          banner_tagline?: string | null
+          banner_video_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          meta_description?: string | null
+          meta_image_url?: string | null
+          meta_title?: string | null
+          pricing_card_1_description?: string | null
+          pricing_card_1_enabled?: boolean | null
+          pricing_card_1_features?: Json | null
+          pricing_card_1_ideal_for?: string | null
+          pricing_card_1_popular?: boolean | null
+          pricing_card_1_price?: string | null
+          pricing_card_1_title?: string | null
+          pricing_card_2_description?: string | null
+          pricing_card_2_enabled?: boolean | null
+          pricing_card_2_features?: Json | null
+          pricing_card_2_ideal_for?: string | null
+          pricing_card_2_popular?: boolean | null
+          pricing_card_2_price?: string | null
+          pricing_card_2_title?: string | null
+          pricing_card_3_description?: string | null
+          pricing_card_3_enabled?: boolean | null
+          pricing_card_3_features?: Json | null
+          pricing_card_3_ideal_for?: string | null
+          pricing_card_3_popular?: boolean | null
+          pricing_card_3_price?: string | null
+          pricing_card_3_title?: string | null
+          slug: string
+          title: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          banner_headline?: string | null
+          banner_poster_url?: string | null
+          banner_subheadline?: string | null
+          banner_tagline?: string | null
+          banner_video_url?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          meta_description?: string | null
+          meta_image_url?: string | null
+          meta_title?: string | null
+          pricing_card_1_description?: string | null
+          pricing_card_1_enabled?: boolean | null
+          pricing_card_1_features?: Json | null
+          pricing_card_1_ideal_for?: string | null
+          pricing_card_1_popular?: boolean | null
+          pricing_card_1_price?: string | null
+          pricing_card_1_title?: string | null
+          pricing_card_2_description?: string | null
+          pricing_card_2_enabled?: boolean | null
+          pricing_card_2_features?: Json | null
+          pricing_card_2_ideal_for?: string | null
+          pricing_card_2_popular?: boolean | null
+          pricing_card_2_price?: string | null
+          pricing_card_2_title?: string | null
+          pricing_card_3_description?: string | null
+          pricing_card_3_enabled?: boolean | null
+          pricing_card_3_features?: Json | null
+          pricing_card_3_ideal_for?: string | null
+          pricing_card_3_popular?: boolean | null
+          pricing_card_3_price?: string | null
+          pricing_card_3_title?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           affiliate_id: string

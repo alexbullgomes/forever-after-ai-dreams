@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -37,6 +37,11 @@ const navigationItems = [
     title: "Pipeline Process",
     url: "/dashboard/pipeline-process",
     icon: Workflow,
+  },
+  {
+    title: "Promotional Campaigns",
+    url: "/dashboard/promotional-campaigns",
+    icon: Megaphone,
   },
 ];
 
