@@ -7,6 +7,7 @@ import Contact from "@/components/Contact";
 import AuthModal from "@/components/AuthModal";
 import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
+import PromotionalFooter from "@/components/PromotionalFooter";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -33,6 +34,8 @@ const Index = () => {
       ) : (
         <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} />
       )}
+      
+      <PromotionalFooter />
     </div>
   );
 };

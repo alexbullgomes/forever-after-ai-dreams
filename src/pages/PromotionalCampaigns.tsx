@@ -61,6 +61,7 @@ interface Campaign {
   meta_title?: string;
   meta_description?: string;
   meta_image_url?: string;
+  promotional_footer_enabled: boolean;
 }
 
 const PromotionalCampaigns = () => {

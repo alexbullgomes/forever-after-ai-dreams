@@ -45,6 +45,7 @@ interface Campaign {
   meta_description?: string;
   meta_image_url?: string;
   is_active: boolean;
+  promotional_footer_enabled: boolean;
 }
 
 interface PromotionalCampaignFormProps {
@@ -83,6 +84,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     pricing_card_3_features: ['4K video recording', 'Drone footage available', 'Professional audio', 'Highlight reel'],
     pricing_card_3_popular: false,
     is_active: false,
+    promotional_footer_enabled: false,
   });
 
   useEffect(() => {
@@ -213,6 +215,23 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                 />
                 <Label htmlFor="is_active">Active Campaign</Label>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="promotional_footer_enabled"
+                    checked={formData.promotional_footer_enabled}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, promotional_footer_enabled: checked }))
+                    }
+                    disabled={!formData.is_active}
+                  />
+                  <Label htmlFor="promotional_footer_enabled">Show Footer on Home</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Display this campaign in the fixed footer on the homepage. Only one campaign can have this enabled at a time.
+                </p>
               </div>
             </TabsContent>
 
