@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface FooterCampaign {
   slug: string;
@@ -16,7 +17,11 @@ interface FooterCampaign {
   pricing_card_3_enabled: boolean;
 }
 
-const PromotionalFooter = () => {
+interface PromotionalFooterProps {
+  isChatOpen?: boolean;
+}
+
+const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
   const [campaign, setCampaign] = useState<FooterCampaign | null>(null);
   const navigate = useNavigate();
 
@@ -93,7 +98,11 @@ const PromotionalFooter = () => {
   return (
     <div
       onClick={() => navigate(`/promo/${campaign.slug}`)}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 transition-all duration-300 cursor-pointer py-3 px-4 text-white text-center shadow-lg"
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 transition-all duration-300 cursor-pointer py-3 px-4 text-white text-center shadow-lg",
+        "md:block", // Always show on desktop
+        isChatOpen ? "hidden" : "block" // Hide on mobile when chat is open
+      )}
     >
       <div className="flex items-center justify-center gap-2 md:gap-4 lg:gap-8 text-xs sm:text-sm md:text-base flex-wrap">
         <span className="font-medium whitespace-nowrap">{campaign.banner_headline}</span>

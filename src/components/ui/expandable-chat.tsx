@@ -36,6 +36,7 @@ interface ExpandableChatProps extends React.HTMLAttributes<HTMLDivElement> {
   size?: ChatSize;
   icon?: React.ReactNode;
   autoOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const ExpandableChat: React.FC<ExpandableChatProps> = ({
@@ -44,6 +45,7 @@ const ExpandableChat: React.FC<ExpandableChatProps> = ({
   size = "md",
   icon,
   autoOpen = false,
+  onOpenChange,
   children,
   ...props
 }) => {
@@ -58,6 +60,11 @@ const ExpandableChat: React.FC<ExpandableChatProps> = ({
       hasAutoOpenedRef.current = true;
     }
   }, [autoOpen]);
+
+  // Notify parent when open state changes
+  useEffect(() => {
+    onOpenChange?.(isOpen);
+  }, [isOpen, onOpenChange]);
 
   const toggleChat = () => setIsOpen(!isOpen);
 

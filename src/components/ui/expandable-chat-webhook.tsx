@@ -34,11 +34,13 @@ interface ChatMessage {
 interface ExpandableChatWebhookProps {
   autoOpen?: boolean;
   onOpenLogin?: () => void;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   autoOpen = false,
   onOpenLogin,
+  onOpenChange,
 }) => {
   const { toast } = useToast();
   const shouldAutoOpen = useAutoOpenChat({ 
@@ -367,6 +369,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         size="md" 
         position="bottom-right"
         autoOpen={autoOpen || shouldAutoOpen}
+        onOpenChange={onOpenChange}
         icon={<Bot className="h-6 w-6" />}
       >
         <ExpandableChatHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">

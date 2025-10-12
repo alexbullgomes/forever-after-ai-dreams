@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { user } = useAuth();
 
   return (
@@ -30,12 +31,12 @@ const Index = () => {
       
       {/* Conditional chat based on login state */}
       {user ? (
-        <ExpandableChatAssistant />
+        <ExpandableChatAssistant onOpenChange={setIsChatOpen} />
       ) : (
-        <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} />
+        <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} onOpenChange={setIsChatOpen} />
       )}
       
-      <PromotionalFooter />
+      <PromotionalFooter isChatOpen={isChatOpen} />
     </div>
   );
 };

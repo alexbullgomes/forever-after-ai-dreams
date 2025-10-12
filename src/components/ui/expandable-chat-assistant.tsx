@@ -49,9 +49,10 @@ interface ChatMessage {
 
 interface ExpandableChatAssistantProps {
   autoOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssistantProps) {
+export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: ExpandableChatAssistantProps) {
   const { user } = useAuth();
   const shouldAutoOpen = useAutoOpenChat({ 
     sessionKey: 'everafter-chat-auto-opened-authenticated',
@@ -502,6 +503,7 @@ export function ExpandableChatAssistant({ autoOpen = false }: ExpandableChatAssi
       icon={<Bot className="h-6 w-6" />}
       className="border-0 shadow-2xl bg-transparent"
       autoOpen={autoOpen || shouldAutoOpen}
+      onOpenChange={onOpenChange}
     >
       <ExpandableChatHeader className="flex-col text-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0">
         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
