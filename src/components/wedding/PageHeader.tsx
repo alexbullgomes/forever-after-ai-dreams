@@ -32,7 +32,7 @@ const PageHeader = () => {
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost" 
-              onClick={() => window.location.href = '/'} 
+              onClick={() => window.location.href = 'https://everafterca.com/'} 
               className="text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
