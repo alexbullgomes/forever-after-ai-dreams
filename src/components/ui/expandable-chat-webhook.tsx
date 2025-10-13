@@ -20,6 +20,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { sendHomepageWebhookMessage } from "@/utils/homepageWebhook";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/AuthModal";
 
 interface ChatMessage {
   id: string;
@@ -43,6 +45,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   onOpenChange,
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const shouldAutoOpen = useAutoOpenChat({ 
     sessionKey: 'everafter-chat-auto-opened-visitor',
     enabled: true 
@@ -58,6 +61,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [visitorId, setVisitorId] = useState<string>("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -383,14 +387,14 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
                 <p className="text-xs opacity-90">Here to help with your questions</p>
               </div>
             </div>
-            {onOpenLogin && (
+            {!user && (
               <Button
-                onClick={onOpenLogin}
+                onClick={() => setShowAuthModal(true)}
                 className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white/20"
                 role="button"
                 aria-label="Log in for full experience"
               >
-                Log in for full experience
+                Log in for Full Experience
               </Button>
             )}
           </div>
@@ -483,6 +487,11 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       />
 
       <audio ref={audioRef} onEnded={() => setPlayingAudio(null)} />
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </>
   );
 };
