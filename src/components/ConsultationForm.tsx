@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
+import AuthModal from '@/components/AuthModal';
 
 interface PortfolioItem {
   id: number;
@@ -35,6 +36,7 @@ interface ConsultationFormProps {
 const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: ConsultationFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -203,8 +205,23 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: Consu
               )}
             </Button>
           </div>
+
+          <div className="text-center pt-2">
+            <button
+              type="button"
+              onClick={() => setShowAuthModal(true)}
+              className="text-sm text-gray-600 hover:text-rose-500 transition-colors underline"
+            >
+              Have the full experience. Log in.
+            </button>
+          </div>
         </form>
       </DialogContent>
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </Dialog>
   );
 };
