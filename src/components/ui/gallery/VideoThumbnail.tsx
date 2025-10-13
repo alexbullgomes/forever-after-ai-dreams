@@ -23,12 +23,26 @@ export const VideoThumbnail = ({
   const [videoLoaded, setVideoLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Ensure video loads on mobile
+  // Ensure video loads on mobile - try multiple load attempts
   useEffect(() => {
     if (videoRef.current && (webmUrl || mp4Url)) {
-      videoRef.current.load();
+      const video = videoRef.current;
+      
+      // Force load
+      video.load();
+      
+      // Additional mobile fix: try to play after a short delay
+      const attemptPlay = setTimeout(() => {
+        if (video && autoPlay) {
+          video.play().catch(() => {
+            // Autoplay blocked, but video should still be visible
+          });
+        }
+      }, 100);
+      
+      return () => clearTimeout(attemptPlay);
     }
-  }, [webmUrl, mp4Url]);
+  }, [webmUrl, mp4Url, autoPlay]);
 
   // If no video URLs are provided, use regular image
   if (!webmUrl && !mp4Url) {
@@ -57,6 +71,11 @@ export const VideoThumbnail = ({
   };
 
   const handleVideoLoaded = () => {
+    setVideoLoaded(true);
+  };
+  
+  const handleCanPlay = () => {
+    // Additional event to catch when video can play on mobile
     setVideoLoaded(true);
     if (autoPlay && videoRef.current) {
       videoRef.current.play().catch(() => {
@@ -87,6 +106,7 @@ export const VideoThumbnail = ({
         poster={imageUrl}
         onError={handleVideoError}
         onLoadedData={handleVideoLoaded}
+        onCanPlay={handleCanPlay}
       >
         {webmUrl && <source src={webmUrl} type="video/webm" />}
         {mp4Url && <source src={mp4Url} type="video/mp4" />}
