@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { Play } from 'lucide-react';
+
+// iOS detection utility
+const isIOSDevice = (): boolean => {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+};
 
 interface VideoThumbnailProps {
   webmUrl?: string;
@@ -21,28 +27,46 @@ export const VideoThumbnail = ({
 }: VideoThumbnailProps) => {
   const [videoError, setVideoError] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const isIOS = isIOSDevice();
 
-  // Ensure video loads on mobile - try multiple load attempts
+  // iOS-specific video loading and playback
   useEffect(() => {
     if (videoRef.current && (webmUrl || mp4Url)) {
       const video = videoRef.current;
       
+      // For iOS, validate MP4 exists (WebM not supported)
+      if (isIOS && !mp4Url) {
+        console.warn('iOS device detected but no MP4 source available, falling back to image');
+        setVideoError(true);
+        return;
+      }
+      
       // Force load
       video.load();
       
-      // Additional mobile fix: try to play after a short delay
-      const attemptPlay = setTimeout(() => {
-        if (video && autoPlay) {
-          video.play().catch(() => {
-            // Autoplay blocked, but video should still be visible
-          });
-        }
-      }, 100);
-      
-      return () => clearTimeout(attemptPlay);
+      // iOS-specific: immediate play attempt without delay
+      if (isIOS && autoPlay) {
+        video.play().catch((error) => {
+          console.log('iOS autoplay blocked, showing tap-to-play button:', error);
+          setShowPlayButton(true);
+        });
+      } 
+      // Non-iOS: delayed play attempt (existing behavior)
+      else if (autoPlay) {
+        const attemptPlay = setTimeout(() => {
+          if (video) {
+            video.play().catch(() => {
+              setShowPlayButton(true);
+            });
+          }
+        }, 100);
+        
+        return () => clearTimeout(attemptPlay);
+      }
     }
-  }, [webmUrl, mp4Url, autoPlay]);
+  }, [webmUrl, mp4Url, autoPlay, isIOS]);
 
   // If no video URLs are provided, use regular image
   if (!webmUrl && !mp4Url) {
@@ -66,7 +90,8 @@ export const VideoThumbnail = ({
     );
   }
 
-  const handleVideoError = () => {
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    console.error('Video failed to load:', e);
     setVideoError(true);
   };
 
@@ -74,12 +99,29 @@ export const VideoThumbnail = ({
     setVideoLoaded(true);
   };
   
+  const handleLoadedMetadata = () => {
+    // iOS Safari fires this earlier than onLoadedData
+    setVideoLoaded(true);
+  };
+  
   const handleCanPlay = () => {
-    // Additional event to catch when video can play on mobile
     setVideoLoaded(true);
     if (autoPlay && videoRef.current) {
       videoRef.current.play().catch(() => {
-        // If autoplay fails, that's okay - video is still visible
+        setShowPlayButton(true);
+      });
+    }
+  };
+  
+  const handlePlaying = () => {
+    // Video actually started playing, hide play button
+    setShowPlayButton(false);
+  };
+  
+  const handleTapToPlay = () => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.error('Manual play failed:', error);
       });
     }
   };
@@ -99,18 +141,35 @@ export const VideoThumbnail = ({
         ref={videoRef}
         data-alt={alt}
         className={`${className} ${!videoLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+        autoPlay={autoPlay}
         muted
         loop
         playsInline
-        preload="auto"
+        preload={isIOS ? "metadata" : "auto"}
         poster={imageUrl}
         onError={handleVideoError}
         onLoadedData={handleVideoLoaded}
+        onLoadedMetadata={handleLoadedMetadata}
         onCanPlay={handleCanPlay}
+        onPlaying={handlePlaying}
       >
+        {/* MP4 first for iOS Safari compatibility (WebM not supported) */}
+        {mp4Url && <source src={mp4Url} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />}
         {webmUrl && <source src={webmUrl} type="video/webm" />}
-        {mp4Url && <source src={mp4Url} type="video/mp4" />}
       </video>
+      
+      {/* Tap-to-play fallback for iOS when autoplay is blocked */}
+      {showPlayButton && videoLoaded && (
+        <button
+          onClick={handleTapToPlay}
+          className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors"
+          aria-label="Play video"
+        >
+          <div className="bg-white/90 rounded-full p-4 shadow-lg">
+            <Play className="w-8 h-8 text-gray-900" fill="currentColor" />
+          </div>
+        </button>
+      )}
     </div>
   );
 };
