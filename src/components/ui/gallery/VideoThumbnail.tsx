@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface VideoThumbnailProps {
   webmUrl?: string;
@@ -21,6 +21,14 @@ export const VideoThumbnail = ({
 }: VideoThumbnailProps) => {
   const [videoError, setVideoError] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Ensure video loads on mobile
+  useEffect(() => {
+    if (videoRef.current && (webmUrl || mp4Url)) {
+      videoRef.current.load();
+    }
+  }, [webmUrl, mp4Url]);
 
   // If no video URLs are provided, use regular image
   if (!webmUrl && !mp4Url) {
@@ -50,16 +58,10 @@ export const VideoThumbnail = ({
 
   const handleVideoLoaded = () => {
     setVideoLoaded(true);
-    if (autoPlay) {
-      // Small delay to ensure smooth playback
-      setTimeout(() => {
-        const video = document.querySelector(`video[data-alt="${alt}"]`) as HTMLVideoElement;
-        if (video) {
-          video.play().catch(() => {
-            // If autoplay fails, that's okay
-          });
-        }
-      }, 100);
+    if (autoPlay && videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // If autoplay fails, that's okay - video is still visible
+      });
     }
   };
 
@@ -75,12 +77,13 @@ export const VideoThumbnail = ({
       )}
       
       <video
+        ref={videoRef}
         data-alt={alt}
         className={`${className} ${!videoLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="auto"
         poster={imageUrl}
         onError={handleVideoError}
         onLoadedData={handleVideoLoaded}
