@@ -6,10 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { usePromotionalCampaignGallery } from "@/hooks/usePromotionalCampaignGallery";
 import { slugify } from "@/utils/slugify";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 
 interface Campaign {
   id?: string;
@@ -58,6 +60,15 @@ interface PromotionalCampaignFormProps {
 const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: PromotionalCampaignFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { cards, loading: loadingGallery, createCard, updateCard, deleteCard } = usePromotionalCampaignGallery(campaign?.id);
+  const [newGalleryItem, setNewGalleryItem] = useState({
+    title: '',
+    subtitle: '',
+    category: '',
+    thumb_mp4_url: '',
+    thumb_image_url: '',
+    full_video_url: '',
+  });
   const [formData, setFormData] = useState<Campaign>({
     slug: '',
     title: '',
@@ -179,10 +190,11 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="basic">Basic</TabsTrigger>
               <TabsTrigger value="banner">Banner</TabsTrigger>
               <TabsTrigger value="pricing">Pricing</TabsTrigger>
+              <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
             </TabsList>
 
@@ -363,9 +375,168 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                   </div>
                 );
               })}
-            </TabsContent>
+          </TabsContent>
 
-            <TabsContent value="seo" className="space-y-4">
+          {/* Gallery Tab */}
+          <TabsContent value="gallery" className="space-y-4">
+            {!campaign ? (
+              <p className="text-muted-foreground text-center py-8">
+                Save the campaign first to manage gallery items
+              </p>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Gallery Items ({cards.length})</h3>
+                  </div>
+
+                  {/* Add New Gallery Item */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Add New Gallery Item</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Title *</Label>
+                          <Input
+                            value={newGalleryItem.title}
+                            onChange={(e) => setNewGalleryItem({ ...newGalleryItem, title: e.target.value })}
+                            placeholder="Gallery item title"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Subtitle</Label>
+                          <Input
+                            value={newGalleryItem.subtitle}
+                            onChange={(e) => setNewGalleryItem({ ...newGalleryItem, subtitle: e.target.value })}
+                            placeholder="Optional subtitle"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Category *</Label>
+                        <Input
+                          value={newGalleryItem.category}
+                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, category: e.target.value })}
+                          placeholder="e.g., Wedding, Portrait, Event"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Thumbnail MP4 URL *</Label>
+                        <Input
+                          value={newGalleryItem.thumb_mp4_url}
+                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, thumb_mp4_url: e.target.value })}
+                          placeholder="https://..."
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Thumbnail Image URL</Label>
+                        <Input
+                          value={newGalleryItem.thumb_image_url}
+                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, thumb_image_url: e.target.value })}
+                          placeholder="Fallback image URL"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Full Video URL (optional)</Label>
+                        <Input
+                          value={newGalleryItem.full_video_url}
+                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, full_video_url: e.target.value })}
+                          placeholder="YouTube or external video URL"
+                        />
+                      </div>
+                      <Button
+                        onClick={async () => {
+                          if (!newGalleryItem.title || !newGalleryItem.category) {
+                            toast({
+                              title: 'Validation Error',
+                              description: 'Title and category are required',
+                              variant: 'destructive',
+                            });
+                            return;
+                          }
+                          await createCard({
+                            campaign_id: campaign.id,
+                            order_index: cards.length,
+                            title: newGalleryItem.title,
+                            subtitle: newGalleryItem.subtitle || undefined,
+                            category: newGalleryItem.category,
+                            thumb_mp4_url: newGalleryItem.thumb_mp4_url || undefined,
+                            thumb_image_url: newGalleryItem.thumb_image_url || undefined,
+                            full_video_url: newGalleryItem.full_video_url || undefined,
+                            full_video_enabled: !!newGalleryItem.full_video_url,
+                            featured: false,
+                            is_published: true,
+                          });
+                          setNewGalleryItem({
+                            title: '',
+                            subtitle: '',
+                            category: '',
+                            thumb_mp4_url: '',
+                            thumb_image_url: '',
+                            full_video_url: '',
+                          });
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Gallery Item
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Existing Gallery Items */}
+                  <div className="space-y-2">
+                    {loadingGallery ? (
+                      <p className="text-muted-foreground text-center py-4">Loading gallery items...</p>
+                    ) : cards.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-4">No gallery items yet. Add one above.</p>
+                    ) : (
+                      cards.map((card) => (
+                        <Card key={card.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-semibold">{card.title}</h4>
+                                {card.subtitle && <p className="text-sm text-muted-foreground">{card.subtitle}</p>}
+                                <p className="text-xs text-muted-foreground mt-1">Category: {card.category}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => updateCard(card.id, { is_published: !card.is_published })}
+                                >
+                                  {card.is_published ? (
+                                    <Eye className="w-4 h-4" />
+                                  ) : (
+                                    <EyeOff className="w-4 h-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (confirm('Delete this gallery item?')) {
+                                      deleteCard(card.id);
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="seo" className="space-y-4">
               <div>
                 <Label htmlFor="meta_title">Meta Title</Label>
                 <Input

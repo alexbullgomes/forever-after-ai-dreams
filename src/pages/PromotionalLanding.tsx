@@ -8,6 +8,7 @@ import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePromotionalCampaign } from "@/hooks/usePromotionalCampaign";
+import { PromotionalCampaignGallery } from "@/components/galleries/PromotionalCampaignGallery";
 import { useState } from "react";
 import AuthModal from "@/components/AuthModal";
 
@@ -99,6 +100,9 @@ const PromotionalLanding = () => {
           subheadline={campaign.banner_subheadline}
           tagline={campaign.banner_tagline}
         />
+
+        {/* Campaign Gallery Section */}
+        <PromotionalCampaignGallery campaignId={campaign.id} />
 
         <PromoPricing cards={pricingCards} />
 

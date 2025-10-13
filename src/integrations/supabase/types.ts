@@ -533,6 +533,80 @@ export type Database = {
           },
         ]
       }
+      promotional_campaign_gallery: {
+        Row: {
+          campaign_id: string
+          category: string
+          created_at: string
+          event_season_or_date: string | null
+          featured: boolean
+          full_video_enabled: boolean
+          full_video_url: string | null
+          id: string
+          is_published: boolean
+          location_city: string | null
+          order_index: number
+          slug: string | null
+          subtitle: string | null
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          category: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          category?: string
+          created_at?: string
+          event_season_or_date?: string | null
+          featured?: boolean
+          full_video_enabled?: boolean
+          full_video_url?: string | null
+          id?: string
+          is_published?: boolean
+          location_city?: string | null
+          order_index?: number
+          slug?: string | null
+          subtitle?: string | null
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotional_campaign_gallery_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_campaigns: {
         Row: {
           banner_headline: string | null
