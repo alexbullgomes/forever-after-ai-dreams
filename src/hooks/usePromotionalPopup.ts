@@ -1,39 +1,76 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type PromotionalPopup = Database['public']['Tables']['promotional_popups']['Row'];
 
 export const usePromotionalPopup = () => {
   const [showPopup, setShowPopup] = useState(false);
+  const [popupConfig, setPopupConfig] = useState<PromotionalPopup | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
-    // Check if popup was already submitted
-    const popupSubmittedKey = "promotional_popup_submitted";
-    const popupStartTimeKey = "promotional_popup_start_time";
-    const wasSubmitted = sessionStorage.getItem(popupSubmittedKey);
-    
-    if (user && !wasSubmitted) {
-      // Check if countdown has already started
-      let startTime = localStorage.getItem(popupStartTimeKey);
-      
-      if (!startTime) {
-        // First time seeing the popup - start the 12-hour countdown
-        startTime = Date.now().toString();
-        localStorage.setItem(popupStartTimeKey, startTime);
-      }
-      
-      // Check if 12 hours have passed
-      const elapsed = Date.now() - parseInt(startTime);
-      const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-      
-      if (elapsed < twelveHours) {
-        // Set a timer to show the popup after 30 seconds
+    const initPopup = async () => {
+      try {
+        // Fetch active popup config
+        const { data: config, error } = await supabase
+          .from('promotional_popups')
+          .select('*')
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!config) return;
+
+        // Check date range
+        const now = new Date();
+        if (config.start_at && new Date(config.start_at) > now) return;
+        if (config.end_at && new Date(config.end_at) < now) return;
+
+        // Get or create visitor ID
+        let visitorId = localStorage.getItem('homepage-visitor-id');
+        if (!visitorId) {
+          visitorId = crypto.randomUUID();
+          localStorage.setItem('homepage-visitor-id', visitorId);
+        }
+
+        // Check if already submitted
+        const cacheKey = `popup_submission_${config.id}`;
+        const cachedSubmission = localStorage.getItem(cacheKey);
+        if (cachedSubmission) return;
+
+        // Check database for submission
+        const { data: submissions } = await supabase
+          .from('visitor_popup_submissions')
+          .select('*')
+          .eq('popup_id', config.id)
+          .eq('visitor_id', visitorId)
+          .maybeSingle();
+
+        if (submissions) return;
+
+        // Check session storage if show_once_per_session
+        if (config.show_once_per_session && sessionStorage.getItem(`popup_shown_${config.id}`)) {
+          return;
+        }
+
+        // Set timer to show popup
         const timer = setTimeout(() => {
           setShowPopup(true);
-        }, 30000); // 30 seconds
+          setPopupConfig(config);
+          if (config.show_once_per_session) {
+            sessionStorage.setItem(`popup_shown_${config.id}`, 'true');
+          }
+        }, config.delay_seconds * 1000);
 
         return () => clearTimeout(timer);
+      } catch (error) {
+        console.error('Error initializing popup:', error);
       }
-    }
+    };
+
+    initPopup();
   }, [user]);
 
   const closePopup = () => {
@@ -42,6 +79,7 @@ export const usePromotionalPopup = () => {
 
   return {
     showPopup,
+    popupConfig,
     closePopup,
   };
 };

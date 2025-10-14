@@ -727,6 +727,66 @@ export type Database = {
         }
         Relationships: []
       }
+      promotional_popups: {
+        Row: {
+          bg_gradient: string
+          countdown_hours: number
+          created_at: string
+          cta_label: string
+          delay_seconds: number
+          discount_label: string
+          end_at: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          legal_note: string | null
+          phone_required: boolean
+          show_once_per_session: boolean
+          start_at: string | null
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bg_gradient?: string
+          countdown_hours?: number
+          created_at?: string
+          cta_label: string
+          delay_seconds?: number
+          discount_label: string
+          end_at?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          legal_note?: string | null
+          phone_required?: boolean
+          show_once_per_session?: boolean
+          start_at?: string | null
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bg_gradient?: string
+          countdown_hours?: number
+          created_at?: string
+          cta_label?: string
+          delay_seconds?: number
+          discount_label?: string
+          end_at?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          legal_note?: string | null
+          phone_required?: boolean
+          show_once_per_session?: boolean
+          start_at?: string | null
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           affiliate_id: string
@@ -837,6 +897,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      visitor_popup_submissions: {
+        Row: {
+          id: string
+          metadata: Json | null
+          phone_number: string
+          popup_id: string
+          submitted_at: string
+          synced_at: string | null
+          synced_to_profile: boolean
+          user_id: string | null
+          visitor_id: string
+        }
+        Insert: {
+          id?: string
+          metadata?: Json | null
+          phone_number: string
+          popup_id: string
+          submitted_at?: string
+          synced_at?: string | null
+          synced_to_profile?: boolean
+          user_id?: string | null
+          visitor_id: string
+        }
+        Update: {
+          id?: string
+          metadata?: Json | null
+          phone_number?: string
+          popup_id?: string
+          submitted_at?: string
+          synced_at?: string | null
+          synced_to_profile?: boolean
+          user_id?: string | null
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_popup_submissions_popup_id_fkey"
+            columns: ["popup_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_popups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -8,13 +8,16 @@ import AuthModal from "@/components/AuthModal";
 import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 import PromotionalFooter from "@/components/PromotionalFooter";
+import PromotionalPopup from "@/components/PromotionalPopup";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { user } = useAuth();
+  const { showPopup, popupConfig, closePopup } = usePromotionalPopup();
 
   return (
     <div className="min-h-screen bg-white">
@@ -34,6 +37,15 @@ const Index = () => {
         <ExpandableChatAssistant onOpenChange={setIsChatOpen} />
       ) : (
         <ExpandableChatWebhook onOpenLogin={() => setIsAuthModalOpen(true)} onOpenChange={setIsChatOpen} />
+      )}
+      
+      {/* Dynamic promotional popup */}
+      {popupConfig && (
+        <PromotionalPopup 
+          isOpen={showPopup} 
+          onClose={closePopup}
+          config={popupConfig}
+        />
       )}
       
       <PromotionalFooter isChatOpen={isChatOpen} />

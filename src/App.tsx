@@ -6,8 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import PromotionalPopup from "@/components/PromotionalPopup";
-import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 import { initializeReferralTracking } from "@/utils/affiliateTracking";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -23,8 +21,6 @@ import AffiliatePortal from "./components/affiliate/AffiliatePortal";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { showPopup, closePopup } = usePromotionalPopup();
-
   useEffect(() => {
     // Initialize referral tracking on app load
     initializeReferralTracking();
@@ -57,7 +53,6 @@ const AppContent = () => {
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-      <PromotionalPopup isOpen={showPopup} onClose={closePopup} />
     </>
   );
 };

@@ -3,16 +3,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Gift } from "lucide-react";
+import { Heart, Gift, Star, Zap, Sparkles, Tag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type PromotionalPopupConfig = Database['public']['Tables']['promotional_popups']['Row'];
 
 interface PromotionalPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  config: PromotionalPopupConfig;
 }
 
-const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
+const iconMap: Record<string, any> = {
+  gift: Gift,
+  heart: Heart,
+  star: Star,
+  zap: Zap,
+  sparkles: Sparkles,
+  tag: Tag,
+};
+
+const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
@@ -23,33 +37,32 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // 12-hour persistent countdown timer
+  const IconComponent = iconMap[config.icon] || Gift;
+
+  // Dynamic countdown timer based on config
   useEffect(() => {
     if (!isOpen) return;
 
-    const popupStartTimeKey = "promotional_popup_start_time";
-    const startTime = localStorage.getItem(popupStartTimeKey);
+    const popupStartTimeKey = `promotional_popup_start_time_${config.id}`;
+    let startTime = localStorage.getItem(popupStartTimeKey);
     
     if (!startTime) {
-      // If no start time is found, close the popup (shouldn't happen)
-      onClose();
-      return;
+      startTime = Date.now().toString();
+      localStorage.setItem(popupStartTimeKey, startTime);
     }
 
     const updateCountdown = () => {
       const now = Date.now();
-      const elapsed = now - parseInt(startTime);
-      const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-      const remaining = twelveHours - elapsed;
+      const elapsed = now - parseInt(startTime!);
+      const countdownMs = config.countdown_hours * 60 * 60 * 1000;
+      const remaining = countdownMs - elapsed;
 
       if (remaining <= 0) {
-        // Time expired
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
         onClose();
         return;
       }
 
-      // Convert remaining milliseconds to hours, minutes, seconds
       const hours = Math.floor(remaining / (1000 * 60 * 60));
       const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
@@ -57,19 +70,14 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
       setTimeLeft({ hours, minutes, seconds });
     };
 
-    // Update immediately
     updateCountdown();
-
-    // Update every second
     const timer = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, config.id, config.countdown_hours]);
 
-  // Phone number validation - simplified for better UX
   const isValidPhone = (phone: string) => {
     const digits = phone.replace(/[^\d]/g, '');
-    console.log('Phone validation:', { phone, digits, length: digits.length });
     return digits.length === 10;
   };
 
@@ -86,14 +94,13 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
-    console.log('Phone change:', { original: e.target.value, formatted, isValid: isValidPhone(formatted) });
     setPhoneNumber(formatted);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!phoneNumber.trim() || !isValidPhone(phoneNumber)) {
+    if (config.phone_required && (!phoneNumber.trim() || !isValidPhone(phoneNumber))) {
       toast({
         title: "Valid phone number required",
         description: "Please enter a valid phone number to claim the offer",
@@ -105,6 +112,38 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
     setLoading(true);
     
     try {
+      // Get or create visitor ID
+      let visitorId = localStorage.getItem('homepage-visitor-id');
+      if (!visitorId) {
+        visitorId = crypto.randomUUID();
+        localStorage.setItem('homepage-visitor-id', visitorId);
+      }
+
+      // Store in database
+      const { error: dbError } = await supabase
+        .from('visitor_popup_submissions')
+        .insert({
+          visitor_id: visitorId,
+          popup_id: config.id,
+          phone_number: phoneNumber,
+          user_id: user?.id || null,
+          metadata: {
+            user_email: user?.email,
+            user_name: user?.user_metadata?.full_name,
+          },
+        });
+
+      if (dbError) throw dbError;
+
+      // Cache in localStorage
+      const cacheKey = `popup_submission_${config.id}`;
+      localStorage.setItem(cacheKey, JSON.stringify({
+        visitor_id: visitorId,
+        phone_number: phoneNumber,
+        submitted_at: new Date().toISOString(),
+      }));
+
+      // Send to webhook
       const response = await fetch("https://agcreationmkt.cloud/webhook/0fe48135-df84-4d58-8998-11a3aafb23b7", {
         method: "POST",
         headers: {
@@ -115,16 +154,16 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
           fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
           email: user?.email,
           cellphone: phoneNumber.trim(),
+          visitor_id: visitorId,
+          popup_id: config.id,
           event: "wedding_discount_popup",
         }),
       });
 
       if (response.ok) {
-        // Mark as submitted to prevent showing again
-        sessionStorage.setItem("promotional_popup_submitted", "true");
         toast({
           title: "🎉 Discount Claimed!",
-          description: "Your 20% first order discount has been secured! We'll contact you soon.",
+          description: "Your discount has been secured! We'll contact you soon.",
         });
         onClose();
       } else {
@@ -149,20 +188,19 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0">
-        <div className="bg-gradient-to-br from-rose-500 to-pink-500 p-6 text-white">
+        <div className={`bg-gradient-to-br ${config.bg_gradient} p-6 text-white`}>
           <DialogHeader>
             <div className="flex items-center justify-center mb-2">
-              <div className="flex items-center space-x-2">
-                <Gift className="w-8 h-8 text-white" />
-                <Heart className="w-6 h-6 text-white" />
-              </div>
+              <IconComponent className="w-8 h-8 text-white" />
             </div>
             <DialogTitle className="text-center text-2xl font-bold">
-              🎁 Unlock 20% OFF on Your First Order!
+              {config.title}
             </DialogTitle>
-            <p className="text-center text-rose-100 text-sm">
-              Enjoy an exclusive discount on any package and personalize your experience in seconds.
-            </p>
+            {config.subtitle && (
+              <p className="text-center text-white/90 text-sm">
+                {config.subtitle}
+              </p>
+            )}
           </DialogHeader>
         </div>
 
@@ -170,7 +208,7 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
           {/* Countdown Timer */}
           <div className="text-center mb-6">
             <p className="text-sm font-medium text-gray-600 mb-2">
-              ⏳ Your 20% OFF offer expires in:
+              ⏳ Your {config.discount_label} offer expires in:
             </p>
             <div className="flex justify-center space-x-2 text-2xl font-bold text-rose-600">
               <span>{String(timeLeft.hours).padStart(2, '0')}</span>
@@ -184,35 +222,39 @@ const PromotionalPopup = ({ isOpen, onClose }: PromotionalPopupProps) => {
           <Card className="border-0 shadow-none">
             <CardContent className="space-y-6 p-0">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                    📱 Phone Number
-                  </label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="(555) 123-4567"
-                    value={phoneNumber}
-                    onChange={handlePhoneChange}
-                    className="w-full"
-                    maxLength={14}
-                    required
-                  />
-                </div>
+                {config.phone_required && (
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                      📱 Phone Number
+                    </label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={phoneNumber}
+                      onChange={handlePhoneChange}
+                      className="w-full"
+                      maxLength={14}
+                      required
+                    />
+                  </div>
+                )}
                 
                 <Button
                   type="submit"
-                  disabled={loading || !phoneNumber.trim() || !isValidPhone(phoneNumber)}
+                  disabled={loading || (config.phone_required && (!phoneNumber.trim() || !isValidPhone(phoneNumber)))}
                   className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Claiming..." : "🎁 Claim My Discount"}
+                  {loading ? "Claiming..." : `🎁 ${config.cta_label}`}
                 </Button>
               </form>
 
               <div className="text-center space-y-2">
-                <p className="text-xs text-gray-600">
-                  👉 Valid on any package for your first purchase.
-                </p>
+                {config.legal_note && (
+                  <p className="text-xs text-gray-600">
+                    👉 {config.legal_note}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={handleMaybeLater}

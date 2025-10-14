@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -42,6 +42,11 @@ const navigationItems = [
     title: "Promotional Campaigns",
     url: "/dashboard/promotional-campaigns",
     icon: Megaphone,
+  },
+  {
+    title: "Promotional Pop-Ups",
+    url: "/dashboard/promotional-popups",
+    icon: Gift,
   },
 ];
 

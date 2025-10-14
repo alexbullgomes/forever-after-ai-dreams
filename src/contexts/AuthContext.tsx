@@ -109,6 +109,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           console.log('Successfully linked visitorId to profile');
         }
+
+        // Sync phone from popup submissions
+        const { data: submissions } = await supabase
+          .from('visitor_popup_submissions')
+          .select('*')
+          .eq('visitor_id', visitorId)
+          .eq('synced_to_profile', false)
+          .order('submitted_at', { ascending: false });
+
+        if (submissions && submissions.length > 0) {
+          const latestSubmission = submissions[0];
+          
+          // Update profile with phone if not already set
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('promotional_phone')
+            .eq('id', userId)
+            .maybeSingle();
+
+          if (!profile?.promotional_phone && latestSubmission.phone_number) {
+            await supabase.from('profiles')
+              .update({ promotional_phone: latestSubmission.phone_number })
+              .eq('id', userId);
+          }
+
+          // Mark submission as synced
+          await supabase.from('visitor_popup_submissions')
+            .update({ 
+              synced_to_profile: true, 
+              synced_at: new Date().toISOString(),
+              user_id: userId 
+            })
+            .eq('id', latestSubmission.id);
+        }
       }
     } catch (error) {
       console.error('Error in linkVisitorIdToProfile:', error);
