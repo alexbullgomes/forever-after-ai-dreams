@@ -22,10 +22,12 @@ interface PromotionalFooterProps {
 }
 
 const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
-  const [campaign, setCampaign] = useState<FooterCampaign | null>(null);
+  const [campaigns, setCampaigns] = useState<FooterCampaign[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
 
-  const fetchFooterCampaign = async () => {
+  const fetchFooterCampaigns = async () => {
     const { data, error } = await supabase
       .from('promotional_campaigns')
       .select(`
@@ -43,20 +45,18 @@ const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
       `)
       .eq('is_active', true)
       .eq('promotional_footer_enabled', true)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .order('updated_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching footer campaign:', error);
+      console.error('Error fetching footer campaigns:', error);
       return;
     }
 
-    setCampaign(data);
+    setCampaigns(data || []);
   };
 
   useEffect(() => {
-    fetchFooterCampaign();
+    fetchFooterCampaigns();
 
     const channel = supabase
       .channel('promotional-footer-changes')
@@ -68,7 +68,7 @@ const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
           table: 'promotional_campaigns'
         },
         () => {
-          fetchFooterCampaign();
+          fetchFooterCampaigns();
         }
       )
       .subscribe();
@@ -78,7 +78,24 @@ const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
     };
   }, []);
 
-  if (!campaign) return null;
+  // Auto-rotate campaigns every 5 seconds if multiple campaigns exist
+  useEffect(() => {
+    if (campaigns.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % campaigns.length);
+        setIsTransitioning(false);
+      }, 300); // Half of transition duration for crossfade effect
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [campaigns.length]);
+
+  if (campaigns.length === 0) return null;
+
+  const campaign = campaigns[currentIndex];
 
   const pricingCards = [
     campaign.pricing_card_1_enabled && {
@@ -99,12 +116,17 @@ const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
     <div
       onClick={() => navigate(`/promo/${campaign.slug}`)}
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 transition-all duration-300 cursor-pointer py-3 px-4 text-white text-center shadow-lg",
+        "fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 cursor-pointer py-3 px-4 text-white text-center shadow-lg overflow-hidden",
         "md:block", // Always show on desktop
         isChatOpen ? "hidden" : "block" // Hide on mobile when chat is open
       )}
     >
-      <div className="flex items-center justify-center gap-2 md:gap-4 lg:gap-8 text-xs sm:text-sm md:text-base flex-wrap">
+      <div 
+        className={cn(
+          "flex items-center justify-center gap-2 md:gap-4 lg:gap-8 text-xs sm:text-sm md:text-base flex-wrap transition-all duration-500",
+          isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+        )}
+      >
         <span className="font-medium whitespace-nowrap">{campaign.banner_headline}</span>
         {pricingCards.map((card, index) => (
           <div key={index} className="flex items-center gap-2 md:gap-4">
