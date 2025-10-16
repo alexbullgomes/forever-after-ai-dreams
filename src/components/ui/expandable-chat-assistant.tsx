@@ -505,17 +505,17 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
       autoOpen={autoOpen || shouldAutoOpen}
       onOpenChange={onOpenChange}
     >
-      <ExpandableChatHeader className="flex-col text-center justify-center bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0">
+      <ExpandableChatHeader className="flex-col text-center justify-center bg-brand-gradient text-white border-0">
         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
           <Bot className="w-6 h-6 text-white" />
         </div>
         <h1 className="text-xl font-bold text-white">EVA Assistant Planner</h1>
-        <p className="text-sm text-rose-100">
+        <p className="text-sm text-white/80">
           Get personalized photo & video package recommendations
         </p>
       </ExpandableChatHeader>
 
-      <ExpandableChatBody className="bg-gradient-to-br from-rose-50 to-pink-50 p-4">
+      <ExpandableChatBody className="bg-gradient-to-br from-white to-gray-50 p-4">
         <ChatMessageList className="h-full">
           {messages.map((message) => (
             <ChatBubble
@@ -648,7 +648,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
             <Button 
               type="submit" 
               size="sm" 
-              className="ml-auto gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg transition-all duration-200"
+              className="ml-auto gap-1.5 bg-brand-gradient hover:bg-brand-gradient-hover text-white shadow-lg transition-all duration-200"
               disabled={isLoading || (!input.trim() && selectedFiles.length === 0)}
             >
               Send Message

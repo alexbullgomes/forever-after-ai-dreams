@@ -31,7 +31,7 @@ const Header = ({ onLoginClick }: HeaderProps) => {
             {user ? (
               <Button 
                 onClick={handleAccountClick}
-                className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
+                className="bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-full shadow-lg transition-all duration-300"
               >
                 <User className="w-4 h-4 mr-2" />
                 Account
@@ -39,7 +39,7 @@ const Header = ({ onLoginClick }: HeaderProps) => {
             ) : (
               <Button 
                 onClick={onLoginClick}
-                className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
+                className="bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-full shadow-lg transition-all duration-300"
               >
                 Login
               </Button>

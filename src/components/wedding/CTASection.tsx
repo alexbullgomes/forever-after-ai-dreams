@@ -21,7 +21,7 @@ const CTASection = () => {
         <Button 
           size="lg" 
           onClick={() => setIsConsultationFormOpen(true)}
-          className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300"
+          className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl transition-all duration-300"
         >
           Schedule Free Consultation
         </Button>

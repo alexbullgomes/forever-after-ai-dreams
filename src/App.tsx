@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { initializeReferralTracking } from "@/utils/affiliateTracking";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
@@ -21,6 +22,9 @@ import AffiliatePortal from "./components/affiliate/AffiliatePortal";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  // Load site settings (brand colors) on app start
+  useSiteSettings();
+  
   useEffect(() => {
     // Initialize referral tracking on app load
     initializeReferralTracking();

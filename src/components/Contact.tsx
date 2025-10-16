@@ -205,7 +205,7 @@ const Contact = () => {
                 <Button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-rose-500/25 transition-all duration-300 disabled:opacity-50"
+                  className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold py-3 rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50"
                 >
                   {isSubmitting ? "Sending..." : "Send Message"}
                 </Button>
@@ -219,7 +219,7 @@ const Contact = () => {
               <h3 className="text-2xl font-bold mb-6 text-white">Get in touch</h3>
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-brand-gradient rounded-full flex items-center justify-center">
                     <Mail className="w-6 h-6 text-white" />
                   </div>
                   <div>

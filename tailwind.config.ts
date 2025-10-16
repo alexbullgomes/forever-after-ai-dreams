@@ -61,7 +61,17 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				brand: {
+					'primary-from': 'hsl(var(--brand-primary-from))',
+					'primary-to': 'hsl(var(--brand-primary-to))',
+					'primary-hover-from': 'hsl(var(--brand-primary-hover-from))',
+					'primary-hover-to': 'hsl(var(--brand-primary-hover-to))',
 				}
+			},
+			backgroundImage: {
+				'brand-gradient': 'linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to)))',
+				'brand-gradient-hover': 'linear-gradient(to right, hsl(var(--brand-primary-hover-from)), hsl(var(--brand-primary-hover-to)))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

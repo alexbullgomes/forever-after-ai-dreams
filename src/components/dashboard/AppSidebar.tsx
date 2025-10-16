@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -48,6 +48,11 @@ const navigationItems = [
     url: "/dashboard/promotional-popups",
     icon: Gift,
   },
+  {
+    title: "Project Settings",
+    url: "/dashboard/project-settings",
+    icon: Settings,
+  },
 ];
 
 export function AppSidebar() {
@@ -85,7 +90,7 @@ export function AppSidebar() {
 
   const getNavCls = (isActiveRoute: boolean) =>
     isActiveRoute
-      ? "bg-rose-100 text-rose-700 font-medium hover:bg-rose-100"
+      ? "bg-brand-primary-from/10 text-brand-primary-from font-medium hover:bg-brand-primary-from/10"
       : "hover:bg-gray-100 text-gray-700";
 
   return (
@@ -93,7 +98,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-6">
         {!collapsed && (
           <div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <h2 className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent">
               Everafter
             </h2>
             <p className="text-sm text-gray-600">Admin Panel</p>

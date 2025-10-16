@@ -50,7 +50,7 @@ const Hero = ({
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">California-based visual storytelling brand specialized in cinematic photography and videography for weddings, families, and businesses. </p>
 
           <div className="flex justify-center items-center">
-            <Button onClick={() => setIsConsultationFormOpen(true)} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105">
+            <Button onClick={() => setIsConsultationFormOpen(true)} size="lg" className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105">
               <Heart className="w-5 h-5 mr-2" />
               Let's Plan Together
             </Button>
