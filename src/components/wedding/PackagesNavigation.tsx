@@ -61,7 +61,7 @@ const PackagesNavigation = () => {
                   className={`
                     flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive 
-                      ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-md' 
+                      ? 'bg-brand-gradient text-white shadow-md' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }
                   `}

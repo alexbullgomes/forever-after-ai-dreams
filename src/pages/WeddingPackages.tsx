@@ -28,7 +28,7 @@ const WeddingPackages = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
+    <div className="min-h-screen bg-brand-light">
       <DashboardNavigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -63,7 +63,7 @@ const WeddingPackages = () => {
             {/* Photo & Video Card */}
             <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Camera className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Photo & Video</h3>
@@ -72,7 +72,7 @@ const WeddingPackages = () => {
                 </p>
                 <button
                   onClick={() => { window.location.assign('/photo-video-services'); }}
-                  className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
+                  className="inline-flex items-center text-brand-primary-from font-semibold hover:text-brand-primary-to transition-colors group-hover:translate-x-1 duration-300"
                 >
                   View gallery
                   <svg className="w-5 h-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
@@ -85,7 +85,7 @@ const WeddingPackages = () => {
             {/* Assistant Planner Card */}
             <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Bot className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Assistant Planner</h3>
@@ -94,7 +94,7 @@ const WeddingPackages = () => {
                 </p>
                 <button
                   onClick={() => { window.location.assign('/services'); }}
-                  className="inline-flex items-center text-rose-500 font-semibold hover:text-rose-600 transition-colors group-hover:translate-x-1 duration-300"
+                  className="inline-flex items-center text-brand-primary-from font-semibold hover:text-brand-primary-to transition-colors group-hover:translate-x-1 duration-300"
                 >
                   Ask anything
                   <svg className="w-5 h-5 ml-2" viewBox="0 0 20 20" fill="currentColor">

@@ -20,10 +20,10 @@ const CustomPackageCard = ({ name, price, description, features, popular, idealF
   return (
     <>
       <Card className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl ${
-        popular ? 'ring-2 ring-rose-500 scale-105' : 'hover:scale-105'
+        popular ? 'ring-2 ring-[hsl(var(--brand-primary-from))] scale-105' : 'hover:scale-105'
       }`}>
         {popular && (
-          <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-center py-2 text-sm font-semibold">
+          <div className="absolute top-0 left-0 right-0 bg-brand-gradient text-white text-center py-2 text-sm font-semibold">
             <Star className="w-4 h-4 inline mr-1" />
             Most Popular
           </div>
@@ -34,7 +34,7 @@ const CustomPackageCard = ({ name, price, description, features, popular, idealF
             {name}
           </CardTitle>
           <div className="text-center">
-            <span className="text-3xl font-bold text-rose-600">{price}</span>
+            <span className="text-3xl font-bold text-brand-primary-from">{price}</span>
             <div className="mt-2">
               <CreatePackageBadge />
             </div>
@@ -46,8 +46,8 @@ const CustomPackageCard = ({ name, price, description, features, popular, idealF
           <ul className="space-y-3">
             {features.map((feature, index) => (
               <li key={index} className="flex items-start">
-                <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                <div className="w-5 h-5 rounded-full bg-[hsl(var(--brand-primary-from)/0.1)] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-brand-primary-from"></div>
                 </div>
                 <span className="text-gray-700">{feature}</span>
               </li>
@@ -56,7 +56,7 @@ const CustomPackageCard = ({ name, price, description, features, popular, idealF
           
           <Button
             onClick={() => setIsConsultationFormOpen(true)}
-            className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
+            className="w-full h-12 bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-lg shadow-lg hover:shadow-[0_10px_30px_-10px_hsl(var(--brand-primary-from)/0.25)] transition-all duration-300"
           >
             <Camera className="w-5 h-5 mr-2" />
             Book Consultation

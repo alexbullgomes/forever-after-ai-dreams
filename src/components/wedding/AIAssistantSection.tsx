@@ -300,7 +300,7 @@ const AIAssistantSection = () => {
     return (
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
         <div className="text-center">
-          <Heart className="w-12 h-12 text-rose-500 animate-pulse mx-auto mb-4" />
+          <Heart className="w-12 h-12 text-brand-primary-from animate-pulse mx-auto mb-4" />
           <p className="text-gray-600">Initializing your assistant...</p>
         </div>
       </div>
@@ -310,7 +310,7 @@ const AIAssistantSection = () => {
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Heart className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Assistant Planner</h2>

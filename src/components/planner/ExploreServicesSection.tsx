@@ -17,16 +17,16 @@ const ExploreServicesSection = () => {
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Photo & Video Services Card */}
         <div onClick={() => { window.location.assign('/photo-video-services'); }} className="group cursor-pointer">
-          <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-gradient-to-br from-rose-50 to-pink-50 overflow-hidden">
+          <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-brand-light overflow-hidden">
             <CardContent className="p-8 relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-rose-500/10 to-pink-500/10 rounded-full -translate-y-8 translate-x-8"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--brand-primary-from)/0.1),hsl(var(--brand-primary-to)/0.1))] rounded-full -translate-y-8 translate-x-8"></div>
               
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Camera className="w-8 h-8 text-white" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:bg-gradient-to-r group-hover:from-rose-500 group-hover:to-pink-500 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:bg-brand-gradient group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                   Photo & Video Services
                 </h3>
                 
@@ -34,7 +34,7 @@ const ExploreServicesSection = () => {
                   Professional photography and videography packages — perfect for families, businesses, and every celebration.
                 </p>
                 
-                <div className="flex items-center text-rose-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <div className="flex items-center text-brand-primary-from font-semibold group-hover:translate-x-2 transition-transform duration-300">
                   <span className="mr-2">Explore Services</span>
                   <ArrowRight className="w-5 h-5" />
                 </div>
@@ -45,16 +45,16 @@ const ExploreServicesSection = () => {
 
         {/* Wedding Packages Card */}
         <Link to="/wedding-packages" className="group">
-          <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-gradient-to-br from-pink-50 to-rose-50 overflow-hidden">
+          <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-brand-light overflow-hidden">
             <CardContent className="p-8 relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-500/10 to-rose-500/10 rounded-full -translate-y-8 translate-x-8"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--brand-primary-to)/0.1),hsl(var(--brand-primary-from)/0.1))] rounded-full -translate-y-8 translate-x-8"></div>
               
               <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Heart className="w-8 h-8 text-white" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:bg-gradient-to-r group-hover:from-pink-500 group-hover:to-rose-500 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:bg-brand-gradient group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                   Wedding Packages
                 </h3>
                 
@@ -62,7 +62,7 @@ const ExploreServicesSection = () => {
                   Exclusive wedding photography and videography collections. Premium packages designed for your special day.
                 </p>
                 
-                <div className="flex items-center text-pink-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
+                <div className="flex items-center text-brand-primary-to font-semibold group-hover:translate-x-2 transition-transform duration-300">
                   <span className="mr-2">View Packages</span>
                   <ArrowRight className="w-5 h-5" />
                 </div>

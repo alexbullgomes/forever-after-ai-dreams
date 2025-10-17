@@ -53,6 +53,17 @@
   /* Dark mode removed - site stays in light mode only */
 }
 
+@layer utilities {
+  /* Brand Light Background - For page backgrounds and subtle accents */
+  .bg-brand-light {
+    background: linear-gradient(
+      to bottom right, 
+      hsl(var(--brand-primary-from) / 0.05), 
+      hsl(var(--brand-primary-to) / 0.05)
+    );
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
