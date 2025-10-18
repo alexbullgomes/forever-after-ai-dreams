@@ -10,7 +10,12 @@ interface ColorPickerProps {
 }
 
 // Convert HSL string "244 63 94" to hex
-const hslToHex = (hsl: string): string => {
+const hslToHex = (hsl: string | undefined): string => {
+  // Handle undefined or invalid values with a default fallback
+  if (!hsl || typeof hsl !== 'string') {
+    return '#f43f5e'; // Default rose-500 color
+  }
+  
   const [h, s, l] = hsl.split(' ').map(Number);
   const hDecimal = l / 100;
   const a = (s * Math.min(hDecimal, 1 - hDecimal)) / 100;
@@ -54,15 +59,18 @@ const hexToHsl = (hex: string): string => {
 };
 
 export const ColorPicker = ({ label, value, onChange, description }: ColorPickerProps) => {
-  const hexValue = hslToHex(value);
-  const [h, s, l] = value.split(' ').map(Number);
+  // Provide a default value if undefined
+  const safeValue = value || "244 63 94"; // Default rose-500
+  const hexValue = hslToHex(safeValue);
+  const [h, s, l] = safeValue.split(' ').map(Number);
 
   const handleHexChange = (hex: string) => {
     onChange(hexToHsl(hex));
   };
 
   const handleHslChange = (component: 'h' | 's' | 'l', newValue: number) => {
-    const [currentH, currentS, currentL] = value.split(' ').map(Number);
+    const safeCurrentValue = value || "244 63 94";
+    const [currentH, currentS, currentL] = safeCurrentValue.split(' ').map(Number);
     let newH = currentH, newS = currentS, newL = currentL;
     
     if (component === 'h') newH = Math.max(0, Math.min(360, newValue));
