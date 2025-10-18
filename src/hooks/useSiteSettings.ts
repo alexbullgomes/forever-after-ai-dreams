@@ -18,6 +18,9 @@ export const useSiteSettings = () => {
     root.style.setProperty('--brand-primary-to', colors.primary_to);
     root.style.setProperty('--brand-primary-hover-from', colors.primary_hover_from);
     root.style.setProperty('--brand-primary-hover-to', colors.primary_hover_to);
+    
+    // Cache colors in localStorage for instant application on next visit
+    localStorage.setItem('everafter_brand_colors', JSON.stringify(colors));
   };
 
   const fetchColors = async () => {

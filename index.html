@@ -19,6 +19,25 @@
   </head>
 
   <body>
+    <script>
+      // Synchronously apply brand colors before React loads to prevent FOUC
+      (function() {
+        const cachedColors = localStorage.getItem('everafter_brand_colors');
+        const defaultColors = {
+          primary_from: '244 63 94',
+          primary_to: '236 72 153',
+          primary_hover_from: '225 29 72',
+          primary_hover_to: '219 39 119'
+        };
+        
+        const colors = cachedColors ? JSON.parse(cachedColors) : defaultColors;
+        
+        document.documentElement.style.setProperty('--brand-primary-from', colors.primary_from);
+        document.documentElement.style.setProperty('--brand-primary-to', colors.primary_to);
+        document.documentElement.style.setProperty('--brand-primary-hover-from', colors.primary_hover_from);
+        document.documentElement.style.setProperty('--brand-primary-hover-to', colors.primary_hover_to);
+      })();
+    </script>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
