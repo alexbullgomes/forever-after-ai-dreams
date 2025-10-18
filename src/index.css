@@ -44,10 +44,27 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Brand Colors - Dynamic (loaded from database) */
+    /* Primary gradient colors */
     --brand-primary-from: 244 63 94; /* rose-500 default */
     --brand-primary-to: 236 72 153; /* pink-500 default */
     --brand-primary-hover-from: 225 29 72; /* rose-600 default */
     --brand-primary-hover-to: 219 39 119; /* pink-600 default */
+    
+    /* Icon backgrounds */
+    --brand-icon-bg-primary: 244 63 94; /* rose-500 default */
+    --brand-icon-bg-secondary: 168 85 247; /* purple-500 default */
+    --brand-icon-bg-accent: 236 72 153; /* pink-500 default */
+    
+    /* Text accents */
+    --brand-text-accent: 244 63 94; /* rose-500 default */
+    --brand-badge-text: 225 29 72; /* rose-700 default */
+    --brand-stats-text: 244 63 94; /* rose-500 default */
+    
+    /* Backgrounds */
+    --brand-badge-bg: 254 242 242; /* rose-50 default */
+    
+    /* Decorative elements */
+    --brand-feature-dot: 251 113 133; /* rose-400 default */
   }
 
   /* Dark mode removed - site stays in light mode only */

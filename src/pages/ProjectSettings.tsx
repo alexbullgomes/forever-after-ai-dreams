@@ -11,10 +11,27 @@ import { useRole } from '@/hooks/useRole';
 import { useNavigate } from 'react-router-dom';
 
 const DEFAULT_COLORS: BrandColors = {
+  // Primary gradient colors
   primary_from: "244 63 94", // rose-500
   primary_to: "236 72 153", // pink-500
   primary_hover_from: "225 29 72", // rose-600
-  primary_hover_to: "219 39 119" // pink-600
+  primary_hover_to: "219 39 119", // pink-600
+  
+  // Icon backgrounds
+  icon_bg_primary: "244 63 94", // rose-500
+  icon_bg_secondary: "168 85 247", // purple-500
+  icon_bg_accent: "236 72 153", // pink-500
+  
+  // Text accents
+  text_accent: "244 63 94", // rose-500
+  badge_text: "225 29 72", // rose-700
+  stats_text: "244 63 94", // rose-500
+  
+  // Backgrounds
+  badge_bg: "254 242 242", // rose-50
+  
+  // Decorative elements
+  feature_dot: "251 113 133" // rose-400
 };
 
 const ProjectSettings = () => {
@@ -75,18 +92,20 @@ const ProjectSettings = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
+        {/* Left Column - Color Settings */}
         <div className="space-y-6">
+          {/* Primary Gradients */}
           <Card>
             <CardHeader>
-              <CardTitle>Brand Colors</CardTitle>
+              <CardTitle>Primary Gradients</CardTitle>
               <CardDescription>
-                Customize your primary gradient colors. Changes apply instantly to all components.
+                Main gradient colors used for buttons, CTAs, and primary UI elements
               </CardDescription>
             </CardHeader>
             
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="font-medium text-sm">Primary Gradient</h3>
+                <h3 className="font-medium text-sm">Default State</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <ColorPicker
                     label="Gradient Start"
@@ -104,7 +123,7 @@ const ProjectSettings = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-medium text-sm">Hover State Gradient</h3>
+                <h3 className="font-medium text-sm">Hover State</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <ColorPicker
                     label="Hover Start"
@@ -121,33 +140,128 @@ const ProjectSettings = () => {
                 </div>
               </div>
             </CardContent>
-
-            <CardFooter className="flex flex-wrap gap-2 justify-between">
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleReset} 
-                  variant="outline" 
-                  size="sm"
-                  disabled={saving}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset to Default
-                </Button>
-                <ColorExportImport colors={tempColors} onImport={handleImport} />
-              </div>
-              <Button 
-                onClick={handleSave} 
-                disabled={!hasChanges || saving}
-                className="bg-brand-gradient hover:bg-brand-gradient-hover"
-              >
-                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Save Changes
-              </Button>
-            </CardFooter>
           </Card>
+
+          {/* Icon Backgrounds */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Icon Backgrounds</CardTitle>
+              <CardDescription>
+                Colors for service icons, feature icons, and circular icon containers
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-3 gap-4">
+                <ColorPicker
+                  label="Primary Icon"
+                  value={tempColors.icon_bg_primary}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, icon_bg_primary: value }))}
+                  description="Main service icons"
+                />
+                <ColorPicker
+                  label="Secondary Icon"
+                  value={tempColors.icon_bg_secondary}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, icon_bg_secondary: value }))}
+                  description="Alternative icons"
+                />
+                <ColorPicker
+                  label="Accent Icon"
+                  value={tempColors.icon_bg_accent}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, icon_bg_accent: value }))}
+                  description="Accent elements"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Text & Badges */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Text & Badges</CardTitle>
+              <CardDescription>
+                Colors for accent text, section badges, and statistics
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Text Accent"
+                  value={tempColors.text_accent}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, text_accent: value }))}
+                  description="Accent headlines"
+                />
+                <ColorPicker
+                  label="Badge Text"
+                  value={tempColors.badge_text}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, badge_text: value }))}
+                  description="Section label text"
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Stats Text"
+                  value={tempColors.stats_text}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, stats_text: value }))}
+                  description="Statistics numbers"
+                />
+                <ColorPicker
+                  label="Badge Background"
+                  value={tempColors.badge_bg}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, badge_bg: value }))}
+                  description="Section label bg"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Decorative Elements */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Decorative Elements</CardTitle>
+              <CardDescription>
+                Colors for bullets, dividers, and other design accents
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <ColorPicker
+                label="Feature Dots"
+                value={tempColors.feature_dot}
+                onChange={(value) => setTempColors(prev => ({ ...prev, feature_dot: value }))}
+                description="Bullet points in lists"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2 justify-between">
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleReset} 
+                variant="outline" 
+                size="sm"
+                disabled={saving}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset to Default
+              </Button>
+              <ColorExportImport colors={tempColors} onImport={handleImport} />
+            </div>
+            <Button 
+              onClick={handleSave} 
+              disabled={!hasChanges || saving}
+              className="bg-brand-gradient hover:bg-brand-gradient-hover"
+            >
+              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Save Changes
+            </Button>
+          </div>
         </div>
 
-        <div>
+        {/* Right Column - Preview */}
+        <div className="lg:sticky lg:top-8 lg:self-start">
           <ColorPreview colors={tempColors} />
         </div>
       </div>

@@ -34,14 +34,14 @@ const Testimonials = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-4 py-2">
-              <Heart className="w-5 h-5 text-rose-500" />
-              <span className="text-rose-700 text-sm font-medium">Happy Couples</span>
+            <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
+              <Heart className="w-5 h-5 text-brand-text-accent" />
+              <span className="text-brand-badge-text text-sm font-medium">Happy Couples</span>
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Loved by Couples
-            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Families & Brands</span>
+            <span className="block bg-brand-gradient bg-clip-text text-transparent">Families & Brands</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             See why people across California trust Ever After to capture their most meaningful moments.
@@ -52,10 +52,10 @@ const Testimonials = () => {
           {testimonials.map((testimonial, index) => <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
-                  <img src={testimonial.image} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover mr-4 ring-2 ring-rose-200" />
+                  <img src={testimonial.image} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover mr-4 ring-2" style={{ '--tw-ring-color': `hsl(var(--brand-badge-bg))` } as React.CSSProperties} />
                   <div>
                     <h4 className="text-lg font-bold text-gray-900">{testimonial.name}</h4>
-                    <p className="text-rose-600 text-sm font-medium">{testimonial.location}</p>
+                    <p className="text-brand-text-accent text-sm font-medium">{testimonial.location}</p>
                   </div>
                 </div>
 
@@ -64,7 +64,7 @@ const Testimonials = () => {
                 </div>
 
                 <div className="relative">
-                  <Quote className="absolute -top-2 -left-2 w-8 h-8 text-rose-200" />
+                  <Quote className="absolute -top-2 -left-2 w-8 h-8" style={{ color: `hsl(var(--brand-badge-bg))` }} />
                   <p className="text-gray-700 leading-relaxed pl-6 italic">
                     "{testimonial.text}"
                   </p>
@@ -76,25 +76,25 @@ const Testimonials = () => {
         {/* Stats section */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+            <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               500+
             </div>
             <p className="text-gray-600 font-medium">Happy Couples</p>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+            <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               5★
             </div>
             <p className="text-gray-600 font-medium">Average Rating</p>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+            <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               50+
             </div>
             <p className="text-gray-600 font-medium">Venues Covered</p>
           </div>
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+            <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               8+
             </div>
             <p className="text-gray-600 font-medium">Years Experience</p>

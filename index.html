@@ -27,15 +27,40 @@
           primary_from: '244 63 94',
           primary_to: '236 72 153',
           primary_hover_from: '225 29 72',
-          primary_hover_to: '219 39 119'
+          primary_hover_to: '219 39 119',
+          icon_bg_primary: '244 63 94',
+          icon_bg_secondary: '168 85 247',
+          icon_bg_accent: '236 72 153',
+          text_accent: '244 63 94',
+          badge_text: '225 29 72',
+          stats_text: '244 63 94',
+          badge_bg: '254 242 242',
+          feature_dot: '251 113 133'
         };
         
         const colors = cachedColors ? JSON.parse(cachedColors) : defaultColors;
         
+        // Primary gradient colors
         document.documentElement.style.setProperty('--brand-primary-from', colors.primary_from);
         document.documentElement.style.setProperty('--brand-primary-to', colors.primary_to);
         document.documentElement.style.setProperty('--brand-primary-hover-from', colors.primary_hover_from);
         document.documentElement.style.setProperty('--brand-primary-hover-to', colors.primary_hover_to);
+        
+        // Icon backgrounds
+        document.documentElement.style.setProperty('--brand-icon-bg-primary', colors.icon_bg_primary);
+        document.documentElement.style.setProperty('--brand-icon-bg-secondary', colors.icon_bg_secondary);
+        document.documentElement.style.setProperty('--brand-icon-bg-accent', colors.icon_bg_accent);
+        
+        // Text accents
+        document.documentElement.style.setProperty('--brand-text-accent', colors.text_accent);
+        document.documentElement.style.setProperty('--brand-badge-text', colors.badge_text);
+        document.documentElement.style.setProperty('--brand-stats-text', colors.stats_text);
+        
+        // Backgrounds
+        document.documentElement.style.setProperty('--brand-badge-bg', colors.badge_bg);
+        
+        // Decorative elements
+        document.documentElement.style.setProperty('--brand-feature-dot', colors.feature_dot);
       })();
     </script>
     <div id="root"></div>

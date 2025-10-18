@@ -63,10 +63,27 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				brand: {
+					// Primary gradient colors
 					'primary-from': 'hsl(var(--brand-primary-from))',
 					'primary-to': 'hsl(var(--brand-primary-to))',
 					'primary-hover-from': 'hsl(var(--brand-primary-hover-from))',
 					'primary-hover-to': 'hsl(var(--brand-primary-hover-to))',
+					
+					// Icon backgrounds
+					'icon-bg-primary': 'hsl(var(--brand-icon-bg-primary))',
+					'icon-bg-secondary': 'hsl(var(--brand-icon-bg-secondary))',
+					'icon-bg-accent': 'hsl(var(--brand-icon-bg-accent))',
+					
+					// Text accents
+					'text-accent': 'hsl(var(--brand-text-accent))',
+					'badge-text': 'hsl(var(--brand-badge-text))',
+					'stats-text': 'hsl(var(--brand-stats-text))',
+					
+					// Backgrounds
+					'badge-bg': 'hsl(var(--brand-badge-bg))',
+					
+					// Decorative elements
+					'feature-dot': 'hsl(var(--brand-feature-dot))',
 				}
 			},
 			backgroundImage: {

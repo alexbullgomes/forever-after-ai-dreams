@@ -34,35 +34,38 @@ const Services = ({
     title: "Personalized Planner",
     description: "Meet EVA — our smart assistant who builds your ideal package and unlocks exclusive deals.",
     features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
-    gradient: "from-rose-500 to-pink-500",
+    iconBg: "bg-brand-icon-bg-primary",
+    buttonGradient: "bg-brand-gradient hover:bg-brand-gradient-hover",
     route: "/services"
   }, {
     icon: Camera,
     title: "Photo & Video Services",
     description: "Life moves fast, but memories don't have to fade. We capture moments you'll want to hold onto forever.",
     features: ["Genuine Family Portraits", "Stories Behind Your Business", "Corporate Gatherings", "Celebrations and Milestones"],
-    gradient: "from-purple-500 to-pink-500",
+    iconBg: "bg-brand-icon-bg-secondary",
+    buttonGradient: "bg-gradient-to-r from-brand-icon-bg-secondary to-brand-icon-bg-accent hover:opacity-90",
     route: "/photo-video-services"
   }, {
     icon: Sparkles,
     title: "Wedding Packages",
     description: "Your love story feels like a movie — we'll film the moment that matters most.",
     features: ["Photos + Video Packages", "Artistic & Emotional Photography", "Cinematic Wedding Films", "Personalized & Fast Delivery"],
-    gradient: "from-pink-500 to-rose-500",
+    iconBg: "bg-brand-icon-bg-accent",
+    buttonGradient: "bg-gradient-to-r from-brand-icon-bg-accent to-brand-icon-bg-primary hover:opacity-90",
     route: "/wedding-packages"
   }];
   return <section id="services" className="hidden sm:block py-20 bg-gradient-to-br from-gray-50 to-rose-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-4 py-2">
-              <Heart className="w-5 h-5 text-rose-500" />
-              <span className="text-rose-700 text-sm font-medium">Our Services</span>
+            <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
+              <Heart className="w-5 h-5 text-brand-text-accent" />
+              <span className="text-brand-badge-text text-sm font-medium">Our Services</span>
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Capturing
-            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="block bg-brand-gradient bg-clip-text text-transparent">
               Every Frame
             </span>
           </h2>
@@ -72,7 +75,7 @@ const Services = ({
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {services.map((service, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105">
               <CardContent className="p-8">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${service.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-16 h-16 rounded-2xl ${service.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <service.icon className="w-8 h-8 text-white" />
                 </div>
                 
@@ -81,12 +84,12 @@ const Services = ({
                 
                 <ul className="space-y-2 mb-8">
                   {service.features.map((feature, featureIndex) => <li key={featureIndex} className="flex items-center text-gray-700">
-                      <div className="w-2 h-2 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full mr-3"></div>
+                      <div className="w-2 h-2 bg-brand-feature-dot rounded-full mr-3"></div>
                       {feature}
                     </li>)}
                 </ul>
 
-                <Button onClick={() => handleServiceClick(service.route, service.title)} className={`w-full bg-gradient-to-r ${service.gradient} hover:shadow-lg transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
+                <Button onClick={() => handleServiceClick(service.route, service.title)} className={`w-full ${service.buttonGradient} transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
                   More Details
                 </Button>
               </CardContent>
@@ -96,7 +99,7 @@ const Services = ({
         {/* Additional features */}
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-brand-icon-bg-primary rounded-full flex items-center justify-center mb-4">
               <Clock className="w-6 h-6 text-white" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Quick Turnaround</h4>
@@ -104,7 +107,7 @@ const Services = ({
           </div>
           
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-brand-icon-bg-secondary rounded-full flex items-center justify-center mb-4">
               <Award className="w-6 h-6 text-white" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Award Winning</h4>
@@ -112,7 +115,7 @@ const Services = ({
           </div>
           
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-brand-icon-bg-accent rounded-full flex items-center justify-center mb-4">
               <Heart className="w-6 h-6 text-white" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Personal Touch</h4>

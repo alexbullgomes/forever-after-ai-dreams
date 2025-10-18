@@ -121,14 +121,14 @@ const Portfolio = ({
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="flex justify-center mb-4">
-              <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-4 py-2">
-                <Heart className="w-5 h-5 text-rose-500" />
-                <span className="text-rose-700 text-sm font-medium">Our Portfolio</span>
+              <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
+                <Heart className="w-5 h-5 text-brand-text-accent" />
+                <span className="text-brand-badge-text text-sm font-medium">Our Portfolio</span>
               </div>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Recent
-              <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Stories</span>
+              <span className="block bg-brand-gradient bg-clip-text text-transparent">Stories</span>
             </h2>
           </div>
           <div className="flex justify-center">
@@ -143,20 +143,20 @@ const Portfolio = ({
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-2 bg-gradient-to-r from-rose-100 to-pink-100 rounded-full px-4 py-2">
-              <Heart className="w-5 h-5 text-rose-500" />
-              <span className="text-rose-700 text-sm font-medium">Our Portfolio</span>
+            <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
+              <Heart className="w-5 h-5 text-brand-text-accent" />
+              <span className="text-brand-badge-text text-sm font-medium">Our Portfolio</span>
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Recent
-            <span className="block bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">Stories</span>
+            <span className="block bg-brand-gradient bg-clip-text text-transparent">Stories</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">All stories are unique. Here are some of our recent celebrations captured across California.</p>
 
           {/* Filter buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {filters.map(filter => <Button key={filter.id} onClick={() => setActiveFilter(filter.id)} variant={activeFilter === filter.id ? "default" : "outline"} className={`px-6 py-2 rounded-full transition-all duration-300 ${activeFilter === filter.id ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg" : "border-gray-300 text-gray-700 hover:border-rose-300 hover:text-rose-600"}`}>
+            {filters.map(filter => <Button key={filter.id} onClick={() => setActiveFilter(filter.id)} variant={activeFilter === filter.id ? "default" : "outline"} className={`px-6 py-2 rounded-full transition-all duration-300 ${activeFilter === filter.id ? "bg-brand-gradient text-white shadow-lg" : "border-gray-300 text-gray-700 hover:border-brand-text-accent/30 hover:text-brand-text-accent"}`}>
                 {filter.label}
               </Button>)}
           </div>
@@ -188,14 +188,14 @@ const Portfolio = ({
 
                 {/* Category badge */}
                 <div className="absolute top-4 left-4">
-                  <span className="bg-gradient-to-r from-rose-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-brand-gradient text-white px-3 py-1 rounded-full text-sm font-medium">
                     {item.type}
                   </span>
                 </div>
               </div>
 
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-rose-600 transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-brand-text-accent transition-colors">
                   {item.title}
                 </h3>
                 <div className="flex items-center text-gray-600 mb-2">
@@ -210,7 +210,7 @@ const Portfolio = ({
         </div>
 
         <div className="text-center mt-12">
-          <Button onClick={handleViewPortfolioClick} size="lg" className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-rose-500/25 transition-all duration-300">
+          <Button onClick={handleViewPortfolioClick} size="lg" className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg transition-all duration-300">
             View Complete Portfolio
           </Button>
         </div>
