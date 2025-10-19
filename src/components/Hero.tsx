@@ -30,15 +30,15 @@ const Hero = ({
             <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/bannerhomepage.mp4?t=2025-10-06T20%3A46%3A21.431Z" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-hero-overlay/40"></div>
         </div>
 
         {/* Content */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
             <div className="mb-6 flex justify-center">
-              <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Heart className="w-5 h-5 text-rose-400" />
-                <span className="text-white text-sm font-medium">California-Based Premium Visual Storytelling</span>
+              <div className="flex items-center space-x-2 bg-hero-badge-bg/10 backdrop-blur-sm rounded-full px-4 py-2">
+                <Heart className="w-5 h-5 text-hero-badge-icon" />
+                <span className="text-hero-text-primary text-sm font-medium">California-Based Premium Visual Storytelling</span>
               </div>
             </div>
             
@@ -57,7 +57,7 @@ const Hero = ({
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-white/70">
+          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-hero-trust-text/70">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">⭐</span>
               <span className="text-sm">500+ Happy Couples</span>
@@ -74,8 +74,8 @@ const Hero = ({
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-rose-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-hero-glow-1-from/20 to-hero-glow-1-to/20 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-hero-glow-2-from/20 to-hero-glow-2-to/20 rounded-full blur-xl animate-pulse delay-1000"></div>
       </section>
 
       <ConsultationForm isOpen={isConsultationFormOpen} onClose={() => setIsConsultationFormOpen(false)} />

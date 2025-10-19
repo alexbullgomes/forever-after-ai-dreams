@@ -23,6 +23,21 @@ export interface BrandColors {
   
   // Decorative elements
   feature_dot: string;         // Feature list dots (e.g., rose-400)
+  
+  // Hero section
+  hero_overlay_color: string;
+  hero_badge_bg_color: string;
+  hero_badge_icon: string;
+  hero_gradient_from: string;
+  hero_gradient_via: string;
+  hero_gradient_to: string;
+  hero_text_primary: string;
+  hero_text_muted: string;
+  hero_trust_text: string;
+  hero_glow_1_from: string;
+  hero_glow_1_to: string;
+  hero_glow_2_from: string;
+  hero_glow_2_to: string;
 }
 
 export const useSiteSettings = () => {
@@ -53,6 +68,21 @@ export const useSiteSettings = () => {
     
     // Decorative elements
     root.style.setProperty('--brand-feature-dot', colors.feature_dot);
+    
+    // Hero section colors
+    root.style.setProperty('--hero-overlay-color', colors.hero_overlay_color);
+    root.style.setProperty('--hero-badge-bg-color', colors.hero_badge_bg_color);
+    root.style.setProperty('--hero-badge-icon', colors.hero_badge_icon);
+    root.style.setProperty('--hero-gradient-from', colors.hero_gradient_from);
+    root.style.setProperty('--hero-gradient-via', colors.hero_gradient_via);
+    root.style.setProperty('--hero-gradient-to', colors.hero_gradient_to);
+    root.style.setProperty('--hero-text-primary', colors.hero_text_primary);
+    root.style.setProperty('--hero-text-muted', colors.hero_text_muted);
+    root.style.setProperty('--hero-trust-text', colors.hero_trust_text);
+    root.style.setProperty('--hero-glow-1-from', colors.hero_glow_1_from);
+    root.style.setProperty('--hero-glow-1-to', colors.hero_glow_1_to);
+    root.style.setProperty('--hero-glow-2-from', colors.hero_glow_2_from);
+    root.style.setProperty('--hero-glow-2-to', colors.hero_glow_2_to);
     
     // Cache colors in localStorage for instant application on next visit
     localStorage.setItem('everafter_brand_colors', JSON.stringify(colors));

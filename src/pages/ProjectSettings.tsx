@@ -31,7 +31,22 @@ const DEFAULT_COLORS: BrandColors = {
   badge_bg: "254 242 242", // rose-50
   
   // Decorative elements
-  feature_dot: "251 113 133" // rose-400
+  feature_dot: "251 113 133", // rose-400
+  
+  // Hero section
+  hero_overlay_color: "0 0 0",
+  hero_badge_bg_color: "0 0 100",
+  hero_badge_icon: "351 95 71",
+  hero_gradient_from: "351 95 71",
+  hero_gradient_via: "328 86 70",
+  hero_gradient_to: "261 90 76",
+  hero_text_primary: "0 0 100",
+  hero_text_muted: "0 0 100",
+  hero_trust_text: "0 0 100",
+  hero_glow_1_from: "351 95 71",
+  hero_glow_1_to: "328 86 70",
+  hero_glow_2_from: "261 90 76",
+  hero_glow_2_to: "328 86 70"
 };
 
 const ProjectSettings = () => {
@@ -232,6 +247,117 @@ const ProjectSettings = () => {
                 onChange={(value) => setTempColors(prev => ({ ...prev, feature_dot: value }))}
                 description="Bullet points in lists"
               />
+            </CardContent>
+          </Card>
+
+          {/* Hero Section Colors */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Hero Banner Colors</CardTitle>
+              <CardDescription>
+                Colors for the homepage hero section
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Overlay Color"
+                  value={tempColors.hero_overlay_color}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_overlay_color: value }))}
+                  description="Video overlay (use with /40)"
+                />
+                <ColorPicker
+                  label="Badge Background"
+                  value={tempColors.hero_badge_bg_color}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_badge_bg_color: value }))}
+                  description="Badge bg (use with /10)"
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Badge Icon"
+                  value={tempColors.hero_badge_icon}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_badge_icon: value }))}
+                  description="Heart icon color"
+                />
+                <ColorPicker
+                  label="Primary Text"
+                  value={tempColors.hero_text_primary}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_text_primary: value }))}
+                  description="Main text color"
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Muted Text"
+                  value={tempColors.hero_text_muted}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_text_muted: value }))}
+                  description="Subtitle (use with /90)"
+                />
+                <ColorPicker
+                  label="Trust Text"
+                  value={tempColors.hero_trust_text}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_trust_text: value }))}
+                  description="Trust badges (use with /70)"
+                />
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <ColorPicker
+                  label="Gradient Start"
+                  value={tempColors.hero_gradient_from}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_gradient_from: value }))}
+                  description="Title gradient start"
+                />
+                <ColorPicker
+                  label="Gradient Middle"
+                  value={tempColors.hero_gradient_via}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_gradient_via: value }))}
+                  description="Title gradient middle"
+                />
+                <ColorPicker
+                  label="Gradient End"
+                  value={tempColors.hero_gradient_to}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, hero_gradient_to: value }))}
+                  description="Title gradient end"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Glow Effect 1</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ColorPicker
+                      label="Start"
+                      value={tempColors.hero_glow_1_from}
+                      onChange={(value) => setTempColors(prev => ({ ...prev, hero_glow_1_from: value }))}
+                      description="From color"
+                    />
+                    <ColorPicker
+                      label="End"
+                      value={tempColors.hero_glow_1_to}
+                      onChange={(value) => setTempColors(prev => ({ ...prev, hero_glow_1_to: value }))}
+                      description="To color"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Glow Effect 2</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <ColorPicker
+                      label="Start"
+                      value={tempColors.hero_glow_2_from}
+                      onChange={(value) => setTempColors(prev => ({ ...prev, hero_glow_2_from: value }))}
+                      description="From color"
+                    />
+                    <ColorPicker
+                      label="End"
+                      value={tempColors.hero_glow_2_to}
+                      onChange={(value) => setTempColors(prev => ({ ...prev, hero_glow_2_to: value }))}
+                      description="To color"
+                    />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

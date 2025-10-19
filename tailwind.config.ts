@@ -84,6 +84,21 @@ export default {
 					
 					// Decorative elements
 					'feature-dot': 'hsl(var(--brand-feature-dot))',
+				},
+				hero: {
+					'overlay': 'hsl(var(--hero-overlay-color))',
+					'badge-bg': 'hsl(var(--hero-badge-bg-color))',
+					'badge-icon': 'hsl(var(--hero-badge-icon))',
+					'gradient-from': 'hsl(var(--hero-gradient-from))',
+					'gradient-via': 'hsl(var(--hero-gradient-via))',
+					'gradient-to': 'hsl(var(--hero-gradient-to))',
+					'text-primary': 'hsl(var(--hero-text-primary))',
+					'text-muted': 'hsl(var(--hero-text-muted))',
+					'trust-text': 'hsl(var(--hero-trust-text))',
+					'glow-1-from': 'hsl(var(--hero-glow-1-from))',
+					'glow-1-to': 'hsl(var(--hero-glow-1-to))',
+					'glow-2-from': 'hsl(var(--hero-glow-2-from))',
+					'glow-2-to': 'hsl(var(--hero-glow-2-to))',
 				}
 			},
 			backgroundImage: {

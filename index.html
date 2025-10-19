@@ -35,7 +35,20 @@
           badge_text: '225 29 72',
           stats_text: '244 63 94',
           badge_bg: '254 242 242',
-          feature_dot: '251 113 133'
+          feature_dot: '251 113 133',
+          hero_overlay_color: '0 0 0',
+          hero_badge_bg_color: '0 0 100',
+          hero_badge_icon: '351 95 71',
+          hero_gradient_from: '351 95 71',
+          hero_gradient_via: '328 86 70',
+          hero_gradient_to: '261 90 76',
+          hero_text_primary: '0 0 100',
+          hero_text_muted: '0 0 100',
+          hero_trust_text: '0 0 100',
+          hero_glow_1_from: '351 95 71',
+          hero_glow_1_to: '328 86 70',
+          hero_glow_2_from: '261 90 76',
+          hero_glow_2_to: '328 86 70'
         };
         
         const colors = cachedColors ? JSON.parse(cachedColors) : defaultColors;
@@ -61,6 +74,21 @@
         
         // Decorative elements
         document.documentElement.style.setProperty('--brand-feature-dot', colors.feature_dot);
+        
+        // Hero section colors
+        if (colors.hero_overlay_color) document.documentElement.style.setProperty('--hero-overlay-color', colors.hero_overlay_color);
+        if (colors.hero_badge_bg_color) document.documentElement.style.setProperty('--hero-badge-bg-color', colors.hero_badge_bg_color);
+        if (colors.hero_badge_icon) document.documentElement.style.setProperty('--hero-badge-icon', colors.hero_badge_icon);
+        if (colors.hero_gradient_from) document.documentElement.style.setProperty('--hero-gradient-from', colors.hero_gradient_from);
+        if (colors.hero_gradient_via) document.documentElement.style.setProperty('--hero-gradient-via', colors.hero_gradient_via);
+        if (colors.hero_gradient_to) document.documentElement.style.setProperty('--hero-gradient-to', colors.hero_gradient_to);
+        if (colors.hero_text_primary) document.documentElement.style.setProperty('--hero-text-primary', colors.hero_text_primary);
+        if (colors.hero_text_muted) document.documentElement.style.setProperty('--hero-text-muted', colors.hero_text_muted);
+        if (colors.hero_trust_text) document.documentElement.style.setProperty('--hero-trust-text', colors.hero_trust_text);
+        if (colors.hero_glow_1_from) document.documentElement.style.setProperty('--hero-glow-1-from', colors.hero_glow_1_from);
+        if (colors.hero_glow_1_to) document.documentElement.style.setProperty('--hero-glow-1-to', colors.hero_glow_1_to);
+        if (colors.hero_glow_2_from) document.documentElement.style.setProperty('--hero-glow-2-from', colors.hero_glow_2_from);
+        if (colors.hero_glow_2_to) document.documentElement.style.setProperty('--hero-glow-2-to', colors.hero_glow_2_to);
       })();
     </script>
     <div id="root"></div>

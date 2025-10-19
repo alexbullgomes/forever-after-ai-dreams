@@ -65,6 +65,21 @@
     
     /* Decorative elements */
     --brand-feature-dot: 251 113 133; /* rose-400 default */
+    
+    /* Hero Section */
+    --hero-overlay-color: 0 0 0;
+    --hero-badge-bg-color: 0 0 100;
+    --hero-badge-icon: 351 95 71;
+    --hero-gradient-from: 351 95 71;
+    --hero-gradient-via: 328 86 70;
+    --hero-gradient-to: 261 90 76;
+    --hero-text-primary: 0 0 100;
+    --hero-text-muted: 0 0 100;
+    --hero-trust-text: 0 0 100;
+    --hero-glow-1-from: 351 95 71;
+    --hero-glow-1-to: 328 86 70;
+    --hero-glow-2-from: 261 90 76;
+    --hero-glow-2-to: 328 86 70;
   }
 
   /* Dark mode removed - site stays in light mode only */
