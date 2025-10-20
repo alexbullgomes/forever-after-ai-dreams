@@ -48,7 +48,9 @@
           hero_glow_1_from: '351 95 71',
           hero_glow_1_to: '328 86 70',
           hero_glow_2_from: '261 90 76',
-          hero_glow_2_to: '328 86 70'
+          hero_glow_2_to: '328 86 70',
+          service_icon_gradient_from: '351 95 71',
+          service_icon_gradient_to: '328 86 70'
         };
         
         const colors = cachedColors ? JSON.parse(cachedColors) : defaultColors;
@@ -89,6 +91,10 @@
         if (colors.hero_glow_1_to) document.documentElement.style.setProperty('--hero-glow-1-to', colors.hero_glow_1_to);
         if (colors.hero_glow_2_from) document.documentElement.style.setProperty('--hero-glow-2-from', colors.hero_glow_2_from);
         if (colors.hero_glow_2_to) document.documentElement.style.setProperty('--hero-glow-2-to', colors.hero_glow_2_to);
+        
+        // Services section colors
+        if (colors.service_icon_gradient_from) document.documentElement.style.setProperty('--service-icon-gradient-from', colors.service_icon_gradient_from);
+        if (colors.service_icon_gradient_to) document.documentElement.style.setProperty('--service-icon-gradient-to', colors.service_icon_gradient_to);
       })();
     </script>
     <div id="root"></div>

@@ -46,7 +46,11 @@ const DEFAULT_COLORS: BrandColors = {
   hero_glow_1_from: "351 95 71",
   hero_glow_1_to: "328 86 70",
   hero_glow_2_from: "261 90 76",
-  hero_glow_2_to: "328 86 70"
+  hero_glow_2_to: "328 86 70",
+  
+  // Services section
+  service_icon_gradient_from: "351 95 71",
+  service_icon_gradient_to: "328 86 70",
 };
 
 const ProjectSettings = () => {
@@ -357,6 +361,33 @@ const ProjectSettings = () => {
                     />
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Services Section Colors */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Services Section</CardTitle>
+              <CardDescription>
+                Icon gradient colors for the services section
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Icon Gradient Start"
+                  value={tempColors.service_icon_gradient_from}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, service_icon_gradient_from: value }))}
+                  description="Gradient start color"
+                />
+                <ColorPicker
+                  label="Icon Gradient End"
+                  value={tempColors.service_icon_gradient_to}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, service_icon_gradient_to: value }))}
+                  description="Gradient end color"
+                />
               </div>
             </CardContent>
           </Card>

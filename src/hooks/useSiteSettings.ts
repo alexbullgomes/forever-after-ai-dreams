@@ -38,6 +38,10 @@ export interface BrandColors {
   hero_glow_1_to: string;
   hero_glow_2_from: string;
   hero_glow_2_to: string;
+  
+  // Services section
+  service_icon_gradient_from: string;
+  service_icon_gradient_to: string;
 }
 
 export const useSiteSettings = () => {
@@ -83,6 +87,10 @@ export const useSiteSettings = () => {
     root.style.setProperty('--hero-glow-1-to', colors.hero_glow_1_to);
     root.style.setProperty('--hero-glow-2-from', colors.hero_glow_2_from);
     root.style.setProperty('--hero-glow-2-to', colors.hero_glow_2_to);
+    
+    // Services section colors
+    root.style.setProperty('--service-icon-gradient-from', colors.service_icon_gradient_from);
+    root.style.setProperty('--service-icon-gradient-to', colors.service_icon_gradient_to);
     
     // Cache colors in localStorage for instant application on next visit
     localStorage.setItem('everafter_brand_colors', JSON.stringify(colors));

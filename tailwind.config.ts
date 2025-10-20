@@ -99,11 +99,16 @@ export default {
 					'glow-1-to': 'hsl(var(--hero-glow-1-to))',
 					'glow-2-from': 'hsl(var(--hero-glow-2-from))',
 					'glow-2-to': 'hsl(var(--hero-glow-2-to))',
+				},
+				service: {
+					'icon-gradient-from': 'hsl(var(--service-icon-gradient-from))',
+					'icon-gradient-to': 'hsl(var(--service-icon-gradient-to))',
 				}
 			},
 			backgroundImage: {
 				'brand-gradient': 'linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to)))',
 				'brand-gradient-hover': 'linear-gradient(to right, hsl(var(--brand-primary-hover-from)), hsl(var(--brand-primary-hover-to)))',
+				'service-icon-gradient': 'linear-gradient(135deg, hsl(var(--service-icon-gradient-from)), hsl(var(--service-icon-gradient-to)))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

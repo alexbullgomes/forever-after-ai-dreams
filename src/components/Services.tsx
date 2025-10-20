@@ -75,7 +75,7 @@ const Services = ({
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           {services.map((service, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105">
               <CardContent className="p-8">
-                <div className={`w-16 h-16 rounded-2xl ${service.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-16 h-16 rounded-2xl ${service.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 bg-service-icon-gradient`}>
                   <service.icon className="w-8 h-8 text-white" />
                 </div>
                 
@@ -99,7 +99,7 @@ const Services = ({
         {/* Additional features */}
         <div className="grid md:grid-cols-3 gap-8 text-center">
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-brand-icon-bg-primary rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
               <Clock className="w-6 h-6 text-white" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Quick Turnaround</h4>
@@ -107,7 +107,7 @@ const Services = ({
           </div>
           
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-brand-icon-bg-secondary rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
               <Award className="w-6 h-6 text-white" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Award Winning</h4>
@@ -115,7 +115,7 @@ const Services = ({
           </div>
           
           <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-brand-icon-bg-accent rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
               <Heart className="w-6 h-6 text-white" />
             </div>
             <h4 className="text-lg font-semibold text-gray-900 mb-2">Personal Touch</h4>

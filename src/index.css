@@ -80,6 +80,10 @@
     --hero-glow-1-to: 328 86 70;
     --hero-glow-2-from: 261 90 76;
     --hero-glow-2-to: 328 86 70;
+    
+    /* Services Section */
+    --service-icon-gradient-from: 351 95 71;
+    --service-icon-gradient-to: 328 86 70;
   }
 
   /* Dark mode removed - site stays in light mode only */
