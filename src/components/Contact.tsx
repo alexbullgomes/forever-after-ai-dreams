@@ -105,7 +105,7 @@ const Contact = () => {
   };
 
   return (
-    <section id="contact" className="py-20 bg-gradient-to-br from-gray-900 to-rose-900 text-white">
+    <section id="contact" className="py-20 bg-contact-bg-gradient text-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">

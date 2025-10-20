@@ -42,6 +42,10 @@ export interface BrandColors {
   // Services section
   service_icon_gradient_from: string;
   service_icon_gradient_to: string;
+  
+  // Contact section
+  contact_bg_gradient_from: string;
+  contact_bg_gradient_to: string;
 }
 
 export const useSiteSettings = () => {
@@ -91,6 +95,10 @@ export const useSiteSettings = () => {
     // Services section colors
     root.style.setProperty('--service-icon-gradient-from', colors.service_icon_gradient_from);
     root.style.setProperty('--service-icon-gradient-to', colors.service_icon_gradient_to);
+    
+    // Contact section colors
+    root.style.setProperty('--contact-bg-gradient-from', colors.contact_bg_gradient_from);
+    root.style.setProperty('--contact-bg-gradient-to', colors.contact_bg_gradient_to);
     
     // Cache colors in localStorage for instant application on next visit
     localStorage.setItem('everafter_brand_colors', JSON.stringify(colors));

@@ -108,8 +108,9 @@ export default {
 			backgroundImage: {
 				'brand-gradient': 'linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to)))',
 				'brand-gradient-hover': 'linear-gradient(to right, hsl(var(--brand-primary-hover-from)), hsl(var(--brand-primary-hover-to)))',
-				'service-icon-gradient': 'linear-gradient(135deg, hsl(var(--service-icon-gradient-from)), hsl(var(--service-icon-gradient-to)))',
-			},
+        'service-icon-gradient': 'linear-gradient(135deg, hsl(var(--service-icon-gradient-from)), hsl(var(--service-icon-gradient-to)))',
+        'contact-bg-gradient': 'linear-gradient(to bottom right, hsl(var(--contact-bg-gradient-from)), hsl(var(--contact-bg-gradient-to)))',
+      },
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

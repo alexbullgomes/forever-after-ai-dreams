@@ -50,7 +50,9 @@
           hero_glow_2_from: '261 90 76',
           hero_glow_2_to: '328 86 70',
           service_icon_gradient_from: '351 95 71',
-          service_icon_gradient_to: '328 86 70'
+          service_icon_gradient_to: '328 86 70',
+          contact_bg_gradient_from: '222 47 11',
+          contact_bg_gradient_to: '350 89 60'
         };
         
         const colors = cachedColors ? JSON.parse(cachedColors) : defaultColors;
@@ -95,6 +97,10 @@
         // Services section colors
         if (colors.service_icon_gradient_from) document.documentElement.style.setProperty('--service-icon-gradient-from', colors.service_icon_gradient_from);
         if (colors.service_icon_gradient_to) document.documentElement.style.setProperty('--service-icon-gradient-to', colors.service_icon_gradient_to);
+        
+        // Contact section colors
+        if (colors.contact_bg_gradient_from) document.documentElement.style.setProperty('--contact-bg-gradient-from', colors.contact_bg_gradient_from);
+        if (colors.contact_bg_gradient_to) document.documentElement.style.setProperty('--contact-bg-gradient-to', colors.contact_bg_gradient_to);
       })();
     </script>
     <div id="root"></div>

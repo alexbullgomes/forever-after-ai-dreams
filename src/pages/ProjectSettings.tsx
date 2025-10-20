@@ -51,6 +51,10 @@ const DEFAULT_COLORS: BrandColors = {
   // Services section
   service_icon_gradient_from: "351 95 71",
   service_icon_gradient_to: "328 86 70",
+  
+  // Contact section
+  contact_bg_gradient_from: "222 47 11",
+  contact_bg_gradient_to: "350 89 60",
 };
 
 const ProjectSettings = () => {
@@ -387,6 +391,33 @@ const ProjectSettings = () => {
                   value={tempColors.service_icon_gradient_to}
                   onChange={(value) => setTempColors(prev => ({ ...prev, service_icon_gradient_to: value }))}
                   description="Gradient end color"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contact Section Colors */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Section</CardTitle>
+              <CardDescription>
+                Background gradient for the Get in Touch section
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <ColorPicker
+                  label="Background Gradient Start"
+                  value={tempColors.contact_bg_gradient_from}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, contact_bg_gradient_from: value }))}
+                  description="Left side of gradient"
+                />
+                <ColorPicker
+                  label="Background Gradient End"
+                  value={tempColors.contact_bg_gradient_to}
+                  onChange={(value) => setTempColors(prev => ({ ...prev, contact_bg_gradient_to: value }))}
+                  description="Right side of gradient"
                 />
               </div>
             </CardContent>
