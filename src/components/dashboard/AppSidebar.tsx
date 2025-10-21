@@ -48,11 +48,6 @@ const navigationItems = [
     url: "/dashboard/promotional-popups",
     icon: Gift,
   },
-  {
-    title: "Project Settings",
-    url: "/dashboard/project-settings",
-    icon: Settings,
-  },
 ];
 
 export function AppSidebar() {
@@ -160,6 +155,17 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink
+                to="/dashboard/project-settings"
+                className={getNavCls(isActive("/dashboard/project-settings"))}
+              >
+                <Settings className="h-4 w-4" />
+                {showText && <span>Project Settings</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut} className="w-full">
               <LogOut className="h-4 w-4" />
