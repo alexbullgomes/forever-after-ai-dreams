@@ -88,6 +88,9 @@
     /* Contact Section */
     --contact-bg-gradient-from: 222 47 11;
     --contact-bg-gradient-to: 350 89 60;
+
+    /* CTA Section */
+    --cta-icon: 244 63 94;
   }
 
   /* Dark mode removed - site stays in light mode only */

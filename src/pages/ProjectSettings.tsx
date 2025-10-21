@@ -55,6 +55,9 @@ const DEFAULT_COLORS: BrandColors = {
   // Contact section
   contact_bg_gradient_from: "222 47 11",
   contact_bg_gradient_to: "350 89 60",
+
+  // CTA section icon color
+  cta_icon_color: "244 63 94",
 };
 
 const ProjectSettings = () => {
@@ -420,6 +423,25 @@ const ProjectSettings = () => {
                   description="Right side of gradient"
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* CTA Section Icon */}
+          <Card>
+            <CardHeader>
+              <CardTitle>CTA Section Icon</CardTitle>
+              <CardDescription>
+                Video icon color in the "Ready to Capture Your Love Story?" section
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <ColorPicker
+                label="Video Icon Color"
+                value={tempColors.cta_icon_color}
+                onChange={(value) => setTempColors(prev => ({ ...prev, cta_icon_color: value }))}
+                description="Icon color"
+              />
             </CardContent>
           </Card>
 

@@ -46,6 +46,9 @@ export interface BrandColors {
   // Contact section
   contact_bg_gradient_from: string;
   contact_bg_gradient_to: string;
+
+  // CTA section icon color
+  cta_icon_color: string;
 }
 
 export const useSiteSettings = () => {
@@ -99,6 +102,9 @@ export const useSiteSettings = () => {
     // Contact section colors
     root.style.setProperty('--contact-bg-gradient-from', colors.contact_bg_gradient_from);
     root.style.setProperty('--contact-bg-gradient-to', colors.contact_bg_gradient_to);
+
+    // CTA section icon color
+    root.style.setProperty('--cta-icon', colors.cta_icon_color);
     
     // Cache colors in localStorage for instant application on next visit
     localStorage.setItem('everafter_brand_colors', JSON.stringify(colors));

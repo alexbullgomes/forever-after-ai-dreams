@@ -10,7 +10,7 @@ const CTASection = () => {
   return (
     <>
       <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-        <Video className="w-16 h-16 text-rose-500 mx-auto mb-6" />
+        <Video className="w-16 h-16 text-cta-icon mx-auto mb-6" />
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           Ready to Capture Your Love Story?
         </h2>

@@ -103,6 +103,9 @@ export default {
 				service: {
 					'icon-gradient-from': 'hsl(var(--service-icon-gradient-from))',
 					'icon-gradient-to': 'hsl(var(--service-icon-gradient-to))',
+				},
+				cta: {
+					'icon': 'hsl(var(--cta-icon))',
 				}
 			},
 			backgroundImage: {
