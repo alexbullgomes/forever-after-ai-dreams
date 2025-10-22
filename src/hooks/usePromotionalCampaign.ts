@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface TrackingScript {
+  id: string;
+  provider: string;
+  name: string;
+  placement: 'head' | 'body_end';
+  code: string;
+  enabled: boolean;
+  created_at: string;
+}
+
 interface PromotionalCampaign {
   id: string;
   slug: string;
@@ -36,6 +46,7 @@ interface PromotionalCampaign {
   meta_image_url: string | null;
   is_active: boolean;
   views_count: number;
+  tracking_scripts: TrackingScript[];
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -71,7 +82,12 @@ export const usePromotionalCampaign = (slug: string) => {
           return;
         }
 
-        setCampaign(data as PromotionalCampaign);
+        // Parse tracking_scripts from JSONB
+        const parsedData = {
+          ...data,
+          tracking_scripts: (data.tracking_scripts as any) || [],
+        };
+        setCampaign(parsedData as PromotionalCampaign);
 
         // Track view (only once per session)
         const sessionKey = `viewed-promo-${slug}`;

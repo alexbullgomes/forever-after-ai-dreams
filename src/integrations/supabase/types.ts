@@ -644,6 +644,7 @@ export type Database = {
           promotional_footer_enabled: boolean | null
           slug: string
           title: string
+          tracking_scripts: Json | null
           updated_at: string | null
           views_count: number | null
         }
@@ -683,6 +684,7 @@ export type Database = {
           promotional_footer_enabled?: boolean | null
           slug: string
           title: string
+          tracking_scripts?: Json | null
           updated_at?: string | null
           views_count?: number | null
         }
@@ -722,6 +724,7 @@ export type Database = {
           promotional_footer_enabled?: boolean | null
           slug?: string
           title?: string
+          tracking_scripts?: Json | null
           updated_at?: string | null
           views_count?: number | null
         }

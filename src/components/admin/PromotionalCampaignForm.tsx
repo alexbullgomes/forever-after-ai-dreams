@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,8 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePromotionalCampaignGallery } from "@/hooks/usePromotionalCampaignGallery";
+import { TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { slugify } from "@/utils/slugify";
-import { Loader2, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Plus, Trash2, Eye, EyeOff, Edit, Code } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Campaign {
   id?: string;
@@ -48,6 +51,7 @@ interface Campaign {
   meta_image_url?: string;
   is_active: boolean;
   promotional_footer_enabled: boolean;
+  tracking_scripts?: TrackingScript[];
 }
 
 interface PromotionalCampaignFormProps {
@@ -61,6 +65,20 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { cards, loading: loadingGallery, createCard, updateCard, deleteCard } = usePromotionalCampaignGallery(campaign?.id);
+  
+  // Tracking scripts state
+  const [trackingScripts, setTrackingScripts] = useState<TrackingScript[]>([]);
+  const [isScriptDialogOpen, setIsScriptDialogOpen] = useState(false);
+  const [editingScript, setEditingScript] = useState<TrackingScript | null>(null);
+  const [scriptToDelete, setScriptToDelete] = useState<string | null>(null);
+  const [scriptForm, setScriptForm] = useState({
+    provider: '',
+    name: '',
+    placement: 'head' as 'head' | 'body_end',
+    code: '',
+    enabled: true,
+  });
+
   const [newGalleryItem, setNewGalleryItem] = useState({
     title: '',
     subtitle: '',
@@ -69,6 +87,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     thumb_image_url: '',
     full_video_url: '',
   });
+  
   const [formData, setFormData] = useState<Campaign>({
     slug: '',
     title: '',
@@ -96,11 +115,109 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     pricing_card_3_popular: false,
     is_active: false,
     promotional_footer_enabled: false,
+    tracking_scripts: [],
   });
+
+  // Tracking script handlers
+  const handleAddScript = () => {
+    setEditingScript(null);
+    setScriptForm({
+      provider: '',
+      name: '',
+      placement: 'head',
+      code: '',
+      enabled: true,
+    });
+    setIsScriptDialogOpen(true);
+  };
+
+  const handleEditScript = (script: TrackingScript) => {
+    setEditingScript(script);
+    setScriptForm({
+      provider: script.provider,
+      name: script.name,
+      placement: script.placement,
+      code: script.code,
+      enabled: script.enabled,
+    });
+    setIsScriptDialogOpen(true);
+  };
+
+  const handleSaveScript = () => {
+    if (!scriptForm.name.trim() || !scriptForm.code.trim()) {
+      toast({
+        title: "Error",
+        description: "Name and code are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!scriptForm.code.includes('<script')) {
+      toast({
+        title: "Error",
+        description: "Code must contain a <script> tag",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newScript: TrackingScript = {
+      id: editingScript?.id || crypto.randomUUID(),
+      provider: scriptForm.provider.trim(),
+      name: scriptForm.name.trim(),
+      placement: scriptForm.placement,
+      code: scriptForm.code.trim(),
+      enabled: scriptForm.enabled,
+      created_at: editingScript?.created_at || new Date().toISOString(),
+    };
+
+    if (editingScript) {
+      setTrackingScripts(scripts => 
+        scripts.map(s => s.id === editingScript.id ? newScript : s)
+      );
+      toast({
+        title: "Success",
+        description: "Tracking script updated",
+      });
+    } else {
+      setTrackingScripts(scripts => [...scripts, newScript]);
+      toast({
+        title: "Success",
+        description: "Tracking script added",
+      });
+    }
+
+    setIsScriptDialogOpen(false);
+  };
+
+  const handleDeleteScript = (scriptId: string) => {
+    setTrackingScripts(scripts => scripts.filter(s => s.id !== scriptId));
+    setScriptToDelete(null);
+    toast({
+      title: "Success",
+      description: "Tracking script deleted",
+    });
+  };
+
+  const handleToggleScript = (scriptId: string) => {
+    setTrackingScripts(scripts =>
+      scripts.map(s => s.id === scriptId ? { ...s, enabled: !s.enabled } : s)
+    );
+  };
+
+  const getProviderBadgeColor = (provider: string) => {
+    const p = provider.toLowerCase();
+    if (p.includes('meta') || p.includes('facebook')) return 'bg-blue-500';
+    if (p.includes('google')) return 'bg-gradient-to-r from-red-500 via-yellow-500 to-green-500';
+    if (p.includes('tiktok')) return 'bg-gradient-to-r from-black to-cyan-500';
+    return 'bg-gray-500';
+  };
 
   useEffect(() => {
     if (campaign) {
       setFormData(campaign);
+      setTrackingScripts(campaign.tracking_scripts || []);
     }
   }, [campaign]);
 
@@ -140,10 +257,15 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     setIsSubmitting(true);
 
     try {
+      const campaignData = {
+        ...formData,
+        tracking_scripts: trackingScripts as any,
+      };
+
       if (campaign?.id) {
         const { error } = await supabase
           .from('promotional_campaigns')
-          .update(formData)
+          .update(campaignData)
           .eq('id', campaign.id);
 
         if (error) throw error;
@@ -155,7 +277,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
       } else {
         const { error } = await supabase
           .from('promotional_campaigns')
-          .insert([formData]);
+          .insert([campaignData]);
 
         if (error) throw error;
 
@@ -180,406 +302,525 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {campaign ? 'Edit Campaign' : 'Create New Campaign'}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {campaign ? 'Edit Campaign' : 'Create New Campaign'}
+            </DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="basic">Basic</TabsTrigger>
-              <TabsTrigger value="banner">Banner</TabsTrigger>
-              <TabsTrigger value="pricing">Pricing</TabsTrigger>
-              <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
-              <TabsTrigger value="seo">SEO</TabsTrigger>
-            </TabsList>
+          <form onSubmit={handleSubmit}>
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="basic">Basic</TabsTrigger>
+                <TabsTrigger value="banner">Banner</TabsTrigger>
+                <TabsTrigger value="pricing">Pricing</TabsTrigger>
+                <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
+                <TabsTrigger value="ads">Ads</TabsTrigger>
+                <TabsTrigger value="seo">SEO</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="basic" className="space-y-4">
-              <div>
-                <Label htmlFor="title">Campaign Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="slug">URL Slug *</Label>
-                <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData(prev => ({ ...prev, slug: slugify(e.target.value) }))}
-                  required
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  URL: /promo/{formData.slug}
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                />
-                <Label htmlFor="is_active">Active Campaign</Label>
-              </div>
-
-              <div className="space-y-2">
+              <TabsContent value="basic" className="space-y-4">
+                <div>
+                  <Label htmlFor="title">Campaign Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => handleTitleChange(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="slug">URL Slug *</Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData(prev => ({ ...prev, slug: slugify(e.target.value) }))}
+                    required
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    URL: /promo/{formData.slug}
+                  </p>
+                </div>
                 <div className="flex items-center space-x-2">
                   <Switch
-                    id="promotional_footer_enabled"
-                    checked={formData.promotional_footer_enabled}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({ ...prev, promotional_footer_enabled: checked }))
-                    }
-                    disabled={!formData.is_active}
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
                   />
-                  <Label htmlFor="promotional_footer_enabled">Show Footer on Home</Label>
+                  <Label htmlFor="is_active">Active Campaign</Label>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Display this campaign in the fixed footer on the homepage. Only one campaign can have this enabled at a time.
-                </p>
-              </div>
-            </TabsContent>
 
-            <TabsContent value="banner" className="space-y-4">
-              <div>
-                <Label htmlFor="banner_video_url">Banner Video URL</Label>
-                <Input
-                  id="banner_video_url"
-                  value={formData.banner_video_url || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, banner_video_url: e.target.value }))}
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="banner_poster_url">Poster Image URL</Label>
-                <Input
-                  id="banner_poster_url"
-                  value={formData.banner_poster_url || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, banner_poster_url: e.target.value }))}
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="banner_headline">Headline</Label>
-                <Input
-                  id="banner_headline"
-                  value={formData.banner_headline}
-                  onChange={(e) => setFormData(prev => ({ ...prev, banner_headline: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="banner_subheadline">Subheadline</Label>
-                <Input
-                  id="banner_subheadline"
-                  value={formData.banner_subheadline}
-                  onChange={(e) => setFormData(prev => ({ ...prev, banner_subheadline: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="banner_tagline">Tagline</Label>
-                <Textarea
-                  id="banner_tagline"
-                  value={formData.banner_tagline}
-                  onChange={(e) => setFormData(prev => ({ ...prev, banner_tagline: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-            </TabsContent>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="promotional_footer_enabled"
+                      checked={formData.promotional_footer_enabled}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({ ...prev, promotional_footer_enabled: checked }))
+                      }
+                      disabled={!formData.is_active}
+                    />
+                    <Label htmlFor="promotional_footer_enabled">Show Footer on Home</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Display this campaign in the fixed footer on the homepage. Only one campaign can have this enabled at a time.
+                  </p>
+                </div>
+              </TabsContent>
 
-            <TabsContent value="pricing" className="space-y-6">
-              {[1, 2, 3].map((num) => {
-                const cardNum = num as 1 | 2 | 3;
-                const prefix = `pricing_card_${cardNum}`;
-                return (
-                  <div key={num} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">Card {num}</h3>
-                      <Switch
-                        checked={formData[`${prefix}_enabled`]}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ ...prev, [`${prefix}_enabled`]: checked }))
-                        }
-                      />
+              <TabsContent value="banner" className="space-y-4">
+                <div>
+                  <Label htmlFor="banner_video_url">Banner Video URL</Label>
+                  <Input
+                    id="banner_video_url"
+                    value={formData.banner_video_url || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, banner_video_url: e.target.value }))}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="banner_poster_url">Poster Image URL</Label>
+                  <Input
+                    id="banner_poster_url"
+                    value={formData.banner_poster_url || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, banner_poster_url: e.target.value }))}
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="banner_headline">Headline</Label>
+                  <Input
+                    id="banner_headline"
+                    value={formData.banner_headline}
+                    onChange={(e) => setFormData(prev => ({ ...prev, banner_headline: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="banner_subheadline">Subheadline</Label>
+                  <Input
+                    id="banner_subheadline"
+                    value={formData.banner_subheadline}
+                    onChange={(e) => setFormData(prev => ({ ...prev, banner_subheadline: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="banner_tagline">Tagline</Label>
+                  <Textarea
+                    id="banner_tagline"
+                    value={formData.banner_tagline}
+                    onChange={(e) => setFormData(prev => ({ ...prev, banner_tagline: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="pricing" className="space-y-6">
+                {[1, 2, 3].map((num) => {
+                  const cardNum = num as 1 | 2 | 3;
+                  const prefix = `pricing_card_${cardNum}`;
+                  return (
+                    <div key={num} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">Card {num}</h3>
+                        <Switch
+                          checked={formData[`${prefix}_enabled`]}
+                          onCheckedChange={(checked) => 
+                            setFormData(prev => ({ ...prev, [`${prefix}_enabled`]: checked }))
+                          }
+                        />
+                      </div>
+                      {formData[`${prefix}_enabled`] && (
+                        <>
+                          <Input
+                            placeholder="Title"
+                            value={formData[`${prefix}_title`]}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_title`]: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Price"
+                            value={formData[`${prefix}_price`]}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_price`]: e.target.value }))}
+                          />
+                          <Textarea
+                            placeholder="Description"
+                            value={formData[`${prefix}_description`]}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_description`]: e.target.value }))}
+                            rows={2}
+                          />
+                          <div>
+                            <Label>Features</Label>
+                            {formData[`${prefix}_features`].map((feature, idx) => (
+                              <div key={idx} className="flex gap-2 mt-2">
+                                <Input
+                                  value={feature}
+                                  onChange={(e) => updateFeatureText(cardNum, idx, e.target.value)}
+                                  placeholder="Feature"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeFeature(cardNum, idx)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="mt-2"
+                              onClick={() => addFeature(cardNum)}
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add Feature
+                            </Button>
+                          </div>
+                          <Input
+                            placeholder="Ideal For (optional)"
+                            value={formData[`${prefix}_ideal_for`] || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_ideal_for`]: e.target.value }))}
+                          />
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={formData[`${prefix}_popular`]}
+                              onCheckedChange={(checked) => 
+                                setFormData(prev => ({ ...prev, [`${prefix}_popular`]: checked }))
+                              }
+                            />
+                            <Label>Mark as Popular</Label>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    {formData[`${prefix}_enabled`] && (
-                      <>
-                        <Input
-                          placeholder="Title"
-                          value={formData[`${prefix}_title`]}
-                          onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_title`]: e.target.value }))}
-                        />
-                        <Input
-                          placeholder="Price"
-                          value={formData[`${prefix}_price`]}
-                          onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_price`]: e.target.value }))}
-                        />
-                        <Textarea
-                          placeholder="Description"
-                          value={formData[`${prefix}_description`]}
-                          onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_description`]: e.target.value }))}
-                          rows={2}
-                        />
-                        <div>
-                          <Label>Features</Label>
-                          {formData[`${prefix}_features`].map((feature, idx) => (
-                            <div key={idx} className="flex gap-2 mt-2">
-                              <Input
-                                value={feature}
-                                onChange={(e) => updateFeatureText(cardNum, idx, e.target.value)}
-                                placeholder="Feature"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeFeature(cardNum, idx)}
-                              >
+                  );
+                })}
+              </TabsContent>
+
+              {/* Gallery Tab */}
+              <TabsContent value="gallery" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gallery Items</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingGallery ? (
+                      <p>Loading gallery items...</p>
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {cards?.map((card) => (
+                          <div key={card.id} className="border rounded-md p-2">
+                            <h4 className="text-sm font-semibold">{card.title}</h4>
+                            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+                            <div className="flex justify-between items-center mt-2">
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View
+                              </Button>
+                              <Button variant="destructive" size="sm" onClick={() => deleteCard(card.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                          ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Add New Gallery Item</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="new-title">Title</Label>
+                      <Input
+                        id="new-title"
+                        value={newGalleryItem.title}
+                        onChange={(e) => setNewGalleryItem({ ...newGalleryItem, title: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-subtitle">Subtitle</Label>
+                      <Input
+                        id="new-subtitle"
+                        value={newGalleryItem.subtitle}
+                        onChange={(e) => setNewGalleryItem({ ...newGalleryItem, subtitle: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-category">Category</Label>
+                      <Input
+                        id="new-category"
+                        value={newGalleryItem.category}
+                        onChange={(e) => setNewGalleryItem({ ...newGalleryItem, category: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-thumb_mp4_url">Thumbnail MP4 URL</Label>
+                      <Input
+                        id="new-thumb_mp4_url"
+                        value={newGalleryItem.thumb_mp4_url}
+                        onChange={(e) => setNewGalleryItem({ ...newGalleryItem, thumb_mp4_url: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-thumb_image_url">Thumbnail Image URL</Label>
+                      <Input
+                        id="new-thumb_image_url"
+                        value={newGalleryItem.thumb_image_url}
+                        onChange={(e) => setNewGalleryItem({ ...newGalleryItem, thumb_image_url: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="new-full_video_url">Full Video URL</Label>
+                      <Input
+                        id="new-full_video_url"
+                        value={newGalleryItem.full_video_url}
+                        onChange={(e) => setNewGalleryItem({ ...newGalleryItem, full_video_url: e.target.value })}
+                      />
+                    </div>
+                    <Button onClick={() => createCard({
+                      ...newGalleryItem,
+                      campaign_id: campaign?.id || '',
+                      order_index: 0,
+                      featured: false,
+                      is_published: true,
+                      full_video_enabled: false,
+                    })}>Create Gallery Item</Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Ads Tab */}
+              <TabsContent value="ads" className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">Tracking Scripts</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Manage tracking pixels and analytics scripts for this campaign
+                    </p>
+                  </div>
+                  <Button type="button" onClick={handleAddScript}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Script
+                  </Button>
+                </div>
+
+                {trackingScripts.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                    <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-4">No tracking scripts configured</p>
+                    <Button type="button" onClick={handleAddScript} variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Your First Script
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {trackingScripts.map((script) => (
+                      <div
+                        key={script.id}
+                        className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2 py-0.5 text-xs font-semibold text-white rounded ${getProviderBadgeColor(script.provider)}`}
+                            >
+                              {script.provider || 'Custom'}
+                            </span>
+                            <span className="font-medium">{script.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {script.placement === 'head' ? '📍 HEAD' : '📍 BODY_END'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground font-mono truncate">
+                            {script.code.substring(0, 80)}...
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={script.enabled}
+                            onCheckedChange={() => handleToggleScript(script.id)}
+                          />
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            className="mt-2"
-                            onClick={() => addFeature(cardNum)}
+                            onClick={() => handleEditScript(script)}
                           >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Feature
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setScriptToDelete(script.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
-                        <Input
-                          placeholder="Ideal For (optional)"
-                          value={formData[`${prefix}_ideal_for`] || ''}
-                          onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_ideal_for`]: e.target.value }))}
-                        />
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={formData[`${prefix}_popular`]}
-                            onCheckedChange={(checked) => 
-                              setFormData(prev => ({ ...prev, [`${prefix}_popular`]: checked }))
-                            }
-                          />
-                          <Label>Mark as Popular</Label>
-                        </div>
-                      </>
-                    )}
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
-          </TabsContent>
+                )}
+              </TabsContent>
 
-          {/* Gallery Tab */}
-          <TabsContent value="gallery" className="space-y-4">
-            {!campaign ? (
-              <p className="text-muted-foreground text-center py-8">
-                Save the campaign first to manage gallery items
-              </p>
-            ) : (
-              <>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Gallery Items ({cards.length})</h3>
-                  </div>
-
-                  {/* Add New Gallery Item */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Add New Gallery Item</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Title *</Label>
-                          <Input
-                            value={newGalleryItem.title}
-                            onChange={(e) => setNewGalleryItem({ ...newGalleryItem, title: e.target.value })}
-                            placeholder="Gallery item title"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Subtitle</Label>
-                          <Input
-                            value={newGalleryItem.subtitle}
-                            onChange={(e) => setNewGalleryItem({ ...newGalleryItem, subtitle: e.target.value })}
-                            placeholder="Optional subtitle"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Category *</Label>
-                        <Input
-                          value={newGalleryItem.category}
-                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, category: e.target.value })}
-                          placeholder="e.g., Wedding, Portrait, Event"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Thumbnail MP4 URL *</Label>
-                        <Input
-                          value={newGalleryItem.thumb_mp4_url}
-                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, thumb_mp4_url: e.target.value })}
-                          placeholder="https://..."
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Thumbnail Image URL</Label>
-                        <Input
-                          value={newGalleryItem.thumb_image_url}
-                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, thumb_image_url: e.target.value })}
-                          placeholder="Fallback image URL"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Full Video URL (optional)</Label>
-                        <Input
-                          value={newGalleryItem.full_video_url}
-                          onChange={(e) => setNewGalleryItem({ ...newGalleryItem, full_video_url: e.target.value })}
-                          placeholder="YouTube or external video URL"
-                        />
-                      </div>
-                      <Button
-                        onClick={async () => {
-                          if (!newGalleryItem.title || !newGalleryItem.category) {
-                            toast({
-                              title: 'Validation Error',
-                              description: 'Title and category are required',
-                              variant: 'destructive',
-                            });
-                            return;
-                          }
-                          await createCard({
-                            campaign_id: campaign.id,
-                            order_index: cards.length,
-                            title: newGalleryItem.title,
-                            subtitle: newGalleryItem.subtitle || undefined,
-                            category: newGalleryItem.category,
-                            thumb_mp4_url: newGalleryItem.thumb_mp4_url || undefined,
-                            thumb_image_url: newGalleryItem.thumb_image_url || undefined,
-                            full_video_url: newGalleryItem.full_video_url || undefined,
-                            full_video_enabled: !!newGalleryItem.full_video_url,
-                            featured: false,
-                            is_published: true,
-                          });
-                          setNewGalleryItem({
-                            title: '',
-                            subtitle: '',
-                            category: '',
-                            thumb_mp4_url: '',
-                            thumb_image_url: '',
-                            full_video_url: '',
-                          });
-                        }}
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Gallery Item
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  {/* Existing Gallery Items */}
-                  <div className="space-y-2">
-                    {loadingGallery ? (
-                      <p className="text-muted-foreground text-center py-4">Loading gallery items...</p>
-                    ) : cards.length === 0 ? (
-                      <p className="text-muted-foreground text-center py-4">No gallery items yet. Add one above.</p>
-                    ) : (
-                      cards.map((card) => (
-                        <Card key={card.id}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-semibold">{card.title}</h4>
-                                {card.subtitle && <p className="text-sm text-muted-foreground">{card.subtitle}</p>}
-                                <p className="text-xs text-muted-foreground mt-1">Category: {card.category}</p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => updateCard(card.id, { is_published: !card.is_published })}
-                                >
-                                  {card.is_published ? (
-                                    <Eye className="w-4 h-4" />
-                                  ) : (
-                                    <EyeOff className="w-4 h-4" />
-                                  )}
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    if (confirm('Delete this gallery item?')) {
-                                      deleteCard(card.id);
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="w-4 h-4 text-destructive" />
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </div>
+              {/* SEO Tab */}
+              <TabsContent value="seo" className="space-y-4">
+                <div>
+                  <Label htmlFor="meta_title">Meta Title</Label>
+                  <Input
+                    id="meta_title"
+                    value={formData.meta_title || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
+                    placeholder="Optimized page title for SEO"
+                  />
                 </div>
-              </>
-            )}
-          </TabsContent>
+                <div>
+                  <Label htmlFor="meta_description">Meta Description</Label>
+                  <Textarea
+                    id="meta_description"
+                    value={formData.meta_description || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
+                    placeholder="Brief description for search engines"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="meta_image_url">Meta Image URL</Label>
+                  <Input
+                    id="meta_image_url"
+                    value={formData.meta_image_url || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, meta_image_url: e.target.value }))}
+                    placeholder="https://..."
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
 
-          <TabsContent value="seo" className="space-y-4">
-              <div>
-                <Label htmlFor="meta_title">Meta Title</Label>
-                <Input
-                  id="meta_title"
-                  value={formData.meta_title || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
-                  placeholder="Leave empty to use campaign title"
-                />
-              </div>
-              <div>
-                <Label htmlFor="meta_description">Meta Description</Label>
-                <Textarea
-                  id="meta_description"
-                  value={formData.meta_description || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
-                  rows={3}
-                  placeholder="Leave empty to use tagline"
-                />
-              </div>
-              <div>
-                <Label htmlFor="meta_image_url">OG Image URL</Label>
-                <Input
-                  id="meta_image_url"
-                  value={formData.meta_image_url || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, meta_image_url: e.target.value }))}
-                  placeholder="https://..."
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
+            <div className="flex justify-end gap-2 mt-6">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {campaign ? 'Update Campaign' : 'Create Campaign'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-          <div className="flex justify-end gap-2 mt-6">
-            <Button type="button" variant="outline" onClick={onClose}>
+      {/* Tracking Script Dialog */}
+      <Dialog open={isScriptDialogOpen} onOpenChange={setIsScriptDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingScript ? 'Edit Tracking Script' : 'Add Tracking Script'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="provider">Provider</Label>
+              <Input
+                id="provider"
+                placeholder="e.g., Meta, Google, TikTok"
+                value={scriptForm.provider}
+                onChange={(e) => setScriptForm({ ...scriptForm, provider: e.target.value })}
+                maxLength={50}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="script-name">Name/Label *</Label>
+              <Input
+                id="script-name"
+                placeholder="e.g., Meta Pixel - Main"
+                value={scriptForm.name}
+                onChange={(e) => setScriptForm({ ...scriptForm, name: e.target.value })}
+                maxLength={100}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="placement">Placement *</Label>
+              <Select
+                value={scriptForm.placement}
+                onValueChange={(value: 'head' | 'body_end') => 
+                  setScriptForm({ ...scriptForm, placement: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="head">{"<head> - Page Header"}</SelectItem>
+                  <SelectItem value="body_end">{"Before </body> - Page Footer"}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="script-code">Script Code *</Label>
+              <Textarea
+                id="script-code"
+                placeholder="<script>/* Your tracking code here */</script>"
+                value={scriptForm.code}
+                onChange={(e) => setScriptForm({ ...scriptForm, code: e.target.value })}
+                className="font-mono text-xs"
+                rows={10}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste your complete tracking script including {"<script>"} tags
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="script-enabled"
+                checked={scriptForm.enabled}
+                onCheckedChange={(checked) => setScriptForm({ ...scriptForm, enabled: checked })}
+              />
+              <Label htmlFor="script-enabled">Enabled (inject on page load)</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsScriptDialogOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {campaign ? 'Update' : 'Create'} Campaign
+            <Button type="button" onClick={handleSaveScript}>
+              {editingScript ? 'Update Script' : 'Add Script'}
             </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!scriptToDelete} onOpenChange={() => setScriptToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Tracking Script?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this tracking script from the campaign. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => scriptToDelete && handleDeleteScript(scriptToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
