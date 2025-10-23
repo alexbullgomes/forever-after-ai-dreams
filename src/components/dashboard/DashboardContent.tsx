@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, UserCheck, Calendar, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { UserProfileModal } from './UserProfileModal';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface CustomerMetrics {
   totalCustomers: number;
@@ -23,7 +22,6 @@ interface CustomerMetrics {
 
 const DashboardContent = () => {
   const navigate = useNavigate();
-  const { colors } = useSiteSettings();
   const [metrics, setMetrics] = useState<CustomerMetrics>({
     totalCustomers: 0,
     newLeadsThisMonth: 0,
@@ -101,24 +99,16 @@ const DashboardContent = () => {
 
   const MetricCard = ({ title, value, icon: Icon, description, color = "blue", onClick = null }) => {
     const isUnreadMessages = title === "Unread Messages";
-    const brandGradient = colors 
-      ? `linear-gradient(135deg, ${colors.primary_from}, ${colors.primary_to})`
-      : 'linear-gradient(135deg, hsl(346 77% 60%), hsl(330 81% 60%))';
     
     return (
       <div 
         className={`p-6 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300 ${
           isUnreadMessages 
-            ? 'text-white hover:scale-105' 
+            ? 'bg-gradient-to-br from-rose-500 to-pink-500 border-rose-400 text-white hover:shadow-rose-200 hover:scale-105' 
             : 'border-gray-200 bg-white'
         } ${
           onClick ? 'cursor-pointer hover:border-gray-300' : ''
         }`}
-        style={isUnreadMessages ? {
-          background: brandGradient,
-          borderColor: colors?.primary_from || 'hsl(346 77% 65%)',
-          boxShadow: `0 4px 6px -1px ${colors?.primary_from ? colors.primary_from + '33' : 'hsl(346 77% 60% / 0.2)'}`
-        } : {}}
         onClick={onClick}
       >
         <div className="flex items-center justify-between mb-4">
@@ -232,14 +222,7 @@ const DashboardContent = () => {
                     <tr key={customer.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedCustomer({ id: customer.id, name: customer.name, email: customer.email })}>
                       <td className="px-6 py-4 whitespace-nowrap w-1/4">
                         <div className="flex items-center">
-                          <div 
-                            className="h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                            style={{
-                              background: colors 
-                                ? `linear-gradient(135deg, ${colors.primary_from}, ${colors.primary_to})`
-                                : 'linear-gradient(135deg, hsl(346 77% 60%), hsl(330 81% 60%))'
-                            }}
-                          >
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
                             {customer.name ? customer.name.charAt(0).toUpperCase() : customer.email?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div className="ml-3">
@@ -287,14 +270,7 @@ const DashboardContent = () => {
             metrics.recentCustomers.map((customer) => (
               <div key={customer.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 cursor-pointer hover:bg-gray-100" onClick={() => setSelectedCustomer({ id: customer.id, name: customer.name, email: customer.email })}>
                 <div className="flex items-center mb-3">
-                  <div 
-                    className="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                    style={{
-                      background: colors 
-                        ? `linear-gradient(135deg, ${colors.primary_from}, ${colors.primary_to})`
-                        : 'linear-gradient(135deg, hsl(346 77% 60%), hsl(330 81% 60%))'
-                    }}
-                  >
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
                     {customer.name ? customer.name.charAt(0).toUpperCase() : customer.email?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div className="ml-3">
