@@ -105,6 +105,29 @@
       hsl(var(--brand-primary-to) / 0.05)
     );
   }
+
+  /* Brand Gradient - For buttons and primary CTAs */
+  .bg-brand-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--brand-primary-from)),
+      hsl(var(--brand-primary-to))
+    );
+  }
+
+  /* Brand Gradient Hover - For button hover states */
+  .bg-brand-gradient-hover {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--brand-primary-hover-from)),
+      hsl(var(--brand-primary-hover-to))
+    );
+  }
+
+  /* Brand Primary Text - For icons and accent text */
+  .text-brand-primary {
+    color: hsl(var(--brand-primary-from));
+  }
 }
 
 @layer base {
