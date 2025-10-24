@@ -23,7 +23,7 @@ const Header = ({ onLoginClick }: HeaderProps) => {
             href="https://everafterca.com/" 
             className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
           >
-            <Heart className="w-6 h-6 text-brand-primary" />
+            <Heart className="w-6 h-6 text-rose-500" />
             <span className="text-white font-bold text-xl">Everafter</span>
           </a>
           
