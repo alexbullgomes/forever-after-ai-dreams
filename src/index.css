@@ -13,8 +13,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Pink primary in valid HSL so it resolves on first paint */
+    --primary: 351 95% 71%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -114,5 +115,31 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Suppress mobile tap highlight (yellow flash) */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+  }
+
+  /* Prevent button flash - style buttons immediately using attribute selectors */
+  /* These work even before Tailwind utilities are generated */
+  button[class*="bg-primary"]:not([class*="outline"]):not([class*="ghost"]),
+  button[class*="bg-brand-gradient"] {
+    background-color: hsl(351, 95%, 71%);
+    background-image: linear-gradient(to right, hsl(351, 95%, 71%), hsl(328, 86%, 70%));
+    color: hsl(0, 0%, 100%) !important;
+  }
+
+  /* Once Tailwind processes, these specific classes take precedence */
+  button.bg-primary {
+    background-color: hsl(var(--primary)) !important;
+    background-image: none !important;
+  }
+
+  button.bg-brand-gradient {
+    background-color: transparent !important;
+    background-image: linear-gradient(to right, hsl(351, 95%, 71%), hsl(328, 86%, 70%)) !important;
   }
 }
