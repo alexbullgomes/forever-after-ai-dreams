@@ -117,7 +117,7 @@ const Portfolio = ({
 
   if (loading) {
     return (
-      <section id="portfolio" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+      <section id="portfolio" className="py-20 bg-section-subtle">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="flex justify-center mb-4">
@@ -126,20 +126,20 @@ const Portfolio = ({
                 <span className="text-brand-badge-text text-sm font-medium">Our Portfolio</span>
               </div>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               Recent
               <span className="block bg-brand-gradient bg-clip-text text-transparent">Stories</span>
             </h2>
           </div>
           <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary-from"></div>
           </div>
         </div>
       </section>
     );
   }
 
-  return <section id="portfolio" className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+  return <section id="portfolio" className="py-20 bg-section-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -148,15 +148,15 @@ const Portfolio = ({
               <span className="text-brand-badge-text text-sm font-medium">Our Portfolio</span>
             </div>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Recent
             <span className="block bg-brand-gradient bg-clip-text text-transparent">Stories</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">All stories are unique. Here are some of our recent celebrations captured across California.</p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">All stories are unique. Here are some of our recent celebrations captured across California.</p>
 
           {/* Filter buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {filters.map(filter => <Button key={filter.id} onClick={() => setActiveFilter(filter.id)} variant={activeFilter === filter.id ? "default" : "outline"} className={`px-6 py-2 rounded-full transition-all duration-300 ${activeFilter === filter.id ? "bg-brand-gradient text-white shadow-lg" : "border-gray-300 text-gray-700 hover:border-brand-text-accent/30 hover:text-brand-text-accent"}`}>
+            {filters.map(filter => <Button key={filter.id} onClick={() => setActiveFilter(filter.id)} variant={activeFilter === filter.id ? "default" : "outline"} className={`px-6 py-2 rounded-full transition-all duration-300 ${activeFilter === filter.id ? "bg-brand-gradient text-white shadow-lg" : "border-border text-foreground/80 hover:border-brand-text-accent/30 hover:text-brand-text-accent"}`}>
                 {filter.label}
               </Button>)}
           </div>
@@ -165,7 +165,7 @@ const Portfolio = ({
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredItems.map(item => <Card 
               key={item.id} 
-              className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-white cursor-pointer" 
+              className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-card cursor-pointer" 
               onClick={() => handleCardClick(item)}
             >
               <div className="relative overflow-hidden">
@@ -195,13 +195,13 @@ const Portfolio = ({
               </div>
 
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-brand-text-accent transition-colors">
+                <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-brand-text-accent transition-colors">
                   {item.title}
                 </h3>
-                <div className="flex items-center text-gray-600 mb-2">
+                <div className="flex items-center text-muted-foreground mb-2">
                   <span className="text-sm">{item.location}</span>
                 </div>
-                <div className="flex items-center text-gray-500">
+                <div className="flex items-center text-muted-foreground/70">
                   <Calendar className="w-4 h-4 mr-2" />
                   <span className="text-sm">{item.date}</span>
                 </div>

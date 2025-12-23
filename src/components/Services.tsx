@@ -73,17 +73,17 @@ const Services = ({
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {services.map((service, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105">
+          {services.map((service, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-card/70 backdrop-blur-sm hover:scale-105">
               <CardContent className="p-8">
                 <div className={`w-16 h-16 rounded-2xl ${service.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 bg-service-icon-gradient`}>
                   <service.icon className="w-8 h-8 text-white" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{service.title}</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">{service.description}</p>
+                <h3 className="text-2xl font-bold text-foreground mb-4">{service.title}</h3>
+                <p className="text-muted-foreground mb-6 leading-relaxed">{service.description}</p>
                 
                 <ul className="space-y-2 mb-8">
-                  {service.features.map((feature, featureIndex) => <li key={featureIndex} className="flex items-center text-gray-700">
+                  {service.features.map((feature, featureIndex) => <li key={featureIndex} className="flex items-center text-foreground/80">
                       <div className="w-2 h-2 bg-brand-feature-dot rounded-full mr-3"></div>
                       {feature}
                     </li>)}
@@ -102,24 +102,24 @@ const Services = ({
             <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
               <Clock className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Quick Turnaround</h4>
-            <p className="text-gray-600">Receive your highlights within 48 hours</p>
+            <h4 className="text-lg font-semibold text-foreground mb-2">Quick Turnaround</h4>
+            <p className="text-muted-foreground">Receive your highlights within 48 hours</p>
           </div>
           
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
               <Award className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Award Winning</h4>
-            <p className="text-gray-600">Recognized for excellence in wedding cinematography</p>
+            <h4 className="text-lg font-semibold text-foreground mb-2">Award Winning</h4>
+            <p className="text-muted-foreground">Recognized for excellence in wedding cinematography</p>
           </div>
           
           <div className="flex flex-col items-center">
             <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Personal Touch</h4>
-            <p className="text-gray-600">Tailored approach to your unique love story</p>
+            <h4 className="text-lg font-semibold text-foreground mb-2">Personal Touch</h4>
+            <p className="text-muted-foreground">Tailored approach to your unique love story</p>
           </div>
         </div>
       </div>

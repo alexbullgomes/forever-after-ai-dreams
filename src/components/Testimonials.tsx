@@ -30,7 +30,7 @@ const Testimonials = () => {
     text: "Incredible team with amazing artistic vision. They captured moments we didn't even know were happening. The final film was beyond our wildest dreams - it's our love story told beautifully.",
     image: "/lovable-uploads/e4d4b04a-7d06-4b7d-9e8c-4b85c7039d41.png"
   }];
-  return <section className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+  return <section className="py-20 bg-section-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -39,22 +39,22 @@ const Testimonials = () => {
               <span className="text-brand-badge-text text-sm font-medium">Happy Couples</span>
             </div>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Loved by Couples
             <span className="block bg-brand-gradient bg-clip-text text-transparent">Families & Brands</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             See why people across California trust Ever After to capture their most meaningful moments.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {testimonials.map((testimonial, index) => <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-white/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
+          {testimonials.map((testimonial, index) => <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-card/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
                   <img src={testimonial.image} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover mr-4 ring-2" style={{ '--tw-ring-color': `hsl(var(--brand-badge-bg))` } as React.CSSProperties} />
                   <div>
-                    <h4 className="text-lg font-bold text-gray-900">{testimonial.name}</h4>
+                    <h4 className="text-lg font-bold text-foreground">{testimonial.name}</h4>
                     <p className="text-brand-text-accent text-sm font-medium">{testimonial.location}</p>
                   </div>
                 </div>
@@ -65,7 +65,7 @@ const Testimonials = () => {
 
                 <div className="relative">
                   <Quote className="absolute -top-2 -left-2 w-8 h-8" style={{ color: `hsl(var(--brand-badge-bg))` }} />
-                  <p className="text-gray-700 leading-relaxed pl-6 italic">
+                  <p className="text-foreground/80 leading-relaxed pl-6 italic">
                     "{testimonial.text}"
                   </p>
                 </div>
@@ -79,25 +79,25 @@ const Testimonials = () => {
             <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               500+
             </div>
-            <p className="text-gray-600 font-medium">Happy Couples</p>
+            <p className="text-muted-foreground font-medium">Happy Couples</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               5★
             </div>
-            <p className="text-gray-600 font-medium">Average Rating</p>
+            <p className="text-muted-foreground font-medium">Average Rating</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               50+
             </div>
-            <p className="text-gray-600 font-medium">Venues Covered</p>
+            <p className="text-muted-foreground font-medium">Venues Covered</p>
           </div>
           <div className="flex flex-col items-center">
             <div className="text-4xl font-bold bg-brand-gradient bg-clip-text text-transparent mb-2">
               8+
             </div>
-            <p className="text-gray-600 font-medium">Years Experience</p>
+            <p className="text-muted-foreground font-medium">Years Experience</p>
           </div>
         </div>
       </div>

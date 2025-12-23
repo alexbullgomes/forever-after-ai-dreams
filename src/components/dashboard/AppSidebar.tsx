@@ -86,7 +86,7 @@ export function AppSidebar() {
   const getNavCls = (isActiveRoute: boolean) =>
     isActiveRoute
       ? "bg-brand-primary-from/10 text-brand-primary-from font-medium hover:bg-brand-primary-from/10"
-      : "hover:bg-gray-100 text-gray-700";
+      : "hover:bg-surface-1 text-muted-foreground";
 
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
@@ -96,7 +96,7 @@ export function AppSidebar() {
             <h2 className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent">
               Everafter
             </h2>
-            <p className="text-sm text-gray-600">Admin Panel</p>
+            <p className="text-sm text-muted-foreground">Admin Panel</p>
           </div>
         )}
       </SidebarHeader>

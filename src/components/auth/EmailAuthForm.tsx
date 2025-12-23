@@ -77,11 +77,12 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
           window.location.href = '/dashboard';
         }, 1000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Auth error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong. Please try again.";
       toast({
         title: "Authentication Error",
-        description: error.message || "Something went wrong. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -100,18 +101,18 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
     <form onSubmit={handleSubmit} className="space-y-4">
       {!isLogin && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground/80 mb-2">
             Full Name
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
               required
               disabled={loading}
-              className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
+              className="pl-10 h-12 border-border focus:border-brand-primary-from focus:ring-brand-primary-from"
               placeholder="Your full name"
             />
           </div>
@@ -119,11 +120,11 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground/80 mb-2">
           Email Address
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             name="email"
             type="email"
@@ -131,18 +132,18 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
             onChange={handleChange}
             required
             disabled={loading}
-            className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
+            className="pl-10 h-12 border-border focus:border-brand-primary-from focus:ring-brand-primary-from"
             placeholder="your@email.com"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground/80 mb-2">
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
             name="password"
             type="password"
@@ -150,7 +151,7 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
             onChange={handleChange}
             required
             disabled={loading}
-            className="pl-10 h-12 border-gray-300 focus:border-rose-400 focus:ring-rose-400"
+            className="pl-10 h-12 border-border focus:border-brand-primary-from focus:ring-brand-primary-from"
             placeholder={isLogin ? "Enter your password" : "Create a secure password (min 6 chars)"}
             minLength={6}
           />
@@ -160,7 +161,7 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
       <Button 
         type="submit"
         disabled={loading}
-        className="w-full h-12 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-rose-500/25 transition-all duration-300"
+        className="w-full h-12 bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-lg shadow-lg hover:shadow-brand-primary-from/25 transition-all duration-300"
       >
         {loading ? "Processing..." : (isLogin ? "Sign In" : "Create Account")}
       </Button>
@@ -170,7 +171,7 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
           onClick={onToggleMode}
           disabled={loading}
           type="button"
-          className="text-sm text-gray-600 hover:text-rose-600 transition-colors"
+          className="text-sm text-muted-foreground hover:text-brand-primary-from transition-colors"
         >
           {isLogin 
             ? "Don't have an account? Sign up" 
@@ -179,7 +180,7 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
       </div>
 
       {!isLogin && (
-        <p className="text-xs text-gray-500 text-center leading-relaxed">
+        <p className="text-xs text-muted-foreground text-center leading-relaxed">
           By creating an account, you agree to our Terms of Service and Privacy Policy. 
           We'll use your information to provide personalized package recommendations.
         </p>

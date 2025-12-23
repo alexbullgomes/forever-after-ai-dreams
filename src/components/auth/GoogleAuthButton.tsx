@@ -43,7 +43,7 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
         });
         // Note: Webhook will be handled by the auth state change listener
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Google auth error:', error);
       toast({
         title: "Google Sign-In Error",
@@ -66,7 +66,7 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
         onClick={handleGoogleAuth}
         disabled={loading}
         variant="outline"
-        className="w-full h-12 text-gray-700 border-gray-300 hover:bg-gray-50 transition-colors"
+        className="w-full h-12 text-foreground border-border hover:bg-surface-1 transition-colors"
       >
         <Chrome className="w-5 h-5 mr-3" />
         Continue with Google
@@ -74,10 +74,10 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300" />
+          <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+          <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
         </div>
       </div>
     </>

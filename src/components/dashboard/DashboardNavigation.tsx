@@ -38,7 +38,7 @@ const DashboardNavigation = () => {
   ];
 
   return (
-    <div className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <div className="bg-background shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Left side - Back button */}
@@ -46,7 +46,7 @@ const DashboardNavigation = () => {
             <Button 
               variant="ghost" 
               onClick={() => window.location.href = 'https://everafterca.com/'} 
-              className="text-gray-600 hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Back to Home</span>
@@ -65,7 +65,7 @@ const DashboardNavigation = () => {
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-brand-gradient text-white"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      : "text-muted-foreground hover:text-foreground hover:bg-surface-1"
                   }`}
                 >
                   {link.label}
@@ -80,7 +80,7 @@ const DashboardNavigation = () => {
               <Button 
                 variant="outline" 
                 onClick={() => window.location.href = '/dashboard'} 
-                className="text-gray-600 hover:text-gray-900"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Shield className="w-4 h-4 mr-2" />
                 Admin
@@ -90,19 +90,19 @@ const DashboardNavigation = () => {
               <Button 
                 variant="outline" 
                 onClick={() => window.location.href = '/user-dashboard'} 
-                className="text-gray-600 hover:text-gray-900"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <LayoutDashboard className="w-4 h-4 mr-2" />
                 User Dashboard
               </Button>
             )}
-            <span className="text-sm text-gray-600 max-w-48 truncate">
+            <span className="text-sm text-muted-foreground max-w-48 truncate">
               Welcome, {user?.user_metadata?.full_name || user?.email}!
             </span>
             <Button 
               variant="outline" 
               onClick={handleSignOut} 
-              className="text-gray-600 hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -114,7 +114,7 @@ const DashboardNavigation = () => {
             <Button
               variant="ghost"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-600 hover:text-gray-900"
+              className="text-muted-foreground hover:text-foreground"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5" />
@@ -127,7 +127,7 @@ const DashboardNavigation = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-border py-4">
             <div className="space-y-4">
               {/* Mobile Navigation Links */}
               <div className="space-y-2">
@@ -143,7 +143,7 @@ const DashboardNavigation = () => {
                       className={`block w-full text-left px-4 py-3 rounded-md text-base font-medium transition-colors ${
                         isActive
                           ? "bg-brand-gradient text-white"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                          : "text-muted-foreground hover:text-foreground hover:bg-surface-1"
                       }`}
                     >
                       {link.label}
@@ -153,9 +153,9 @@ const DashboardNavigation = () => {
               </div>
               
               {/* Mobile User info and Sign out */}
-              <div className="border-t border-gray-200 pt-4 space-y-3">
+              <div className="border-t border-border pt-4 space-y-3">
                 <div className="px-4">
-                  <span className="text-sm text-gray-600 block">
+                  <span className="text-sm text-muted-foreground block">
                     Welcome, {user?.user_metadata?.full_name || user?.email}!
                   </span>
                 </div>
@@ -166,7 +166,7 @@ const DashboardNavigation = () => {
                       setIsMobileMenuOpen(false);
                       window.location.href = '/dashboard';
                     }} 
-                    className="w-full mx-4 text-gray-600 hover:text-gray-900 max-w-none"
+                    className="w-full mx-4 text-muted-foreground hover:text-foreground max-w-none"
                     style={{ width: 'calc(100% - 2rem)' }}
                   >
                     <Shield className="w-4 h-4 mr-2" />
@@ -180,7 +180,7 @@ const DashboardNavigation = () => {
                       setIsMobileMenuOpen(false);
                       window.location.href = '/user-dashboard';
                     }} 
-                    className="w-full mx-4 text-gray-600 hover:text-gray-900 max-w-none"
+                    className="w-full mx-4 text-muted-foreground hover:text-foreground max-w-none"
                     style={{ width: 'calc(100% - 2rem)' }}
                   >
                     <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -190,7 +190,7 @@ const DashboardNavigation = () => {
                 <Button
                   variant="outline" 
                   onClick={handleSignOut} 
-                  className="w-full mx-4 text-gray-600 hover:text-gray-900 max-w-none"
+                  className="w-full mx-4 text-muted-foreground hover:text-foreground max-w-none"
                   style={{ width: 'calc(100% - 2rem)' }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
