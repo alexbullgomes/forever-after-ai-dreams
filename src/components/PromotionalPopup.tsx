@@ -210,7 +210,7 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
             <p className="text-sm font-medium text-gray-600 mb-2">
               ⏳ Your {config.discount_label} offer expires in:
             </p>
-            <div className="flex justify-center space-x-2 text-2xl font-bold text-rose-600">
+            <div className="flex justify-center space-x-2 text-2xl font-bold text-brand-primary-from">
               <span>{String(timeLeft.hours).padStart(2, '0')}</span>
               <span>:</span>
               <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
@@ -224,7 +224,7 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {config.phone_required && (
                   <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="phone" className="text-sm font-medium text-foreground">
                       📱 Phone Number
                     </label>
                     <Input
@@ -243,7 +243,7 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
                 <Button
                   type="submit"
                   disabled={loading || (config.phone_required && (!phoneNumber.trim() || !isValidPhone(phoneNumber)))}
-                  className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Claiming..." : `🎁 ${config.cta_label}`}
                 </Button>
@@ -251,14 +251,14 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
 
               <div className="text-center space-y-2">
                 {config.legal_note && (
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-muted-foreground">
                     👉 {config.legal_note}
                   </p>
                 )}
                 <button
                   type="button"
                   onClick={handleMaybeLater}
-                  className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+                  className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
                 >
                   Maybe Later
                 </button>

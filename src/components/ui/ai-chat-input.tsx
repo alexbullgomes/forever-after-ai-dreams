@@ -297,9 +297,9 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
           {/* Recording Indicator */}
           {isRecording && (
             <div className="px-4 pt-3">
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-red-700 font-medium">Recording... (click mic to stop)</span>
+              <div className="flex items-center gap-2 bg-error-light border border-error/20 rounded-lg px-3 py-2">
+                <div className="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+                <span className="text-sm text-error-text font-medium">Recording... (click mic to stop)</span>
               </div>
             </div>
           )}
@@ -309,13 +309,13 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
             <div className="px-4 pt-3">
               <div className="flex flex-wrap gap-2">
                 {selectedFiles.map((file, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1">
+                  <div key={index} className="flex items-center gap-2 bg-muted rounded-lg px-3 py-1">
                     {(file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) ? (
-                      <Image size={16} className="text-gray-600" />
+                      <Image size={16} className="text-muted-foreground" />
                     ) : (
-                      <MicIcon size={16} className="text-gray-600" />
+                      <MicIcon size={16} className="text-muted-foreground" />
                     )}
-                    <span className="text-sm text-gray-700 truncate max-w-32">
+                    <span className="text-sm text-foreground/80 truncate max-w-32">
                       {file.name}
                     </span>
                     <button
@@ -323,7 +323,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                         e.stopPropagation();
                         removeFile(index);
                       }}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-muted-foreground hover:text-foreground"
                     >
                       <X size={14} />
                     </button>
@@ -334,7 +334,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
           )}
 
           {/* Input Row */}
-          <div className="flex items-center gap-2 p-3 rounded-full bg-white max-w-3xl w-full">
+          <div className="flex items-center gap-2 p-3 rounded-full bg-card max-w-3xl w-full">
 
             {/* Text Input & Placeholder */}
             <div className="relative flex-1">
@@ -355,7 +355,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
                   {showPlaceholder && !isActive && !inputValue && (
                     <motion.span
                       key={placeholderIndex}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 select-none pointer-events-none text-base sm:text-base md:text-base"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground select-none pointer-events-none text-base sm:text-base md:text-base"
                       style={{
                         whiteSpace: "nowrap",
                         overflow: "hidden",
@@ -388,7 +388,7 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
             <VoiceInput
               onStart={handleVoiceStart}
               onStop={handleVoiceStop}
-              className="text-rose-500 hover:text-rose-600"
+              className="text-brand-primary-from hover:text-brand-primary-hover-from"
             />
             
             <button

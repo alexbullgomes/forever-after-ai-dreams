@@ -55,7 +55,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
             <div className="mb-8 text-center">
                 <motion.h1
                     className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent 
-                             bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900
+                             bg-gradient-to-r from-foreground via-foreground/80 to-foreground
                              dark:from-white dark:via-gray-200 dark:to-white"
                     initial={shouldAnimate ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = memo(({
                     {title}
                 </motion.h1>
                 <motion.p
-                    className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400"
+                    className="mt-2 text-sm sm:text-base text-muted-foreground dark:text-muted-foreground"
                     initial={shouldAnimate ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={shouldAnimate ? { duration: 0.5, delay: 0.1 } : { duration: 0 }}

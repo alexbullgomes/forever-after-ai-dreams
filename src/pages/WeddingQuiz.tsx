@@ -63,7 +63,7 @@ const WeddingQuiz = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
+    <div className="min-h-screen bg-section-subtle">
       {currentStep === 'landing' && <QuizLanding onStartQuiz={startQuiz} />}
       
       {currentStep === 'quiz' && (
