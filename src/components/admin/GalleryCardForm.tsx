@@ -201,7 +201,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
 
           <div className="space-y-2">
             <Label>Thumbnail Image</Label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+            <div className="border-2 border-dashed border-border rounded-lg p-6">
               {formData.thumbnail_url ? (
                 <div className="relative">
                   <img
@@ -221,7 +221,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                 </div>
               ) : (
                 <div className="text-center">
-                  <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
                   <div className="mt-4">
                     <Button
                       type="button"
@@ -233,7 +233,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                       {uploading ? 'Uploading...' : 'Upload Image'}
                     </Button>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-muted-foreground">
                     PNG, JPG, GIF up to 10MB
                   </p>
                 </div>
@@ -250,7 +250,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
 
           <div className="space-y-2">
             <Label>Thumbnail (Video Fallback)</Label>
-            <div className="space-y-4 border border-gray-200 rounded-lg p-4">
+            <div className="space-y-4 border border-border rounded-lg p-4">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="thumb_webm_url">Video WEBM URL</Label>
@@ -310,7 +310,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                 </div>
               )}
 
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 <p>• If WEBM is present, MP4 OR Image must be present</p>
                 <p>• File uploads limited to 5MB</p>
                 <p>• Example URLs: https://hmdnronxajctsrlgrhey.supabase.co/storage/v1/object/public/gallery/Libs.webm</p>

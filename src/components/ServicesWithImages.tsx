@@ -47,16 +47,16 @@ const ServicesWithImages = () => {
   ];
 
   return (
-    <div className="py-20 bg-gradient-to-br from-rose-50 to-pink-50">
+    <div className="py-20 bg-section-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <Heart className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            <span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+          <Heart className="w-12 h-12 text-brand-primary-from mx-auto mb-4" />
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <span className="bg-brand-gradient bg-clip-text text-transparent">
               Our Services
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Professional wedding photography and videography services crafted to preserve 
             your most treasured moments with artistry and care.
           </p>
@@ -78,21 +78,21 @@ const ServicesWithImages = () => {
                 </div>
               </div>
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-gray-900">
+                <CardTitle className="text-2xl font-bold text-foreground">
                   {service.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">{service.description}</p>
+                <p className="text-muted-foreground">{service.description}</p>
                 <ul className="space-y-2">
                   {service.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center text-sm text-gray-600">
-                      <div className="w-2 h-2 bg-rose-500 rounded-full mr-3"></div>
+                    <li key={idx} className="flex items-center text-sm text-muted-foreground">
+                      <div className="w-2 h-2 bg-brand-primary-from rounded-full mr-3"></div>
                       {feature}
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-lg transition-all duration-300">
+                <Button className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white rounded-lg transition-all duration-300">
                   Learn More
                 </Button>
               </CardContent>
@@ -101,20 +101,20 @@ const ServicesWithImages = () => {
         </div>
 
         {/* Features Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">
+        <div className="bg-card rounded-2xl shadow-xl p-8 mb-16">
+          <h3 className="text-3xl font-bold text-center text-foreground mb-12">
             Why Choose Dream Weddings?
           </h3>
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center mx-auto mb-4">
                   <feature.icon className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                <h4 className="text-xl font-semibold text-foreground mb-2">
                   {feature.title}
                 </h4>
-                <p className="text-gray-600">{feature.description}</p>
+                <p className="text-muted-foreground">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -123,7 +123,7 @@ const ServicesWithImages = () => {
         <div className="text-center">
           <Button 
             size="lg"
-            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300"
+            className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-brand-primary-from/25 transition-all duration-300"
           >
             View All Packages
           </Button>

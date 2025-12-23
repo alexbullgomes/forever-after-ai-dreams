@@ -120,7 +120,7 @@ const Contact = () => {
               Beautiful Together
             </span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-white/70 max-w-2xl mx-auto">
             Ready to turn your wedding day into a cinematic masterpiece? Let's discuss your vision and create magic together.
           </p>
         </div>
@@ -133,7 +133,7 @@ const Contact = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-white/70 mb-2">
                       Your Name *
                     </label>
                     <Input
@@ -146,7 +146,7 @@ const Contact = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-white/70 mb-2">
                       Email *
                     </label>
                     <Input
@@ -163,7 +163,7 @@ const Contact = () => {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-white/70 mb-2">
                       Phone
                     </label>
                     <Input
@@ -176,7 +176,7 @@ const Contact = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-white/70 mb-2">
                       Event Date
                     </label>
                     <Input
@@ -190,7 +190,7 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-white/70 mb-2">
                     Tell us about your vision
                   </label>
                   <Textarea
@@ -223,7 +223,7 @@ const Contact = () => {
                     <Mail className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-gray-300 text-sm">Email us</p>
+                    <p className="text-white/70 text-sm">Email us</p>
                     <p className="text-white font-medium">everafterstudioca@gmail.com</p>
                   </div>
                 </div>
@@ -235,7 +235,7 @@ const Contact = () => {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-gray-300 text-sm">Whatsapp or Call us</p>
+                    <p className="text-white/70 text-sm">Whatsapp or Call us</p>
                     <p className="text-white font-medium">(442) 224-4820</p>
                   </div>
                 </a>
@@ -245,7 +245,7 @@ const Contact = () => {
                     <MapPin className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-gray-300 text-sm">Based in</p>
+                    <p className="text-white/70 text-sm">Based in</p>
                     <p className="text-white font-medium">California, USA</p>
                   </div>
                 </div>
@@ -273,7 +273,7 @@ const Contact = () => {
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
               <h4 className="text-lg font-semibold mb-4 text-white">Quick Response Promise</h4>
-              <p className="text-gray-300 text-sm leading-relaxed">
+              <p className="text-white/70 text-sm leading-relaxed">
                 We understand how exciting (and overwhelming) wedding planning can be. That's why we respond to all inquiries within 24 hours, and often much sooner. Your dream wedding deserves immediate attention.
               </p>
             </div>

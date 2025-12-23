@@ -73,10 +73,10 @@ export function UserDashboardSidebar() {
       <SidebarHeader className="p-6">
         {!collapsed && (
           <div>
-            <h2 className="text-xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <h2 className="text-xl font-bold bg-brand-gradient bg-clip-text text-transparent">
               Everafter
             </h2>
-            <p className="text-sm text-gray-600">User Dashboard</p>
+            <p className="text-sm text-muted-foreground">User Dashboard</p>
           </div>
         )}
       </SidebarHeader>
