@@ -34,7 +34,7 @@ const PlannerGallery = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 py-16 px-4">
+      <div className="min-h-screen bg-section-subtle py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <Skeleton className="h-12 w-64 mx-auto mb-4" />

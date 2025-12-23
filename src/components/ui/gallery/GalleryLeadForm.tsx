@@ -196,7 +196,7 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogOverlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" />
-        <DialogContent className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-full max-w-md p-0 bg-white rounded-2xl shadow-2xl">
+        <DialogContent className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-full max-w-md p-0 bg-card rounded-2xl shadow-2xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -205,12 +205,12 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
             className="relative"
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-100 text-center">
-              <h1 className="text-xl font-bold text-gray-900 pr-8">
+            <div className="px-6 py-4 border-b border-border text-center">
+              <h1 className="text-xl font-bold text-foreground pr-8">
                 {getTitle()}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Let our assistant guide you — fill out the form and get all your questions answered.
+              <p className="text-sm text-muted-foreground mt-1">
+                Let our assistant guide you — fill out the form and submit to get all your questions answered.
               </p>
             </div>
 
@@ -218,7 +218,7 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Name Field */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   <User className="inline w-4 h-4 mr-1" />
                   Name *
                 </label>
@@ -228,14 +228,14 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your full name"
                   required
-                  className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500 rounded-lg"
+                  className="w-full focus:ring-2 focus:ring-brand-primary-from focus:border-brand-primary-from rounded-lg"
                   autoComplete="name"
                 />
               </div>
 
               {/* Phone Number */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   <Phone className="inline w-4 h-4 mr-1" />
                   Cellphone *
                 </label>
@@ -245,7 +245,7 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Your phone number"
                   required
-                  className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500 rounded-lg"
+                  className="w-full focus:ring-2 focus:ring-brand-primary-from focus:border-brand-primary-from rounded-lg"
                   autoComplete="tel"
                 />
               </div>
@@ -255,7 +255,7 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
                 <Button
                   type="submit"
                   disabled={isSubmitting || !name.trim() || !phone.trim()}
-                  className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center">
@@ -271,7 +271,7 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
                   type="button"
                   onClick={onClose}
                   variant="outline"
-                  className="w-full py-3 rounded-lg font-medium border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="w-full py-3 rounded-lg font-medium border-border text-foreground hover:bg-muted"
                 >
                   Maybe Later
                 </Button>

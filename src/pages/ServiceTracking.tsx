@@ -105,7 +105,7 @@ const ServiceTracking = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary-from"></div>
       </div>
     );
   }
@@ -113,8 +113,8 @@ const ServiceTracking = () => {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <p className="text-red-700">{error}</p>
+        <div className="bg-error-light border border-error/20 rounded-lg p-6">
+          <p className="text-error-text">{error}</p>
         </div>
       </div>
     );
@@ -123,15 +123,15 @@ const ServiceTracking = () => {
   if (!profile || profile.pipeline_profile !== 'Enable') {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-200 rounded-lg p-8 text-center">
-          <Clock className="h-12 w-12 text-rose-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+        <div className="bg-section-subtle border border-brand-primary-from/20 rounded-lg p-8 text-center">
+          <Clock className="h-12 w-12 text-brand-primary-from/60 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-brand-gradient mb-2">
             Service Tracking Coming Soon
           </h2>
-          <p className="text-gray-700 mb-4">
+          <p className="text-foreground/80 mb-4">
             Tracking will appear here once your project is enabled.
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             If you have questions, please contact our support team.
           </p>
         </div>
@@ -142,13 +142,13 @@ const ServiceTracking = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent mb-2">
+        <h1 className="text-3xl font-bold text-brand-gradient mb-2">
           Service Tracking
         </h1>
-        <p className="text-gray-600">Track your project progress in real-time</p>
+        <p className="text-muted-foreground">Track your project progress in real-time</p>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
+      <div className="bg-card rounded-lg border border-border p-8">
         {/* Progress Bar */}
         <div className="mb-8">
           <Progress value={getProgressPercentage()} className="h-2" />
@@ -163,10 +163,10 @@ const ServiceTracking = () => {
                 key={step.id}
                 className={`flex items-start gap-4 p-4 rounded-lg transition-all ${
                   state === 'current'
-                    ? 'bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-300'
+                    ? 'bg-section-subtle border-2 border-brand-primary-from/50'
                     : state === 'completed'
-                    ? 'bg-gray-50 border border-gray-200'
-                    : 'bg-white border border-gray-200'
+                    ? 'bg-muted border border-border'
+                    : 'bg-card border border-border'
                 }`}
               >
                 <div className="flex-shrink-0">
@@ -188,25 +188,25 @@ const ServiceTracking = () => {
                   <h3
                     className={`text-lg font-semibold mb-1 ${
                       state === 'current'
-                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent'
+                        ? 'text-brand-gradient'
                         : state === 'completed'
-                        ? 'text-gray-700'
-                        : 'text-gray-400'
+                        ? 'text-foreground/80'
+                        : 'text-neutral-400'
                     }`}
                   >
                     {step.id}. {step.title}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {state === 'completed' ? (
-                      <span className="text-green-600 font-medium">✓ Completed</span>
+                      <span className="text-success font-medium">✓ Completed</span>
                     ) : state === 'current' ? (
-                      <span className="text-rose-600 font-medium">In Progress</span>
+                      <span className="text-brand-primary-from font-medium">In Progress</span>
                     ) : (
-                      <span className="text-gray-400">Pending</span>
+                      <span className="text-neutral-400">Pending</span>
                     )}
                   </p>
                   {state === 'current' && profile.updated_at && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Last updated: {new Date(profile.updated_at).toLocaleDateString()}
                     </p>
                   )}
@@ -217,8 +217,8 @@ const ServiceTracking = () => {
         </div>
 
         {/* Footer Note */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <p className="text-sm text-gray-600 text-center">
+        <div className="mt-8 pt-6 border-t border-border">
+          <p className="text-sm text-muted-foreground text-center">
             Your project status updates automatically. Contact us if you have any questions.
           </p>
         </div>
