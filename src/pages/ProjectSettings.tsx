@@ -7,7 +7,7 @@ import { ColorExportImport } from '@/components/admin/ColorExportImport';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, RotateCcw, Palette, Sun, Moon, Waves, Sunset, TreeDeciduous } from 'lucide-react';
+import { Loader2, RotateCcw, Palette, Sun, Moon, Waves, Sunset, TreeDeciduous, Circle } from 'lucide-react';
 import { useRole } from '@/hooks/useRole';
 import { useNavigate } from 'react-router-dom';
 
@@ -68,6 +68,7 @@ const PRESET_ICONS: Record<ThemePreset, React.ReactNode> = {
   ocean: <Waves className="w-4 h-4" />,
   sunset: <Sunset className="w-4 h-4" />,
   forest: <TreeDeciduous className="w-4 h-4" />,
+  monochrome: <Circle className="w-4 h-4" />,
 };
 
 const PRESET_LABELS: Record<ThemePreset, string> = {
@@ -76,6 +77,7 @@ const PRESET_LABELS: Record<ThemePreset, string> = {
   ocean: 'Ocean Blue',
   sunset: 'Sunset Orange',
   forest: 'Forest Green',
+  monochrome: 'Monochrome',
 };
 
 const ProjectSettings = () => {
