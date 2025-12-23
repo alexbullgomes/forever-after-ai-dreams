@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    /* ===== Core Semantic Tokens ===== */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -13,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Pink primary in valid HSL so it resolves on first paint */
+    /* Primary (from brand gradient) */
     --primary: 351 95% 71%;
     --primary-foreground: 0 0% 100%;
 
@@ -35,6 +36,56 @@
 
     --radius: 0.5rem;
 
+    /* ===== Neutral Scale ===== */
+    --neutral-50: 0 0% 98%;
+    --neutral-100: 0 0% 96%;
+    --neutral-200: 0 0% 90%;
+    --neutral-300: 0 0% 83%;
+    --neutral-400: 0 0% 64%;
+    --neutral-500: 0 0% 45%;
+    --neutral-600: 0 0% 32%;
+    --neutral-700: 0 0% 25%;
+    --neutral-800: 0 0% 15%;
+    --neutral-900: 0 0% 9%;
+    --neutral-950: 0 0% 4%;
+
+    /* ===== Status Colors ===== */
+    /* Success */
+    --success: 142 76% 36%;
+    --success-light: 142 76% 95%;
+    --success-text: 142 76% 22%;
+    
+    /* Warning */
+    --warning: 38 92% 50%;
+    --warning-light: 48 96% 89%;
+    --warning-text: 32 95% 30%;
+    
+    /* Error */
+    --error: 0 84% 60%;
+    --error-light: 0 86% 95%;
+    --error-text: 0 74% 35%;
+    
+    /* Info */
+    --info: 217 91% 60%;
+    --info-light: 214 95% 93%;
+    --info-text: 224 76% 33%;
+
+    /* ===== Surface Levels ===== */
+    --surface-0: 0 0% 100%;
+    --surface-1: 210 40% 98%;
+    --surface-2: 210 40% 96%;
+    --surface-3: 210 40% 93%;
+
+    /* ===== Border Tokens ===== */
+    --border-subtle: 214.3 31.8% 91.4%;
+    --border-strong: 214.3 31.8% 80%;
+    --border-brand: 351 95% 71%;
+
+    /* ===== Focus Ring ===== */
+    --ring-brand: 351 95% 71%;
+    --ring-offset: 0 0% 100%;
+
+    /* ===== Sidebar ===== */
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -44,60 +95,169 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Brand Colors - Dynamic (loaded from database) */
+    /* ===== Brand Colors - Dynamic (loaded from database) ===== */
     /* Primary gradient colors */
-    --brand-primary-from: 244 63 94; /* rose-500 default */
-    --brand-primary-to: 236 72 153; /* pink-500 default */
-    --brand-primary-hover-from: 225 29 72; /* rose-600 default */
-    --brand-primary-hover-to: 219 39 119; /* pink-600 default */
+    --brand-primary-from: 351 95% 71%;
+    --brand-primary-to: 328 86% 70%;
+    --brand-primary-hover-from: 350 89% 60%;
+    --brand-primary-hover-to: 328 86% 60%;
     
     /* Icon backgrounds */
-    --brand-icon-bg-primary: 244 63 94; /* rose-500 default */
-    --brand-icon-bg-secondary: 168 85 247; /* purple-500 default */
-    --brand-icon-bg-accent: 236 72 153; /* pink-500 default */
+    --brand-icon-bg-primary: 351 95% 71%;
+    --brand-icon-bg-secondary: 271 91% 65%;
+    --brand-icon-bg-accent: 328 86% 70%;
     
     /* Text accents */
-    --brand-text-accent: 244 63 94; /* rose-500 default */
-    --brand-badge-text: 225 29 72; /* rose-700 default */
-    --brand-stats-text: 244 63 94; /* rose-500 default */
+    --brand-text-accent: 351 95% 71%;
+    --brand-badge-text: 350 89% 50%;
+    --brand-stats-text: 351 95% 71%;
     
     /* Backgrounds */
-    --brand-badge-bg: 254 242 242; /* rose-50 default */
+    --brand-badge-bg: 350 100% 97%;
     
     /* Decorative elements */
-    --brand-feature-dot: 251 113 133; /* rose-400 default */
+    --brand-feature-dot: 351 95% 75%;
     
-    /* Hero Section */
-    --hero-overlay-color: 0 0 0;
-    --hero-badge-bg-color: 0 0 100;
-    --hero-badge-icon: 351 95 71;
-    --hero-gradient-from: 351 95 71;
-    --hero-gradient-via: 328 86 70;
-    --hero-gradient-to: 261 90 76;
-    --hero-text-primary: 0 0 100;
-    --hero-text-muted: 0 0 100;
-    --hero-trust-text: 0 0 100;
-    --hero-glow-1-from: 351 95 71;
-    --hero-glow-1-to: 328 86 70;
-    --hero-glow-2-from: 261 90 76;
-    --hero-glow-2-to: 328 86 70;
+    /* ===== Hero Section ===== */
+    --hero-overlay-color: 0 0% 0%;
+    --hero-badge-bg-color: 0 0% 100%;
+    --hero-badge-icon: 351 95% 71%;
+    --hero-gradient-from: 351 95% 71%;
+    --hero-gradient-via: 328 86% 70%;
+    --hero-gradient-to: 261 90% 76%;
+    --hero-text-primary: 0 0% 100%;
+    --hero-text-muted: 0 0% 100%;
+    --hero-trust-text: 0 0% 100%;
+    --hero-glow-1-from: 351 95% 71%;
+    --hero-glow-1-to: 328 86% 70%;
+    --hero-glow-2-from: 261 90% 76%;
+    --hero-glow-2-to: 328 86% 70%;
     
-    /* Services Section */
-    --service-icon-gradient-from: 351 95 71;
-    --service-icon-gradient-to: 328 86 70;
+    /* ===== Services Section ===== */
+    --service-icon-gradient-from: 351 95% 71%;
+    --service-icon-gradient-to: 328 86% 70%;
     
-    /* Contact Section */
-    --contact-bg-gradient-from: 222 47 11;
-    --contact-bg-gradient-to: 350 89 60;
+    /* ===== Contact Section ===== */
+    --contact-bg-gradient-from: 222 47% 11%;
+    --contact-bg-gradient-to: 350 89% 60%;
 
-    /* CTA Section */
-    --cta-icon: 244 63 94;
+    /* ===== CTA Section ===== */
+    --cta-icon: 351 95% 71%;
+
+    /* ===== Section Backgrounds ===== */
+    --section-bg-subtle: 350 100% 99%;
+    --section-bg-muted: 210 40% 98%;
   }
 
-  /* Dark mode removed - site stays in light mode only */
+  /* ===== Dark Mode Theme ===== */
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 351 95% 71%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 351 95% 71%;
+
+    /* Neutral Scale - Dark */
+    --neutral-50: 0 0% 4%;
+    --neutral-100: 0 0% 9%;
+    --neutral-200: 0 0% 15%;
+    --neutral-300: 0 0% 25%;
+    --neutral-400: 0 0% 32%;
+    --neutral-500: 0 0% 45%;
+    --neutral-600: 0 0% 64%;
+    --neutral-700: 0 0% 83%;
+    --neutral-800: 0 0% 90%;
+    --neutral-900: 0 0% 96%;
+    --neutral-950: 0 0% 98%;
+
+    /* Status Colors - Dark */
+    --success: 142 70% 45%;
+    --success-light: 142 40% 15%;
+    --success-text: 142 76% 75%;
+    
+    --warning: 38 92% 50%;
+    --warning-light: 38 50% 15%;
+    --warning-text: 48 96% 70%;
+    
+    --error: 0 72% 51%;
+    --error-light: 0 50% 15%;
+    --error-text: 0 86% 70%;
+    
+    --info: 217 91% 60%;
+    --info-light: 217 50% 15%;
+    --info-text: 214 95% 75%;
+
+    /* Surface Levels - Dark */
+    --surface-0: 222.2 84% 4.9%;
+    --surface-1: 222.2 50% 8%;
+    --surface-2: 222.2 40% 12%;
+    --surface-3: 222.2 35% 16%;
+
+    /* Border Tokens - Dark */
+    --border-subtle: 217.2 32.6% 17.5%;
+    --border-strong: 217.2 32.6% 30%;
+    --border-brand: 351 95% 71%;
+
+    /* Focus Ring - Dark */
+    --ring-brand: 351 95% 71%;
+    --ring-offset: 222.2 84% 4.9%;
+
+    /* Sidebar - Dark */
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 351 95% 71%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 351 95% 71%;
+
+    /* Section Backgrounds - Dark */
+    --section-bg-subtle: 222.2 60% 6%;
+    --section-bg-muted: 222.2 50% 8%;
+  }
 }
 
 @layer utilities {
+  /* ===== Brand Gradients ===== */
+  .bg-brand-gradient {
+    background: linear-gradient(
+      to right, 
+      hsl(var(--brand-primary-from)), 
+      hsl(var(--brand-primary-to))
+    );
+  }
+
+  .bg-brand-gradient-hover {
+    background: linear-gradient(
+      to right, 
+      hsl(var(--brand-primary-hover-from)), 
+      hsl(var(--brand-primary-hover-to))
+    );
+  }
+
   /* Brand Light Background - For page backgrounds and subtle accents */
   .bg-brand-light {
     background: linear-gradient(
@@ -105,6 +265,54 @@
       hsl(var(--brand-primary-from) / 0.05), 
       hsl(var(--brand-primary-to) / 0.05)
     );
+  }
+
+  .bg-section-subtle {
+    background: linear-gradient(
+      to bottom right,
+      hsl(var(--surface-1)),
+      hsl(var(--brand-primary-from) / 0.03)
+    );
+  }
+
+  /* Text with gradient */
+  .text-brand-gradient {
+    background: linear-gradient(
+      to right, 
+      hsl(var(--brand-primary-from)), 
+      hsl(var(--brand-primary-to))
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ===== Focus Ring Utility ===== */
+  .focus-ring-brand {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    --tw-ring-color: hsl(var(--ring-brand));
+    --tw-ring-offset-color: hsl(var(--ring-offset));
+  }
+
+  /* ===== Status Badge Utilities ===== */
+  .status-success {
+    @apply bg-success-light text-success-text border border-success/20;
+  }
+
+  .status-warning {
+    @apply bg-warning-light text-warning-text border border-warning/20;
+  }
+
+  .status-error {
+    @apply bg-error-light text-error-text border border-error/20;
+  }
+
+  .status-info {
+    @apply bg-info-light text-info-text border border-info/20;
+  }
+
+  .status-neutral {
+    @apply bg-neutral-100 text-neutral-700 border border-neutral-200;
   }
 }
 
@@ -140,6 +348,11 @@
 
   button.bg-brand-gradient {
     background-color: transparent !important;
-    background-image: linear-gradient(to right, hsl(351, 95%, 71%), hsl(328, 86%, 70%)) !important;
+    background-image: linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to))) !important;
+  }
+
+  /* Dark mode button adjustments */
+  .dark button.bg-brand-gradient {
+    background-image: linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to))) !important;
   }
 }

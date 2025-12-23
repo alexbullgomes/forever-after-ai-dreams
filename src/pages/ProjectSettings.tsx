@@ -1,67 +1,85 @@
 import { useState, useEffect } from 'react';
 import { useSiteSettingsAdmin } from '@/hooks/useSiteSettingsAdmin';
-import { BrandColors } from '@/hooks/useSiteSettings';
+import { BrandColors, ThemePreset, THEME_PRESETS } from '@/hooks/useSiteSettings';
 import { ColorPicker } from '@/components/admin/ColorPicker';
 import { ColorPreview } from '@/components/admin/ColorPreview';
 import { ColorExportImport } from '@/components/admin/ColorExportImport';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, RotateCcw } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, RotateCcw, Palette, Sun, Moon, Waves, Sunset, TreeDeciduous } from 'lucide-react';
 import { useRole } from '@/hooks/useRole';
 import { useNavigate } from 'react-router-dom';
 
 const DEFAULT_COLORS: BrandColors = {
+  theme_preset: 'light',
   // Primary gradient colors
-  primary_from: "244 63 94", // rose-500
-  primary_to: "236 72 153", // pink-500
-  primary_hover_from: "225 29 72", // rose-600
-  primary_hover_to: "219 39 119", // pink-600
+  primary_from: "351 95% 71%",
+  primary_to: "328 86% 70%",
+  primary_hover_from: "350 89% 60%",
+  primary_hover_to: "328 86% 60%",
   
   // Icon backgrounds
-  icon_bg_primary: "244 63 94", // rose-500
-  icon_bg_secondary: "168 85 247", // purple-500
-  icon_bg_accent: "236 72 153", // pink-500
+  icon_bg_primary: "351 95% 71%",
+  icon_bg_secondary: "271 91% 65%",
+  icon_bg_accent: "328 86% 70%",
   
   // Text accents
-  text_accent: "244 63 94", // rose-500
-  badge_text: "225 29 72", // rose-700
-  stats_text: "244 63 94", // rose-500
+  text_accent: "351 95% 71%",
+  badge_text: "350 89% 50%",
+  stats_text: "351 95% 71%",
   
   // Backgrounds
-  badge_bg: "254 242 242", // rose-50
+  badge_bg: "350 100% 97%",
   
   // Decorative elements
-  feature_dot: "251 113 133", // rose-400
+  feature_dot: "351 95% 75%",
   
   // Hero section
-  hero_overlay_color: "0 0 0",
-  hero_badge_bg_color: "0 0 100",
-  hero_badge_icon: "351 95 71",
-  hero_gradient_from: "351 95 71",
-  hero_gradient_via: "328 86 70",
-  hero_gradient_to: "261 90 76",
-  hero_text_primary: "0 0 100",
-  hero_text_muted: "0 0 100",
-  hero_trust_text: "0 0 100",
-  hero_glow_1_from: "351 95 71",
-  hero_glow_1_to: "328 86 70",
-  hero_glow_2_from: "261 90 76",
-  hero_glow_2_to: "328 86 70",
+  hero_overlay_color: "0 0% 0%",
+  hero_badge_bg_color: "0 0% 100%",
+  hero_badge_icon: "351 95% 71%",
+  hero_gradient_from: "351 95% 71%",
+  hero_gradient_via: "328 86% 70%",
+  hero_gradient_to: "261 90% 76%",
+  hero_text_primary: "0 0% 100%",
+  hero_text_muted: "0 0% 100%",
+  hero_trust_text: "0 0% 100%",
+  hero_glow_1_from: "351 95% 71%",
+  hero_glow_1_to: "328 86% 70%",
+  hero_glow_2_from: "261 90% 76%",
+  hero_glow_2_to: "328 86% 70%",
   
   // Services section
-  service_icon_gradient_from: "351 95 71",
-  service_icon_gradient_to: "328 86 70",
+  service_icon_gradient_from: "351 95% 71%",
+  service_icon_gradient_to: "328 86% 70%",
   
   // Contact section
-  contact_bg_gradient_from: "222 47 11",
-  contact_bg_gradient_to: "350 89 60",
+  contact_bg_gradient_from: "222 47% 11%",
+  contact_bg_gradient_to: "350 89% 60%",
 
   // CTA section icon color
-  cta_icon_color: "244 63 94",
+  cta_icon_color: "351 95% 71%",
+};
+
+const PRESET_ICONS: Record<ThemePreset, React.ReactNode> = {
+  light: <Sun className="w-4 h-4" />,
+  dark: <Moon className="w-4 h-4" />,
+  ocean: <Waves className="w-4 h-4" />,
+  sunset: <Sunset className="w-4 h-4" />,
+  forest: <TreeDeciduous className="w-4 h-4" />,
+};
+
+const PRESET_LABELS: Record<ThemePreset, string> = {
+  light: 'Light (Default)',
+  dark: 'Dark Mode',
+  ocean: 'Ocean Blue',
+  sunset: 'Sunset Orange',
+  forest: 'Forest Green',
 };
 
 const ProjectSettings = () => {
-  const { colors, loading, updateColors } = useSiteSettingsAdmin();
+  const { colors, loading, updateColors, applyPreset, currentTheme } = useSiteSettingsAdmin();
   const [tempColors, setTempColors] = useState<BrandColors>(DEFAULT_COLORS);
   const [saving, setSaving] = useState(false);
   const { hasRole, loading: roleLoading } = useRole('admin');
@@ -94,6 +112,10 @@ const ProjectSettings = () => {
     setTempColors(importedColors);
   };
 
+  const handlePresetChange = (preset: ThemePreset) => {
+    setTempColors(applyPreset(preset, tempColors));
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -111,7 +133,7 @@ const ProjectSettings = () => {
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Project Settings</h1>
+        <h1 className="text-3xl font-bold text-foreground">Project Settings</h1>
         <p className="text-muted-foreground mt-2">
           Customize the brand colors used across your entire site
         </p>
@@ -120,6 +142,56 @@ const ProjectSettings = () => {
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left Column - Color Settings */}
         <div className="space-y-6">
+          {/* Theme Preset Selector */}
+          <Card className="border-brand-primary-from/20 bg-gradient-to-r from-brand-badge-bg/50 to-transparent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="w-5 h-5 text-brand-primary-from" />
+                Theme Presets
+              </CardTitle>
+              <CardDescription>
+                Quickly switch between pre-defined color schemes
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <Select 
+                value={tempColors.theme_preset || 'light'} 
+                onValueChange={(value) => handlePresetChange(value as ThemePreset)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a theme preset" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(THEME_PRESETS) as ThemePreset[]).map((preset) => (
+                    <SelectItem key={preset} value={preset}>
+                      <div className="flex items-center gap-2">
+                        {PRESET_ICONS[preset]}
+                        <span>{PRESET_LABELS[preset]}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {/* Quick Preset Buttons */}
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(THEME_PRESETS) as ThemePreset[]).map((preset) => (
+                  <Button
+                    key={preset}
+                    variant={tempColors.theme_preset === preset ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePresetChange(preset)}
+                    className={tempColors.theme_preset === preset ? "bg-brand-gradient" : ""}
+                  >
+                    {PRESET_ICONS[preset]}
+                    <span className="ml-1">{preset.charAt(0).toUpperCase() + preset.slice(1)}</span>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Primary Gradients */}
           <Card>
             <CardHeader>
@@ -131,7 +203,7 @@ const ProjectSettings = () => {
             
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="font-medium text-sm">Default State</h3>
+                <h3 className="font-medium text-sm text-foreground">Default State</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <ColorPicker
                     label="Gradient Start"
@@ -149,7 +221,7 @@ const ProjectSettings = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-medium text-sm">Hover State</h3>
+                <h3 className="font-medium text-sm text-foreground">Hover State</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <ColorPicker
                     label="Hover Start"
@@ -335,7 +407,7 @@ const ProjectSettings = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Glow Effect 1</p>
+                  <p className="text-sm font-medium text-foreground">Glow Effect 1</p>
                   <div className="grid grid-cols-2 gap-2">
                     <ColorPicker
                       label="Start"
@@ -352,7 +424,7 @@ const ProjectSettings = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Glow Effect 2</p>
+                  <p className="text-sm font-medium text-foreground">Glow Effect 2</p>
                   <div className="grid grid-cols-2 gap-2">
                     <ColorPicker
                       label="Start"
@@ -477,9 +549,9 @@ const ProjectSettings = () => {
       </div>
 
       {hasChanges && (
-        <Card className="border-amber-500 bg-amber-50">
+        <Card className="border-warning bg-warning-light">
           <CardContent className="pt-6">
-            <p className="text-sm text-amber-800">
+            <p className="text-sm text-warning-text">
               ⚠️ You have unsaved changes. Click "Save Changes" to apply them across the site.
             </p>
           </CardContent>

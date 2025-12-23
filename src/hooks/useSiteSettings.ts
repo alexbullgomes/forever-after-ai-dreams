@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export type ThemePreset = 'light' | 'dark' | 'ocean' | 'sunset' | 'forest';
+
 export interface BrandColors {
+  // Theme preset
+  theme_preset?: ThemePreset;
+  
   // Primary gradient colors
   primary_from: string;
   primary_to: string;
@@ -51,12 +56,101 @@ export interface BrandColors {
   cta_icon_color: string;
 }
 
+// Theme presets definition
+export const THEME_PRESETS: Record<ThemePreset, Partial<BrandColors>> = {
+  light: {
+    theme_preset: 'light',
+    primary_from: '351 95% 71%',
+    primary_to: '328 86% 70%',
+    primary_hover_from: '350 89% 60%',
+    primary_hover_to: '328 86% 60%',
+    icon_bg_primary: '351 95% 71%',
+    icon_bg_secondary: '271 91% 65%',
+    icon_bg_accent: '328 86% 70%',
+    text_accent: '351 95% 71%',
+    badge_text: '350 89% 50%',
+    stats_text: '351 95% 71%',
+    badge_bg: '350 100% 97%',
+    feature_dot: '351 95% 75%',
+  },
+  dark: {
+    theme_preset: 'dark',
+    primary_from: '351 95% 71%',
+    primary_to: '328 86% 70%',
+    primary_hover_from: '351 95% 75%',
+    primary_hover_to: '328 86% 75%',
+    icon_bg_primary: '351 95% 71%',
+    icon_bg_secondary: '271 91% 65%',
+    icon_bg_accent: '328 86% 70%',
+    text_accent: '351 95% 75%',
+    badge_text: '350 89% 70%',
+    stats_text: '351 95% 75%',
+    badge_bg: '350 50% 15%',
+    feature_dot: '351 95% 75%',
+  },
+  ocean: {
+    theme_preset: 'ocean',
+    primary_from: '199 89% 48%',
+    primary_to: '217 91% 60%',
+    primary_hover_from: '199 89% 40%',
+    primary_hover_to: '217 91% 50%',
+    icon_bg_primary: '199 89% 48%',
+    icon_bg_secondary: '172 66% 50%',
+    icon_bg_accent: '217 91% 60%',
+    text_accent: '199 89% 48%',
+    badge_text: '199 89% 35%',
+    stats_text: '199 89% 48%',
+    badge_bg: '199 89% 97%',
+    feature_dot: '199 89% 55%',
+  },
+  sunset: {
+    theme_preset: 'sunset',
+    primary_from: '25 95% 53%',
+    primary_to: '350 89% 60%',
+    primary_hover_from: '25 95% 45%',
+    primary_hover_to: '350 89% 52%',
+    icon_bg_primary: '25 95% 53%',
+    icon_bg_secondary: '350 89% 60%',
+    icon_bg_accent: '45 93% 58%',
+    text_accent: '25 95% 53%',
+    badge_text: '25 95% 40%',
+    stats_text: '25 95% 53%',
+    badge_bg: '25 95% 97%',
+    feature_dot: '25 95% 60%',
+  },
+  forest: {
+    theme_preset: 'forest',
+    primary_from: '142 76% 36%',
+    primary_to: '160 84% 39%',
+    primary_hover_from: '142 76% 28%',
+    primary_hover_to: '160 84% 31%',
+    icon_bg_primary: '142 76% 36%',
+    icon_bg_secondary: '160 84% 39%',
+    icon_bg_accent: '120 60% 45%',
+    text_accent: '142 76% 36%',
+    badge_text: '142 76% 25%',
+    stats_text: '142 76% 36%',
+    badge_bg: '142 76% 97%',
+    feature_dot: '142 76% 45%',
+  },
+};
+
 export const useSiteSettings = () => {
   const [colors, setColors] = useState<BrandColors | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentTheme, setCurrentTheme] = useState<ThemePreset>('light');
 
-  const applyCSSVariables = (colors: BrandColors) => {
+  const applyCSSVariables = useCallback((colors: BrandColors) => {
     const root = document.documentElement;
+    
+    // Apply theme class
+    const themePreset = colors.theme_preset || 'light';
+    if (themePreset === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    setCurrentTheme(themePreset);
     
     // Primary gradient colors
     root.style.setProperty('--brand-primary-from', colors.primary_from);
@@ -106,11 +200,16 @@ export const useSiteSettings = () => {
     // CTA section icon color
     root.style.setProperty('--cta-icon', colors.cta_icon_color);
     
+    // Also update the primary color to match brand
+    root.style.setProperty('--primary', colors.primary_from);
+    root.style.setProperty('--ring-brand', colors.primary_from);
+    root.style.setProperty('--border-brand', colors.primary_from);
+    
     // Cache colors in localStorage for instant application on next visit
     localStorage.setItem('everafter_brand_colors', JSON.stringify(colors));
-  };
+  }, []);
 
-  const fetchColors = async () => {
+  const fetchColors = useCallback(async () => {
     const { data, error } = await supabase
       .from('site_settings')
       .select('value')
@@ -123,7 +222,7 @@ export const useSiteSettings = () => {
       applyCSSVariables(brandColors);
     }
     setLoading(false);
-  };
+  }, [applyCSSVariables]);
 
   useEffect(() => {
     fetchColors();
@@ -144,7 +243,7 @@ export const useSiteSettings = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchColors]);
 
-  return { colors, loading };
+  return { colors, loading, currentTheme, THEME_PRESETS };
 };

@@ -1,10 +1,10 @@
-import { useSiteSettings, BrandColors } from './useSiteSettings';
+import { useSiteSettings, BrandColors, ThemePreset, THEME_PRESETS } from './useSiteSettings';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useSiteSettingsAdmin = () => {
-  const { colors, loading } = useSiteSettings();
+  const { colors, loading, currentTheme } = useSiteSettings();
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -43,5 +43,14 @@ export const useSiteSettingsAdmin = () => {
     return true;
   };
 
-  return { colors, loading, updateColors };
+  const applyPreset = (preset: ThemePreset, currentColors: BrandColors): BrandColors => {
+    const presetValues = THEME_PRESETS[preset];
+    return {
+      ...currentColors,
+      ...presetValues,
+      theme_preset: preset,
+    };
+  };
+
+  return { colors, loading, updateColors, currentTheme, applyPreset, THEME_PRESETS };
 };
