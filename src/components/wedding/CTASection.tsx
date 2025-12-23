@@ -9,12 +9,12 @@ const CTASection = () => {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+      <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
         <Video className="w-16 h-16 text-cta-icon mx-auto mb-6" />
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <h2 className="text-3xl font-bold text-foreground mb-4">
           Ready to Capture Your Love Story?
         </h2>
-        <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+        <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
           Let's schedule a consultation to discuss your vision and customize the perfect 
           package for your special day. Our team is excited to work with you!
         </p>

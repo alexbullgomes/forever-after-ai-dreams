@@ -24,7 +24,7 @@ export const ChatHistory = ({ chatHistory, playingAudio, onAudioPlay }: ChatHist
     <div className="max-w-4xl mx-auto mb-6">
       <div 
         ref={scrollAreaRef}
-        className="bg-gray-50 rounded-xl p-4 max-h-80 overflow-y-auto space-y-4 scroll-smooth"
+        className="bg-muted rounded-xl p-4 max-h-80 overflow-y-auto space-y-4 scroll-smooth"
       >
         {chatHistory.map((chat) => (
           <ChatMessageComponent

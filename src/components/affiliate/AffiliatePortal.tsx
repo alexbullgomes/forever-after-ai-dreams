@@ -100,25 +100,25 @@ const AffiliatePortal = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="text-center">
-                <Users className="w-8 h-8 mx-auto mb-2 text-rose-500" />
+                <Users className="w-8 h-8 mx-auto mb-2 text-brand-primary-from" />
                 <h3 className="font-semibold">Refer Customers</h3>
-                <p className="text-sm text-gray-600">Share your unique referral link</p>
+                <p className="text-sm text-muted-foreground">Share your unique referral link</p>
               </div>
               <div className="text-center">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 text-rose-500" />
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-brand-primary-from" />
                 <h3 className="font-semibold">Earn Commissions</h3>
-                <p className="text-sm text-gray-600">Get paid for successful referrals</p>
+                <p className="text-sm text-muted-foreground">Get paid for successful referrals</p>
               </div>
               <div className="text-center">
-                <ExternalLink className="w-8 h-8 mx-auto mb-2 text-rose-500" />
+                <ExternalLink className="w-8 h-8 mx-auto mb-2 text-brand-primary-from" />
                 <h3 className="font-semibold">Track Progress</h3>
-                <p className="text-sm text-gray-600">Monitor your referral stats</p>
+                <p className="text-sm text-muted-foreground">Monitor your referral stats</p>
               </div>
             </div>
             
             <Button 
               onClick={createAffiliateAccount}
-              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
+              className="w-full bg-brand-gradient hover:bg-brand-gradient-hover"
             >
               Create Affiliate Account
             </Button>
@@ -173,7 +173,7 @@ const AffiliatePortal = () => {
                     onClick={handleSaveCode}
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+                    className="h-8 w-8 p-0 text-success hover:text-success/80"
                     disabled={loading}
                   >
                     <Check className="h-4 w-4" />
@@ -182,7 +182,7 @@ const AffiliatePortal = () => {
                     onClick={handleCancelEdit}
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                    className="h-8 w-8 p-0 text-error hover:text-error/80"
                     disabled={loading}
                   >
                     <X className="h-4 w-4" />
@@ -192,7 +192,7 @@ const AffiliatePortal = () => {
             </div>
             <div>
               <h3 className="font-semibold mb-2">Total Referrals</h3>
-              <div className="text-3xl font-bold text-rose-500">
+              <div className="text-3xl font-bold text-brand-primary-from">
                 {affiliate.total_referrals}
               </div>
             </div>
@@ -217,13 +217,13 @@ const AffiliatePortal = () => {
             <Button
               onClick={copyReferralUrl}
               variant="outline"
-              className={copied ? "text-green-600" : ""}
+              className={copied ? "text-success" : ""}
             >
               <Copy className="w-4 h-4" />
               {copied ? "Copied!" : "Copy"}
             </Button>
           </div>
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-muted-foreground mt-2">
             When someone visits this link and fills out a form or registers, you'll earn a commission.
           </p>
         </CardContent>

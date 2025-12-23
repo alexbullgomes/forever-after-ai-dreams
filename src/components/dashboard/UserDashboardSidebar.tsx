@@ -65,8 +65,8 @@ export function UserDashboardSidebar() {
 
   const getNavCls = (isActiveRoute: boolean) =>
     isActiveRoute
-      ? "bg-rose-100 text-rose-700 font-medium hover:bg-rose-100"
-      : "hover:bg-gray-100 text-gray-700";
+      ? "bg-brand-light text-brand-primary-from font-medium hover:bg-brand-light"
+      : "hover:bg-muted text-muted-foreground";
 
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">

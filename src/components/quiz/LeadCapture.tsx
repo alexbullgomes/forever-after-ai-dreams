@@ -59,15 +59,15 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
       <div className="max-w-md mx-auto w-full">
-        <Card className="p-8 bg-white/90 backdrop-blur-sm shadow-xl">
+        <Card className="p-8 bg-card/90 backdrop-blur-sm shadow-xl">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 p-3 rounded-full bg-gradient-to-r from-rose-500 to-purple-500">
+            <div className="w-16 h-16 mx-auto mb-4 p-3 rounded-full bg-brand-gradient">
               <Heart className="w-full h-full text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Almost There! 
             </h2>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Let's personalize your wedding package recommendation
             </p>
           </div>
@@ -86,7 +86,7 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
                 placeholder="Enter your full name"
               />
               {errors.fullName && (
-                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                <p className="text-error text-sm mt-1">{errors.fullName}</p>
               )}
             </div>
 
@@ -103,7 +103,7 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
                 placeholder="Enter your email"
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                <p className="text-error text-sm mt-1">{errors.email}</p>
               )}
             </div>
 
@@ -122,14 +122,14 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-rose-500 to-purple-500 hover:from-rose-600 hover:to-purple-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Sparkles className="w-4 h-4 mr-2" />
               Get My Recommendation
             </Button>
           </form>
 
-          <p className="text-xs text-gray-500 text-center mt-4">
+          <p className="text-xs text-muted-foreground text-center mt-4">
             We respect your privacy. No spam, ever.
           </p>
         </Card>

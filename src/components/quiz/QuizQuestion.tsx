@@ -101,7 +101,7 @@ const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer, onBack }: Quiz
               <Button
                 onClick={onBack}
                 variant="ghost"
-                className="flex items-center text-gray-600 hover:text-gray-800 p-2"
+                className="flex items-center text-muted-foreground hover:text-foreground p-2"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Back
@@ -109,15 +109,15 @@ const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer, onBack }: Quiz
             ) : (
               <div></div>
             )}
-            <span className="text-sm text-gray-600">Question {questionNumber} of {totalQuestions}</span>
-            <span className="text-sm text-gray-600">{Math.round(progress)}%</span>
+            <span className="text-sm text-muted-foreground">Question {questionNumber} of {totalQuestions}</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
 
         {/* Question Card */}
-        <Card className="p-6 md:p-8 bg-white/80 backdrop-blur-sm shadow-xl">
-          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-6 md:mb-8 text-center leading-tight">
+        <Card className="p-6 md:p-8 bg-card/80 backdrop-blur-sm shadow-xl">
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-6 md:mb-8 text-center leading-tight">
             {currentQuestion.question}
           </h2>
 
@@ -127,7 +127,7 @@ const QuizQuestion = ({ questionNumber, totalQuestions, onAnswer, onBack }: Quiz
                 key={answer.id}
                 onClick={() => handleAnswer(answer.id, answer.category, answer.intensity)}
                 variant="outline"
-                className="w-full p-4 md:p-6 text-left justify-start text-base md:text-lg font-medium hover:bg-gradient-to-r hover:from-rose-50 hover:to-purple-50 hover:border-rose-300 transition-all duration-300 min-h-[60px] md:min-h-[70px] h-auto whitespace-normal leading-relaxed"
+                className="w-full p-4 md:p-6 text-left justify-start text-base md:text-lg font-medium hover:bg-brand-light hover:border-brand-primary-from transition-all duration-300 min-h-[60px] md:min-h-[70px] h-auto whitespace-normal leading-relaxed"
               >
                 <span className="text-left break-words w-full">
                   {answer.text}
