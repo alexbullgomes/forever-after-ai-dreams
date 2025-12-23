@@ -301,7 +301,7 @@ const AIAssistantSection = () => {
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
         <div className="text-center">
           <Heart className="w-12 h-12 text-brand-primary-from animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Initializing your assistant...</p>
+          <p className="text-muted-foreground">Initializing your assistant...</p>
         </div>
       </div>
     );
@@ -313,12 +313,12 @@ const AIAssistantSection = () => {
         <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Heart className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Assistant Planner</h2>
-        <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-8">Need photo or video services for your family, business, or personal moments? Send a quick message, voice note—we'll help you find the right package for your goals and budget.</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Assistant Planner</h2>
+        <p className="text-lg text-muted-foreground max-w-4xl mx-auto mb-8">Need photo or video services for your family, business, or personal moments? Send a quick message, voice note—we'll help you find the right package for your goals and budget.</p>
         
         <div className="mb-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">🎤 Voice note   💬 Ask anything</h3>
-          <span className="text-gray-600 italic">
+          <h3 className="text-2xl font-bold text-foreground mb-2">🎤 Voice note   💬 Ask anything</h3>
+          <span className="text-muted-foreground italic">
             Get personalized options, plus exclusive deals or a free consultation.
           </span>
         </div>

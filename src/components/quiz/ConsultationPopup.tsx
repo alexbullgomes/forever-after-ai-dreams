@@ -52,14 +52,14 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm sm:max-w-md mx-4 p-0 gap-0 rounded-xl overflow-hidden bg-white border border-gray-200 shadow-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-sm sm:max-w-md mx-4 p-0 gap-0 rounded-xl overflow-hidden bg-card border border-border shadow-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Close button - Enhanced visibility for mobile */}
         <button
           onClick={onClose}
           type="button"
-          className="absolute right-3 top-3 z-[60] rounded-full bg-white shadow-lg border border-gray-200 p-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-all duration-200"
+          className="absolute right-3 top-3 z-[60] rounded-full bg-card shadow-lg border border-border p-2 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-brand-primary-from focus:ring-offset-2 transition-all duration-200"
         >
-          <X className="h-4 w-4 text-gray-700" />
+          <X className="h-4 w-4 text-foreground" />
           <span className="sr-only">Close</span>
         </button>
 

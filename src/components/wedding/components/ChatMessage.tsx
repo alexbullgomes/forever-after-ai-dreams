@@ -27,8 +27,8 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMe
       <div
         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
           chat.isUser
-            ? 'bg-rose-500 text-white'
-            : 'bg-white border border-gray-200 text-gray-800'
+            ? 'bg-brand-primary-from text-white'
+            : 'bg-card border border-border text-foreground'
         }`}
       >
         <p className="text-sm">{chat.message}</p>
@@ -50,7 +50,7 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMe
                       onClick={() => window.open(file.fileUrl, '_blank')}
                     />
                     <p className={`text-xs mt-1 ${
-                      chat.isUser ? 'text-rose-100' : 'text-gray-500'
+                      chat.isUser ? 'text-white/70' : 'text-muted-foreground'
                     }`}>
                       {file.fileName}
                     </p>
@@ -71,7 +71,7 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMe
               } else {
                 return (
                   <div key={index} className={`text-xs p-2 rounded ${
-                    chat.isUser ? 'bg-rose-600' : 'bg-gray-100'
+                    chat.isUser ? 'bg-brand-primary-hover-from' : 'bg-muted'
                   }`}>
                     <div className="flex items-center gap-2">
                       <span>📎</span>
@@ -85,7 +85,7 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMe
         )}
         
         <p className={`text-xs mt-1 ${
-          chat.isUser ? 'text-rose-100' : 'text-gray-500'
+          chat.isUser ? 'text-white/70' : 'text-muted-foreground'
         }`}>
           {new Date(chat.timestamp).toLocaleTimeString()}
         </p>

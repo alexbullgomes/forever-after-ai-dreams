@@ -32,7 +32,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
         )}
         
         <CardHeader className={popular ? 'pt-12' : ''}>
-          <CardTitle className="text-2xl font-bold text-center text-gray-900">
+          <CardTitle className="text-2xl font-bold text-center text-foreground">
             {name}
           </CardTitle>
           <div className="text-center">
@@ -41,7 +41,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
               {name === "Photo & Video Combo" ? <CreatePackageBadge /> : <EstimatedPriceBadge />}
             </div>
           </div>
-          <p className="text-center text-gray-600 italic">{description}</p>
+          <p className="text-center text-muted-foreground italic">{description}</p>
         </CardHeader>
         
         <CardContent className="space-y-4">
@@ -51,7 +51,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
                 <div className="w-5 h-5 rounded-full bg-[hsl(var(--brand-primary-from)/0.1)] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-brand-primary-from"></div>
                 </div>
-                <span className="text-gray-700">{feature}</span>
+                <span className="text-foreground/80">{feature}</span>
               </li>
             ))}
           </ul>
@@ -66,7 +66,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
           
           {idealFor && (
             <div className="pt-2 pb-2 text-center">
-              <span className="text-sm font-bold text-gray-800">{idealFor}</span>
+              <span className="text-sm font-bold text-foreground">{idealFor}</span>
             </div>
           )}
         </CardContent>

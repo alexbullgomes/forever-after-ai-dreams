@@ -67,7 +67,7 @@ const QuizResult = ({
     <>
       <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
         <div className="max-w-2xl mx-auto w-full">
-          <Card className="p-8 bg-white/90 backdrop-blur-sm shadow-xl">
+          <Card className="p-8 bg-card/90 backdrop-blur-sm shadow-xl">
             {/* Header */}
             <QuizResultHeader userFullName={userLead.fullName} />
 
@@ -85,8 +85,8 @@ const QuizResult = ({
             />
 
             {/* Additional Info */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800 text-center">
+            <div className="mt-6 p-4 bg-info-light rounded-lg">
+              <p className="text-sm text-info-text text-center">
                 💡 <strong>Next Steps:</strong> Our team will reach out within 24 hours to discuss your vision and answer any questions about your recommended package.
               </p>
             </div>
