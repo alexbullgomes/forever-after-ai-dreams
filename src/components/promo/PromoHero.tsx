@@ -44,24 +44,24 @@ const PromoHero = ({ videoUrl, posterUrl, headline, subheadline, tagline }: Prom
         {/* Content */}
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <div className="mb-6 flex justify-center">
-            <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-              <Heart className="w-5 h-5 text-rose-400" />
-              <span className="text-white text-sm font-medium">California-Based Premium Visual Storytelling</span>
+            <div className="flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <Heart className="w-5 h-5 text-brand-primary-from" />
+              <span className="text-primary-foreground text-sm font-medium">California-Based Premium Visual Storytelling</span>
             </div>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight mix-blend-exclusion">
+          <h1 className="text-5xl md:text-7xl font-bold text-primary-foreground mb-6 leading-tight mix-blend-exclusion">
             {headline}
-            <span className="block bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">{subheadline}</span>
+            <span className="block text-brand-gradient bg-brand-gradient bg-clip-text text-transparent">{subheadline}</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">{tagline}</p>
+          <p className="text-xl md:text-2xl text-primary-foreground/90 mb-8 max-w-2xl mx-auto leading-relaxed">{tagline}</p>
 
           <div className="flex justify-center items-center">
             <Button
               onClick={() => setIsConsultationFormOpen(true)}
               size="lg"
-              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300 transform hover:scale-105"
+              className="bg-brand-gradient hover:bg-brand-gradient-hover text-primary-foreground px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-brand-primary-from/25 transition-all duration-300 transform hover:scale-105"
             >
               <Heart className="w-5 h-5 mr-2" />
               Let's Plan Together
@@ -69,7 +69,7 @@ const PromoHero = ({ videoUrl, posterUrl, headline, subheadline, tagline }: Prom
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-white/70">
+          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-primary-foreground/70">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">⭐</span>
               <span className="text-sm">500+ Happy Couples</span>
@@ -86,8 +86,8 @@ const PromoHero = ({ videoUrl, posterUrl, headline, subheadline, tagline }: Prom
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-rose-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute top-20 left-10 w-20 h-20 bg-[radial-gradient(circle,hsl(var(--brand-primary-from)/0.2),hsl(var(--brand-primary-to)/0.2))] rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--accent)/0.2),hsl(var(--brand-primary-to)/0.2))] rounded-full blur-xl animate-pulse delay-1000"></div>
       </section>
 
       <ConsultationForm 

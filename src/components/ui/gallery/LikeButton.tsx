@@ -90,15 +90,15 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggle
             flex items-center gap-2 px-6 py-3 rounded-full
             transition-all duration-300 shadow-lg
             ${isLiked 
-              ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white hover:from-rose-600 hover:to-pink-600' 
-              : 'bg-white/90 text-gray-700 hover:bg-white border-2 border-rose-200 hover:border-rose-300'
+              ? 'bg-brand-gradient text-primary-foreground hover:bg-brand-gradient-hover' 
+              : 'bg-card/90 text-foreground hover:bg-card border-2 border-brand-primary-from/20 hover:border-brand-primary-from/30'
             }
             ${!user ? 'opacity-50 cursor-not-allowed' : ''}
           `}
         >
           <Heart 
             className={`w-5 h-5 transition-all duration-300 ${
-              isLiked ? 'fill-current text-white' : 'text-rose-500'
+              isLiked ? 'fill-current text-primary-foreground' : 'text-brand-primary-from'
             }`} 
           />
           <span className="font-medium">
@@ -106,7 +106,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({ selectedItem, isLiked, onToggle
           </span>
         </Button>
         {!user && (
-          <p className="text-sm text-gray-500 ml-4">
+          <p className="text-sm text-muted-foreground ml-4">
             Sign in to like content
           </p>
         )}

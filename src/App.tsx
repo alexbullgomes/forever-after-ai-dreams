@@ -44,7 +44,7 @@ const AppContent = () => {
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
             <Route path="/promo/:slug" element={<PromotionalLanding />} />
             <Route path="/affiliate" element={
-              <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 py-12">
+              <div className="min-h-screen bg-section-subtle py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <AffiliatePortal />
                 </div>

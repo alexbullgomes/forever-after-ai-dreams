@@ -28,15 +28,15 @@ const AuthModal = ({
   };
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0">
-        <div className="bg-gradient-to-br from-rose-500 to-pink-500 p-6 text-white">
+        <div className="bg-brand-gradient p-6 text-primary-foreground">
           <DialogHeader>
             <div className="flex items-center justify-center mb-2">
-              <Heart className="w-8 h-8 text-white" />
+              <Heart className="w-8 h-8 text-primary-foreground" />
             </div>
             <DialogTitle className="text-center text-2xl font-bold">
               {isLogin ? "Welcome Back" : "Join Our Family"}
             </DialogTitle>
-            <p className="text-center text-rose-100 text-sm">Sign in to check our portfolio, unlock promos, and see pricing.</p>
+            <p className="text-center text-primary-foreground/80 text-sm">Sign in to check our portfolio, unlock promos, and see pricing.</p>
           </DialogHeader>
         </div>
 
