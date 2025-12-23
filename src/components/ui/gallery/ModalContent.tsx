@@ -44,7 +44,7 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <MediaItem item={selectedItem} className="w-full h-full object-contain bg-gray-100 dark:bg-gray-800" />
+            <MediaItem item={selectedItem} className="w-full h-full object-contain bg-muted dark:bg-muted" />
             <ModalCloseButton onClose={onClose} />
             <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5 
                           bg-gradient-to-t from-black/70 to-transparent">

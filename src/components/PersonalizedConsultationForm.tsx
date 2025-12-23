@@ -135,19 +135,19 @@ const PersonalizedConsultationForm = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full flex items-center justify-center">
-              <Heart className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center">
+              <Heart className="w-8 h-8 text-primary-foreground" />
             </div>
           </div>
           <div className="text-center space-y-3">
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+          <DialogTitle className="text-2xl font-bold text-brand-gradient bg-brand-gradient bg-clip-text text-transparent">
             {packageName}
           </DialogTitle>
           </div>
-          <p className="text-gray-600 mt-4 text-xs text-center whitespace-nowrap">
+          <p className="text-muted-foreground mt-4 text-xs text-center whitespace-nowrap">
             {getPersonalizedMessage()}
           </p>
-          <p className="text-rose-600 font-medium text-sm mt-2 text-center">
+          <p className="text-brand-primary-from font-medium text-sm mt-2 text-center">
             Let's schedule your free consultation! ✨
           </p>
         </DialogHeader>
@@ -221,7 +221,7 @@ const PersonalizedConsultationForm = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
+              className="flex-1 bg-brand-gradient hover:bg-brand-gradient-hover"
             >
               {isSubmitting ? (
                 <div className="flex items-center">

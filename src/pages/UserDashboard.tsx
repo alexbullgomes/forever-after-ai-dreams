@@ -45,7 +45,7 @@ const UserDashboard = () => {
   if (authLoading || accessLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary-from"></div>
       </div>
     );
   }
@@ -56,34 +56,34 @@ const UserDashboard = () => {
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex w-full bg-gray-50">
+      <div className="min-h-screen flex w-full bg-muted">
         <UserDashboardSidebar />
         
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6">
+          <header className="h-16 bg-card border-b border-border flex items-center px-6">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center justify-between w-full">
               <div>
-                <h1 className="text-xl font-bold text-gray-900">User Dashboard</h1>
+                <h1 className="text-xl font-bold text-foreground">User Dashboard</h1>
               </div>
               {!isMobile && (
                 <div className="flex items-center gap-3">
                   <button 
                     onClick={() => navigate('/dashboard')}
-                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
                     Admin Dashboard
                   </button>
                   <button 
                     onClick={() => navigate('/services')}
-                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
                     Services
                   </button>
                   <button 
                     onClick={() => navigate('/')}
-                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
                     Back to Site
                   </button>

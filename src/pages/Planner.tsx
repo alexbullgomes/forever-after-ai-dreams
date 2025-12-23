@@ -21,7 +21,7 @@ const Planner = () => {
       <div className="min-h-screen bg-brand-light flex items-center justify-center">
         <div className="text-center">
           <Heart className="w-12 h-12 text-brand-primary-from animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading your planner...</p>
+          <p className="text-muted-foreground">Loading your planner...</p>
         </div>
       </div>
     );
@@ -38,8 +38,8 @@ const Planner = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Services</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Services</h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Let our smart assistant help you find the perfect photo or video package for your special moment—whether it's a wedding, family milestone, or business event.
           </p>
         </div>

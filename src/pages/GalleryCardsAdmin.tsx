@@ -87,14 +87,14 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <h3 className="text-sm font-medium text-gray-900 truncate">
+              <h3 className="text-sm font-medium text-foreground truncate">
                 {card.title}
               </h3>
               {card.featured && selectedGallery === 'homepage' && (
                 <Badge variant="secondary" className="text-xs">Featured</Badge>
               )}
             </div>
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
               <Badge className={getCategoryColor(card.category)}>
                 {card.category === 'photo' ? 'Photo & Videos' : card.category}
               </Badge>
@@ -104,7 +104,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
           </div>
 
           <div className="flex items-center space-x-2">
-            <span className="text-xs text-gray-500">#{card.order_index}</span>
+            <span className="text-xs text-muted-foreground">#{card.order_index}</span>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -113,7 +113,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
                 checked={card.is_published}
                 onCheckedChange={(checked) => onTogglePublished(card.id, checked)}
               />
-              <span className="text-xs text-gray-600">Published</span>
+              <span className="text-xs text-muted-foreground">Published</span>
             </div>
 
             {('featured' in card) && selectedGallery === 'homepage' && (
@@ -122,7 +122,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
                   checked={card.featured}
                   onCheckedChange={(checked) => onToggleFeatured(card.id, checked)}
                 />
-                <span className="text-xs text-gray-600">Featured</span>
+                <span className="text-xs text-muted-foreground">Featured</span>
               </div>
             )}
 
@@ -338,10 +338,10 @@ export default function GalleryCardsAdmin() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-32 bg-muted rounded"></div>
+          <div className="h-32 bg-muted rounded"></div>
+          <div className="h-32 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -352,9 +352,9 @@ export default function GalleryCardsAdmin() {
     return (
       <div className="p-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Authentication Required</h1>
-          <p className="text-gray-600">You must be logged in to access the gallery management.</p>
-          <p className="text-sm text-gray-500 mt-2">Please sign in with your admin account.</p>
+          <h1 className="text-2xl font-bold text-error mb-2">Authentication Required</h1>
+          <p className="text-muted-foreground">You must be logged in to access the gallery management.</p>
+          <p className="text-sm text-muted-foreground mt-2">Please sign in with your admin account.</p>
         </div>
       </div>
     );
@@ -364,9 +364,9 @@ export default function GalleryCardsAdmin() {
     return (
       <div className="p-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Admin Access Required</h1>
-          <p className="text-gray-600">You don't have permission to access gallery management.</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <h1 className="text-2xl font-bold text-error mb-2">Admin Access Required</h1>
+          <p className="text-muted-foreground">You don't have permission to access gallery management.</p>
+          <p className="text-sm text-muted-foreground mt-2">
             Current user: {user.email} | Required role: admin
           </p>
         </div>
@@ -377,20 +377,20 @@ export default function GalleryCardsAdmin() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Gallery Cards</h1>
-        <p className="text-gray-600">Manage gallery cards and their display order</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Gallery Cards</h1>
+        <p className="text-muted-foreground">Manage gallery cards and their display order</p>
       </div>
 
       {/* Gallery Selector */}
       <div className="mb-6">
-        <Label htmlFor="gallery-select" className="text-sm font-medium text-gray-700 mb-2 block">
+        <Label htmlFor="gallery-select" className="text-sm font-medium text-foreground mb-2 block">
           Select Gallery
         </Label>
         <Select value={selectedGallery} onValueChange={(value: GalleryType) => setSelectedGallery(value)}>
-          <SelectTrigger className="w-64 bg-white border border-gray-300">
+          <SelectTrigger className="w-64 bg-card border border-border">
             <SelectValue placeholder="Select gallery" />
           </SelectTrigger>
-          <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
+          <SelectContent className="bg-card border border-border shadow-lg z-50">
             <SelectItem value="homepage">Homepage Gallery</SelectItem>
             <SelectItem value="services">EverAfter Gallery</SelectItem>
             <SelectItem value="portfolio">Our Portfolio Gallery</SelectItem>
@@ -433,7 +433,7 @@ export default function GalleryCardsAdmin() {
       </div>
 
       <div className="space-y-4">
-        <div className="text-sm text-gray-600 mb-4">
+        <div className="text-sm text-muted-foreground mb-4">
           Showing {filteredCards.length} of {cards.length} cards
         </div>
 
@@ -459,9 +459,9 @@ export default function GalleryCardsAdmin() {
 
         {filteredCards.length === 0 && (
           <div className="text-center py-8">
-            <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No gallery cards found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-2 text-sm font-medium text-foreground">No gallery cards found</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
               {searchTerm || categoryFilter !== 'all' 
                 ? 'Try adjusting your search or filters'
                 : 'Get started by creating your first gallery card'
