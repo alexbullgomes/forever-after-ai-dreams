@@ -54,7 +54,7 @@ const Services = ({
     buttonGradient: "bg-gradient-to-r from-brand-icon-bg-accent to-brand-icon-bg-primary hover:opacity-90",
     route: "/wedding-packages"
   }];
-  return <section id="services" className="hidden sm:block py-20 bg-gradient-to-br from-gray-50 to-rose-50">
+  return <section id="services" className="hidden sm:block py-20 bg-section-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -63,13 +63,13 @@ const Services = ({
               <span className="text-brand-badge-text text-sm font-medium">Our Services</span>
             </div>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Capturing
             <span className="block bg-brand-gradient bg-clip-text text-transparent">
               Every Frame
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Professional  videography and photography services designed to tell your unique story.</p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Professional videography and photography services designed to tell your unique story.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">

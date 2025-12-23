@@ -515,7 +515,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
         </p>
       </ExpandableChatHeader>
 
-      <ExpandableChatBody className="bg-gradient-to-br from-white to-gray-50 p-4">
+      <ExpandableChatBody className="bg-gradient-to-br from-card to-muted p-4">
         <ChatMessageList className="h-full">
           {messages.map((message) => (
             <ChatBubble
@@ -523,7 +523,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
               variant={message.sender === "user" ? "sent" : "received"}
             >
               <ChatBubbleAvatar
-                className="h-8 w-8 shrink-0 border-2 border-white shadow-md"
+                className="h-8 w-8 shrink-0 border-2 border-card shadow-md"
                 src={
                   message.sender === "user"
                     ? user?.user_metadata?.avatar_url || undefined
@@ -534,8 +534,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
                <ChatBubbleMessage
                 variant={message.sender === "user" ? "sent" : "received"}
                 className={message.sender === "user" 
-                  ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg" 
-                  : "bg-white text-gray-800 border border-rose-100 shadow-md"
+                  ? "bg-brand-gradient text-white shadow-lg" 
+                  : "bg-card text-foreground border border-brand-primary-from/20 shadow-md"
                 }
               >
                 <div className="space-y-2">
@@ -576,35 +576,35 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
               />
               <ChatBubbleMessage 
                 isLoading 
-                className="bg-white text-gray-800 border border-rose-100 shadow-md"
+                className="bg-card text-foreground border border-brand-primary-from/20 shadow-md"
               />
             </ChatBubble>
           )}
         </ChatMessageList>
       </ExpandableChatBody>
 
-      <ExpandableChatFooter className="bg-white border-t border-rose-100 p-4">
+      <ExpandableChatFooter className="bg-card border-t border-brand-primary-from/20 p-4">
         {selectedFiles.length > 0 && (
           <div className="mb-2">
             <div className="flex flex-wrap gap-2">
               {selectedFiles.map((file, index) => (
-                <div key={index} className="flex items-center gap-2 bg-gradient-to-r from-rose-100 to-pink-100 border border-rose-200 rounded-lg px-3 py-1 shadow-sm">
+                <div key={index} className="flex items-center gap-2 bg-brand-light border border-brand-primary-from/30 rounded-lg px-3 py-1 shadow-sm">
                   {file.type.startsWith('audio/') ? (
                     <div className="flex items-center gap-2">
-                      <Mic className="size-3 text-rose-600" />
-                      <span className="text-sm text-rose-700 truncate max-w-32">{file.name}</span>
+                      <Mic className="size-3 text-brand-primary-from" />
+                      <span className="text-sm text-brand-primary-from truncate max-w-32">{file.name}</span>
                     </div>
                   ) : (file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) ? (
                     <div className="flex items-center gap-2">
-                      <Image className="size-3 text-rose-600" />
-                      <span className="text-sm text-rose-700 truncate max-w-32">{file.name}</span>
+                      <Image className="size-3 text-brand-primary-from" />
+                      <span className="text-sm text-brand-primary-from truncate max-w-32">{file.name}</span>
                     </div>
                   ) : (
-                    <span className="text-sm text-rose-700 truncate max-w-32">{file.name}</span>
+                    <span className="text-sm text-brand-primary-from truncate max-w-32">{file.name}</span>
                   )}
                   <button
                     onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
-                    className="text-rose-400 hover:text-rose-600 transition-colors"
+                    className="text-brand-primary-from/60 hover:text-brand-primary-from transition-colors"
                   >
                     ×
                   </button>
@@ -615,15 +615,15 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
         )}
         
         {isRecording && (
-          <div className="mb-2 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-red-700 font-medium">Recording... (click mic to stop)</span>
+          <div className="mb-2 flex items-center gap-2 bg-error-light border border-error/30 rounded-lg px-3 py-2">
+            <div className="w-2 h-2 bg-error rounded-full animate-pulse"></div>
+            <span className="text-sm text-error-text font-medium">Recording... (click mic to stop)</span>
           </div>
         )}
         
         <form
           onSubmit={handleSubmit}
-          className="relative rounded-xl border border-rose-200 bg-white focus-within:ring-2 focus-within:ring-rose-500 focus-within:border-rose-500 p-1 shadow-md"
+          className="relative rounded-xl border border-brand-primary-from/30 bg-card focus-within:ring-2 focus-within:ring-brand-primary-from focus-within:border-brand-primary-from p-1 shadow-md"
         >
           <ChatInput
             value={input}
@@ -635,14 +635,14 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
               }
             }}
             placeholder="Tell me about your photo/video needs..."
-            className="min-h-12 resize-none rounded-xl bg-white border-0 p-3 shadow-none focus-visible:ring-0 placeholder:text-rose-400"
+            className="min-h-12 resize-none rounded-xl bg-card border-0 p-3 shadow-none focus-visible:ring-0 placeholder:text-brand-primary-from/60"
           />
           <div className="flex items-center p-3 pt-0 justify-between">
             <div className="flex">
               <VoiceInput
                 onStart={handleVoiceStart}
                 onStop={handleVoiceStop}
-                className="text-rose-500 hover:text-rose-600"
+                className="text-brand-primary-from hover:text-brand-primary-hover-from"
               />
             </div>
             <Button 
