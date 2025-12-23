@@ -63,16 +63,16 @@ const PortfolioWithImages = () => {
     : portfolioItems.filter(item => item.category === activeCategory);
 
   return (
-    <div className="py-20 bg-white">
+    <div className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <Heart className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            <span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+          <Heart className="w-12 h-12 text-brand-primary-from mx-auto mb-4" />
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <span className="bg-brand-gradient bg-clip-text text-transparent">
               Recent Love Stories
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Every couple has a unique story. Here are some of our recent celebrations 
             captured across California's most stunning venues.
           </p>
@@ -80,14 +80,14 @@ const PortfolioWithImages = () => {
 
         {/* Filter Buttons */}
         <div className="flex justify-center mb-12">
-          <div className="flex space-x-4 bg-gray-100 p-2 rounded-full">
+          <div className="flex space-x-4 bg-muted p-2 rounded-full">
             <Button
               variant={activeCategory === "all" ? "default" : "ghost"}
               onClick={() => setActiveCategory("all")}
               className={`rounded-full px-6 ${
                 activeCategory === "all" 
-                  ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white" 
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-brand-gradient text-white" 
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               All Work
@@ -97,8 +97,8 @@ const PortfolioWithImages = () => {
               onClick={() => setActiveCategory("photo")}
               className={`rounded-full px-6 ${
                 activeCategory === "photo" 
-                  ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white" 
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-brand-gradient text-white" 
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Camera className="w-4 h-4 mr-2" />
@@ -109,8 +109,8 @@ const PortfolioWithImages = () => {
               onClick={() => setActiveCategory("video")}
               className={`rounded-full px-6 ${
                 activeCategory === "video" 
-                  ? "bg-gradient-to-r from-rose-500 to-pink-500 text-white" 
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-brand-gradient text-white" 
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Play className="w-4 h-4 mr-2" />
@@ -131,16 +131,16 @@ const PortfolioWithImages = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="inline-block bg-rose-500 px-3 py-1 rounded-full text-sm font-medium mb-2">
+                  <span className="inline-block bg-brand-gradient px-3 py-1 rounded-full text-sm font-medium mb-2">
                     {item.type}
                   </span>
                 </div>
               </div>
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-foreground mb-2">
                   {item.title}
                 </h3>
-                <p className="text-gray-600">{item.location}</p>
+                <p className="text-muted-foreground">{item.location}</p>
               </CardContent>
             </Card>
           ))}
@@ -149,7 +149,7 @@ const PortfolioWithImages = () => {
         <div className="text-center mt-12">
           <Button 
             size="lg"
-            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-rose-500/25 transition-all duration-300"
+            className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-8 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-brand-primary-from/25 transition-all duration-300"
           >
             View Full Portfolio
           </Button>

@@ -4,11 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Heart, Sparkles } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Heart, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
@@ -140,14 +136,14 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: Consu
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center">
               <Heart className="w-8 h-8 text-white" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent text-center">
+          <DialogTitle className="text-2xl font-bold bg-brand-gradient bg-clip-text text-transparent text-center">
             Creating Memories That Last
           </DialogTitle>
-          <p className="text-gray-600 mt-2 text-center">
+          <p className="text-muted-foreground mt-2 text-center">
             Let our assistant guide you and get all your questions answered.
           </p>
         </DialogHeader>
@@ -190,7 +186,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: Consu
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
+              className="flex-1 bg-brand-gradient hover:bg-brand-gradient-hover"
             >
               {isSubmitting ? (
                 <div className="flex items-center">
@@ -210,7 +206,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: Consu
             <button
               type="button"
               onClick={() => setShowAuthModal(true)}
-              className="text-sm text-gray-600 hover:text-rose-500 transition-colors underline"
+              className="text-sm text-muted-foreground hover:text-brand-primary-from transition-colors underline"
             >
               Have the full experience. Log in.
             </button>

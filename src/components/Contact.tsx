@@ -141,7 +141,7 @@ const Contact = () => {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-rose-400"
+                      className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from"
                       placeholder="Your full name"
                     />
                   </div>
@@ -155,7 +155,7 @@ const Contact = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-rose-400"
+                      className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from"
                       placeholder="your@email.com"
                     />
                   </div>
@@ -171,7 +171,7 @@ const Contact = () => {
                       type="tel"
                       value={formData.phone}
                       onChange={handlePhoneChange}
-                      className="bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-rose-400"
+                      className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -184,7 +184,7 @@ const Contact = () => {
                       type="date"
                       value={formData.date}
                       onChange={handleChange}
-                      className="bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-rose-400"
+                      className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from"
                     />
                   </div>
                 </div>
@@ -197,7 +197,7 @@ const Contact = () => {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    className="bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus:border-rose-400 min-h-[120px]"
+                    className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from min-h-[120px]"
                     placeholder="Share details about your wedding day, venue, style preferences, and any special requests..."
                   />
                 </div>
