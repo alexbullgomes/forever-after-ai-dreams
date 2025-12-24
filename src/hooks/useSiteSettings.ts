@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type ThemePreset = 'light' | 'dark' | 'ocean' | 'sunset' | 'forest' | 'monochrome' | 'high-contrast';
+export type ThemePreset = 'light' | 'dark' | 'ocean' | 'sunset' | 'forest' | 'monochrome';
 
 export interface BrandColors {
   // Theme preset
@@ -152,26 +152,6 @@ export const THEME_PRESETS: Record<ThemePreset, Partial<BrandColors>> = {
     badge_bg: '0 0% 96%',
     // Decorative - dark gray dots
     feature_dot: '0 0% 30%',
-  },
-  'high-contrast': {
-    theme_preset: 'high-contrast',
-    // Bright white/yellow for maximum visibility
-    primary_from: '60 100% 50%',      // Bright yellow
-    primary_to: '45 100% 55%',        // Golden yellow
-    primary_hover_from: '60 100% 60%',
-    primary_hover_to: '45 100% 65%',
-    // Icon backgrounds - high contrast colors
-    icon_bg_primary: '60 100% 50%',   // Yellow
-    icon_bg_secondary: '180 100% 50%', // Cyan
-    icon_bg_accent: '300 100% 60%',   // Magenta
-    // Text accents - bright white
-    text_accent: '0 0% 100%',
-    badge_text: '0 0% 0%',            // Black text on bright badges
-    stats_text: '0 0% 100%',
-    // Backgrounds - high contrast
-    badge_bg: '60 100% 50%',          // Yellow badges
-    // Decorative
-    feature_dot: '60 100% 50%',
   },
 };
 
