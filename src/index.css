@@ -250,6 +250,14 @@
     );
   }
 
+  /* Gradient text - ensure bg-clip-text with gradient only shows on text, not as a bar */
+  .bg-brand-gradient.bg-clip-text {
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+  }
+
   .bg-brand-gradient-hover {
     background: linear-gradient(
       to right, 
