@@ -333,8 +333,9 @@
 
   /* Prevent button flash - style buttons immediately using attribute selectors */
   /* These work even before Tailwind utilities are generated */
-  button[class*="bg-primary"]:not([class*="outline"]):not([class*="ghost"]),
-  button[class*="bg-brand-gradient"] {
+  /* Exclude elements with bg-clip-text to prevent affecting gradient text spans */
+  button[class*="bg-primary"]:not([class*="outline"]):not([class*="ghost"]):not([class*="bg-clip-text"]),
+  button.bg-brand-gradient:not([class*="bg-clip-text"]) {
     background-color: hsl(351, 95%, 71%);
     background-image: linear-gradient(to right, hsl(351, 95%, 71%), hsl(328, 86%, 70%));
     color: hsl(0, 0%, 100%) !important;
