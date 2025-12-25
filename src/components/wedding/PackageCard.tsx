@@ -6,6 +6,7 @@ import { CreatePackageBadge } from "@/components/ui/create-package-badge";
 import { Star, Camera } from "lucide-react";
 import { useState } from "react";
 import PersonalizedConsultationForm from "../PersonalizedConsultationForm";
+import PaymentButton from "./PaymentButton";
 
 interface PackageCardProps {
   name: string;
@@ -56,13 +57,22 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
             ))}
           </ul>
           
-          <Button
-            onClick={() => setIsConsultationFormOpen(true)}
-            className="w-full h-12 bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-lg shadow-lg hover:shadow-[0_10px_30px_-10px_hsl(var(--brand-primary-from)/0.25)] transition-all duration-300"
-          >
-            <Camera className="w-5 h-5 mr-2" />
-            Book Consultation
-          </Button>
+          <div className="space-y-3">
+            <PaymentButton
+              packageName={name}
+              packagePrice={price}
+              className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
+            />
+            
+            <Button
+              onClick={() => setIsConsultationFormOpen(true)}
+              variant="outline"
+              className="w-full h-10"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Free Consultation First
+            </Button>
+          </div>
           
           {idealFor && (
             <div className="pt-2 pb-2 text-center">
