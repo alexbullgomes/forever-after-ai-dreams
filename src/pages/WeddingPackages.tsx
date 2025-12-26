@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Heart, Camera, Bot } from "lucide-react";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
+import { Heart, Bot } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { PackageSection } from "@/components/wedding/PackageSection";
 import { CTASection } from "@/components/wedding/CTASection";
@@ -12,6 +13,7 @@ import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assista
 
 const WeddingPackages = () => {
   const { user, loading } = useAuth();
+  const { showWeddingPackages, loading: visibilityLoading } = usePageVisibility();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -19,11 +21,18 @@ const WeddingPackages = () => {
     }
   }, [user, loading]);
 
-  if (loading) {
+  // Redirect if page is disabled
+  useEffect(() => {
+    if (!visibilityLoading && !showWeddingPackages) {
+      window.location.href = '/';
+    }
+  }, [showWeddingPackages, visibilityLoading]);
+
+  if (loading || visibilityLoading) {
     return <LoadingState />;
   }
 
-  if (!user) {
+  if (!user || !showWeddingPackages) {
     return null;
   }
 
@@ -59,29 +68,7 @@ const WeddingPackages = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Photo & Video Card */}
-            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Camera className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Photo & Video</h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Discover our complete photo and video sessions for weddings, families, and brands. Beautifully crafted visuals for every story.
-                </p>
-                <button
-                  onClick={() => { window.location.assign('/photo-video-services'); }}
-                  className="inline-flex items-center text-brand-primary-from font-semibold hover:text-brand-primary-to transition-colors group-hover:translate-x-1 duration-300"
-                >
-                  View gallery
-                  <svg className="w-5 h-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
+          <div className="max-w-md mx-auto">
             {/* Assistant Planner Card */}
             <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 group">
               <div className="flex flex-col items-center text-center">

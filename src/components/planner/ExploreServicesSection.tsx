@@ -1,8 +1,16 @@
-import { Camera, Heart, ArrowRight } from "lucide-react";
+import { Heart, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 
 const ExploreServicesSection = () => {
+  const { showWeddingPackages } = usePageVisibility();
+
+  // Don't render the section if wedding packages is hidden
+  if (!showWeddingPackages) {
+    return null;
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-12">
@@ -14,35 +22,7 @@ const ExploreServicesSection = () => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {/* Photo & Video Services Card */}
-        <div onClick={() => { window.location.assign('/photo-video-services'); }} className="group cursor-pointer">
-          <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-brand-light overflow-hidden">
-            <CardContent className="p-8 relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(circle,hsl(var(--brand-primary-from)/0.1),hsl(var(--brand-primary-to)/0.1))] rounded-full -translate-y-8 translate-x-8"></div>
-              
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Camera className="w-8 h-8 text-white" />
-                </div>
-                
-                <h3 className="text-2xl font-bold text-foreground mb-4 group-hover:bg-brand-gradient group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
-                  Photo & Video Services
-                </h3>
-                
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Professional photography and videography packages — perfect for families, businesses, and every celebration.
-                </p>
-                
-                <div className="flex items-center text-brand-primary-from font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span className="mr-2">Explore Services</span>
-                  <ArrowRight className="w-5 h-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
+      <div className="max-w-md mx-auto">
         {/* Wedding Packages Card */}
         <Link to="/wedding-packages" className="group">
           <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:scale-105 border-0 bg-brand-light overflow-hidden">

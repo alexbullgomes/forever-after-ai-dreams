@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/hooks/useRole";
 import { useUserDashboardAccess } from "@/hooks/useUserDashboardAccess";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, LogOut, Menu, X, Shield, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,7 @@ const DashboardNavigation = () => {
   const { user, signOut } = useAuth();
   const { hasRole: isAdmin } = useRole('admin');
   const { hasAccess: hasUserDashboard } = useUserDashboardAccess();
+  const { showWeddingPackages } = usePageVisibility();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -33,8 +35,7 @@ const DashboardNavigation = () => {
 
   const navLinks = [
     { to: "/services", label: "Services" },
-    { to: "/photo-video-services", label: "Photo & Video" },
-    { to: "/wedding-packages", label: "Wedding Packages" },
+    ...(showWeddingPackages ? [{ to: "/wedding-packages", label: "Wedding Packages" }] : []),
   ];
 
   return (

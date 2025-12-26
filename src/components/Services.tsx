@@ -3,8 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Video, Camera, Sparkles, Heart, Clock, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useState } from "react";
 import ConsultationForm from "@/components/ConsultationForm";
+
 interface ServicesProps {
   onBookingClick: () => void;
 }
@@ -12,9 +14,8 @@ const Services = ({
   onBookingClick
 }: ServicesProps) => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const { showWeddingPackages } = usePageVisibility();
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>("");
 
@@ -29,31 +30,26 @@ const Services = ({
       setIsConsultationFormOpen(true);
     }
   };
-  const services = [{
-    icon: Heart,
-    title: "Personalized Planner",
-    description: "Meet EVA — our smart assistant who builds your ideal package and unlocks exclusive deals.",
-    features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
-    iconBg: "bg-brand-icon-bg-primary",
-    buttonGradient: "bg-brand-gradient hover:bg-brand-gradient-hover",
-    route: "/services"
-  }, {
-    icon: Camera,
-    title: "Photo & Video Services",
-    description: "Life moves fast, but memories don't have to fade. We capture moments you'll want to hold onto forever.",
-    features: ["Genuine Family Portraits", "Stories Behind Your Business", "Corporate Gatherings", "Celebrations and Milestones"],
-    iconBg: "bg-brand-icon-bg-secondary",
-    buttonGradient: "bg-gradient-to-r from-brand-icon-bg-secondary to-brand-icon-bg-accent hover:opacity-90",
-    route: "/photo-video-services"
-  }, {
-    icon: Sparkles,
-    title: "Wedding Packages",
-    description: "Your love story feels like a movie — we'll film the moment that matters most.",
-    features: ["Photos + Video Packages", "Artistic & Emotional Photography", "Cinematic Wedding Films", "Personalized & Fast Delivery"],
-    iconBg: "bg-brand-icon-bg-accent",
-    buttonGradient: "bg-gradient-to-r from-brand-icon-bg-accent to-brand-icon-bg-primary hover:opacity-90",
-    route: "/wedding-packages"
-  }];
+  const services = [
+    {
+      icon: Heart,
+      title: "Personalized Planner",
+      description: "Meet EVA — our smart assistant who builds your ideal package and unlocks exclusive deals.",
+      features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
+      iconBg: "bg-brand-icon-bg-primary",
+      buttonGradient: "bg-brand-gradient hover:bg-brand-gradient-hover",
+      route: "/services"
+    },
+    ...(showWeddingPackages ? [{
+      icon: Sparkles,
+      title: "Wedding Packages",
+      description: "Your love story feels like a movie — we'll film the moment that matters most.",
+      features: ["Photos + Video Packages", "Artistic & Emotional Photography", "Cinematic Wedding Films", "Personalized & Fast Delivery"],
+      iconBg: "bg-brand-icon-bg-accent",
+      buttonGradient: "bg-gradient-to-r from-brand-icon-bg-accent to-brand-icon-bg-primary hover:opacity-90",
+      route: "/wedding-packages"
+    }] : [])
+  ];
   return <section id="services" className="hidden sm:block py-20 bg-section-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
