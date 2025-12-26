@@ -26,8 +26,8 @@ interface CardData {
 }
 
 interface GalleryLeadFormProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   cardData?: CardData;
   onSuccess?: () => void;
 }
