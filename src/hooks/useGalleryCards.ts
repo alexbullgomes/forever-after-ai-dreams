@@ -22,6 +22,10 @@ export interface GalleryCard {
   is_published: boolean;
   created_at: string;
   updated_at: string;
+  // Redirect fields
+  destination_type?: string | null;
+  campaign_id?: string | null;
+  custom_url?: string | null;
 }
 
 export const useGalleryCards = () => {

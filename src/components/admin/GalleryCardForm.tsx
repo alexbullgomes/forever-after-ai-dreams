@@ -2,14 +2,21 @@ import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Upload, X, Image as ImageIcon, Link, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { GalleryCard } from '@/hooks/useGalleryCards';
+
+interface Campaign {
+  id: string;
+  title: string;
+  slug: string;
+  is_active: boolean;
+}
 
 interface GalleryCardFormProps {
   isOpen: boolean;
@@ -24,6 +31,8 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [urlError, setUrlError] = useState<string | null>(null);
 
   const getInitialFormData = (card?: any) => ({
     collection_key: card?.collection_key || 'homepage',
@@ -44,16 +53,69 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
     is_published: card?.is_published ?? true,
     full_video_enabled: card?.full_video_enabled || false,
     full_video_url: card?.full_video_url || '',
+    // Redirect fields
+    destination_type: card?.destination_type || 'none',
+    campaign_id: card?.campaign_id || '',
+    custom_url: card?.custom_url || '',
   });
 
   const [formData, setFormData] = useState(() => getInitialFormData(editingCard));
+
+  // Fetch campaigns for the dropdown
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('promotional_campaigns')
+          .select('id, title, slug, is_active')
+          .eq('is_active', true)
+          .order('title', { ascending: true });
+
+        if (error) throw error;
+        setCampaigns(data || []);
+      } catch (error) {
+        console.error('Error fetching campaigns:', error);
+      }
+    };
+
+    if (isOpen) {
+      fetchCampaigns();
+    }
+  }, [isOpen]);
 
   // Update form data when editingCard changes
   useEffect(() => {
     if (isOpen) {
       setFormData(getInitialFormData(editingCard));
+      setUrlError(null);
     }
   }, [editingCard, isOpen]);
+
+  // Handle destination type change - clear other field
+  const handleDestinationTypeChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      destination_type: value,
+      campaign_id: value === 'campaign' ? prev.campaign_id : '',
+      custom_url: value === 'url' ? prev.custom_url : ''
+    }));
+    setUrlError(null);
+  };
+
+  // Validate URL
+  const validateUrl = (url: string): boolean => {
+    if (!url) return true;
+    return url.startsWith('http://') || url.startsWith('https://');
+  };
+
+  const handleCustomUrlChange = (url: string) => {
+    setFormData(prev => ({ ...prev, custom_url: url }));
+    if (url && !validateUrl(url)) {
+      setUrlError('URL must start with http:// or https://');
+    } else {
+      setUrlError(null);
+    }
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -104,12 +166,28 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
       return;
     }
 
+    // Validate URL if destination type is url
+    if (formData.destination_type === 'url' && formData.custom_url && !validateUrl(formData.custom_url)) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Custom URL must start with http:// or https://"
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await onSave(formData);
+      // Clean up the data before saving
+      const dataToSave = {
+        ...formData,
+        campaign_id: formData.destination_type === 'campaign' && formData.campaign_id ? formData.campaign_id : null,
+        custom_url: formData.destination_type === 'url' ? formData.custom_url : null
+      };
+      
+      await onSave(dataToSave);
       onClose();
       if (!editingCard) {
-        // Only reset form data if we were creating a new card
         setFormData(getInitialFormData());
       }
     } catch (error) {
@@ -120,8 +198,8 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
   };
 
   const handleClose = () => {
-    // Reset form to original values on cancel
     setFormData(getInitialFormData(editingCard));
+    setUrlError(null);
     onClose();
   };
 
@@ -160,7 +238,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                   <SelectItem value="Photo & Videos">Photo & Videos</SelectItem>
                   <SelectItem value="Weddings">Weddings</SelectItem>
                   {galleryType === 'homepage' && <SelectItem value="video">Video</SelectItem>}
-            </SelectContent>
+                </SelectContent>
               </Select>
             </div>
           </div>
@@ -196,6 +274,85 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                   placeholder="e.g., Spring 2024"
                 />
               </div>
+            </div>
+          )}
+
+          {/* Click Action / Redirect Section */}
+          {galleryType === 'homepage' && (
+            <div className="space-y-4 border border-border rounded-lg p-4 bg-muted/30">
+              <div className="flex items-center gap-2">
+                <Link className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-base font-medium">Click Action / Redirect</Label>
+              </div>
+              
+              <RadioGroup
+                value={formData.destination_type}
+                onValueChange={handleDestinationTypeChange}
+                className="grid grid-cols-3 gap-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="none" id="dest-none" />
+                  <Label htmlFor="dest-none" className="cursor-pointer">None</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="campaign" id="dest-campaign" />
+                  <Label htmlFor="dest-campaign" className="cursor-pointer">Campaign Page</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="url" id="dest-url" />
+                  <Label htmlFor="dest-url" className="cursor-pointer">Custom Link</Label>
+                </div>
+              </RadioGroup>
+
+              {formData.destination_type === 'campaign' && (
+                <div className="space-y-2">
+                  <Label htmlFor="campaign">Select Campaign Page</Label>
+                  <Select
+                    value={formData.campaign_id}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, campaign_id: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a campaign..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {campaigns.length === 0 ? (
+                        <SelectItem value="none" disabled>No active campaigns available</SelectItem>
+                      ) : (
+                        campaigns.map(campaign => (
+                          <SelectItem key={campaign.id} value={campaign.id}>
+                            {campaign.title}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Only active campaigns are shown. User will be redirected to /promo/{'{slug}'}
+                  </p>
+                </div>
+              )}
+
+              {formData.destination_type === 'url' && (
+                <div className="space-y-2">
+                  <Label htmlFor="custom_url">Custom URL</Label>
+                  <div className="relative">
+                    <ExternalLink className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="custom_url"
+                      value={formData.custom_url}
+                      onChange={(e) => handleCustomUrlChange(e.target.value)}
+                      placeholder="https://example.com/page"
+                      className={`pl-10 ${urlError ? 'border-destructive' : ''}`}
+                    />
+                  </div>
+                  {urlError && (
+                    <p className="text-xs text-destructive">{urlError}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Must start with http:// or https://
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -396,7 +553,7 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting || uploading}>
+            <Button type="submit" disabled={submitting || uploading || !!urlError}>
               {submitting ? 'Saving...' : (editingCard ? 'Update' : 'Create')}
             </Button>
           </div>

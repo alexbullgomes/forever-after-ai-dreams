@@ -5,8 +5,8 @@ import { Play, Heart, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import GalleryLeadForm from "@/components/ui/gallery/GalleryLeadForm";
 import { VideoThumbnail } from "@/components/ui/gallery/VideoThumbnail";
+import { useToast } from "@/hooks/use-toast";
 
 interface PortfolioItem {
   id: string;
@@ -22,23 +22,26 @@ interface PortfolioItem {
   thumbWebm?: string;
   thumbMp4?: string;
   thumbImage?: string;
+  // Redirect fields
+  destinationType?: string;
+  campaignSlug?: string;
+  customUrl?: string;
 }
 
 interface PortfolioProps {
   onBookingClick?: () => void;
 }
+
 const Portfolio = ({
   onBookingClick
 }: PortfolioProps = {}) => {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
-  const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+
   const handleViewPortfolioClick = () => {
     if (user) {
       navigate("/services");
@@ -48,21 +51,40 @@ const Portfolio = ({
   };
 
   const handleCardClick = (item: PortfolioItem) => {
-    setSelectedPortfolioItem(item);
-    setIsConsultationFormOpen(true);
+    if (item.destinationType === 'campaign' && item.campaignSlug) {
+      // Navigate to campaign page
+      navigate(`/promo/${item.campaignSlug}`);
+    } else if (item.destinationType === 'url' && item.customUrl) {
+      // Validate and open external URL
+      if (item.customUrl.startsWith('http://') || item.customUrl.startsWith('https://')) {
+        window.location.href = item.customUrl;
+      } else {
+        toast({
+          title: "Invalid URL",
+          description: "The configured URL is not valid.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // No destination configured - show toast
+      toast({
+        title: "No link configured",
+        description: "This story doesn't have a destination set up yet.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleFormSuccess = () => {
-    navigate("/services");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  // Fetch portfolio data from Supabase
+  // Fetch portfolio data from Supabase with campaign join
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
         const { data, error } = await supabase
           .from('gallery_cards')
-          .select('*')
+          .select(`
+            *,
+            promotional_campaigns!gallery_cards_campaign_id_fkey(slug)
+          `)
           .eq('is_published', true)
           .order('order_index', { ascending: true });
 
@@ -81,13 +103,16 @@ const Portfolio = ({
           image: card.thumbnail_url || '',
           thumbWebm: card.thumb_webm_url,
           thumbMp4: card.thumb_mp4_url,
-          thumbImage: card.thumb_image_url
+          thumbImage: card.thumb_image_url,
+          // Redirect fields
+          destinationType: card.destination_type || 'none',
+          campaignSlug: card.promotional_campaigns?.slug || null,
+          customUrl: card.custom_url || null
         }));
 
         setPortfolioItems(formattedItems);
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
-        // Fallback to empty array on error
         setPortfolioItems([]);
       } finally {
         setLoading(false);
@@ -96,6 +121,7 @@ const Portfolio = ({
 
     fetchPortfolioData();
   }, []);
+
   const filteredItems = activeFilter === "all" 
     ? portfolioItems
     : portfolioItems.filter(item => {
@@ -139,7 +165,8 @@ const Portfolio = ({
     );
   }
 
-  return <section id="portfolio" className="py-20 bg-section-subtle">
+  return (
+    <section id="portfolio" className="py-20 bg-section-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -156,14 +183,22 @@ const Portfolio = ({
 
           {/* Filter buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {filters.map(filter => <Button key={filter.id} onClick={() => setActiveFilter(filter.id)} variant={activeFilter === filter.id ? "default" : "outline"} className={`px-6 py-2 rounded-full transition-all duration-300 ${activeFilter === filter.id ? "bg-brand-gradient text-white shadow-lg" : "border-border text-foreground/80 hover:border-brand-text-accent/30 hover:text-brand-text-accent"}`}>
+            {filters.map(filter => (
+              <Button 
+                key={filter.id} 
+                onClick={() => setActiveFilter(filter.id)} 
+                variant={activeFilter === filter.id ? "default" : "outline"} 
+                className={`px-6 py-2 rounded-full transition-all duration-300 ${activeFilter === filter.id ? "bg-brand-gradient text-white shadow-lg" : "border-border text-foreground/80 hover:border-brand-text-accent/30 hover:text-brand-text-accent"}`}
+              >
                 {filter.label}
-              </Button>)}
+              </Button>
+            ))}
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {filteredItems.map(item => <Card 
+          {filteredItems.map(item => (
+            <Card 
               key={item.id} 
               className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-card cursor-pointer" 
               onClick={() => handleCardClick(item)}
@@ -180,11 +215,13 @@ const Portfolio = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
                 {/* Play button for videos */}
-                {item.category === "video" && <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {item.category === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer">
                       <Play className="w-8 h-8 text-white ml-1" />
                     </div>
-                  </div>}
+                  </div>
+                )}
 
                 {/* Category badge */}
                 <div className="absolute top-4 left-4">
@@ -206,7 +243,8 @@ const Portfolio = ({
                   <span className="text-sm">{item.date}</span>
                 </div>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
 
         <div className="text-center mt-12">
@@ -215,21 +253,8 @@ const Portfolio = ({
           </Button>
         </div>
       </div>
-
-      <GalleryLeadForm
-        isOpen={isConsultationFormOpen}
-        onClose={() => setIsConsultationFormOpen(false)}
-        onSuccess={handleFormSuccess}
-        cardData={selectedPortfolioItem ? {
-          cardId: selectedPortfolioItem.id,
-          cardTitle: selectedPortfolioItem.title,
-          category: selectedPortfolioItem.category,
-          locationCity: selectedPortfolioItem.location,
-          eventSeasonOrDate: selectedPortfolioItem.date,
-          collectionSection: 'Portfolio',
-          type: selectedPortfolioItem.type
-        } : undefined}
-      />
-    </section>;
+    </section>
+  );
 };
+
 export default Portfolio;

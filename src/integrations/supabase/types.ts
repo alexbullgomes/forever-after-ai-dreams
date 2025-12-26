@@ -192,9 +192,12 @@ export type Database = {
       }
       gallery_cards: {
         Row: {
+          campaign_id: string | null
           category: string
           collection_key: string
           created_at: string
+          custom_url: string | null
+          destination_type: string | null
           event_season_or_date: string | null
           featured: boolean
           id: string
@@ -213,9 +216,12 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          campaign_id?: string | null
           category: string
           collection_key?: string
           created_at?: string
+          custom_url?: string | null
+          destination_type?: string | null
           event_season_or_date?: string | null
           featured?: boolean
           id?: string
@@ -234,9 +240,12 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          campaign_id?: string | null
           category?: string
           collection_key?: string
           created_at?: string
+          custom_url?: string | null
+          destination_type?: string | null
           event_season_or_date?: string | null
           featured?: boolean
           id?: string
@@ -254,7 +263,15 @@ export type Database = {
           video_mp4_url?: string | null
           video_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "gallery_cards_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
