@@ -1,56 +1,80 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Video, Camera, Sparkles, Heart, Clock, Award } from "lucide-react";
+import { Heart, Camera, Sparkles, Video, Film, Star, Award, Gift, Music, Palette, Image, Users, Calendar, Clock, MapPin, Zap, Shield, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePageVisibility } from "@/hooks/usePageVisibility";
+import { useLandingPageCards, LandingCard } from "@/hooks/useLandingPageCards";
 import { useState } from "react";
 import ConsultationForm from "@/components/ConsultationForm";
+
+// Icon mapping for dynamic rendering
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  Heart,
+  Camera,
+  Sparkles,
+  Video,
+  Film,
+  Star,
+  Award,
+  Gift,
+  Music,
+  Palette,
+  Image,
+  Users,
+  Calendar,
+  Clock,
+  MapPin,
+  Zap,
+  Shield,
+  Trophy,
+};
 
 interface ServicesProps {
   onBookingClick: () => void;
 }
-const Services = ({
-  onBookingClick
-}: ServicesProps) => {
+
+const Services = ({ onBookingClick }: ServicesProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { showWeddingPackages } = usePageVisibility();
+  const { cards, showCardsSection, loading } = useLandingPageCards();
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>("");
+  const [customRedirectLink, setCustomRedirectLink] = useState<string>("");
 
-  const handleServiceClick = (route: string, serviceTitle: string) => {
+  const handleServiceClick = (card: LandingCard) => {
     if (user) {
-      navigate(route);
-      // Scroll to top after navigation
+      // User is logged in - navigate to link or default /services
+      const targetRoute = card.button_link || '/services';
+      navigate(targetRoute);
       setTimeout(() => window.scrollTo(0, 0), 100);
     } else {
-      // For non-logged-in users, open consultation form with service pre-filled
-      setSelectedService(serviceTitle);
+      // Not logged in - open consultation form with custom redirect
+      setSelectedService(card.title);
+      setCustomRedirectLink(card.button_link || '/services');
       setIsConsultationFormOpen(true);
     }
   };
-  const services = [
-    {
-      icon: Heart,
-      title: "Personalized Planner",
-      description: "Meet EVA — our smart assistant who builds your ideal package and unlocks exclusive deals.",
-      features: ["EVA, AI-Powered Recommendations", "Smart Custom Packages for You", "Matches for Your Event Type", "Thoughtful Budget Optimization"],
-      iconBg: "bg-brand-icon-bg-primary",
-      buttonGradient: "bg-brand-gradient hover:bg-brand-gradient-hover",
-      route: "/services"
-    },
-    ...(showWeddingPackages ? [{
-      icon: Sparkles,
-      title: "Wedding Packages",
-      description: "Your love story feels like a movie — we'll film the moment that matters most.",
-      features: ["Photos + Video Packages", "Artistic & Emotional Photography", "Cinematic Wedding Films", "Personalized & Fast Delivery"],
-      iconBg: "bg-brand-icon-bg-accent",
-      buttonGradient: "bg-gradient-to-r from-brand-icon-bg-accent to-brand-icon-bg-primary hover:opacity-90",
-      route: "/wedding-packages"
-    }] : [])
+
+  // Don't render if section is hidden or loading
+  if (!showCardsSection || loading) {
+    return null;
+  }
+
+  // Icon background colors cycle
+  const iconBgClasses = [
+    "bg-brand-icon-bg-primary",
+    "bg-brand-icon-bg-secondary",
+    "bg-brand-icon-bg-accent",
   ];
-  return <section id="services" className="hidden sm:block py-20 bg-section-subtle">
+
+  const buttonGradients = [
+    "bg-brand-gradient hover:bg-brand-gradient-hover",
+    "bg-gradient-to-r from-brand-icon-bg-secondary to-brand-icon-bg-primary hover:opacity-90",
+    "bg-gradient-to-r from-brand-icon-bg-accent to-brand-icon-bg-primary hover:opacity-90",
+  ];
+
+  return (
+    <section id="services" className="hidden sm:block py-20 bg-section-subtle">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
@@ -65,31 +89,46 @@ const Services = ({
               Every Frame
             </span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Professional videography and photography services designed to tell your unique story.</p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Professional videography and photography services designed to tell your unique story.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {services.map((service, index) => <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-card/70 backdrop-blur-sm hover:scale-105">
-              <CardContent className="p-8">
-                <div className={`w-16 h-16 rounded-2xl ${service.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 bg-service-icon-gradient`}>
-                  <service.icon className="w-8 h-8 text-white" />
-                </div>
-                
-                <h3 className="text-2xl font-bold text-foreground mb-4">{service.title}</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">{service.description}</p>
-                
-                <ul className="space-y-2 mb-8">
-                  {service.features.map((feature, featureIndex) => <li key={featureIndex} className="flex items-center text-foreground/80">
-                      <div className="w-2 h-2 bg-brand-feature-dot rounded-full mr-3"></div>
-                      {feature}
-                    </li>)}
-                </ul>
+          {cards.map((card, index) => {
+            const IconComponent = ICON_MAP[card.icon] || Heart;
+            return (
+              <Card 
+                key={index} 
+                className="group hover:shadow-2xl transition-all duration-500 border-0 bg-card/70 backdrop-blur-sm hover:scale-105"
+              >
+                <CardContent className="p-8">
+                  <div className={`w-16 h-16 rounded-2xl ${iconBgClasses[index % iconBgClasses.length]} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 bg-service-icon-gradient`}>
+                    <IconComponent className="w-8 h-8 text-white" />
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-foreground mb-4">{card.title}</h3>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">{card.description}</p>
+                  
+                  <ul className="space-y-2 mb-8">
+                    {card.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center text-foreground/80">
+                        <div className="w-2 h-2 bg-brand-feature-dot rounded-full mr-3"></div>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
 
-                <Button onClick={() => handleServiceClick(service.route, service.title)} className={`w-full ${service.buttonGradient} transition-all duration-300 text-white font-semibold py-3 rounded-xl`}>
-                  More Details
-                </Button>
-              </CardContent>
-            </Card>)}
+                  <Button 
+                    onClick={() => handleServiceClick(card)} 
+                    className={`w-full ${buttonGradients[index % buttonGradients.length]} transition-all duration-300 text-white font-semibold py-3 rounded-xl`}
+                  >
+                    {card.button_label || "More Details"}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Additional features */}
@@ -125,7 +164,10 @@ const Services = ({
         onClose={() => setIsConsultationFormOpen(false)}
         portfolioItem={null}
         serviceName={selectedService}
+        customRedirectLink={customRedirectLink}
       />
-    </section>;
+    </section>
+  );
 };
+
 export default Services;
