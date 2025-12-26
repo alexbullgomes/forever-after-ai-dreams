@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useSiteSettingsAdmin } from '@/hooks/useSiteSettingsAdmin';
 import { BrandColors, ThemePreset, THEME_PRESETS } from '@/hooks/useSiteSettings';
+import { usePageVisibility } from '@/hooks/usePageVisibility';
 import { ColorPicker } from '@/components/admin/ColorPicker';
 import { ColorPreview } from '@/components/admin/ColorPreview';
 import { ColorExportImport } from '@/components/admin/ColorExportImport';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, RotateCcw, Palette, Sun, Moon, Waves, Sunset, TreeDeciduous, Circle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Loader2, RotateCcw, Palette, Sun, Moon, Waves, Sunset, TreeDeciduous, Circle, Eye } from 'lucide-react';
 import { useRole } from '@/hooks/useRole';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const DEFAULT_COLORS: BrandColors = {
   theme_preset: 'light',
@@ -82,10 +86,13 @@ const PRESET_LABELS: Record<ThemePreset, string> = {
 
 const ProjectSettings = () => {
   const { colors, loading, updateColors, applyPreset, currentTheme } = useSiteSettingsAdmin();
+  const { showWeddingPackages, updateVisibility, loading: visibilityLoading } = usePageVisibility();
   const [tempColors, setTempColors] = useState<BrandColors>(DEFAULT_COLORS);
   const [saving, setSaving] = useState(false);
+  const [savingVisibility, setSavingVisibility] = useState(false);
   const { hasRole, loading: roleLoading } = useRole('admin');
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Redirect non-admins
   useEffect(() => {
@@ -118,6 +125,25 @@ const ProjectSettings = () => {
     setTempColors(applyPreset(preset, tempColors));
   };
 
+  const handleWeddingPackagesToggle = async (checked: boolean) => {
+    setSavingVisibility(true);
+    try {
+      await updateVisibility({ show_wedding_packages: checked });
+      toast({
+        title: "Settings updated",
+        description: `Wedding Packages page is now ${checked ? 'visible' : 'hidden'}`
+      });
+    } catch (error) {
+      toast({
+        title: "Error updating settings",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingVisibility(false);
+    }
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -142,8 +168,40 @@ const ProjectSettings = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Left Column - Color Settings */}
+        {/* Left Column - Settings */}
         <div className="space-y-6">
+          {/* Page Visibility Section */}
+          <Card className="border-brand-primary-from/20 bg-gradient-to-r from-brand-badge-bg/50 to-transparent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="w-5 h-5 text-brand-primary-from" />
+                Page Visibility
+              </CardTitle>
+              <CardDescription>
+                Control which pages are visible to users
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="wedding-packages-toggle" className="text-base font-medium">
+                    Show Wedding Packages page
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    When disabled, the page will be hidden from navigation and inaccessible
+                  </p>
+                </div>
+                <Switch
+                  id="wedding-packages-toggle"
+                  checked={showWeddingPackages}
+                  onCheckedChange={handleWeddingPackagesToggle}
+                  disabled={savingVisibility || visibilityLoading}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Theme Preset Selector */}
           <Card className="border-brand-primary-from/20 bg-gradient-to-r from-brand-badge-bg/50 to-transparent">
             <CardHeader>

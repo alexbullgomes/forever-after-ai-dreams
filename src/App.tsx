@@ -13,7 +13,6 @@ import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
 import WeddingQuiz from "./pages/WeddingQuiz";
 import Planner from "./pages/Planner";
-import PhotoVideoServices from "./pages/PhotoVideoServices";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import PromotionalLanding from "./pages/PromotionalLanding";
@@ -40,7 +39,6 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/services" element={<Planner />} />
-            <Route path="/photo-video-services" element={<PhotoVideoServices />} />
             <Route path="/wedding-packages" element={<WeddingPackages />} />
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
