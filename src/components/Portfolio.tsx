@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Heart, Calendar } from "lucide-react";
@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { VideoThumbnail } from "@/components/ui/gallery/VideoThumbnail";
-import { useToast } from "@/hooks/use-toast";
+import GalleryLeadForm, { GalleryLeadFormRef } from "@/components/ui/gallery/GalleryLeadForm";
 
 interface PortfolioItem {
   id: string;
@@ -40,7 +40,7 @@ const Portfolio = ({
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const formRef = useRef<GalleryLeadFormRef>(null);
 
   const handleViewPortfolioClick = () => {
     if (user) {
@@ -51,28 +51,31 @@ const Portfolio = ({
   };
 
   const handleCardClick = (item: PortfolioItem) => {
+    // Priority 1: Campaign page
     if (item.destinationType === 'campaign' && item.campaignSlug) {
-      // Navigate to campaign page
       navigate(`/promo/${item.campaignSlug}`);
-    } else if (item.destinationType === 'url' && item.customUrl) {
-      // Validate and open external URL
+      return;
+    }
+    
+    // Priority 2: Custom URL
+    if (item.destinationType === 'url' && item.customUrl) {
       if (item.customUrl.startsWith('http://') || item.customUrl.startsWith('https://')) {
         window.location.href = item.customUrl;
       } else {
-        toast({
-          title: "Invalid URL",
-          description: "The configured URL is not valid.",
-          variant: "destructive"
-        });
+        // Try adding https if missing
+        window.location.href = `https://${item.customUrl}`;
       }
-    } else {
-      // No destination configured - show toast
-      toast({
-        title: "No link configured",
-        description: "This story doesn't have a destination set up yet.",
-        variant: "destructive"
-      });
+      return;
     }
+    
+    // Priority 3: Fallback - show the lead capture form
+    formRef.current?.openWithCard({
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      locationCity: item.location,
+      eventSeasonOrDate: item.date
+    });
   };
 
   // Fetch portfolio data from Supabase with campaign join
@@ -253,6 +256,13 @@ const Portfolio = ({
           </Button>
         </div>
       </div>
+
+      {/* Lead capture form for cards without destination */}
+      <GalleryLeadForm
+        ref={formRef}
+        isOpen={false}
+        onClose={() => {}}
+      />
     </section>
   );
 };
