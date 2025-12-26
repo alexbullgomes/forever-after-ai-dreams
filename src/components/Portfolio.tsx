@@ -258,11 +258,7 @@ const Portfolio = ({
       </div>
 
       {/* Lead capture form for cards without destination */}
-      <GalleryLeadForm
-        ref={formRef}
-        isOpen={false}
-        onClose={() => {}}
-      />
+      <GalleryLeadForm ref={formRef} />
     </section>
   );
 };
