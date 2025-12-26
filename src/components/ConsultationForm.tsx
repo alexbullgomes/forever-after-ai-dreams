@@ -27,9 +27,10 @@ interface ConsultationFormProps {
   onClose: () => void;
   portfolioItem?: PortfolioItem | null;
   serviceName?: string;
+  customRedirectLink?: string;
 }
 
-const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: ConsultationFormProps) => {
+const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customRedirectLink }: ConsultationFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -205,7 +206,12 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName }: Consu
           <div className="text-center pt-2">
             <button
               type="button"
-              onClick={() => setShowAuthModal(true)}
+              onClick={() => {
+                // Store intended route for post-login redirect
+                const redirectTo = customRedirectLink || '/services';
+                localStorage.setItem('intendedRoute', redirectTo);
+                setShowAuthModal(true);
+              }}
               className="text-sm text-muted-foreground hover:text-brand-primary-from transition-colors underline"
             >
               Have the full experience. Log in.
