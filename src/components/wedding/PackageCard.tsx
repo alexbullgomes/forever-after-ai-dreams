@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EstimatedPriceBadge } from "@/components/ui/estimated-price-badge";
@@ -7,6 +6,7 @@ import { Star, Camera } from "lucide-react";
 import { useState } from "react";
 import PersonalizedConsultationForm from "../PersonalizedConsultationForm";
 import PaymentButton from "./PaymentButton";
+import AuthModal from "../AuthModal";
 
 interface PackageCardProps {
   name: string;
@@ -19,6 +19,11 @@ interface PackageCardProps {
 
 const PackageCard = ({ name, price, description, features, popular, idealFor }: PackageCardProps) => {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const handleAuthRequired = () => {
+    setIsAuthModalOpen(true);
+  };
 
   return (
     <>
@@ -61,6 +66,7 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
             <PaymentButton
               packageName={name}
               packagePrice={price}
+              onAuthRequired={handleAuthRequired}
               className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
             />
             
@@ -87,6 +93,11 @@ const PackageCard = ({ name, price, description, features, popular, idealFor }: 
         onClose={() => setIsConsultationFormOpen(false)}
         packageName={name}
         packagePrice={price}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </>
   );
