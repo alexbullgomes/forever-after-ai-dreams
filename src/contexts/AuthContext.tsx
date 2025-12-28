@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const PENDING_PAYMENT_KEY = 'pendingPayment';
 const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -66,8 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Processing pending payment:', pendingPayment);
       
-      toast({
-        title: "Resuming your booking...",
+      toast.info("Resuming your booking...", {
         description: "Redirecting to checkout...",
       });
 
@@ -96,10 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error processing pending payment:', error);
       processingPaymentRef.current = false;
-      toast({
-        title: "Checkout Error",
+      toast.error("Checkout Error", {
         description: "Failed to resume checkout. Please try again.",
-        variant: "destructive",
       });
     }
   };
