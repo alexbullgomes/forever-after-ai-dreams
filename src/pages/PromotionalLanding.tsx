@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { usePromotionalCampaign, TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
+import DOMPurify from "dompurify";
 import Header from "@/components/Header";
 import PromoHero from "@/components/promo/PromoHero";
 import PromoPricing from "@/components/promo/PromoPricing";
@@ -12,13 +13,77 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PromotionalCampaignGallery } from "@/components/galleries/PromotionalCampaignGallery";
 import AuthModal from "@/components/AuthModal";
 
+// Allowed tracking script domains for validation
+const ALLOWED_SCRIPT_DOMAINS = [
+  'googletagmanager.com',
+  'google-analytics.com',
+  'analytics.google.com',
+  'facebook.net',
+  'connect.facebook.net',
+  'pixel.facebook.com',
+  'snap.licdn.com',
+  'analytics.tiktok.com',
+  'sc-static.net',
+  'ads-twitter.com',
+  'static.ads-twitter.com',
+  'pinterest.com',
+  'pinimg.com',
+];
+
+// Sanitize and validate tracking script content
+const sanitizeTrackingScript = (code: string): string | null => {
+  // Remove any script tags - we'll wrap in script ourselves
+  const strippedCode = code.replace(/<\/?script[^>]*>/gi, '').trim();
+  
+  if (!strippedCode) return null;
+
+  // Check for dangerous patterns
+  const dangerousPatterns = [
+    /document\.cookie/i,
+    /localStorage/i,
+    /sessionStorage/i,
+    /eval\s*\(/i,
+    /new\s+Function\s*\(/i,
+    /\.innerHTML\s*=/i,
+    /\.outerHTML\s*=/i,
+    /document\.write/i,
+    /window\.location\s*=/i,
+    /fetch\s*\([^)]*(?!googletagmanager|google-analytics|facebook|pinterest|tiktok|twitter|linkedin)/i,
+  ];
+
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(strippedCode)) {
+      console.warn('Blocked potentially dangerous tracking script pattern');
+      return null;
+    }
+  }
+
+  // Validate that external URLs are from allowed domains
+  const urlPattern = /https?:\/\/([^\/\s'"]+)/gi;
+  const matches = strippedCode.matchAll(urlPattern);
+  
+  for (const match of matches) {
+    const domain = match[1].toLowerCase();
+    const isAllowed = ALLOWED_SCRIPT_DOMAINS.some(allowed => 
+      domain === allowed || domain.endsWith('.' + allowed)
+    );
+    
+    if (!isAllowed) {
+      console.warn(`Blocked tracking script with disallowed domain: ${domain}`);
+      return null;
+    }
+  }
+
+  return strippedCode;
+};
+
 const PromotionalLanding = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { campaign, loading, error } = usePromotionalCampaign(slug || '');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Inject tracking scripts for body_end placement
+  // Inject tracking scripts for body_end placement with sanitization
   useEffect(() => {
     if (!campaign?.tracking_scripts) return;
 
@@ -30,8 +95,14 @@ const PromotionalLanding = () => {
 
     try {
       enabledBodyScripts.forEach((script: TrackingScript) => {
+        const sanitizedCode = sanitizeTrackingScript(script.code);
+        if (!sanitizedCode) {
+          console.warn(`Skipped unsafe tracking script: ${script.name || script.id}`);
+          return;
+        }
+        
         const scriptEl = document.createElement('script');
-        scriptEl.innerHTML = script.code.trim();
+        scriptEl.textContent = sanitizedCode; // Use textContent instead of innerHTML
         scriptEl.setAttribute('data-tracking-id', script.id);
         document.body.appendChild(scriptEl);
         scriptElements.push(scriptEl);
@@ -122,10 +193,12 @@ const PromotionalLanding = () => {
         <meta property="og:url" content={`https://everafter.lovable.app/promo/${campaign.slug}`} />
         <meta name="twitter:card" content="summary_large_image" />
         
-        {/* Inject HEAD tracking scripts */}
-        {headTrackingScripts.map((script: TrackingScript) => (
-          <script key={script.id} dangerouslySetInnerHTML={{ __html: script.code.trim() }} />
-        ))}
+        {/* Inject HEAD tracking scripts with sanitization */}
+        {headTrackingScripts.map((script: TrackingScript) => {
+          const sanitizedCode = sanitizeTrackingScript(script.code);
+          if (!sanitizedCode) return null;
+          return <script key={script.id} dangerouslySetInnerHTML={{ __html: sanitizedCode }} />;
+        })}
       </Helmet>
 
       <div className="min-h-screen bg-background">
