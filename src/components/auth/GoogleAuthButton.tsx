@@ -17,10 +17,18 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
   const handleGoogleAuth = async () => {
     try {
       setLoading(true);
+      
+      // Check if there's a pending payment - if so, redirect back to current page
+      // so AuthContext can process the pending payment after login
+      const pendingPayment = localStorage.getItem('pendingPayment');
+      const redirectUrl = pendingPayment 
+        ? window.location.href  // Return to current page to process pending payment
+        : `${window.location.origin}/dashboard`;
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: redirectUrl
         }
       });
 
