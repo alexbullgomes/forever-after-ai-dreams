@@ -1,6 +1,9 @@
 project_id = "hmdnronxajctsrlgrhey"
 
 [functions.chat-response]
+verify_jwt = true
+
+[functions.chat-response]
 verify_jwt = false
 
 [functions.create-checkout]
