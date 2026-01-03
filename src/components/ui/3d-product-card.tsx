@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Calendar, Star } from "lucide-react";
+import { Clock, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface InteractiveProduct3DCardProps {
@@ -12,8 +12,10 @@ export interface InteractiveProduct3DCardProps {
   priceUnit?: string;
   description: string;
   imageUrl: string;
-  days?: number;
-  rating?: number;
+  coverageText?: string;
+  deliverableText?: string;
+  isHighlighted?: boolean;
+  highlightLabel?: string;
   actionText: string;
   href?: string;
   onActionClick: () => void;
@@ -24,7 +26,7 @@ export const InteractiveProduct3DCard = React.forwardRef<
   HTMLDivElement,
   InteractiveProduct3DCardProps
 >(
-  (
+(
     {
       title,
       price,
@@ -32,8 +34,10 @@ export const InteractiveProduct3DCard = React.forwardRef<
       priceUnit = "per night",
       description,
       imageUrl,
-      days = 0,
-      rating = 0,
+      coverageText = "",
+      deliverableText = "",
+      isHighlighted = false,
+      highlightLabel = "Special Deal",
       actionText,
       href,
       onActionClick,
@@ -83,8 +87,22 @@ export const InteractiveProduct3DCard = React.forwardRef<
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{ rotateX, rotateY }}
-          className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-shadow duration-300 hover:shadow-xl"
+          className={cn(
+            "relative overflow-hidden rounded-2xl bg-card shadow-lg transition-shadow duration-300 hover:shadow-xl",
+            isHighlighted 
+              ? "border-2 border-primary ring-1 ring-primary/20" 
+              : "border border-border"
+          )}
         >
+          {/* Highlight Badge */}
+          {isHighlighted && (
+            <div className="absolute top-3 left-3 z-10">
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand-gradient px-3 py-1 text-xs font-semibold text-white shadow-md">
+                {highlightLabel}
+              </span>
+            </div>
+          )}
+
           {/* Product Image */}
           <div className="aspect-[4/3] w-full overflow-hidden">
             <img
@@ -112,26 +130,30 @@ export const InteractiveProduct3DCard = React.forwardRef<
               {description}
             </p>
 
-            {/* Micro Stats */}
+            {/* Micro Stats - Coverage & Deliverable */}
             <div className="flex gap-3">
-              <div className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-muted px-3 py-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  {days} Days
-                </span>
-              </div>
-              <div className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-muted px-3 py-2">
-                <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                <span className="text-sm font-medium text-foreground">
-                  {rating.toFixed(1)}
-                </span>
-              </div>
+              {coverageText && (
+                <div className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-muted px-3 py-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">
+                    {coverageText}
+                  </span>
+                </div>
+              )}
+              {deliverableText && (
+                <div className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-muted px-3 py-2">
+                  <Package className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">
+                    {deliverableText}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* CTA Button */}
             <button
               onClick={onActionClick}
-              className="mt-2 w-full rounded-xl bg-foreground py-3 text-center font-semibold text-background shadow-md transition-all hover:opacity-90 hover:shadow-lg"
+              className="mt-2 w-full rounded-xl bg-brand-gradient py-3 text-center font-semibold text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg"
             >
               {actionText}
             </button>

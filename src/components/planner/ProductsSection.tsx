@@ -83,8 +83,10 @@ export function ProductsSection() {
             priceUnit={product.price_unit}
             description={product.description || ""}
             imageUrl={product.image_url || "/placeholder.svg"}
-            days={product.days}
-            rating={product.rating}
+            coverageText={product.coverage_text || ""}
+            deliverableText={product.deliverable_text || ""}
+            isHighlighted={product.is_highlighted}
+            highlightLabel={product.highlight_label || "Special Deal"}
             actionText={product.cta_text}
             href={product.cta_link || undefined}
             onActionClick={() => handleProductClick(product)}
