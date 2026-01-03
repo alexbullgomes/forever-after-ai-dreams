@@ -80,15 +80,18 @@ const PersonalizedConsultationForm = ({
         source: packageName
       };
 
-      console.log('Sending package consultation request:', payload);
+      console.log('[PersonalizedConsultationForm] Submitting consultation:', payload);
 
-      const response = await fetch('https://automation.agcreationmkt.com/webhook/bb88400e-5a7e-47a4-89a1-d8f7171f3238', {
+      // Use edge function proxy to bypass CORS
+      const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/consultation-webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
+
+      console.log('[PersonalizedConsultationForm] Response status:', response.status);
 
       if (response.ok) {
         // Track referral conversion for personalized consultation
