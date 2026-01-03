@@ -23,7 +23,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format } from 'date-fns';
-import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle } from 'lucide-react';
+import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User } from 'lucide-react';
+import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import { cn } from '@/lib/utils';
 
 interface BookingRequest {
@@ -75,6 +76,7 @@ export default function BookingsPipeline() {
     to: undefined,
   });
   const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchBookings = async () => {
@@ -298,7 +300,13 @@ export default function BookingsPipeline() {
                   <TableCell>
                     <div className="text-sm">
                       {booking.user_id ? (
-                        <span className="text-green-600">User</span>
+                        <button
+                          onClick={() => setSelectedUserId(booking.user_id)}
+                          className="flex items-center gap-1 text-green-600 hover:text-green-700 hover:underline cursor-pointer"
+                        >
+                          <User className="h-3 w-3" />
+                          User
+                        </button>
                       ) : (
                         <span className="text-muted-foreground">Guest</span>
                       )}
@@ -442,6 +450,13 @@ export default function BookingsPipeline() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={!!selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+        customerId={selectedUserId || ''}
+      />
     </div>
   );
 }
