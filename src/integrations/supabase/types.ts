@@ -469,15 +469,19 @@ export type Database = {
       }
       products: {
         Row: {
+          coverage_text: string | null
           created_at: string
           cta_link: string | null
           cta_text: string | null
           currency: string | null
           days: number | null
+          deliverable_text: string | null
           description: string | null
+          highlight_label: string | null
           id: string
           image_url: string | null
           is_active: boolean
+          is_highlighted: boolean
           price: number
           price_unit: string | null
           rating: number | null
@@ -487,15 +491,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          coverage_text?: string | null
           created_at?: string
           cta_link?: string | null
           cta_text?: string | null
           currency?: string | null
           days?: number | null
+          deliverable_text?: string | null
           description?: string | null
+          highlight_label?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_highlighted?: boolean
           price: number
           price_unit?: string | null
           rating?: number | null
@@ -505,15 +513,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          coverage_text?: string | null
           created_at?: string
           cta_link?: string | null
           cta_text?: string | null
           currency?: string | null
           days?: number | null
+          deliverable_text?: string | null
           description?: string | null
+          highlight_label?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_highlighted?: boolean
           price?: number
           price_unit?: string | null
           rating?: number | null

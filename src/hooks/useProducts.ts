@@ -14,6 +14,10 @@ export interface Product {
   image_url: string | null;
   days: number;
   rating: number;
+  coverage_text: string | null;
+  deliverable_text: string | null;
+  is_highlighted: boolean;
+  highlight_label: string | null;
   cta_text: string;
   cta_link: string | null;
   is_active: boolean;
@@ -139,6 +143,10 @@ export function useProducts(options: UseProductsOptions = {}) {
           image_url: product.image_url,
           days: product.days,
           rating: product.rating,
+          coverage_text: product.coverage_text,
+          deliverable_text: product.deliverable_text,
+          is_highlighted: product.is_highlighted,
+          highlight_label: product.highlight_label,
           cta_text: product.cta_text,
           cta_link: product.cta_link,
           is_active: false,

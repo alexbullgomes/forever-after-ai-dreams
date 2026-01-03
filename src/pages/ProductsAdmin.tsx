@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, Copy, Search, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Search, GripVertical, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -88,12 +88,19 @@ function SortableRow({
           </div>
         )}
       </TableCell>
-      <TableCell className="font-medium">{product.title}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-2">
+          {product.is_highlighted && (
+            <Sparkles className="h-4 w-4 text-primary" />
+          )}
+          {product.title}
+        </div>
+      </TableCell>
       <TableCell>
         ${product.price} {product.price_unit}
       </TableCell>
-      <TableCell>{product.days} days</TableCell>
-      <TableCell>{product.rating.toFixed(1)}</TableCell>
+      <TableCell>{product.coverage_text || "-"}</TableCell>
+      <TableCell>{product.deliverable_text || "-"}</TableCell>
       <TableCell>
         <Switch
           checked={product.is_active}
@@ -253,8 +260,8 @@ export default function ProductsAdmin() {
                   <TableHead className="w-20">Image</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead>Days</TableHead>
-                  <TableHead>Rating</TableHead>
+                  <TableHead>Coverage</TableHead>
+                  <TableHead>Deliverable</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead className="w-32">Actions</TableHead>
                 </TableRow>
