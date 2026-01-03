@@ -100,12 +100,15 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
     setIsSubmitting(true);
 
     try {
-      // Get or generate visitorId
-      let visitorId = localStorage.getItem('homepage-visitor-id');
-      if (!visitorId) {
-        visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('homepage-visitor-id', visitorId);
-      }
+      // Get or generate visitorId using unified utility
+      const { getOrCreateVisitorId, trackVisitorEvent } = await import('@/utils/visitor');
+      const visitorId = getOrCreateVisitorId();
+      
+      // Track the gallery lead form submission event
+      await trackVisitorEvent('gallery_lead_submit', cardData?.cardTitle || 'gallery_lead', {
+        card_id: cardData?.cardId || cardData?.id,
+        category: cardData?.category,
+      });
 
       // Prepare payload with card metadata
       const payload: any = {

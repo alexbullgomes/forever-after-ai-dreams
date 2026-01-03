@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { initializeReferralTracking } from "@/utils/affiliateTracking";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { VisitorTracker } from "@/components/VisitorTracker";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import WeddingPackages from "./pages/WeddingPackages";
@@ -36,6 +37,7 @@ const AppContent = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <VisitorTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/services" element={<Planner />} />

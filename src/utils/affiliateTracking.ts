@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { getVisitorId } from '@/utils/visitor';
 
 export interface ReferralTracking {
   referralCode: string | null;
@@ -10,8 +11,8 @@ export const getReferralTracking = (): ReferralTracking => {
   const urlParams = new URLSearchParams(window.location.search);
   const referralCode = urlParams.get('ref');
   
-  // Get visitor ID from localStorage
-  const visitorId = localStorage.getItem('homepage-visitor-id');
+  // Get visitor ID using unified utility
+  const visitorId = getVisitorId();
   
   // Store referral code in session if present
   if (referralCode) {

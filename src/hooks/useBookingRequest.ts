@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { getOrCreateVisitorId } from '@/utils/visitorId';
+import { getOrCreateVisitorId } from '@/utils/visitor';
 import { useProductBookingRules, ProductBookingRules } from './useProductBookingRules';
 
 export interface BookingRequest {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { getOrCreateVisitorId } from "@/utils/visitor";
 
 type PromotionalPopup = Database['public']['Tables']['promotional_popups']['Row'];
 
@@ -28,12 +29,8 @@ export const usePromotionalPopup = () => {
         if (config.start_at && new Date(config.start_at) > now) return;
         if (config.end_at && new Date(config.end_at) < now) return;
 
-        // Get or create visitor ID
-        let visitorId = localStorage.getItem('homepage-visitor-id');
-        if (!visitorId) {
-          visitorId = crypto.randomUUID();
-          localStorage.setItem('homepage-visitor-id', visitorId);
-        }
+        // Get or create visitor ID using unified utility
+        const visitorId = getOrCreateVisitorId();
 
         // Check if already submitted
         const cacheKey = `popup_submission_${config.id}`;

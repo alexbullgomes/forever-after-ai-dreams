@@ -12,7 +12,7 @@ import { useBookingRequest } from '@/hooks/useBookingRequest';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { getOrCreateVisitorId } from '@/utils/visitorId';
+import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
 
 type BookingStep = 'date' | 'checking' | 'slots';
 
@@ -54,9 +54,15 @@ export function BookingFunnelModal({
     setEventDate(date);
     setStep('checking');
     
+    // Track the booking date selection event
+    trackVisitorEvent('booking_date_selected', productTitle, {
+      product_id: productId,
+      event_date: date.toISOString(),
+    });
+    
     // Create/find booking request while showing loading
     await findOrCreateRequest(date, timezone);
-  }, [findOrCreateRequest]);
+  }, [findOrCreateRequest, productId, productTitle]);
 
   const handleCheckingComplete = useCallback(() => {
     setStep('slots');
@@ -71,6 +77,14 @@ export function BookingFunnelModal({
     if (!bookingRequest || !selectedTime) return;
 
     setIsProcessing(true);
+    
+    // Track the checkout initiation event
+    trackVisitorEvent('booking_checkout_started', productTitle, {
+      product_id: productId,
+      event_date: bookingRequest.event_date,
+      selected_time: selectedTime,
+      price: productPrice,
+    });
 
     try {
       // Call edge function to create hold and checkout session

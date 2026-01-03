@@ -1234,6 +1234,50 @@ export type Database = {
         }
         Relationships: []
       }
+      visitor_events: {
+        Row: {
+          created_at: string
+          event_name: string | null
+          event_payload: Json | null
+          event_type: string
+          id: string
+          page_title: string | null
+          page_url: string | null
+          session_id: string | null
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_name?: string | null
+          event_payload?: Json | null
+          event_type: string
+          id?: string
+          page_title?: string | null
+          page_url?: string | null
+          session_id?: string | null
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          event_name?: string | null
+          event_payload?: Json | null
+          event_type?: string
+          id?: string
+          page_title?: string | null
+          page_url?: string | null
+          session_id?: string | null
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_events_visitor_id_fkey"
+            columns: ["visitor_id"]
+            isOneToOne: false
+            referencedRelation: "visitors"
+            referencedColumns: ["visitor_id"]
+          },
+        ]
+      }
       visitor_popup_submissions: {
         Row: {
           id: string
@@ -1274,6 +1318,80 @@ export type Database = {
             columns: ["popup_id"]
             isOneToOne: false
             referencedRelation: "promotional_popups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visitors: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_type: string | null
+          first_landing_url: string | null
+          id: string
+          last_seen_at: string
+          last_url: string | null
+          linked_user_id: string | null
+          metadata: Json | null
+          os: string | null
+          referrer: string | null
+          screen_resolution: string | null
+          status: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          first_landing_url?: string | null
+          id?: string
+          last_seen_at?: string
+          last_url?: string | null
+          linked_user_id?: string | null
+          metadata?: Json | null
+          os?: string | null
+          referrer?: string | null
+          screen_resolution?: string | null
+          status?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          first_landing_url?: string | null
+          id?: string
+          last_seen_at?: string
+          last_url?: string | null
+          linked_user_id?: string | null
+          metadata?: Json | null
+          os?: string | null
+          referrer?: string | null
+          screen_resolution?: string | null
+          status?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitors_linked_user_id_fkey"
+            columns: ["linked_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

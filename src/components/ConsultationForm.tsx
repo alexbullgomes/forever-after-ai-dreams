@@ -54,12 +54,15 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
     setIsSubmitting(true);
 
     try {
-      // Get or create visitor ID (same as used in Expandable Chat)
-      let visitorId = localStorage.getItem('homepage-visitor-id');
-      if (!visitorId) {
-        visitorId = crypto.randomUUID();
-        localStorage.setItem('homepage-visitor-id', visitorId);
-      }
+      // Get or create visitor ID using unified utility
+      const { getOrCreateVisitorId, trackVisitorEvent } = await import('@/utils/visitor');
+      const visitorId = getOrCreateVisitorId();
+      
+      // Track the consultation form submission event
+      await trackVisitorEvent('consultation_submit', serviceName || 'consultation_form', {
+        service_name: serviceName,
+        portfolio_item_id: portfolioItem?.id,
+      });
 
       const payload = {
         userId: user?.id || null,

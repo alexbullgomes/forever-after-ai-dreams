@@ -68,13 +68,11 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 
   // Initialize visitor ID and add intro message on first render
   useEffect(() => {
-    // Get or create visitor ID
-    let storedVisitorId = localStorage.getItem('homepage-visitor-id');
-    if (!storedVisitorId) {
-      storedVisitorId = crypto.randomUUID();
-      localStorage.setItem('homepage-visitor-id', storedVisitorId);
-    }
-    setVisitorId(storedVisitorId);
+    // Get or create visitor ID using unified utility
+    import('@/utils/visitor').then(({ getOrCreateVisitorId }) => {
+      const storedVisitorId = getOrCreateVisitorId();
+      setVisitorId(storedVisitorId);
+    });
 
     // Add intro message when chat is empty
     if (messages.length === 0) {
@@ -111,6 +109,14 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     setIsLoading(true);
 
     try {
+      // Track chat message event
+      import('@/utils/visitor').then(({ trackVisitorEvent }) => {
+        trackVisitorEvent('chat_message', 'webhook_chat', {
+          has_files: selectedFiles.length > 0,
+          message_length: messageContent.length,
+        });
+      });
+      
       // Send to webhook with 20s timeout
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('timeout')), 20000);

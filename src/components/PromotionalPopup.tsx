@@ -112,12 +112,15 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
     setLoading(true);
     
     try {
-      // Get or create visitor ID
-      let visitorId = localStorage.getItem('homepage-visitor-id');
-      if (!visitorId) {
-        visitorId = crypto.randomUUID();
-        localStorage.setItem('homepage-visitor-id', visitorId);
-      }
+      // Get or create visitor ID using unified utility
+      const { getOrCreateVisitorId, trackVisitorEvent } = await import('@/utils/visitor');
+      const visitorId = getOrCreateVisitorId();
+      
+      // Track the popup submission event
+      await trackVisitorEvent('popup_submit', config.title, {
+        popup_id: config.id,
+        discount_label: config.discount_label,
+      });
 
       // Store in database
       const { error: dbError } = await supabase

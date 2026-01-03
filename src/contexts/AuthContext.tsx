@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
+import { linkVisitorToUser, getVisitorId } from '@/utils/visitor';
 import { toast } from 'sonner';
 
 const PENDING_PAYMENT_KEY = 'pendingPayment';
@@ -114,8 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Link visitorId to user profile when signing in
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
+            // Link visitor to user profile (unified visitor tracking)
+            await linkVisitorToUser(session.user.id);
             linkVisitorIdToProfile(session.user.id);
-            
             // Track referral conversion for new registrations
             const isNewUser = session.user.created_at === session.user.last_sign_in_at;
             if (isNewUser) {
@@ -172,8 +174,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const linkVisitorIdToProfile = async (userId: string) => {
     try {
-      // Check if visitorId exists in localStorage
-      const visitorId = localStorage.getItem('homepage-visitor-id');
+      // Check for unified visitor ID first, fall back to legacy
+      const visitorId = getVisitorId() || localStorage.getItem('homepage-visitor-id');
       
       if (visitorId) {
         console.log('Linking visitorId to profile:', visitorId);
