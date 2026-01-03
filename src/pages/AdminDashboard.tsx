@@ -12,6 +12,7 @@ import GalleryCardsAdmin from "@/pages/GalleryCardsAdmin";
 import PromotionalCampaigns from "@/pages/PromotionalCampaigns";
 import PromotionalPopups from "@/pages/PromotionalPopups";
 import ProjectSettings from "@/pages/ProjectSettings";
+import ProductsAdmin from "@/pages/ProductsAdmin";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -105,6 +106,7 @@ const AdminDashboard = () => {
               <Route path="/chat-admin" element={<ChatAdmin />} />
               <Route path="/pipeline-process" element={<PipelineProcess />} />
               <Route path="/gallery-cards" element={<GalleryCardsAdmin />} />
+              <Route path="/products" element={<ProductsAdmin />} />
               <Route path="/promotional-campaigns" element={<PromotionalCampaigns />} />
               <Route path="/promotional-popups" element={<PromotionalPopups />} />
               <Route path="/project-settings" element={<ProjectSettings />} />
