@@ -151,6 +151,10 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://everafter.lovable.app";
     
+    // Stripe requires minimum 30 minutes for expires_at
+    const stripeExpiryMinutes = Math.max(30, holdMinutes);
+    logStep("Stripe session expiry set", { holdMinutes, stripeExpiryMinutes });
+
     const session = await stripe.checkout.sessions.create({
       customer_email: customerEmail,
       line_items: [
@@ -178,7 +182,7 @@ serve(async (req) => {
         user_id: user_id || "",
         visitor_id: visitor_id || "",
       },
-      expires_at: Math.floor(Date.now() / 1000) + holdMinutes * 60,
+      expires_at: Math.floor(Date.now() / 1000) + stripeExpiryMinutes * 60,
     });
 
     logStep("Stripe session created", { sessionId: session.id, url: session.url });
