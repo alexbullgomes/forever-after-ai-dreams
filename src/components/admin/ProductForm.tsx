@@ -1,0 +1,337 @@
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { slugify } from "@/utils/slugify";
+import type { Product } from "@/hooks/useProducts";
+
+const productSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string().optional(),
+  price: z.coerce.number().min(0, "Price must be positive"),
+  currency: z.string().default("USD"),
+  price_unit: z.string().default("per night"),
+  description: z.string().optional(),
+  image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  days: z.coerce.number().min(0, "Days must be 0 or more").default(0),
+  rating: z.coerce.number().min(0).max(5, "Rating must be between 0 and 5").default(0),
+  cta_text: z.string().default("Reserve"),
+  cta_link: z.string().optional(),
+  is_active: z.boolean().default(true),
+  sort_order: z.coerce.number().default(0),
+});
+
+type ProductFormValues = z.infer<typeof productSchema>;
+
+interface ProductFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  product: Product | null;
+  onSubmit: (data: Partial<Product>) => Promise<void>;
+}
+
+export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFormProps) {
+  const isEditing = !!product;
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      title: "",
+      slug: "",
+      price: 0,
+      currency: "USD",
+      price_unit: "per night",
+      description: "",
+      image_url: "",
+      days: 0,
+      rating: 0,
+      cta_text: "Reserve",
+      cta_link: "",
+      is_active: true,
+      sort_order: 0,
+    },
+  });
+
+  useEffect(() => {
+    if (product) {
+      form.reset({
+        title: product.title,
+        slug: product.slug || "",
+        price: product.price,
+        currency: product.currency,
+        price_unit: product.price_unit,
+        description: product.description || "",
+        image_url: product.image_url || "",
+        days: product.days,
+        rating: product.rating,
+        cta_text: product.cta_text,
+        cta_link: product.cta_link || "",
+        is_active: product.is_active,
+        sort_order: product.sort_order,
+      });
+    } else {
+      form.reset({
+        title: "",
+        slug: "",
+        price: 0,
+        currency: "USD",
+        price_unit: "per night",
+        description: "",
+        image_url: "",
+        days: 0,
+        rating: 0,
+        cta_text: "Reserve",
+        cta_link: "",
+        is_active: true,
+        sort_order: 0,
+      });
+    }
+  }, [product, form]);
+
+  const handleSubmit = async (values: ProductFormValues) => {
+    const slug = values.slug || slugify(values.title);
+    await onSubmit({
+      ...values,
+      slug,
+      image_url: values.image_url || null,
+      description: values.description || null,
+      cta_link: values.cta_link || null,
+    });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? "Edit Product" : "Create Product"}</DialogTitle>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Iceland Cabin" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug (auto-generated if empty)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="iceland-cabin" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price *</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" placeholder="680" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Currency</FormLabel>
+                    <FormControl>
+                      <Input placeholder="USD" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="price_unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Price Unit</FormLabel>
+                    <FormControl>
+                      <Input placeholder="per night" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your product..."
+                      className="resize-none"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="days"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Days</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" placeholder="5" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="rating"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rating (0-5)</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" max="5" step="0.1" placeholder="4.5" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cta_text"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CTA Button Text</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Reserve" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="cta_link"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CTA Link (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="/booking or https://..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="sort_order"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sort Order</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="is_active"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <FormLabel className="text-base">Active</FormLabel>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">{isEditing ? "Save Changes" : "Create Product"}</Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings, Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -27,6 +27,11 @@ const navigationItems = [
     title: "Gallery Cards",
     url: "/dashboard/gallery-cards",
     icon: Images,
+  },
+  {
+    title: "Products",
+    url: "/dashboard/products",
+    icon: Package,
   },
   {
     title: "Chat Admin",

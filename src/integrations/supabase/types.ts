@@ -467,6 +467,63 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          created_at: string
+          cta_link: string | null
+          cta_text: string | null
+          currency: string | null
+          days: number | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          price: number
+          price_unit: string | null
+          rating: number | null
+          slug: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          currency?: string | null
+          days?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price: number
+          price_unit?: string | null
+          rating?: number | null
+          slug?: string | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          currency?: string | null
+          days?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          price_unit?: string | null
+          rating?: number | null
+          slug?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
