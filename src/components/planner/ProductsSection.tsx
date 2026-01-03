@@ -1,22 +1,18 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InteractiveProduct3DCard } from "@/components/ui/3d-product-card";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, Product } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
 export function ProductsSection() {
   const { products, loading } = useProducts();
   const navigate = useNavigate();
+  const [bookingProduct, setBookingProduct] = useState<Product | null>(null);
 
-  const handleProductClick = (product: { cta_link: string | null; slug: string | null }) => {
-    if (product.cta_link) {
-      if (product.cta_link.startsWith("http")) {
-        window.open(product.cta_link, "_blank");
-      } else {
-        navigate(product.cta_link);
-      }
-    } else if (product.slug) {
-      navigate(`/products/${product.slug}`);
-    }
+  const handleProductClick = (product: Product) => {
+    // Open the booking funnel modal instead of navigating
+    setBookingProduct(product);
   };
 
   if (loading) {
@@ -88,11 +84,22 @@ export function ProductsSection() {
             isHighlighted={product.is_highlighted}
             highlightLabel={product.highlight_label || "Special Deal"}
             actionText={product.cta_text}
-            href={product.cta_link || undefined}
             onActionClick={() => handleProductClick(product)}
           />
         ))}
       </div>
+
+      {/* Booking Funnel Modal */}
+      {bookingProduct && (
+        <BookingFunnelModal
+          isOpen={!!bookingProduct}
+          onClose={() => setBookingProduct(null)}
+          productId={bookingProduct.id}
+          productTitle={bookingProduct.title}
+          productPrice={bookingProduct.price}
+          currency={bookingProduct.currency || 'USD'}
+        />
+      )}
     </section>
   );
 }

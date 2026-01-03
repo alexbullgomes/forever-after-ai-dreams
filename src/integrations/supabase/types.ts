@@ -88,6 +88,179 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_requests: {
+        Row: {
+          availability_version: string
+          created_at: string
+          event_date: string
+          id: string
+          last_seen_at: string
+          offer_expires_at: string
+          product_id: string
+          selected_time: string | null
+          stage: string
+          stripe_checkout_session_id: string | null
+          timezone: string
+          updated_at: string
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          availability_version?: string
+          created_at?: string
+          event_date: string
+          id?: string
+          last_seen_at?: string
+          offer_expires_at: string
+          product_id: string
+          selected_time?: string | null
+          stage?: string
+          stripe_checkout_session_id?: string | null
+          timezone: string
+          updated_at?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          availability_version?: string
+          created_at?: string
+          event_date?: string
+          id?: string
+          last_seen_at?: string
+          offer_expires_at?: string
+          product_id?: string
+          selected_time?: string | null
+          stage?: string
+          stripe_checkout_session_id?: string | null
+          timezone?: string
+          updated_at?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_slot_holds: {
+        Row: {
+          booking_request_id: string
+          created_at: string
+          end_time: string
+          event_date: string
+          expires_at: string
+          id: string
+          product_id: string
+          start_time: string
+          status: string
+        }
+        Insert: {
+          booking_request_id: string
+          created_at?: string
+          end_time: string
+          event_date: string
+          expires_at: string
+          id?: string
+          product_id: string
+          start_time: string
+          status?: string
+        }
+        Update: {
+          booking_request_id?: string
+          created_at?: string
+          end_time?: string
+          event_date?: string
+          expires_at?: string
+          id?: string
+          product_id?: string
+          start_time?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_slot_holds_booking_request_id_fkey"
+            columns: ["booking_request_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_slot_holds_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          booking_request_id: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          end_time: string
+          event_date: string
+          id: string
+          product_id: string
+          start_time: string
+          status: string
+          stripe_payment_intent: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          booking_request_id?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          end_time: string
+          event_date: string
+          id?: string
+          product_id: string
+          start_time: string
+          status?: string
+          stripe_payment_intent?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          booking_request_id?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          end_time?: string
+          event_date?: string
+          id?: string
+          product_id?: string
+          start_time?: string
+          status?: string
+          stripe_payment_intent?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_booking_request_id_fkey"
+            columns: ["booking_request_id"]
+            isOneToOne: false
+            referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_contents_gallery: {
         Row: {
           category: string
@@ -466,6 +639,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      product_booking_rules: {
+        Row: {
+          calendar_mode: string
+          checkout_hold_minutes: number
+          created_at: string
+          full_window_end: string
+          full_window_start: string
+          id: string
+          limited_slots: Json
+          offer_window_hours: number
+          product_id: string
+          slot_duration_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          calendar_mode?: string
+          checkout_hold_minutes?: number
+          created_at?: string
+          full_window_end?: string
+          full_window_start?: string
+          id?: string
+          limited_slots?: Json
+          offer_window_hours?: number
+          product_id: string
+          slot_duration_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          calendar_mode?: string
+          checkout_hold_minutes?: number
+          created_at?: string
+          full_window_end?: string
+          full_window_start?: string
+          id?: string
+          limited_slots?: Json
+          offer_window_hours?: number
+          product_id?: string
+          slot_duration_minutes?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_booking_rules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
