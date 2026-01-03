@@ -45,13 +45,13 @@ const Planner = () => {
           </p>
         </div>
 
-        {/* Active Campaigns Section */}
-        <CampaignCardsSection />
-
         {/* EverAfter Gallery */}
         <div id="everafter-gallery" className="my-16">
           <EverAfterGallery />
         </div>
+
+        {/* Active Campaigns Section */}
+        <CampaignCardsSection />
 
         {/* AI Assistant Section */}
         <AIAssistantSection />
