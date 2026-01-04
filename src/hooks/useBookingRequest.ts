@@ -6,7 +6,7 @@ import { useProductBookingRules, ProductBookingRules } from './useProductBooking
 
 export interface BookingRequest {
   id: string;
-  product_id: string;
+  product_id: string | null;
   user_id: string | null;
   visitor_id: string | null;
   event_date: string;
@@ -19,9 +19,19 @@ export interface BookingRequest {
   stripe_checkout_session_id: string | null;
   created_at: string;
   updated_at: string;
+  campaign_id?: string | null;
+  campaign_card_index?: number | null;
 }
 
-export function useBookingRequest(productId: string | null) {
+interface CampaignData {
+  campaignId: string;
+  cardIndex: number;
+}
+
+export function useBookingRequest(
+  productId: string | null,
+  campaignData?: CampaignData
+) {
   const { user } = useAuth();
   const { rules, loading: rulesLoading } = useProductBookingRules(productId);
   const [bookingRequest, setBookingRequest] = useState<BookingRequest | null>(null);
@@ -29,8 +39,9 @@ export function useBookingRequest(productId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const findOrCreateRequest = useCallback(async (eventDate: Date, timezone: string) => {
-    if (!productId) {
-      setError('No product selected');
+    // Need either productId or campaignData
+    if (!productId && !campaignData) {
+      setError('No product or campaign selected');
       return null;
     }
 
@@ -42,12 +53,20 @@ export function useBookingRequest(productId: string | null) {
       const dateStr = eventDate.toISOString().split('T')[0];
       const offerExpiresAt = new Date(Date.now() + rules.offer_window_hours * 60 * 60 * 1000).toISOString();
 
-      // Try to find existing request
+      // Build query based on product or campaign mode
       let query = supabase
         .from('booking_requests')
         .select('*')
-        .eq('product_id', productId)
         .eq('event_date', dateStr);
+
+      if (productId) {
+        query = query.eq('product_id', productId);
+      } else if (campaignData) {
+        query = query
+          .eq('campaign_id', campaignData.campaignId)
+          .eq('campaign_card_index', campaignData.cardIndex)
+          .is('product_id', null);
+      }
 
       if (user?.id) {
         query = query.eq('user_id', user.id);
@@ -87,8 +106,8 @@ export function useBookingRequest(productId: string | null) {
       }
 
       // Create new request
-      const newRequest = {
-        product_id: productId,
+      const newRequest: any = {
+        product_id: productId || null,
         user_id: user?.id || null,
         visitor_id: user?.id ? null : visitorId,
         event_date: dateStr,
@@ -98,6 +117,12 @@ export function useBookingRequest(productId: string | null) {
         availability_version: 'full' as const,
         last_seen_at: new Date().toISOString(),
       };
+
+      // Add campaign fields if in campaign mode
+      if (campaignData) {
+        newRequest.campaign_id = campaignData.campaignId;
+        newRequest.campaign_card_index = campaignData.cardIndex;
+      }
 
       const { data: created, error: createError } = await supabase
         .from('booking_requests')
@@ -116,7 +141,7 @@ export function useBookingRequest(productId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [productId, user?.id, rules.offer_window_hours]);
+  }, [productId, user?.id, rules.offer_window_hours, campaignData]);
 
   const updateSelectedTime = useCallback(async (time: string) => {
     if (!bookingRequest) return null;
