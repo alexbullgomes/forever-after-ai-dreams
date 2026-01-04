@@ -1,8 +1,25 @@
-
+import { z } from 'zod';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
 
+// Validation schemas
+const emailSchema = z.string().trim().email('Invalid email address').max(255, 'Email is too long');
+const phoneSchema = z.string().trim().min(7, 'Phone number is too short').max(20, 'Phone number is too long')
+  .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, 'Invalid phone number format');
+
 export const validateConsultationForm = (email: string, cellphone: string): boolean => {
-  return Boolean(email && cellphone);
+  const emailResult = emailSchema.safeParse(email);
+  const phoneResult = phoneSchema.safeParse(cellphone);
+  return emailResult.success && phoneResult.success;
+};
+
+export const getEmailValidationError = (email: string): string | null => {
+  const result = emailSchema.safeParse(email);
+  return result.success ? null : result.error.errors[0]?.message || 'Invalid email';
+};
+
+export const getPhoneValidationError = (phone: string): string | null => {
+  const result = phoneSchema.safeParse(phone);
+  return result.success ? null : result.error.errors[0]?.message || 'Invalid phone number';
 };
 
 export const submitConsultationRequest = async (

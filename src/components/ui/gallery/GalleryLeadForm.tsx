@@ -1,6 +1,6 @@
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { motion } from 'framer-motion';
-import { X, User, Phone } from 'lucide-react';
+import { User, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import AuthModal from '@/components/AuthModal';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
+import { z } from 'zod';
 
+// Validation schemas
+const nameSchema = z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long');
+const phoneSchema = z.string().trim().min(7, 'Phone number is too short').max(20, 'Phone number is too long')
+  .regex(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/, 'Invalid phone number format');
 // Card data interface for portfolio and gallery items
 interface CardData {
   cardId?: string | number;
@@ -46,10 +51,32 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
   const [internalCardData, setInternalCardData] = useState<CardData | undefined>();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const validateName = (value: string): boolean => {
+    const result = nameSchema.safeParse(value);
+    if (!result.success) {
+      setNameError(result.error.errors[0]?.message || 'Invalid name');
+      return false;
+    }
+    setNameError(null);
+    return true;
+  };
+
+  const validatePhone = (value: string): boolean => {
+    const result = phoneSchema.safeParse(value);
+    if (!result.success) {
+      setPhoneError(result.error.errors[0]?.message || 'Invalid phone number');
+      return false;
+    }
+    setPhoneError(null);
+    return true;
+  };
 
   // Use external props if provided, otherwise use internal state
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
@@ -88,10 +115,13 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim() || !phone.trim()) {
+    const isNameValid = validateName(name);
+    const isPhoneValid = validatePhone(phone);
+    
+    if (!isNameValid || !isPhoneValid) {
       toast({
-        title: "Error",
-        description: "Name and phone number are required.",
+        title: "Validation Error",
+        description: "Please fix the errors in the form.",
         variant: "destructive",
       });
       return;
@@ -228,12 +258,17 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
                 <Input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (nameError) validateName(e.target.value);
+                  }}
+                  onBlur={() => validateName(name)}
                   placeholder="Your full name"
                   required
-                  className="w-full focus:ring-2 focus:ring-brand-primary-from focus:border-brand-primary-from rounded-lg"
+                  className={`w-full focus:ring-2 focus:ring-brand-primary-from focus:border-brand-primary-from rounded-lg ${nameError ? 'border-destructive' : ''}`}
                   autoComplete="name"
                 />
+                {nameError && <p className="text-xs text-destructive mt-1">{nameError}</p>}
               </div>
 
               {/* Phone Number */}
@@ -245,19 +280,25 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
                 <Input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Your phone number"
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (phoneError) validatePhone(e.target.value);
+                  }}
+                  onBlur={() => validatePhone(phone)}
+                  placeholder="Your phone number (e.g. +1 555-123-4567)"
                   required
-                  className="w-full focus:ring-2 focus:ring-brand-primary-from focus:border-brand-primary-from rounded-lg"
+                  pattern="[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}"
+                  className={`w-full focus:ring-2 focus:ring-brand-primary-from focus:border-brand-primary-from rounded-lg ${phoneError ? 'border-destructive' : ''}`}
                   autoComplete="tel"
                 />
+                {phoneError && <p className="text-xs text-destructive mt-1">{phoneError}</p>}
               </div>
 
               {/* Buttons */}
               <div className="flex flex-col gap-3 pt-4">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !name.trim() || !phone.trim()}
+                  disabled={isSubmitting || !name.trim() || !phone.trim() || !!nameError || !!phoneError}
                   className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   {isSubmitting ? (
