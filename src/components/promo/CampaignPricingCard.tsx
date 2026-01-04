@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getOrCreateVisitorId } from "@/utils/visitor";
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
+const PENDING_CAMPAIGN_DATE_KEY = 'pendingCampaignDateSelection';
 const BOOKING_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
 
 interface PendingCampaignBooking {
@@ -23,6 +24,16 @@ interface PendingCampaignBooking {
   bookingRequestId: string;
   eventDate: string;
   selectedTime: string;
+  timestamp: number;
+}
+
+interface PendingCampaignDateSelection {
+  campaignId: string;
+  campaignSlug: string;
+  cardIndex: number;
+  cardTitle: string;
+  selectedDate: string;
+  timezone: string;
   timestamp: number;
 }
 
@@ -53,6 +64,7 @@ export function CampaignPricingCard({
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isResuming, setIsResuming] = useState(false);
+  const [pendingDateResume, setPendingDateResume] = useState<{ date: Date; timezone: string } | undefined>(undefined);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -99,23 +111,46 @@ export function CampaignPricingCard({
     }
   }, [user?.id, toast]);
 
-  // Check for pending booking on mount and when user changes
+  // Check for pending date selection or booking on mount and when user changes
   useEffect(() => {
     if (!user) return;
 
-    const stored = localStorage.getItem(PENDING_CAMPAIGN_BOOKING_KEY);
-    if (!stored) return;
+    // Check for pending DATE SELECTION first (auth triggered at date step)
+    const storedDate = localStorage.getItem(PENDING_CAMPAIGN_DATE_KEY);
+    if (storedDate) {
+      try {
+        const pendingDate: PendingCampaignDateSelection = JSON.parse(storedDate);
+
+        if (Date.now() - pendingDate.timestamp > BOOKING_EXPIRY_MS) {
+          localStorage.removeItem(PENDING_CAMPAIGN_DATE_KEY);
+        } else if (pendingDate.campaignId === campaignId && pendingDate.cardIndex === cardIndex) {
+          localStorage.removeItem(PENDING_CAMPAIGN_DATE_KEY);
+          
+          // Resume from date selection - open modal with saved date
+          setPendingDateResume({
+            date: new Date(pendingDate.selectedDate),
+            timezone: pendingDate.timezone,
+          });
+          setIsBookingOpen(true);
+          return;
+        }
+      } catch (e) {
+        localStorage.removeItem(PENDING_CAMPAIGN_DATE_KEY);
+      }
+    }
+
+    // Check for pending CHECKOUT (auth triggered at payment step - legacy flow)
+    const storedCheckout = localStorage.getItem(PENDING_CAMPAIGN_BOOKING_KEY);
+    if (!storedCheckout) return;
 
     try {
-      const pending: PendingCampaignBooking = JSON.parse(stored);
+      const pending: PendingCampaignBooking = JSON.parse(storedCheckout);
 
-      // Check expiry
       if (Date.now() - pending.timestamp > BOOKING_EXPIRY_MS) {
         localStorage.removeItem(PENDING_CAMPAIGN_BOOKING_KEY);
         return;
       }
 
-      // Only process if matches this card
       if (pending.campaignId !== campaignId || pending.cardIndex !== cardIndex) return;
 
       localStorage.removeItem(PENDING_CAMPAIGN_BOOKING_KEY);
@@ -124,6 +159,12 @@ export function CampaignPricingCard({
       localStorage.removeItem(PENDING_CAMPAIGN_BOOKING_KEY);
     }
   }, [user, campaignId, cardIndex, resumeCheckout]);
+
+  // Clear pending date resume after modal closes
+  const handleBookingClose = useCallback(() => {
+    setIsBookingOpen(false);
+    setPendingDateResume(undefined);
+  }, []);
 
   const handleAuthRequired = () => {
     setIsAuthModalOpen(true);
@@ -199,7 +240,7 @@ export function CampaignPricingCard({
 
       <BookingFunnelModal
         isOpen={isBookingOpen}
-        onClose={() => setIsBookingOpen(false)}
+        onClose={handleBookingClose}
         productId={null}
         productTitle={name}
         productPrice={150}
@@ -209,6 +250,7 @@ export function CampaignPricingCard({
         campaignSlug={campaignSlug}
         cardIndex={cardIndex}
         onAuthRequired={handleAuthRequired}
+        resumeFromDate={pendingDateResume}
       />
 
       <PersonalizedConsultationForm 
