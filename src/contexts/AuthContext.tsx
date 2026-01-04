@@ -133,6 +133,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             // Handle post-login redirect (only if no pending payment was processed)
             if (!processingPaymentRef.current) {
+              // Check for campaign booking return URL first
+              const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
+              const postLoginAction = localStorage.getItem('postLoginAction');
+              
+              if (postLoginReturnTo && postLoginAction === 'resume_campaign_bookfunnel') {
+                localStorage.removeItem('postLoginReturnTo');
+                localStorage.removeItem('postLoginAction');
+                
+                // Only redirect if not already on the target page
+                if (!window.location.pathname.startsWith(postLoginReturnTo.split('?')[0])) {
+                  window.location.href = postLoginReturnTo;
+                }
+                return;
+              }
+              
+              // Fall back to legacy intendedRoute
               const intendedRoute = localStorage.getItem('intendedRoute');
               if (intendedRoute) {
                 localStorage.removeItem('intendedRoute');

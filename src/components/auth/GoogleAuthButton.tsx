@@ -18,11 +18,15 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
     try {
       setLoading(true);
       
-      // Check if there's a pending payment - if so, redirect back to current page
-      // so AuthContext can process the pending payment after login
+      // Check for any pending payment/booking flows that require returning to current page
       const pendingPayment = localStorage.getItem('pendingPayment');
-      const redirectUrl = pendingPayment 
-        ? window.location.href  // Return to current page to process pending payment
+      const pendingCampaignDate = localStorage.getItem('pendingCampaignDateSelection');
+      const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
+      
+      // If any pending flow exists, redirect back to current page
+      const hasPendingFlow = pendingPayment || pendingCampaignDate || postLoginReturnTo;
+      const redirectUrl = hasPendingFlow
+        ? window.location.href  // Return to current page to process pending flow
         : `${window.location.origin}/dashboard`;
       
       const { data, error } = await supabase.auth.signInWithOAuth({
