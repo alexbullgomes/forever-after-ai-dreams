@@ -40,15 +40,31 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
           await sendAuthWebhook("login", data.user.id, data.user.email || formData.email);
         }
 
-        toast({
-          title: "Welcome back!",
-          description: "Redirecting to your packages...",
-        });
+        // Check for campaign booking return URL
+        const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
+        const postLoginAction = localStorage.getItem('postLoginAction');
+        
+        if (postLoginReturnTo && postLoginAction === 'resume_campaign_bookfunnel') {
+          toast({
+            title: "Welcome back!",
+            description: "Resuming your booking...",
+          });
 
-        setTimeout(() => {
-          onClose();
-          window.location.href = '/dashboard';
-        }, 1000);
+          setTimeout(() => {
+            onClose();
+            window.location.href = postLoginReturnTo;
+          }, 500);
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "Redirecting to your packages...",
+          });
+
+          setTimeout(() => {
+            onClose();
+            window.location.href = '/dashboard';
+          }, 1000);
+        }
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
@@ -67,15 +83,31 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
           await sendAuthWebhook("register", data.user.id, data.user.email || formData.email);
         }
 
-        toast({
-          title: "Account created!",
-          description: "Welcome to Dream Weddings! Redirecting to your packages...",
-        });
+        // Check for campaign booking return URL
+        const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
+        const postLoginAction = localStorage.getItem('postLoginAction');
+        
+        if (postLoginReturnTo && postLoginAction === 'resume_campaign_bookfunnel') {
+          toast({
+            title: "Account created!",
+            description: "Resuming your booking...",
+          });
 
-        setTimeout(() => {
-          onClose();
-          window.location.href = '/dashboard';
-        }, 1000);
+          setTimeout(() => {
+            onClose();
+            window.location.href = postLoginReturnTo;
+          }, 500);
+        } else {
+          toast({
+            title: "Account created!",
+            description: "Welcome to Dream Weddings! Redirecting to your packages...",
+          });
+
+          setTimeout(() => {
+            onClose();
+            window.location.href = '/dashboard';
+          }, 1000);
+        }
       }
     } catch (error: unknown) {
       console.error('Auth error:', error);

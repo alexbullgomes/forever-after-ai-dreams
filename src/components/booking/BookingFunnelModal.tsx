@@ -102,6 +102,10 @@ export function BookingFunnelModal({
       };
       localStorage.setItem(PENDING_CAMPAIGN_DATE_KEY, JSON.stringify(pendingDateSelection));
       
+      // Store return URL for post-login redirect
+      localStorage.setItem('postLoginReturnTo', window.location.pathname + window.location.search);
+      localStorage.setItem('postLoginAction', 'resume_campaign_bookfunnel');
+      
       onClose();
       onAuthRequired?.();
       return;

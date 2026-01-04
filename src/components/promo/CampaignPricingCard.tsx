@@ -115,6 +115,10 @@ export function CampaignPricingCard({
   useEffect(() => {
     if (!user) return;
 
+    // Clean up post-login redirect keys since we're now resuming
+    localStorage.removeItem('postLoginReturnTo');
+    localStorage.removeItem('postLoginAction');
+
     // Check for pending DATE SELECTION first (auth triggered at date step)
     const storedDate = localStorage.getItem(PENDING_CAMPAIGN_DATE_KEY);
     if (storedDate) {
