@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
 type BookingStep = 'date' | 'checking' | 'slots';
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
+const PENDING_CAMPAIGN_DATE_KEY = 'pendingCampaignDateSelection';
 
 interface BookingFunnelModalProps {
   isOpen: boolean;
@@ -31,6 +32,11 @@ interface BookingFunnelModalProps {
   campaignSlug?: string;
   cardIndex?: number;
   onAuthRequired?: () => void;
+  // Resume from date selection after login
+  resumeFromDate?: {
+    date: Date;
+    timezone: string;
+  };
 }
 
 export function BookingFunnelModal({
@@ -45,6 +51,7 @@ export function BookingFunnelModal({
   campaignSlug,
   cardIndex,
   onAuthRequired,
+  resumeFromDate,
 }: BookingFunnelModalProps) {
   const [step, setStep] = useState<BookingStep>('date');
   const [eventDate, setEventDate] = useState<Date | null>(null);
@@ -53,6 +60,24 @@ export function BookingFunnelModal({
   
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Auto-resume from date selection after login
+  useEffect(() => {
+    if (isOpen && resumeFromDate && user) {
+      setEventDate(resumeFromDate.date);
+      setStep('checking');
+      
+      trackVisitorEvent('booking_date_selected', productTitle, {
+        product_id: productId,
+        campaign_mode: campaignMode,
+        campaign_id: campaignId,
+        event_date: resumeFromDate.date.toISOString(),
+        resumed_after_login: true,
+      });
+      
+      findOrCreateRequest(resumeFromDate.date, resumeFromDate.timezone);
+    }
+  }, [isOpen, resumeFromDate, user]);
   
   const {
     bookingRequest,
@@ -64,6 +89,24 @@ export function BookingFunnelModal({
   } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, cardIndex: cardIndex! } : undefined);
 
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
+    // For campaign mode, check auth BEFORE proceeding to availability check
+    if (campaignMode && !user) {
+      const pendingDateSelection = {
+        campaignId: campaignId!,
+        campaignSlug: campaignSlug!,
+        cardIndex: cardIndex!,
+        cardTitle: productTitle,
+        selectedDate: date.toISOString(),
+        timezone: timezone,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(PENDING_CAMPAIGN_DATE_KEY, JSON.stringify(pendingDateSelection));
+      
+      onClose();
+      onAuthRequired?.();
+      return;
+    }
+
     setEventDate(date);
     setStep('checking');
     
@@ -77,7 +120,7 @@ export function BookingFunnelModal({
     
     // Create/find booking request while showing loading
     await findOrCreateRequest(date, timezone);
-  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignId]);
+  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignId, user, campaignSlug, cardIndex, onClose, onAuthRequired]);
 
   const handleCheckingComplete = useCallback(() => {
     setStep('slots');
