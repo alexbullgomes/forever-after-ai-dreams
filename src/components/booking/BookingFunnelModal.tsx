@@ -16,13 +16,21 @@ import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
 
 type BookingStep = 'date' | 'checking' | 'slots';
 
+const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
+
 interface BookingFunnelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productId: string;
+  productId: string | null;
   productTitle: string;
   productPrice: number;
   currency?: string;
+  // Campaign mode props
+  campaignMode?: boolean;
+  campaignId?: string;
+  campaignSlug?: string;
+  cardIndex?: number;
+  onAuthRequired?: () => void;
 }
 
 export function BookingFunnelModal({
@@ -32,6 +40,11 @@ export function BookingFunnelModal({
   productTitle,
   productPrice,
   currency = 'USD',
+  campaignMode = false,
+  campaignId,
+  campaignSlug,
+  cardIndex,
+  onAuthRequired,
 }: BookingFunnelModalProps) {
   const [step, setStep] = useState<BookingStep>('date');
   const [eventDate, setEventDate] = useState<Date | null>(null);
@@ -48,7 +61,7 @@ export function BookingFunnelModal({
     findOrCreateRequest,
     updateSelectedTime,
     generateTimeSlots,
-  } = useBookingRequest(productId);
+  } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, cardIndex: cardIndex! } : undefined);
 
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
     setEventDate(date);
@@ -57,12 +70,14 @@ export function BookingFunnelModal({
     // Track the booking date selection event
     trackVisitorEvent('booking_date_selected', productTitle, {
       product_id: productId,
+      campaign_mode: campaignMode,
+      campaign_id: campaignId,
       event_date: date.toISOString(),
     });
     
     // Create/find booking request while showing loading
     await findOrCreateRequest(date, timezone);
-  }, [findOrCreateRequest, productId, productTitle]);
+  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignId]);
 
   const handleCheckingComplete = useCallback(() => {
     setStep('slots');
@@ -76,11 +91,34 @@ export function BookingFunnelModal({
   const handleCheckout = useCallback(async () => {
     if (!bookingRequest || !selectedTime) return;
 
+    // For campaign mode, check auth first
+    if (campaignMode && !user) {
+      // Store pending booking state
+      const pendingBooking = {
+        campaignId: campaignId!,
+        campaignSlug: campaignSlug!,
+        cardIndex: cardIndex!,
+        cardTitle: productTitle,
+        bookingRequestId: bookingRequest.id,
+        eventDate: bookingRequest.event_date,
+        selectedTime,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(PENDING_CAMPAIGN_BOOKING_KEY, JSON.stringify(pendingBooking));
+      
+      // Close the booking modal and open auth modal
+      onClose();
+      onAuthRequired?.();
+      return;
+    }
+
     setIsProcessing(true);
     
     // Track the checkout initiation event
     trackVisitorEvent('booking_checkout_started', productTitle, {
       product_id: productId,
+      campaign_mode: campaignMode,
+      campaign_id: campaignId,
       event_date: bookingRequest.event_date,
       selected_time: selectedTime,
       price: productPrice,
@@ -96,8 +134,14 @@ export function BookingFunnelModal({
           selected_time: selectedTime,
           product_title: productTitle,
           product_price: productPrice,
+          currency: currency,
           user_id: user?.id || null,
           visitor_id: user?.id ? null : getOrCreateVisitorId(),
+          // Campaign-specific fields
+          campaign_mode: campaignMode,
+          campaign_id: campaignId || null,
+          campaign_slug: campaignSlug || null,
+          card_index: cardIndex ?? null,
         },
       });
 
@@ -126,7 +170,7 @@ export function BookingFunnelModal({
     } finally {
       setIsProcessing(false);
     }
-  }, [bookingRequest, selectedTime, productId, productTitle, productPrice, user?.id, toast]);
+  }, [bookingRequest, selectedTime, productId, productTitle, productPrice, currency, user, toast, campaignMode, campaignId, campaignSlug, cardIndex, onClose, onAuthRequired]);
 
   const handleClose = () => {
     // Reset state on close

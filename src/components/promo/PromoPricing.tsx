@@ -1,4 +1,4 @@
-import { PackageCard } from "@/components/wedding/PackageCard";
+import { CampaignPricingCard } from "./CampaignPricingCard";
 
 interface PricingCard {
   enabled: boolean;
@@ -12,9 +12,11 @@ interface PricingCard {
 
 interface PromoPricingProps {
   cards: PricingCard[];
+  campaignId: string;
+  campaignSlug: string;
 }
 
-const PromoPricing = ({ cards }: PromoPricingProps) => {
+const PromoPricing = ({ cards, campaignId, campaignSlug }: PromoPricingProps) => {
   const enabledCards = cards.filter(card => card.enabled);
 
   if (enabledCards.length === 0) {
@@ -39,7 +41,7 @@ const PromoPricing = ({ cards }: PromoPricingProps) => {
           'md:grid-cols-3'
         }`}>
           {enabledCards.map((card, index) => (
-            <PackageCard
+            <CampaignPricingCard
               key={index}
               name={card.title}
               price={card.price}
@@ -47,6 +49,9 @@ const PromoPricing = ({ cards }: PromoPricingProps) => {
               features={card.features}
               popular={card.popular}
               idealFor={card.idealFor}
+              campaignId={campaignId}
+              campaignSlug={campaignSlug}
+              cardIndex={index}
             />
           ))}
         </div>

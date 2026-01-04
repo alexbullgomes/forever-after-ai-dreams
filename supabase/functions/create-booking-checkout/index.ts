@@ -36,23 +36,48 @@ serve(async (req) => {
       selected_time,
       product_title,
       product_price,
+      currency,
       user_id,
       visitor_id,
+      // Campaign fields
+      campaign_mode,
+      campaign_id,
+      campaign_slug,
+      card_index,
     } = body;
 
-    logStep("Request body parsed", { booking_request_id, product_id, event_date, selected_time });
+    logStep("Request body parsed", { 
+      booking_request_id, 
+      product_id, 
+      event_date, 
+      selected_time, 
+      campaign_mode,
+      campaign_id 
+    });
 
-    // Fetch product booking rules for hold duration
-    const { data: rules } = await supabase
-      .from("product_booking_rules")
-      .select("checkout_hold_minutes, slot_duration_minutes")
-      .eq("product_id", product_id)
-      .maybeSingle();
-
-    const holdMinutes = rules?.checkout_hold_minutes ?? 15;
-    const slotDuration = rules?.slot_duration_minutes ?? 60;
+    // Determine charge amount and currency
+    // For campaign mode: fixed $150 USD deposit
+    const chargeAmount = campaign_mode ? 150 : product_price;
+    const chargeCurrency = campaign_mode ? 'usd' : (currency?.toLowerCase() || 'usd');
     
-    logStep("Booking rules fetched", { holdMinutes, slotDuration });
+    logStep("Charge details", { chargeAmount, chargeCurrency, campaign_mode });
+
+    // Fetch product booking rules for hold duration (skip for campaigns - use defaults)
+    let holdMinutes = 15;
+    let slotDuration = 60;
+    
+    if (product_id && !campaign_mode) {
+      const { data: rules } = await supabase
+        .from("product_booking_rules")
+        .select("checkout_hold_minutes, slot_duration_minutes")
+        .eq("product_id", product_id)
+        .maybeSingle();
+
+      holdMinutes = rules?.checkout_hold_minutes ?? 15;
+      slotDuration = rules?.slot_duration_minutes ?? 60;
+    }
+    
+    logStep("Booking rules", { holdMinutes, slotDuration });
 
     // Calculate end time
     const [hours, minutes] = selected_time.split(":").map(Number);
@@ -63,11 +88,15 @@ serve(async (req) => {
 
     logStep("End time calculated", { end_time });
 
+    // For campaigns, we need to check holds differently (by campaign_id instead of product_id)
+    const holdIdentifier = campaign_mode ? campaign_id : product_id;
+    const holdIdentifierColumn = campaign_mode ? "campaign_id" : "product_id";
+
     // Check for existing active/converted hold
     const { data: existingHold } = await supabase
       .from("booking_slot_holds")
       .select("id, status, expires_at")
-      .eq("product_id", product_id)
+      .eq(holdIdentifierColumn, holdIdentifier)
       .eq("event_date", event_date)
       .eq("start_time", selected_time)
       .in("status", ["active", "converted"])
@@ -103,17 +132,26 @@ serve(async (req) => {
     // Create new hold
     const expiresAt = new Date(Date.now() + holdMinutes * 60 * 1000).toISOString();
     
+    const holdData: any = {
+      booking_request_id,
+      event_date,
+      start_time: selected_time,
+      end_time,
+      status: "active",
+      expires_at: expiresAt,
+    };
+
+    // Set either product_id or campaign_id
+    if (campaign_mode) {
+      holdData.campaign_id = campaign_id;
+      holdData.product_id = null;
+    } else {
+      holdData.product_id = product_id;
+    }
+
     const { data: newHold, error: holdError } = await supabase
       .from("booking_slot_holds")
-      .insert({
-        booking_request_id,
-        product_id,
-        event_date,
-        start_time: selected_time,
-        end_time,
-        status: "active",
-        expires_at: expiresAt,
-      })
+      .insert(holdData)
       .select()
       .single();
 
@@ -151,35 +189,53 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://everafter.lovable.app";
     
+    // Determine cancel URL based on mode
+    const cancelUrl = campaign_mode 
+      ? `${origin}/promo/${campaign_slug}?booking_cancelled=true`
+      : `${origin}/services?booking_cancelled=true`;
+
+    // Build product description
+    const productDescription = campaign_mode 
+      ? `Campaign deposit for ${event_date} at ${selected_time}`
+      : `Booking for ${event_date} at ${selected_time}`;
+    
     // Set Stripe checkout session to expire in 60 minutes
     const stripeExpiryMinutes = 60;
-    logStep("Stripe session expiry set", { holdMinutes, stripeExpiryMinutes });
+    logStep("Stripe session config", { holdMinutes, stripeExpiryMinutes, cancelUrl });
+
     const session = await stripe.checkout.sessions.create({
       customer_email: customerEmail,
       line_items: [
         {
           price_data: {
-            currency: "usd",
+            currency: chargeCurrency,
             product_data: {
               name: product_title,
-              description: `Booking for ${event_date} at ${selected_time}`,
+              description: productDescription,
             },
-            unit_amount: Math.round(product_price * 100),
+            unit_amount: Math.round(chargeAmount * 100),
           },
           quantity: 1,
         },
       ],
       mode: "payment",
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&booking_request_id=${booking_request_id}`,
-      cancel_url: `${origin}/services?booking_cancelled=true`,
+      cancel_url: cancelUrl,
       metadata: {
         booking_request_id,
-        product_id,
+        product_id: product_id || "",
         event_date,
         selected_time,
         hold_id: newHold.id,
         user_id: user_id || "",
         visitor_id: visitor_id || "",
+        // Campaign metadata
+        campaign_mode: campaign_mode ? "true" : "false",
+        campaign_id: campaign_id || "",
+        campaign_slug: campaign_slug || "",
+        card_index: card_index?.toString() || "",
+        payment_type: campaign_mode ? "campaign_deposit" : "full",
+        deposit_amount_usd: campaign_mode ? "150" : "",
       },
       expires_at: Math.floor(Date.now() / 1000) + stripeExpiryMinutes * 60,
     });

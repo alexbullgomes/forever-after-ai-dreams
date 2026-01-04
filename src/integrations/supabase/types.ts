@@ -91,12 +91,14 @@ export type Database = {
       booking_requests: {
         Row: {
           availability_version: string
+          campaign_card_index: number | null
+          campaign_id: string | null
           created_at: string
           event_date: string
           id: string
           last_seen_at: string
           offer_expires_at: string
-          product_id: string
+          product_id: string | null
           selected_time: string | null
           stage: string
           stripe_checkout_session_id: string | null
@@ -107,12 +109,14 @@ export type Database = {
         }
         Insert: {
           availability_version?: string
+          campaign_card_index?: number | null
+          campaign_id?: string | null
           created_at?: string
           event_date: string
           id?: string
           last_seen_at?: string
           offer_expires_at: string
-          product_id: string
+          product_id?: string | null
           selected_time?: string | null
           stage?: string
           stripe_checkout_session_id?: string | null
@@ -123,12 +127,14 @@ export type Database = {
         }
         Update: {
           availability_version?: string
+          campaign_card_index?: number | null
+          campaign_id?: string | null
           created_at?: string
           event_date?: string
           id?: string
           last_seen_at?: string
           offer_expires_at?: string
-          product_id?: string
+          product_id?: string | null
           selected_time?: string | null
           stage?: string
           stripe_checkout_session_id?: string | null
@@ -138,6 +144,13 @@ export type Database = {
           visitor_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "booking_requests_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "booking_requests_product_id_fkey"
             columns: ["product_id"]
@@ -150,34 +163,37 @@ export type Database = {
       booking_slot_holds: {
         Row: {
           booking_request_id: string
+          campaign_id: string | null
           created_at: string
           end_time: string
           event_date: string
           expires_at: string
           id: string
-          product_id: string
+          product_id: string | null
           start_time: string
           status: string
         }
         Insert: {
           booking_request_id: string
+          campaign_id?: string | null
           created_at?: string
           end_time: string
           event_date: string
           expires_at: string
           id?: string
-          product_id: string
+          product_id?: string | null
           start_time: string
           status?: string
         }
         Update: {
           booking_request_id?: string
+          campaign_id?: string | null
           created_at?: string
           end_time?: string
           event_date?: string
           expires_at?: string
           id?: string
-          product_id?: string
+          product_id?: string | null
           start_time?: string
           status?: string
         }
@@ -187,6 +203,13 @@ export type Database = {
             columns: ["booking_request_id"]
             isOneToOne: false
             referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_slot_holds_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
             referencedColumns: ["id"]
           },
           {

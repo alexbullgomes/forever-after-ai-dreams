@@ -215,7 +215,7 @@ const PromotionalLanding = () => {
         {/* Campaign Gallery Section */}
         <PromotionalCampaignGallery campaignId={campaign.id} />
 
-        <PromoPricing cards={pricingCards} />
+        <PromoPricing cards={pricingCards} campaignId={campaign.id} campaignSlug={campaign.slug} />
 
         <Contact />
 
