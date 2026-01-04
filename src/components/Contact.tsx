@@ -235,7 +235,7 @@ const Contact = () => {
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
               <h4 className="text-lg font-semibold mb-4 text-white">Quick Response Promise</h4>
-              <p className="text-white/70 text-sm leading-relaxed">We understand how exciting (and overwhelming) planning can be. That's why we respond to all inquiries within 24 hours, and often much sooner. Your dream wedding deserves immediate attention.</p>
+              <p className="text-white/70 text-sm leading-relaxed">We understand how exciting (and overwhelming) planning can be. That's why we respond to all inquiries within 24 hours, and often much sooner. Your  deserves immediate attention.</p>
             </div>
           </div>
         </div>
