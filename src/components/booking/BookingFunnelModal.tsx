@@ -271,12 +271,18 @@ export function BookingFunnelModal({
         {step === 'slots' && eventDate && bookingRequest && (
           <BookingStepSlots
             eventDate={eventDate}
+            productId={productId}
             availabilityVersion={bookingRequest.availability_version}
-            timeSlots={generateTimeSlots(bookingRequest.availability_version)}
             productTitle={productTitle}
             productPrice={productPrice}
             currency={currency}
             onSelectTime={handleTimeSelect}
+            onDateChange={async (newDate) => {
+              setEventDate(newDate);
+              setSelectedTime(null);
+              const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              await findOrCreateRequest(newDate, timezone);
+            }}
             onCheckout={handleCheckout}
             isLoading={isProcessing || loading}
             selectedTime={selectedTime}
