@@ -1,20 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarCheck, Clock, Sparkles, AlertCircle } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { CalendarCheck, Clock, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { format, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useAvailabilityComputation, DayAvailability } from '@/hooks/useAvailabilityComputation';
 
 interface BookingStepSlotsProps {
   eventDate: Date;
+  productId: string | null;
   availabilityVersion: 'full' | 'limited';
-  timeSlots: string[];
   productTitle: string;
   productPrice: number;
   currency?: string;
   onSelectTime: (time: string) => void;
+  onDateChange?: (date: Date) => void;
   onCheckout: () => void;
   isLoading: boolean;
   selectedTime: string | null;
@@ -22,24 +24,35 @@ interface BookingStepSlotsProps {
 
 export function BookingStepSlots({
   eventDate,
+  productId,
   availabilityVersion,
-  timeSlots,
   productTitle,
   productPrice,
   currency = 'USD',
   onSelectTime,
+  onDateChange,
   onCheckout,
   isLoading,
   selectedTime,
 }: BookingStepSlotsProps) {
   const [calendarMonth, setCalendarMonth] = useState(eventDate);
+  const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
+  
+  const { getMonthAvailability, loading: availabilityLoading } = useAvailabilityComputation();
 
-  // Generate calendar days with availability status
-  const calendarDays = useMemo(() => {
-    const start = startOfMonth(calendarMonth);
-    const end = endOfMonth(calendarMonth);
-    return eachDayOfInterval({ start, end });
-  }, [calendarMonth]);
+  // Fetch month availability when productId or month changes
+  useEffect(() => {
+    const loadMonthAvailability = async () => {
+      if (!productId) return;
+      const result = await getMonthAvailability(
+        productId,
+        calendarMonth.getFullYear(),
+        calendarMonth.getMonth() + 1 // month is 1-indexed in the function
+      );
+      setMonthAvailability(result);
+    };
+    loadMonthAvailability();
+  }, [productId, calendarMonth, getMonthAvailability]);
 
   const formatPrice = (price: number) => {
     const formatter = new Intl.NumberFormat('en-US', {
@@ -57,15 +70,57 @@ export function BookingStepSlots({
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
-  // Custom day render to show availability
-  const modifiers = {
-    available: (day: Date) => isSameDay(day, eventDate),
-    unavailable: (day: Date) => !isSameDay(day, eventDate),
-  };
+  // Dynamic modifiers based on real availability
+  const modifiers = useMemo(() => ({
+    available: (day: Date) => {
+      const dateKey = format(day, 'yyyy-MM-dd');
+      const status = monthAvailability[dateKey]?.status;
+      return status === 'available' && !isSameDay(day, eventDate);
+    },
+    limited: (day: Date) => {
+      const dateKey = format(day, 'yyyy-MM-dd');
+      const status = monthAvailability[dateKey]?.status;
+      return status === 'limited' && !isSameDay(day, eventDate);
+    },
+    full: (day: Date) => {
+      const dateKey = format(day, 'yyyy-MM-dd');
+      const status = monthAvailability[dateKey]?.status;
+      return status === 'full' || status === 'blocked';
+    },
+    selected: (day: Date) => isSameDay(day, eventDate),
+  }), [monthAvailability, eventDate]);
 
   const modifiersClassNames = {
-    available: 'bg-green-100 text-green-900 hover:bg-green-200 font-semibold',
-    unavailable: 'text-muted-foreground/50 line-through cursor-not-allowed',
+    available: 'bg-green-100 text-green-900 hover:bg-green-200 cursor-pointer',
+    limited: 'bg-yellow-100 text-yellow-900 hover:bg-yellow-200 cursor-pointer',
+    full: 'text-muted-foreground/50 line-through cursor-not-allowed',
+    selected: 'bg-primary text-primary-foreground font-semibold ring-2 ring-primary',
+  };
+
+  // Get time slots from availability data or fallback
+  const currentDayAvailability = monthAvailability[format(eventDate, 'yyyy-MM-dd')];
+  const timeSlots = useMemo(() => {
+    if (currentDayAvailability?.slots && currentDayAvailability.slots.length > 0) {
+      return currentDayAvailability.slots;
+    }
+    // Fallback: generate basic slots if no availability data
+    const slots = [];
+    const startHour = availabilityVersion === 'full' ? 10 : 15;
+    const endHour = availabilityVersion === 'full' ? 18 : 17;
+    for (let h = startHour; h < endHour; h++) {
+      slots.push({ start: `${h.toString().padStart(2, '0')}:00`, status: 'available' as const });
+    }
+    return slots;
+  }, [currentDayAvailability, availabilityVersion]);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    const dateKey = format(date, 'yyyy-MM-dd');
+    const status = monthAvailability[dateKey]?.status;
+    // Only allow selecting available or limited dates
+    if (status === 'available' || status === 'limited') {
+      onDateChange?.(date);
+    }
   };
 
   return (
@@ -102,23 +157,33 @@ export function BookingStepSlots({
             <CalendarCheck className="h-4 w-4 text-primary" />
             <h4 className="font-medium">Calendar View</h4>
           </div>
-          <Calendar
-            mode="single"
-            selected={eventDate}
-            month={calendarMonth}
-            onMonthChange={setCalendarMonth}
-            modifiers={modifiers}
-            modifiersClassNames={modifiersClassNames}
-            className="rounded-md border"
-            disabled
-          />
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          {availabilityLoading ? (
+            <div className="flex items-center justify-center h-[280px] rounded-md border">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : (
+            <Calendar
+              mode="single"
+              selected={eventDate}
+              onSelect={handleDateSelect}
+              month={calendarMonth}
+              onMonthChange={setCalendarMonth}
+              modifiers={modifiers}
+              modifiersClassNames={modifiersClassNames}
+              className="rounded-md border pointer-events-auto"
+            />
+          )}
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-green-100 border border-green-300" />
+              <div className="w-3 h-3 rounded bg-green-500" />
               <span>Available</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-muted border line-through" />
+              <div className="w-3 h-3 rounded bg-yellow-500" />
+              <span>Limited</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-muted border" />
               <span>Unavailable</span>
             </div>
           </div>
@@ -132,26 +197,35 @@ export function BookingStepSlots({
               <h4 className="font-medium">Select Time</h4>
             </div>
             <Badge variant={availabilityVersion === 'full' ? 'default' : 'secondary'}>
-              {timeSlots.length} slots
+              {timeSlots.filter(s => s.status === 'available' || s.status === 'limited').length} slots
             </Badge>
           </div>
           <ScrollArea className="h-[280px] rounded-md border p-3">
             <div className="grid grid-cols-2 gap-2">
-              {timeSlots.map((time) => (
-                <button
-                  key={time}
-                  onClick={() => onSelectTime(time)}
-                  className={cn(
-                    'p-3 rounded-lg text-sm font-medium transition-all',
-                    'border hover:border-primary hover:bg-primary/5',
-                    selectedTime === time
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-background'
-                  )}
-                >
-                  {formatTime(time)}
-                </button>
-              ))}
+              {timeSlots.map((slot) => {
+                const slotStart = typeof slot === 'string' ? slot : slot.start;
+                const slotStatus = typeof slot === 'string' ? 'available' : slot.status;
+                const isAvailable = slotStatus === 'available' || slotStatus === 'limited';
+                
+                return (
+                  <button
+                    key={slotStart}
+                    onClick={() => isAvailable && onSelectTime(slotStart)}
+                    disabled={!isAvailable}
+                    className={cn(
+                      'p-3 rounded-lg text-sm font-medium transition-all border',
+                      isAvailable && 'hover:border-primary hover:bg-primary/5',
+                      slotStatus === 'available' && 'border-border bg-background',
+                      slotStatus === 'limited' && 'bg-yellow-50 border-yellow-300 dark:bg-yellow-950/20',
+                      (slotStatus === 'full' || slotStatus === 'blocked') && 'bg-muted text-muted-foreground cursor-not-allowed',
+                      selectedTime === slotStart && 'border-primary bg-primary/10 text-primary'
+                    )}
+                  >
+                    {formatTime(slotStart)}
+                    {slotStatus === 'limited' && <span className="text-xs ml-1 text-yellow-600">!</span>}
+                  </button>
+                );
+              })}
             </div>
           </ScrollArea>
         </div>
