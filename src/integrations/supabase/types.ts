@@ -88,6 +88,136 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          payload: Json
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
+      availability_overrides: {
+        Row: {
+          capacity_override: number | null
+          created_at: string
+          created_by: string | null
+          date: string | null
+          end_at: string | null
+          id: string
+          product_id: string
+          reason: string | null
+          start_at: string | null
+          status: string
+        }
+        Insert: {
+          capacity_override?: number | null
+          created_at?: string
+          created_by?: string | null
+          date?: string | null
+          end_at?: string | null
+          id?: string
+          product_id: string
+          reason?: string | null
+          start_at?: string | null
+          status: string
+        }
+        Update: {
+          capacity_override?: number | null
+          created_at?: string
+          created_by?: string | null
+          date?: string | null
+          end_at?: string | null
+          id?: string
+          product_id?: string
+          reason?: string | null
+          start_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_overrides_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      availability_rules: {
+        Row: {
+          buffer_minutes: number
+          capacity_type: string
+          created_at: string
+          daily_capacity: number
+          end_time: string
+          id: string
+          is_active: boolean
+          product_id: string
+          slot_capacity: number
+          slot_minutes: number
+          start_time: string
+          timezone: string
+          updated_at: string
+          workdays: number[]
+        }
+        Insert: {
+          buffer_minutes?: number
+          capacity_type?: string
+          created_at?: string
+          daily_capacity?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          product_id: string
+          slot_capacity?: number
+          slot_minutes?: number
+          start_time?: string
+          timezone?: string
+          updated_at?: string
+          workdays?: number[]
+        }
+        Update: {
+          buffer_minutes?: number
+          capacity_type?: string
+          created_at?: string
+          daily_capacity?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          product_id?: string
+          slot_capacity?: number
+          slot_minutes?: number
+          start_time?: string
+          timezone?: string
+          updated_at?: string
+          workdays?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_rules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_requests: {
         Row: {
           availability_version: string
@@ -170,8 +300,11 @@ export type Database = {
           expires_at: string
           id: string
           product_id: string | null
+          source: string | null
           start_time: string
           status: string
+          user_id: string | null
+          visitor_id: string | null
         }
         Insert: {
           booking_request_id: string
@@ -182,8 +315,11 @@ export type Database = {
           expires_at: string
           id?: string
           product_id?: string | null
+          source?: string | null
           start_time: string
           status?: string
+          user_id?: string | null
+          visitor_id?: string | null
         }
         Update: {
           booking_request_id?: string
@@ -194,8 +330,11 @@ export type Database = {
           expires_at?: string
           id?: string
           product_id?: string | null
+          source?: string | null
           start_time?: string
           status?: string
+          user_id?: string | null
+          visitor_id?: string | null
         }
         Relationships: [
           {
@@ -1426,6 +1565,14 @@ export type Database = {
     Functions: {
       check_user_role_only: { Args: { _user_id: string }; Returns: string }
       generate_referral_code: { Args: { user_name?: string }; Returns: string }
+      get_day_availability: {
+        Args: { p_day: string; p_product_id: string }
+        Returns: Json
+      }
+      get_slot_availability: {
+        Args: { p_product_id: string; p_slot_end: string; p_slot_start: string }
+        Returns: Json
+      }
       has_role:
         | {
             Args: {

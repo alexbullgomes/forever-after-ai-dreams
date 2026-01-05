@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAvailabilityComputation, SlotAvailability } from '@/hooks/useAvailabilityComputation';
 import {
   Table,
   TableBody,
@@ -22,9 +23,12 @@ import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User } from 'lucide-react';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
+import { AvailabilityOverrideModal } from '@/components/availability/AvailabilityOverrideModal';
+import { AvailabilityStatusBadge, AvailabilityStatus } from '@/components/availability/AvailabilityStatusBadge';
 import { cn } from '@/lib/utils';
 
 interface BookingRequest {
@@ -77,7 +81,10 @@ export default function BookingsPipeline() {
   });
   const [selectedBooking, setSelectedBooking] = useState<BookingRequest | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, SlotAvailability>>({});
+  const [overrideModalBooking, setOverrideModalBooking] = useState<BookingRequest | null>(null);
   const { toast } = useToast();
+  const { getSlotAvailability } = useAvailabilityComputation();
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -120,6 +127,52 @@ export default function BookingsPipeline() {
   useEffect(() => {
     fetchBookings();
   }, [stageFilter, dateRange]);
+
+  // Compute availability for each booking
+  const computeAvailabilities = useCallback(async (bookingList: BookingRequest[]) => {
+    const newMap: Record<string, SlotAvailability> = {};
+    
+    for (const booking of bookingList) {
+      if (!booking.product_id) {
+        newMap[booking.id] = {
+          status: 'needs_review',
+          reason: 'Missing product_id',
+          capacity: 0,
+          used: 0,
+          override_applied: false,
+        };
+        continue;
+      }
+
+      if (booking.selected_time) {
+        const [hours, minutes] = booking.selected_time.split(':').map(Number);
+        const slotStart = new Date(booking.event_date);
+        slotStart.setHours(hours, minutes, 0, 0);
+        const slotEnd = new Date(slotStart);
+        slotEnd.setHours(slotEnd.getHours() + 1);
+
+        const availability = await getSlotAvailability(booking.product_id, slotStart, slotEnd);
+        newMap[booking.id] = availability;
+      } else {
+        // No time selected - check day availability
+        newMap[booking.id] = {
+          status: 'needs_review',
+          reason: 'No time selected',
+          capacity: 0,
+          used: 0,
+          override_applied: false,
+        };
+      }
+    }
+
+    setAvailabilityMap(newMap);
+  }, [getSlotAvailability]);
+
+  useEffect(() => {
+    if (bookings.length > 0) {
+      computeAvailabilities(bookings);
+    }
+  }, [bookings, computeAvailabilities]);
 
   const updateStage = async (id: string, newStage: string) => {
     try {
@@ -321,9 +374,29 @@ export default function BookingsPipeline() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={booking.availability_version === 'full' ? 'default' : 'secondary'}>
-                      {booking.availability_version}
-                    </Badge>
+                    {(() => {
+                      const availability = availabilityMap[booking.id];
+                      const status = (availability?.status || 'needs_review') as AvailabilityStatus;
+                      const reason = availability?.reason || 'Computing...';
+                      
+                      return (
+                        <AvailabilityStatusBadge
+                          status={status}
+                          reason={reason}
+                          onClick={() => {
+                            if (booking.product_id) {
+                              setOverrideModalBooking(booking);
+                            } else {
+                              toast({
+                                title: 'Cannot manage availability',
+                                description: 'This booking has no product assigned',
+                                variant: 'destructive',
+                              });
+                            }
+                          }}
+                        />
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(booking.created_at), 'MMM d, HH:mm')}
@@ -397,9 +470,16 @@ export default function BookingsPipeline() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Availability</p>
-                  <Badge variant={selectedBooking.availability_version === 'full' ? 'default' : 'secondary'}>
-                    {selectedBooking.availability_version}
-                  </Badge>
+                  {(() => {
+                    const availability = availabilityMap[selectedBooking.id];
+                    const status = (availability?.status || 'needs_review') as AvailabilityStatus;
+                    return (
+                      <AvailabilityStatusBadge
+                        status={status}
+                        reason={availability?.reason}
+                      />
+                    );
+                  })()}
                 </div>
                 <div>
                   <p className="text-muted-foreground">Customer Type</p>
@@ -457,6 +537,19 @@ export default function BookingsPipeline() {
         onClose={() => setSelectedUserId(null)}
         customerId={selectedUserId || ''}
       />
+
+      {/* Availability Override Modal */}
+      {overrideModalBooking && overrideModalBooking.product_id && (
+        <AvailabilityOverrideModal
+          isOpen={!!overrideModalBooking}
+          onClose={() => setOverrideModalBooking(null)}
+          productId={overrideModalBooking.product_id}
+          date={new Date(overrideModalBooking.event_date)}
+          onSaved={() => {
+            computeAvailabilities(bookings);
+          }}
+        />
+      )}
     </div>
   );
 }

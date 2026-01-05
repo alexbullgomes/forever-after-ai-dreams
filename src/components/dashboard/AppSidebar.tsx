@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings, Package, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings, Package, CalendarCheck, CalendarClock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -37,6 +37,11 @@ const navigationItems = [
     title: "Bookings Pipeline",
     url: "/dashboard/bookings-pipeline",
     icon: CalendarCheck,
+  },
+  {
+    title: "Availability Manager",
+    url: "/dashboard/availability",
+    icon: CalendarClock,
   },
   {
     title: "Chat Admin",

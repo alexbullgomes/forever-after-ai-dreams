@@ -14,6 +14,7 @@ import PromotionalPopups from "@/pages/PromotionalPopups";
 import ProjectSettings from "@/pages/ProjectSettings";
 import ProductsAdmin from "@/pages/ProductsAdmin";
 import BookingsPipeline from "@/pages/BookingsPipeline";
+import AvailabilityManager from "@/pages/AvailabilityManager";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -109,6 +110,7 @@ const AdminDashboard = () => {
               <Route path="/gallery-cards" element={<GalleryCardsAdmin />} />
               <Route path="/products" element={<ProductsAdmin />} />
               <Route path="/bookings-pipeline" element={<BookingsPipeline />} />
+              <Route path="/availability" element={<AvailabilityManager />} />
               <Route path="/promotional-campaigns" element={<PromotionalCampaigns />} />
               <Route path="/promotional-popups" element={<PromotionalPopups />} />
               <Route path="/project-settings" element={<ProjectSettings />} />
