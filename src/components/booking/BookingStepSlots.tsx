@@ -47,7 +47,7 @@ export function BookingStepSlots({
       const result = await getMonthAvailability(
         productId,
         calendarMonth.getFullYear(),
-        calendarMonth.getMonth() + 1 // month is 1-indexed in the function
+        calendarMonth.getMonth() // 0-indexed to match JS Date constructor
       );
       setMonthAvailability(result);
     };
