@@ -143,47 +143,32 @@ export const upsertVisitor = async (data?: Partial<VisitorData>): Promise<void> 
   const deviceInfo = detectDeviceInfo();
   
   try {
-    // Check if visitor exists
-    const { data: existingVisitor } = await supabase
+    // Use upsert pattern to avoid requiring UPDATE policy for anonymous users
+    // The INSERT policy (Public can insert visitor records) handles this
+    const upsertData = {
+      visitor_id: visitorId,
+      last_seen_at: new Date().toISOString(),
+      last_url: currentUrl,
+      // Only set these on first insert (will be ignored on conflict)
+      first_landing_url: currentUrl,
+      referrer: referrer || undefined,
+      utm_source: data?.utm_source || utmParams.utm_source,
+      utm_medium: data?.utm_medium || utmParams.utm_medium,
+      utm_campaign: data?.utm_campaign || utmParams.utm_campaign,
+      utm_term: utmParams.utm_term,
+      utm_content: utmParams.utm_content,
+      device_type: deviceInfo.device_type,
+      browser: deviceInfo.browser,
+      os: deviceInfo.os,
+      screen_resolution: deviceInfo.screen_resolution,
+    };
+
+    await supabase
       .from('visitors')
-      .select('id, first_landing_url')
-      .eq('visitor_id', visitorId)
-      .maybeSingle();
-    
-    if (existingVisitor) {
-      // Update existing visitor
-      const updateData: Record<string, string> = {
-        last_seen_at: new Date().toISOString(),
-        last_url: currentUrl,
-      };
-      if (data?.utm_source) updateData.utm_source = data.utm_source;
-      if (data?.utm_medium) updateData.utm_medium = data.utm_medium;
-      if (data?.utm_campaign) updateData.utm_campaign = data.utm_campaign;
-      
-      await supabase
-        .from('visitors')
-        .update(updateData)
-        .eq('visitor_id', visitorId);
-    } else {
-      // Insert new visitor
-      await supabase
-        .from('visitors')
-        .insert([{
-          visitor_id: visitorId,
-          first_landing_url: currentUrl,
-          last_url: currentUrl,
-          referrer: referrer || undefined,
-          utm_source: utmParams.utm_source,
-          utm_medium: utmParams.utm_medium,
-          utm_campaign: utmParams.utm_campaign,
-          utm_term: utmParams.utm_term,
-          utm_content: utmParams.utm_content,
-          device_type: deviceInfo.device_type,
-          browser: deviceInfo.browser,
-          os: deviceInfo.os,
-          screen_resolution: deviceInfo.screen_resolution,
-        }]);
-    }
+      .upsert(upsertData, { 
+        onConflict: 'visitor_id',
+        ignoreDuplicates: false 
+      });
   } catch (error) {
     console.error('Error upserting visitor:', error);
   }
@@ -197,14 +182,18 @@ export const linkVisitorToUser = async (userId: string): Promise<void> => {
   if (!visitorId) return;
   
   try {
+    // Use upsert to link visitor - authenticated user can update their own linked visitor
     await supabase
       .from('visitors')
-      .update({
+      .upsert({
+        visitor_id: visitorId,
         linked_user_id: userId,
         status: 'linked',
         last_seen_at: new Date().toISOString(),
-      })
-      .eq('visitor_id', visitorId);
+      }, { 
+        onConflict: 'visitor_id',
+        ignoreDuplicates: false 
+      });
   } catch (error) {
     console.error('Error linking visitor to user:', error);
   }
@@ -263,13 +252,17 @@ export const updateLastSeen = async (): Promise<void> => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
   
   try {
+    // Use upsert to update last seen - works with INSERT policy
     await supabase
       .from('visitors')
-      .update({
+      .upsert({
+        visitor_id: visitorId,
         last_seen_at: new Date().toISOString(),
         last_url: currentUrl,
-      })
-      .eq('visitor_id', visitorId);
+      }, { 
+        onConflict: 'visitor_id',
+        ignoreDuplicates: false 
+      });
   } catch (error) {
     console.error('Error updating last seen:', error);
   }
