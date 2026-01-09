@@ -12,6 +12,8 @@ export interface Product {
   price_unit: string;
   description: string | null;
   image_url: string | null;
+  video_url: string | null;
+  media_type: "image" | "video" | null;
   days: number;
   rating: number;
   coverage_text: string | null;
@@ -141,6 +143,8 @@ export function useProducts(options: UseProductsOptions = {}) {
           price_unit: product.price_unit,
           description: product.description,
           image_url: product.image_url,
+          video_url: product.video_url,
+          media_type: product.media_type,
           days: product.days,
           rating: product.rating,
           coverage_text: product.coverage_text,

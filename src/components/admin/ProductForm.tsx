@@ -31,6 +31,7 @@ const productSchema = z.object({
   price_unit: z.string().default("per night"),
   description: z.string().optional(),
   image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  video_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   coverage_text: z.string().optional(),
   deliverable_text: z.string().optional(),
   is_highlighted: z.boolean().default(false),
@@ -63,6 +64,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       price_unit: "per night",
       description: "",
       image_url: "",
+      video_url: "",
       coverage_text: "",
       deliverable_text: "",
       is_highlighted: false,
@@ -84,6 +86,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         price_unit: product.price_unit,
         description: product.description || "",
         image_url: product.image_url || "",
+        video_url: product.video_url || "",
         coverage_text: product.coverage_text || "",
         deliverable_text: product.deliverable_text || "",
         is_highlighted: product.is_highlighted,
@@ -102,6 +105,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         price_unit: "per night",
         description: "",
         image_url: "",
+        video_url: "",
         coverage_text: "",
         deliverable_text: "",
         is_highlighted: false,
@@ -120,6 +124,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       ...values,
       slug,
       image_url: values.image_url || null,
+      video_url: values.video_url || null,
       description: values.description || null,
       coverage_text: values.coverage_text || null,
       deliverable_text: values.deliverable_text || null,
@@ -240,6 +245,23 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
                   <FormControl>
                     <Input placeholder="https://..." {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="video_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Video URL (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://...mp4 or .webm" {...field} />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    If provided, video will play instead of image. Supports MP4 and WebM.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

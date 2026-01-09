@@ -867,6 +867,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           is_highlighted: boolean
+          media_type: string | null
           price: number
           price_unit: string | null
           rating: number | null
@@ -874,6 +875,7 @@ export type Database = {
           sort_order: number
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           coverage_text?: string | null
@@ -889,6 +891,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_highlighted?: boolean
+          media_type?: string | null
           price: number
           price_unit?: string | null
           rating?: number | null
@@ -896,6 +899,7 @@ export type Database = {
           sort_order?: number
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           coverage_text?: string | null
@@ -911,6 +915,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_highlighted?: boolean
+          media_type?: string | null
           price?: number
           price_unit?: string | null
           rating?: number | null
@@ -918,6 +923,7 @@ export type Database = {
           sort_order?: number
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
