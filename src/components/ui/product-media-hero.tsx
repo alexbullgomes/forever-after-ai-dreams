@@ -24,10 +24,10 @@ export function ProductMediaHero({
   const containerRef = useRef<HTMLDivElement>(null);
   const [videoError, setVideoError] = useState(false);
 
-  // Determine effective media type
-  const effectiveType =
-    mediaType || (videoUrl && isVideoUrl(videoUrl) ? "video" : "image");
-  const shouldRenderVideo = effectiveType === "video" && videoUrl && !videoError;
+  // Prioritize video_url detection over media_type field
+  // This ensures videos play even if media_type defaults to 'image' in DB
+  const hasValidVideoUrl = videoUrl && isVideoUrl(videoUrl);
+  const shouldRenderVideo = hasValidVideoUrl && !videoError;
 
   // Intersection Observer: pause video when off-screen
   useEffect(() => {
