@@ -47,6 +47,7 @@ interface PromotionalCampaign {
   is_active: boolean;
   views_count: number;
   tracking_scripts: TrackingScript[];
+  products_section_enabled: boolean;
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -86,6 +87,7 @@ export const usePromotionalCampaign = (slug: string) => {
         const parsedData = {
           ...data,
           tracking_scripts: (data.tracking_scripts as any) || [],
+          products_section_enabled: data.products_section_enabled ?? false,
         };
         setCampaign(parsedData as PromotionalCampaign);
 

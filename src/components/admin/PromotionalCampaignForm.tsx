@@ -15,6 +15,7 @@ import { slugify } from "@/utils/slugify";
 import { Loader2, Plus, Trash2, Eye, EyeOff, Edit, Code } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { CampaignProductsTab } from "@/components/admin/CampaignProductsTab";
 
 interface Campaign {
   id?: string;
@@ -52,6 +53,7 @@ interface Campaign {
   is_active: boolean;
   promotional_footer_enabled: boolean;
   tracking_scripts?: TrackingScript[];
+  products_section_enabled: boolean;
 }
 
 interface PromotionalCampaignFormProps {
@@ -116,6 +118,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     is_active: false,
     promotional_footer_enabled: false,
     tracking_scripts: [],
+    products_section_enabled: false,
   });
 
   // Tracking script handlers
@@ -216,7 +219,10 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
 
   useEffect(() => {
     if (campaign) {
-      setFormData(campaign);
+      setFormData({
+        ...campaign,
+        products_section_enabled: campaign.products_section_enabled ?? false,
+      });
       setTrackingScripts(campaign.tracking_scripts || []);
     }
   }, [campaign]);
@@ -313,11 +319,12 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
 
           <form onSubmit={handleSubmit}>
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="banner">Banner</TabsTrigger>
                 <TabsTrigger value="pricing">Pricing</TabsTrigger>
                 <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
+                <TabsTrigger value="products" disabled={!campaign}>Products</TabsTrigger>
                 <TabsTrigger value="ads">Ads</TabsTrigger>
                 <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
@@ -595,6 +602,17 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                     })}>Create Gallery Item</Button>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* Products Tab */}
+              <TabsContent value="products">
+                <CampaignProductsTab
+                  campaignId={campaign?.id}
+                  productsSectionEnabled={formData.products_section_enabled}
+                  onToggleProductsSection={(enabled) =>
+                    setFormData((prev) => ({ ...prev, products_section_enabled: enabled }))
+                  }
+                />
               </TabsContent>
 
               {/* Ads Tab */}

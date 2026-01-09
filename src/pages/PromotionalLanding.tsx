@@ -11,6 +11,7 @@ import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 import { useAuth } from "@/contexts/AuthContext";
 import { PromotionalCampaignGallery } from "@/components/galleries/PromotionalCampaignGallery";
+import { CampaignProductsSection } from "@/components/promo/CampaignProductsSection";
 import AuthModal from "@/components/AuthModal";
 
 // Allowed tracking script domains for validation
@@ -211,6 +212,11 @@ const PromotionalLanding = () => {
           subheadline={campaign.banner_subheadline}
           tagline={campaign.banner_tagline}
         />
+
+        {/* Campaign Products Section - renders between Hero and Gallery */}
+        {campaign.products_section_enabled && (
+          <CampaignProductsSection campaignId={campaign.id} />
+        )}
 
         {/* Campaign Gallery Section */}
         <PromotionalCampaignGallery campaignId={campaign.id} />
