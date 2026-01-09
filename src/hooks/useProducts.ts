@@ -23,6 +23,7 @@ export interface Product {
   cta_text: string;
   cta_link: string | null;
   is_active: boolean;
+  show_in_our_products: boolean;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -157,6 +158,7 @@ export function useProducts(options: UseProductsOptions = {}) {
           cta_text: product.cta_text,
           cta_link: product.cta_link,
           is_active: false,
+          show_in_our_products: product.show_in_our_products,
           sort_order: product.sort_order + 1,
         });
 

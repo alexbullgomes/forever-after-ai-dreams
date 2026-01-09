@@ -871,6 +871,7 @@ export type Database = {
           price: number
           price_unit: string | null
           rating: number | null
+          show_in_our_products: boolean
           slug: string | null
           sort_order: number
           title: string
@@ -895,6 +896,7 @@ export type Database = {
           price: number
           price_unit?: string | null
           rating?: number | null
+          show_in_our_products?: boolean
           slug?: string | null
           sort_order?: number
           title: string
@@ -919,6 +921,7 @@ export type Database = {
           price?: number
           price_unit?: string | null
           rating?: number | null
+          show_in_our_products?: boolean
           slug?: string | null
           sort_order?: number
           title?: string
