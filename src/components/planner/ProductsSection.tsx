@@ -79,6 +79,8 @@ export function ProductsSection() {
             priceUnit={product.price_unit}
             description={product.description || ""}
             imageUrl={product.image_url || "/placeholder.svg"}
+            videoUrl={product.video_url || undefined}
+            mediaType={product.media_type}
             coverageText={product.coverage_text || ""}
             deliverableText={product.deliverable_text || ""}
             isHighlighted={product.is_highlighted}

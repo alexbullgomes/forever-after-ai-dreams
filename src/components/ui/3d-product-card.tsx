@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Clock, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductMediaHero } from "./product-media-hero";
 
 export interface InteractiveProduct3DCardProps {
   title: string;
@@ -12,6 +13,8 @@ export interface InteractiveProduct3DCardProps {
   priceUnit?: string;
   description: string;
   imageUrl: string;
+  videoUrl?: string;
+  mediaType?: "image" | "video" | null;
   coverageText?: string;
   deliverableText?: string;
   isHighlighted?: boolean;
@@ -34,6 +37,8 @@ export const InteractiveProduct3DCard = React.forwardRef<
       priceUnit = "per night",
       description,
       imageUrl,
+      videoUrl,
+      mediaType,
       coverageText = "",
       deliverableText = "",
       isHighlighted = false,
@@ -103,10 +108,12 @@ export const InteractiveProduct3DCard = React.forwardRef<
             </div>
           )}
 
-          {/* Product Image */}
+          {/* Product Media (Image or Video) */}
           <div className="aspect-[4/3] w-full overflow-hidden">
-            <img
-              src={imageUrl}
+            <ProductMediaHero
+              imageUrl={imageUrl}
+              videoUrl={videoUrl}
+              mediaType={mediaType}
               alt={title}
               className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
             />
