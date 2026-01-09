@@ -1084,6 +1084,48 @@ export type Database = {
           },
         ]
       }
+      promotional_campaign_products: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotional_campaign_products_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotional_campaign_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_campaigns: {
         Row: {
           banner_headline: string | null
@@ -1118,6 +1160,7 @@ export type Database = {
           pricing_card_3_popular: boolean | null
           pricing_card_3_price: string | null
           pricing_card_3_title: string | null
+          products_section_enabled: boolean
           promotional_footer_enabled: boolean | null
           slug: string
           title: string
@@ -1158,6 +1201,7 @@ export type Database = {
           pricing_card_3_popular?: boolean | null
           pricing_card_3_price?: string | null
           pricing_card_3_title?: string | null
+          products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
           slug: string
           title: string
@@ -1198,6 +1242,7 @@ export type Database = {
           pricing_card_3_popular?: boolean | null
           pricing_card_3_price?: string | null
           pricing_card_3_title?: string | null
+          products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
           slug?: string
           title?: string

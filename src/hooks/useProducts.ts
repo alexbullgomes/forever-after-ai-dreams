@@ -68,23 +68,26 @@ export function useProducts(options: UseProductsOptions = {}) {
     fetchProducts();
   }, [fetchProducts]);
 
-  const createProduct = async (data: Partial<Product>) => {
+  const createProduct = async (data: Partial<Product>): Promise<Product | null> => {
     try {
       const slug = data.slug || slugify(data.title || "product");
       
-      const { error: insertError } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from("products")
         .insert({
           ...data,
           slug,
           price: data.price || 0,
           title: data.title || "Untitled Product",
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
       toast({ title: "Success", description: "Product created successfully" });
       await fetchProducts();
+      return insertedData as Product;
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to create product");
       toast({ title: "Error", description: error.message, variant: "destructive" });
