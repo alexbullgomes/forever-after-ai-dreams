@@ -48,12 +48,14 @@ function SortableRow({
   onDelete,
   onDuplicate,
   onToggleActive,
+  onToggleShowInOurProducts,
 }: {
   product: Product;
   onEdit: (product: Product) => void;
   onDelete: (product: Product) => void;
   onDuplicate: (product: Product) => void;
   onToggleActive: (product: Product, active: boolean) => void;
+  onToggleShowInOurProducts: (product: Product, show: boolean) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: product.id });
@@ -105,6 +107,12 @@ function SortableRow({
         <Switch
           checked={product.is_active}
           onCheckedChange={(checked) => onToggleActive(product, checked)}
+        />
+      </TableCell>
+      <TableCell>
+        <Switch
+          checked={product.show_in_our_products}
+          onCheckedChange={(checked) => onToggleShowInOurProducts(product, checked)}
         />
       </TableCell>
       <TableCell>
@@ -201,6 +209,10 @@ export default function ProductsAdmin() {
     await updateProduct(product.id, { is_active: active });
   };
 
+  const handleToggleShowInOurProducts = async (product: Product, show: boolean) => {
+    await updateProduct(product.id, { show_in_our_products: show });
+  };
+
   if (loading) {
     return (
       <div className="space-y-4 p-6">
@@ -263,6 +275,7 @@ export default function ProductsAdmin() {
                   <TableHead>Coverage</TableHead>
                   <TableHead>Deliverable</TableHead>
                   <TableHead>Active</TableHead>
+                  <TableHead>Our Products</TableHead>
                   <TableHead className="w-32">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -279,6 +292,7 @@ export default function ProductsAdmin() {
                       onDelete={handleDeleteClick}
                       onDuplicate={duplicateProduct}
                       onToggleActive={handleToggleActive}
+                      onToggleShowInOurProducts={handleToggleShowInOurProducts}
                     />
                   ))}
                 </SortableContext>

@@ -45,7 +45,10 @@ export function ProductsSection() {
     );
   }
 
-  if (products.length === 0) {
+  // Filter to only show products marked for "Our Products" section
+  const visibleProducts = products.filter(p => p.show_in_our_products);
+
+  if (visibleProducts.length === 0) {
     return (
       <section className="my-16">
         <div className="mb-8 text-center">
@@ -70,7 +73,7 @@ export function ProductsSection() {
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-        {products.map((product) => (
+        {visibleProducts.map((product) => (
           <InteractiveProduct3DCard
             key={product.id}
             title={product.title}

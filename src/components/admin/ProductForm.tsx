@@ -39,6 +39,7 @@ const productSchema = z.object({
   cta_text: z.string().default("Reserve"),
   cta_link: z.string().optional(),
   is_active: z.boolean().default(true),
+  show_in_our_products: z.boolean().default(true),
   sort_order: z.coerce.number().default(0),
 });
 
@@ -72,6 +73,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       cta_text: "Reserve",
       cta_link: "",
       is_active: true,
+      show_in_our_products: true,
       sort_order: 0,
     },
   });
@@ -94,6 +96,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         cta_text: product.cta_text,
         cta_link: product.cta_link || "",
         is_active: product.is_active,
+        show_in_our_products: product.show_in_our_products,
         sort_order: product.sort_order,
       });
     } else {
@@ -113,6 +116,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         cta_text: "Reserve",
         cta_link: "",
         is_active: true,
+        show_in_our_products: true,
         sort_order: 0,
       });
     }
@@ -359,27 +363,40 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="sort_order"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sort Order</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="sort_order"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sort Order</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="is_active"
                 render={({ field }) => (
                   <FormItem className="flex items-center justify-between rounded-lg border p-3">
                     <FormLabel className="text-base">Active</FormLabel>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="show_in_our_products"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <FormLabel className="text-base">Show in Our Products</FormLabel>
                     <FormControl>
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
