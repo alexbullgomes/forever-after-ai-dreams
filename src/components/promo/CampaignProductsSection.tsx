@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { InteractiveProduct3DCard } from "@/components/ui/3d-product-card";
 import { Product } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,18 +29,27 @@ interface PendingProductResume {
   timezone: string;
 }
 
+interface PendingResumeData {
+  productId: string;
+  selectedDate: string;
+  timezone: string;
+  campaignId: string;
+}
+
 export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignProductsSectionProps) {
   const [products, setProducts] = useState<CampaignProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingProduct, setBookingProduct] = useState<Product | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingProductResume, setPendingProductResume] = useState<PendingProductResume | null>(null);
+  const [pendingResumeData, setPendingResumeData] = useState<PendingResumeData | null>(null);
   
   const { user } = useAuth();
+  const resumeAttemptedRef = useRef(false);
 
-  // Check for pending product booking after user logs in
+  // Effect 1: Parse pending data on mount/user change (before products load)
   useEffect(() => {
-    if (!user) return;
+    if (!user || resumeAttemptedRef.current) return;
     
     const storedData = localStorage.getItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
     if (!storedData) return;
@@ -57,30 +66,37 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
         return;
       }
       
-      // Find the product in our list
-      const matchingCampaignProduct = products.find(cp => cp.product.id === parsed.productId);
-      if (!matchingCampaignProduct) {
-        // Products might not be loaded yet, wait for them
-        return;
-      }
-      
-      // Clear storage and set resume state
-      localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
-      localStorage.removeItem('postLoginReturnTo');
-      localStorage.removeItem('postLoginAction');
-      
-      setPendingProductResume({
-        product: matchingCampaignProduct.product,
-        date: new Date(parsed.selectedDate),
-        timezone: parsed.timezone,
-      });
-      setBookingProduct(matchingCampaignProduct.product);
+      // Store parsed data for when products load
+      setPendingResumeData(parsed);
+      resumeAttemptedRef.current = true;
       
     } catch (err) {
       console.error('Error parsing pending campaign product booking:', err);
       localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
     }
-  }, [user, campaignId, products]);
+  }, [user, campaignId]);
+
+  // Effect 2: Match product when products are loaded
+  useEffect(() => {
+    if (!pendingResumeData || products.length === 0) return;
+    
+    const matchingCampaignProduct = products.find(cp => cp.product.id === pendingResumeData.productId);
+    if (!matchingCampaignProduct) return;
+    
+    // Clear storage and resume
+    localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
+    localStorage.removeItem('postLoginReturnTo');
+    localStorage.removeItem('postLoginAction');
+    
+    setPendingProductResume({
+      product: matchingCampaignProduct.product,
+      date: new Date(pendingResumeData.selectedDate),
+      timezone: pendingResumeData.timezone,
+    });
+    setBookingProduct(matchingCampaignProduct.product);
+    setPendingResumeData(null);
+    
+  }, [pendingResumeData, products]);
 
   useEffect(() => {
     const fetchCampaignProducts = async () => {

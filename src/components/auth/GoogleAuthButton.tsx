@@ -21,10 +21,11 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
       // Check for any pending payment/booking flows that require returning to current page
       const pendingPayment = localStorage.getItem('pendingPayment');
       const pendingCampaignDate = localStorage.getItem('pendingCampaignDateSelection');
+      const pendingCampaignProductDate = localStorage.getItem('pendingCampaignProductDateSelection');
       const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
       
       // If any pending flow exists, redirect back to current page
-      const hasPendingFlow = pendingPayment || pendingCampaignDate || postLoginReturnTo;
+      const hasPendingFlow = pendingPayment || pendingCampaignDate || pendingCampaignProductDate || postLoginReturnTo;
       const redirectUrl = hasPendingFlow
         ? window.location.href  // Return to current page to process pending flow
         : `${window.location.origin}/dashboard`;
