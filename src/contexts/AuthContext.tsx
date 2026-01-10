@@ -148,6 +148,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 return;
               }
               
+              // For campaign product bookings, don't redirect - stay on current page
+              // The CampaignProductsSection will detect user and auto-resume the booking funnel
+              if (postLoginReturnTo && postLoginAction === 'resume_campaign_product_bookfunnel') {
+                // Just clean up - don't redirect, the component will handle resume
+                localStorage.removeItem('postLoginReturnTo');
+                localStorage.removeItem('postLoginAction');
+                return;
+              }
+              
               // Fall back to legacy intendedRoute
               const intendedRoute = localStorage.getItem('intendedRoute');
               if (intendedRoute) {

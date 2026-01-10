@@ -44,16 +44,20 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
         const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
         const postLoginAction = localStorage.getItem('postLoginAction');
         
-        if (postLoginReturnTo && postLoginAction === 'resume_campaign_bookfunnel') {
+        if (postLoginReturnTo && (
+          postLoginAction === 'resume_campaign_bookfunnel' || 
+          postLoginAction === 'resume_campaign_product_bookfunnel'
+        )) {
           toast({
             title: "Welcome back!",
             description: "Resuming your booking...",
           });
 
+          // For campaign product bookings, just close the modal - the page will detect user and auto-resume
+          // This avoids a full page redirect since we're already on the campaign page
           setTimeout(() => {
             onClose();
-            window.location.href = postLoginReturnTo;
-          }, 500);
+          }, 300);
         } else {
           toast({
             title: "Welcome back!",
@@ -87,16 +91,19 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
         const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
         const postLoginAction = localStorage.getItem('postLoginAction');
         
-        if (postLoginReturnTo && postLoginAction === 'resume_campaign_bookfunnel') {
+        if (postLoginReturnTo && (
+          postLoginAction === 'resume_campaign_bookfunnel' || 
+          postLoginAction === 'resume_campaign_product_bookfunnel'
+        )) {
           toast({
             title: "Account created!",
             description: "Resuming your booking...",
           });
 
+          // For campaign product bookings, just close the modal - the page will detect user and auto-resume
           setTimeout(() => {
             onClose();
-            window.location.href = postLoginReturnTo;
-          }, 500);
+          }, 300);
         } else {
           toast({
             title: "Account created!",
