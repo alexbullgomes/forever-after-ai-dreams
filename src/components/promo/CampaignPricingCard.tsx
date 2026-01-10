@@ -11,9 +11,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrCreateVisitorId } from "@/utils/visitor";
+import { 
+  getPendingBookingState, 
+  clearBookingState,
+  PendingBookingState 
+} from "@/utils/bookingRedirect";
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
-const PENDING_CAMPAIGN_DATE_KEY = 'pendingCampaignDateSelection';
 const BOOKING_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
 
 interface PendingCampaignBooking {
@@ -24,16 +28,6 @@ interface PendingCampaignBooking {
   bookingRequestId: string;
   eventDate: string;
   selectedTime: string;
-  timestamp: number;
-}
-
-interface PendingCampaignDateSelection {
-  campaignId: string;
-  campaignSlug: string;
-  cardIndex: number;
-  cardTitle: string;
-  selectedDate: string;
-  timezone: string;
   timestamp: number;
 }
 
@@ -111,35 +105,27 @@ export function CampaignPricingCard({
     }
   }, [user?.id, toast]);
 
-  // Check for pending date selection or booking on mount and when user changes
+  // Check for pending booking state on mount and when user changes
   useEffect(() => {
     if (!user) return;
 
-    // Clean up post-login redirect keys since we're now resuming
-    localStorage.removeItem('postLoginReturnTo');
-    localStorage.removeItem('postLoginAction');
-
-    // Check for pending DATE SELECTION first (auth triggered at date step)
-    const storedDate = localStorage.getItem(PENDING_CAMPAIGN_DATE_KEY);
-    if (storedDate) {
-      try {
-        const pendingDate: PendingCampaignDateSelection = JSON.parse(storedDate);
-
-        if (Date.now() - pendingDate.timestamp > BOOKING_EXPIRY_MS) {
-          localStorage.removeItem(PENDING_CAMPAIGN_DATE_KEY);
-        } else if (pendingDate.campaignId === campaignId && pendingDate.cardIndex === cardIndex) {
-          localStorage.removeItem(PENDING_CAMPAIGN_DATE_KEY);
-          
-          // Resume from date selection - open modal with saved date
-          setPendingDateResume({
-            date: new Date(pendingDate.selectedDate),
-            timezone: pendingDate.timezone,
-          });
-          setIsBookingOpen(true);
-          return;
-        }
-      } catch (e) {
-        localStorage.removeItem(PENDING_CAMPAIGN_DATE_KEY);
+    // Check for unified pending booking state (new approach)
+    const pendingState = getPendingBookingState();
+    if (pendingState && pendingState.type === 'campaign_pricing_card') {
+      // Validate it's for this campaign and card
+      if (pendingState.campaignId === campaignId && pendingState.cardIndex === cardIndex) {
+        console.log('Resuming pricing card booking:', pendingState);
+        
+        // Clear all booking state
+        clearBookingState();
+        
+        // Resume from date selection - open modal with saved date
+        setPendingDateResume({
+          date: new Date(pendingState.selectedDate),
+          timezone: pendingState.timezone,
+        });
+        setIsBookingOpen(true);
+        return;
       }
     }
 

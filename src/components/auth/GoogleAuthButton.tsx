@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Chrome } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { hasPendingBooking, getBookingReturnUrl } from "@/utils/bookingRedirect";
 
 interface GoogleAuthButtonProps {
   googleAvailable: boolean;
@@ -18,17 +19,26 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
     try {
       setLoading(true);
       
-      // Check for any pending payment/booking flows that require returning to current page
+      // Check for any pending booking flow (new unified approach)
+      const pendingBookingFlow = hasPendingBooking();
+      const bookingReturnUrl = getBookingReturnUrl();
+      
+      // Also check legacy keys for backwards compatibility
       const pendingPayment = localStorage.getItem('pendingPayment');
-      const pendingCampaignDate = localStorage.getItem('pendingCampaignDateSelection');
-      const pendingCampaignProductDate = localStorage.getItem('pendingCampaignProductDateSelection');
       const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
       
-      // If any pending flow exists, redirect back to current page
-      const hasPendingFlow = pendingPayment || pendingCampaignDate || pendingCampaignProductDate || postLoginReturnTo;
-      const redirectUrl = hasPendingFlow
-        ? window.location.href  // Return to current page to process pending flow
-        : `${window.location.origin}/dashboard`;
+      // Determine redirect URL
+      let redirectUrl = `${window.location.origin}/dashboard`;
+      
+      if (pendingBookingFlow && bookingReturnUrl) {
+        // Use the full origin + path for booking return
+        redirectUrl = `${window.location.origin}${bookingReturnUrl}`;
+      } else if (pendingPayment || postLoginReturnTo) {
+        // Legacy: return to current page
+        redirectUrl = window.location.href;
+      }
+      
+      console.log('Google OAuth redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

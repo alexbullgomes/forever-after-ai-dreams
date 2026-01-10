@@ -6,6 +6,7 @@ import { Mail, Lock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { sendAuthWebhook } from "@/utils/authWebhook";
+import { hasPendingBooking } from "@/utils/bookingRedirect";
 
 interface EmailAuthFormProps {
   isLogin: boolean;
@@ -40,21 +41,16 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
           await sendAuthWebhook("login", data.user.id, data.user.email || formData.email);
         }
 
-        // Check for campaign booking return URL
-        const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
-        const postLoginAction = localStorage.getItem('postLoginAction');
+        // Check for pending booking flow
+        const pendingBooking = hasPendingBooking();
         
-        if (postLoginReturnTo && (
-          postLoginAction === 'resume_campaign_bookfunnel' || 
-          postLoginAction === 'resume_campaign_product_bookfunnel'
-        )) {
+        if (pendingBooking) {
           toast({
             title: "Welcome back!",
             description: "Resuming your booking...",
           });
 
-          // For campaign product bookings, just close the modal - the page will detect user and auto-resume
-          // This avoids a full page redirect since we're already on the campaign page
+          // Just close the modal - AuthContext will handle the redirect
           setTimeout(() => {
             onClose();
           }, 300);
@@ -87,20 +83,16 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
           await sendAuthWebhook("register", data.user.id, data.user.email || formData.email);
         }
 
-        // Check for campaign booking return URL
-        const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
-        const postLoginAction = localStorage.getItem('postLoginAction');
+        // Check for pending booking flow
+        const pendingBooking = hasPendingBooking();
         
-        if (postLoginReturnTo && (
-          postLoginAction === 'resume_campaign_bookfunnel' || 
-          postLoginAction === 'resume_campaign_product_bookfunnel'
-        )) {
+        if (pendingBooking) {
           toast({
             title: "Account created!",
             description: "Resuming your booking...",
           });
 
-          // For campaign product bookings, just close the modal - the page will detect user and auto-resume
+          // Just close the modal - AuthContext will handle the redirect
           setTimeout(() => {
             onClose();
           }, 300);

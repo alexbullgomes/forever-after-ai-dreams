@@ -5,6 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
 import { linkVisitorToUser, getVisitorId } from '@/utils/visitor';
 import { toast } from 'sonner';
+import { 
+  getBookingReturnUrl, 
+  getPendingBookingState, 
+  clearBookingState,
+  isValidBookingReturnUrl 
+} from '@/utils/bookingRedirect';
 
 const PENDING_PAYMENT_KEY = 'pendingPayment';
 const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -38,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const processingPaymentRef = useRef(false);
+  const redirectHandledRef = useRef(false);
 
   // Process pending payment after successful authentication
   const processPendingPayment = async (userSession: Session) => {
@@ -102,6 +109,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Handle booking redirect after authentication
+  const handleBookingRedirect = (): boolean => {
+    if (redirectHandledRef.current) {
+      return false;
+    }
+
+    const returnUrl = getBookingReturnUrl();
+    const pendingState = getPendingBookingState();
+    
+    if (!returnUrl || !pendingState) {
+      return false;
+    }
+
+    // Double validate the URL for security
+    if (!isValidBookingReturnUrl(returnUrl)) {
+      console.warn('Invalid booking return URL detected, clearing state');
+      clearBookingState();
+      return false;
+    }
+
+    console.log('Handling booking redirect to:', returnUrl);
+
+    // Check if we're already on the correct page
+    const currentPath = window.location.pathname + window.location.search + window.location.hash;
+    if (currentPath.startsWith(returnUrl.split('?')[0])) {
+      console.log('Already on target page, not redirecting');
+      // Don't clear state - let the component handle resume
+      redirectHandledRef.current = true;
+      return true;
+    }
+
+    // Redirect to the campaign page
+    redirectHandledRef.current = true;
+    
+    toast.info("Resuming your booking...", {
+      description: "Returning to your selected product...",
+    });
+
+    // Use replace to avoid back button issues
+    window.location.replace(returnUrl);
+    return true;
+  };
+
   useEffect(() => {
     console.log('Setting up auth state listener...');
     
@@ -118,6 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Link visitor to user profile (unified visitor tracking)
             await linkVisitorToUser(session.user.id);
             linkVisitorIdToProfile(session.user.id);
+            
             // Track referral conversion for new registrations
             const isNewUser = session.user.created_at === session.user.last_sign_in_at;
             if (isNewUser) {
@@ -131,29 +182,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Process pending payment if exists (for OAuth redirects)
             await processPendingPayment(session);
             
-            // Handle post-login redirect (only if no pending payment was processed)
+            // Handle booking redirect (only if no pending payment was processed)
             if (!processingPaymentRef.current) {
-              // Check for campaign booking return URL first
-              const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
-              const postLoginAction = localStorage.getItem('postLoginAction');
-              
-              if (postLoginReturnTo && postLoginAction === 'resume_campaign_bookfunnel') {
-                localStorage.removeItem('postLoginReturnTo');
-                localStorage.removeItem('postLoginAction');
-                
-                // Only redirect if not already on the target page
-                if (!window.location.pathname.startsWith(postLoginReturnTo.split('?')[0])) {
-                  window.location.href = postLoginReturnTo;
-                }
-                return;
-              }
-              
-              // For campaign product bookings, don't redirect - stay on current page
-              // The CampaignProductsSection will detect user and auto-resume the booking funnel
-              if (postLoginReturnTo && postLoginAction === 'resume_campaign_product_bookfunnel') {
-                // Just clean up - don't redirect, the component will handle resume
-                localStorage.removeItem('postLoginReturnTo');
-                localStorage.removeItem('postLoginAction');
+              // Check for booking redirect first (new unified approach)
+              const handledBookingRedirect = handleBookingRedirect();
+              if (handledBookingRedirect) {
                 return;
               }
               
@@ -278,6 +311,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Clean up auth state first
       cleanupAuthState();
+      
+      // Clear booking state
+      clearBookingState();
       
       // Attempt global sign out (ignore errors since session might be missing)
       try {
