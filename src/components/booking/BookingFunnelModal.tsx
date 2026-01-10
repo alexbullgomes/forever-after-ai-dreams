@@ -13,12 +13,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
+import { saveBookingState, PendingBookingState } from '@/utils/bookingRedirect';
 
 type BookingStep = 'date' | 'checking' | 'slots';
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
-const PENDING_CAMPAIGN_DATE_KEY = 'pendingCampaignDateSelection';
-const PENDING_CAMPAIGN_PRODUCT_DATE_KEY = 'pendingCampaignProductDateSelection';
 
 interface BookingFunnelModalProps {
   isOpen: boolean;
@@ -95,7 +94,8 @@ export function BookingFunnelModal({
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
     // For campaign pricing card mode, check auth BEFORE proceeding to availability check
     if (campaignMode && !user) {
-      const pendingDateSelection = {
+      const pendingState: PendingBookingState = {
+        type: 'campaign_pricing_card',
         campaignId: campaignId!,
         campaignSlug: campaignSlug!,
         cardIndex: cardIndex!,
@@ -104,11 +104,8 @@ export function BookingFunnelModal({
         timezone: timezone,
         timestamp: Date.now(),
       };
-      localStorage.setItem(PENDING_CAMPAIGN_DATE_KEY, JSON.stringify(pendingDateSelection));
       
-      // Store return URL for post-login redirect
-      localStorage.setItem('postLoginReturnTo', window.location.pathname + window.location.search);
-      localStorage.setItem('postLoginAction', 'resume_campaign_bookfunnel');
+      saveBookingState(pendingState);
       
       onClose();
       onAuthRequired?.();
@@ -117,7 +114,8 @@ export function BookingFunnelModal({
 
     // For campaign product mode, check auth BEFORE proceeding to availability check
     if (campaignProductMode && !user) {
-      const pendingProductDateSelection = {
+      const pendingState: PendingBookingState = {
+        type: 'campaign_product',
         campaignId: campaignId!,
         campaignSlug: campaignSlug!,
         productId: productId!,
@@ -126,11 +124,8 @@ export function BookingFunnelModal({
         timezone: timezone,
         timestamp: Date.now(),
       };
-      localStorage.setItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY, JSON.stringify(pendingProductDateSelection));
       
-      // Store return URL for post-login redirect
-      localStorage.setItem('postLoginReturnTo', window.location.pathname + window.location.search);
-      localStorage.setItem('postLoginAction', 'resume_campaign_product_bookfunnel');
+      saveBookingState(pendingState);
       
       onClose();
       onAuthRequired?.();

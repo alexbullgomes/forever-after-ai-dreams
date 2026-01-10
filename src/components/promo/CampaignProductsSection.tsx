@@ -6,8 +6,11 @@ import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
-
-const PENDING_CAMPAIGN_PRODUCT_DATE_KEY = 'pendingCampaignProductDateSelection';
+import { 
+  getPendingBookingState, 
+  clearBookingState, 
+  PendingBookingState 
+} from "@/utils/bookingRedirect";
 
 interface CampaignProductsSectionProps {
   campaignId: string;
@@ -29,74 +32,60 @@ interface PendingProductResume {
   timezone: string;
 }
 
-interface PendingResumeData {
-  productId: string;
-  selectedDate: string;
-  timezone: string;
-  campaignId: string;
-}
-
 export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignProductsSectionProps) {
   const [products, setProducts] = useState<CampaignProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingProduct, setBookingProduct] = useState<Product | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingProductResume, setPendingProductResume] = useState<PendingProductResume | null>(null);
-  const [pendingResumeData, setPendingResumeData] = useState<PendingResumeData | null>(null);
+  const [pendingResumeState, setPendingResumeState] = useState<PendingBookingState | null>(null);
   
   const { user } = useAuth();
   const resumeAttemptedRef = useRef(false);
 
-  // Effect 1: Parse pending data on mount/user change (before products load)
+  // Effect 1: Check for pending booking state on user login
   useEffect(() => {
     if (!user || resumeAttemptedRef.current) return;
     
-    const storedData = localStorage.getItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
-    if (!storedData) return;
+    const pendingState = getPendingBookingState();
+    if (!pendingState) return;
     
-    try {
-      const parsed = JSON.parse(storedData);
-      
-      // Validate it's for this campaign
-      if (parsed.campaignId !== campaignId) return;
-      
-      // Check if not expired (30 min max)
-      if (Date.now() - parsed.timestamp > 30 * 60 * 1000) {
-        localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
-        return;
-      }
-      
-      // Store parsed data for when products load
-      setPendingResumeData(parsed);
-      resumeAttemptedRef.current = true;
-      
-    } catch (err) {
-      console.error('Error parsing pending campaign product booking:', err);
-      localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
-    }
+    // Validate it's a campaign product booking for this campaign
+    if (pendingState.type !== 'campaign_product') return;
+    if (pendingState.campaignId !== campaignId) return;
+    
+    console.log('Found pending campaign product booking:', pendingState);
+    
+    // Store the pending state for when products load
+    setPendingResumeState(pendingState);
+    resumeAttemptedRef.current = true;
   }, [user, campaignId]);
 
   // Effect 2: Match product when products are loaded
   useEffect(() => {
-    if (!pendingResumeData || products.length === 0) return;
+    if (!pendingResumeState || products.length === 0) return;
     
-    const matchingCampaignProduct = products.find(cp => cp.product.id === pendingResumeData.productId);
-    if (!matchingCampaignProduct) return;
+    const matchingCampaignProduct = products.find(cp => cp.product.id === pendingResumeState.productId);
+    if (!matchingCampaignProduct) {
+      console.warn('Pending booking product not found in campaign products');
+      return;
+    }
     
-    // Clear storage and resume
-    localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
-    localStorage.removeItem('postLoginReturnTo');
-    localStorage.removeItem('postLoginAction');
+    console.log('Resuming booking for product:', matchingCampaignProduct.product.title);
     
+    // Clear all booking state
+    clearBookingState();
+    
+    // Set up the resume
     setPendingProductResume({
       product: matchingCampaignProduct.product,
-      date: new Date(pendingResumeData.selectedDate),
-      timezone: pendingResumeData.timezone,
+      date: new Date(pendingResumeState.selectedDate),
+      timezone: pendingResumeState.timezone,
     });
     setBookingProduct(matchingCampaignProduct.product);
-    setPendingResumeData(null);
+    setPendingResumeState(null);
     
-  }, [pendingResumeData, products]);
+  }, [pendingResumeState, products]);
 
   useEffect(() => {
     const fetchCampaignProducts = async () => {
