@@ -18,6 +18,7 @@ type BookingStep = 'date' | 'checking' | 'slots';
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
 const PENDING_CAMPAIGN_DATE_KEY = 'pendingCampaignDateSelection';
+const PENDING_CAMPAIGN_PRODUCT_DATE_KEY = 'pendingCampaignProductDateSelection';
 
 interface BookingFunnelModalProps {
   isOpen: boolean;
@@ -26,12 +27,14 @@ interface BookingFunnelModalProps {
   productTitle: string;
   productPrice: number;
   currency?: string;
-  // Campaign mode props
+  // Campaign pricing card mode props (for special promotional packages)
   campaignMode?: boolean;
   campaignId?: string;
   campaignSlug?: string;
   cardIndex?: number;
   onAuthRequired?: () => void;
+  // Campaign product mode props (for products on campaign pages)
+  campaignProductMode?: boolean;
   // Resume from date selection after login
   resumeFromDate?: {
     date: Date;
@@ -51,6 +54,7 @@ export function BookingFunnelModal({
   campaignSlug,
   cardIndex,
   onAuthRequired,
+  campaignProductMode = false,
   resumeFromDate,
 }: BookingFunnelModalProps) {
   const [step, setStep] = useState<BookingStep>('date');
@@ -89,7 +93,7 @@ export function BookingFunnelModal({
   } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, cardIndex: cardIndex! } : undefined);
 
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
-    // For campaign mode, check auth BEFORE proceeding to availability check
+    // For campaign pricing card mode, check auth BEFORE proceeding to availability check
     if (campaignMode && !user) {
       const pendingDateSelection = {
         campaignId: campaignId!,
@@ -111,6 +115,28 @@ export function BookingFunnelModal({
       return;
     }
 
+    // For campaign product mode, check auth BEFORE proceeding to availability check
+    if (campaignProductMode && !user) {
+      const pendingProductDateSelection = {
+        campaignId: campaignId!,
+        campaignSlug: campaignSlug!,
+        productId: productId!,
+        productTitle: productTitle,
+        selectedDate: date.toISOString(),
+        timezone: timezone,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY, JSON.stringify(pendingProductDateSelection));
+      
+      // Store return URL for post-login redirect
+      localStorage.setItem('postLoginReturnTo', window.location.pathname + window.location.search);
+      localStorage.setItem('postLoginAction', 'resume_campaign_product_bookfunnel');
+      
+      onClose();
+      onAuthRequired?.();
+      return;
+    }
+
     setEventDate(date);
     setStep('checking');
     
@@ -118,13 +144,14 @@ export function BookingFunnelModal({
     trackVisitorEvent('booking_date_selected', productTitle, {
       product_id: productId,
       campaign_mode: campaignMode,
+      campaign_product_mode: campaignProductMode,
       campaign_id: campaignId,
       event_date: date.toISOString(),
     });
     
     // Create/find booking request while showing loading
     await findOrCreateRequest(date, timezone);
-  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignId, user, campaignSlug, cardIndex, onClose, onAuthRequired]);
+  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignProductMode, campaignId, user, campaignSlug, cardIndex, onClose, onAuthRequired]);
 
   const handleCheckingComplete = useCallback(() => {
     setStep('slots');

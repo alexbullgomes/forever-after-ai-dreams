@@ -1,12 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { InteractiveProduct3DCard } from "@/components/ui/3d-product-card";
 import { Product } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/AuthModal";
+
+const PENDING_CAMPAIGN_PRODUCT_DATE_KEY = 'pendingCampaignProductDateSelection';
 
 interface CampaignProductsSectionProps {
   campaignId: string;
+  campaignSlug: string;
 }
 
 interface CampaignProductWithDetails {
@@ -18,10 +23,64 @@ interface CampaignProductWithDetails {
   product: Product;
 }
 
-export function CampaignProductsSection({ campaignId }: CampaignProductsSectionProps) {
+interface PendingProductResume {
+  product: Product;
+  date: Date;
+  timezone: string;
+}
+
+export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignProductsSectionProps) {
   const [products, setProducts] = useState<CampaignProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingProduct, setBookingProduct] = useState<Product | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [pendingProductResume, setPendingProductResume] = useState<PendingProductResume | null>(null);
+  
+  const { user } = useAuth();
+
+  // Check for pending product booking after user logs in
+  useEffect(() => {
+    if (!user) return;
+    
+    const storedData = localStorage.getItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
+    if (!storedData) return;
+    
+    try {
+      const parsed = JSON.parse(storedData);
+      
+      // Validate it's for this campaign
+      if (parsed.campaignId !== campaignId) return;
+      
+      // Check if not expired (30 min max)
+      if (Date.now() - parsed.timestamp > 30 * 60 * 1000) {
+        localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
+        return;
+      }
+      
+      // Find the product in our list
+      const matchingCampaignProduct = products.find(cp => cp.product.id === parsed.productId);
+      if (!matchingCampaignProduct) {
+        // Products might not be loaded yet, wait for them
+        return;
+      }
+      
+      // Clear storage and set resume state
+      localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
+      localStorage.removeItem('postLoginReturnTo');
+      localStorage.removeItem('postLoginAction');
+      
+      setPendingProductResume({
+        product: matchingCampaignProduct.product,
+        date: new Date(parsed.selectedDate),
+        timezone: parsed.timezone,
+      });
+      setBookingProduct(matchingCampaignProduct.product);
+      
+    } catch (err) {
+      console.error('Error parsing pending campaign product booking:', err);
+      localStorage.removeItem(PENDING_CAMPAIGN_PRODUCT_DATE_KEY);
+    }
+  }, [user, campaignId, products]);
 
   useEffect(() => {
     const fetchCampaignProducts = async () => {
@@ -79,6 +138,19 @@ export function CampaignProductsSection({ campaignId }: CampaignProductsSectionP
   const handleProductClick = (product: Product) => {
     setBookingProduct(product);
   };
+
+  const handleAuthRequired = useCallback(() => {
+    setIsAuthModalOpen(true);
+  }, []);
+
+  const handleBookingClose = useCallback(() => {
+    setBookingProduct(null);
+    setPendingProductResume(null);
+  }, []);
+
+  const handleAuthModalClose = useCallback(() => {
+    setIsAuthModalOpen(false);
+  }, []);
 
   if (loading) {
     return (
@@ -148,17 +220,33 @@ export function CampaignProductsSection({ campaignId }: CampaignProductsSectionP
           ))}
         </div>
 
-        {/* Booking Funnel Modal */}
+        {/* Booking Funnel Modal with Campaign Product Mode */}
         {bookingProduct && (
           <BookingFunnelModal
             isOpen={!!bookingProduct}
-            onClose={() => setBookingProduct(null)}
+            onClose={handleBookingClose}
             productId={bookingProduct.id}
             productTitle={bookingProduct.title}
             productPrice={bookingProduct.price}
             currency={bookingProduct.currency || 'USD'}
+            // Campaign product mode props
+            campaignProductMode={true}
+            campaignId={campaignId}
+            campaignSlug={campaignSlug}
+            onAuthRequired={handleAuthRequired}
+            resumeFromDate={
+              pendingProductResume && pendingProductResume.product.id === bookingProduct.id
+                ? { date: pendingProductResume.date, timezone: pendingProductResume.timezone }
+                : undefined
+            }
           />
         )}
+
+        {/* Auth Modal for inline login */}
+        <AuthModal 
+          isOpen={isAuthModalOpen} 
+          onClose={handleAuthModalClose} 
+        />
       </div>
     </section>
   );

@@ -215,7 +215,7 @@ const PromotionalLanding = () => {
 
         {/* Campaign Products Section - renders between Hero and Gallery */}
         {campaign.products_section_enabled && (
-          <CampaignProductsSection campaignId={campaign.id} />
+          <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
         )}
 
         {/* Campaign Gallery Section */}
