@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { format, eachDayOfInterval, getDay } from 'date-fns';
 
 export interface AvailabilityOverride {
   id: string;
@@ -15,6 +16,8 @@ export interface AvailabilityOverride {
   created_by: string | null;
   created_at: string;
 }
+
+export type PresetType = 'weekdays-available' | 'weekends-available' | 'reset';
 
 export const useAvailabilityOverrides = (productId?: string) => {
   const [overrides, setOverrides] = useState<AvailabilityOverride[]>([]);
@@ -156,6 +159,194 @@ export const useAvailabilityOverrides = (productId?: string) => {
     return overrides.find((o) => o.date === date);
   }, [overrides]);
 
+  // Get days with confirmed bookings in a date range
+  const getDaysWithBookings = async (
+    startDate: string,
+    endDate: string
+  ): Promise<string[]> => {
+    if (!productId) return [];
+    
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('event_date')
+        .eq('product_id', productId)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
+        .in('status', ['confirmed', 'paid']);
+
+      if (error) throw error;
+
+      // Get unique dates
+      const uniqueDates = [...new Set((data || []).map((b) => b.event_date))];
+      return uniqueDates;
+    } catch (err: any) {
+      console.error('Error fetching days with bookings:', err);
+      return [];
+    }
+  };
+
+  // Bulk delete overrides for a date range
+  const bulkDeleteOverrides = async (startDate: string, endDate: string): Promise<number> => {
+    if (!productId) return 0;
+
+    try {
+      const { data, error } = await supabase
+        .from('availability_overrides')
+        .delete()
+        .eq('product_id', productId)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .select();
+
+      if (error) throw error;
+
+      const deletedCount = data?.length || 0;
+
+      // Log to audit
+      await supabase.from('availability_audit_log').insert({
+        action: 'bulk_overrides_deleted',
+        actor_id: user?.id,
+        payload: { product_id: productId, start_date: startDate, end_date: endDate, count: deletedCount },
+      });
+
+      return deletedCount;
+    } catch (err: any) {
+      console.error('Error bulk deleting overrides:', err);
+      throw err;
+    }
+  };
+
+  // Bulk create overrides
+  const bulkCreateOverrides = async (
+    overridesToCreate: Array<Omit<AvailabilityOverride, 'id' | 'created_at' | 'created_by'>>
+  ): Promise<number> => {
+    if (overridesToCreate.length === 0) return 0;
+
+    try {
+      const overridesWithUser = overridesToCreate.map((o) => ({
+        ...o,
+        created_by: user?.id || null,
+      }));
+
+      const { data, error } = await supabase
+        .from('availability_overrides')
+        .insert(overridesWithUser)
+        .select();
+
+      if (error) throw error;
+
+      const createdCount = data?.length || 0;
+
+      // Log to audit
+      await supabase.from('availability_audit_log').insert({
+        action: 'bulk_overrides_created',
+        actor_id: user?.id,
+        payload: { product_id: productId, count: createdCount },
+      });
+
+      return createdCount;
+    } catch (err: any) {
+      console.error('Error bulk creating overrides:', err);
+      throw err;
+    }
+  };
+
+  // Apply a preset to a date range
+  const applyPreset = async (
+    preset: PresetType,
+    startDate: Date,
+    endDate: Date,
+    protectedDates: string[],
+    dailyCapacity: number = 1
+  ): Promise<{ applied: number; skipped: number }> => {
+    if (!productId) throw new Error('No product selected');
+
+    const startStr = format(startDate, 'yyyy-MM-dd');
+    const endStr = format(endDate, 'yyyy-MM-dd');
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+    // First, delete existing overrides in range
+    await bulkDeleteOverrides(startStr, endStr);
+
+    // For reset preset, we're done - just delete overrides
+    if (preset === 'reset') {
+      await fetchOverrides();
+      return { applied: days.length, skipped: 0 };
+    }
+
+    // Generate overrides based on preset
+    const newOverrides: Array<Omit<AvailabilityOverride, 'id' | 'created_at' | 'created_by'>> = [];
+    let skipped = 0;
+
+    for (const day of days) {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const dayOfWeek = getDay(day); // 0 = Sunday, 6 = Saturday
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const isProtected = protectedDates.includes(dateStr);
+
+      if (preset === 'weekdays-available') {
+        if (isWeekend) {
+          // Block weekends
+          newOverrides.push({
+            product_id: productId,
+            date: dateStr,
+            status: 'blocked',
+            capacity_override: 0,
+            reason: 'Quick Preset: Weekend blocked',
+            start_at: null,
+            end_at: null,
+          });
+        } else if (!isProtected) {
+          // Set weekdays to available with full capacity
+          newOverrides.push({
+            product_id: productId,
+            date: dateStr,
+            status: 'available',
+            capacity_override: dailyCapacity,
+            reason: 'Quick Preset: Weekday available',
+            start_at: null,
+            end_at: null,
+          });
+        } else {
+          skipped++;
+        }
+      } else if (preset === 'weekends-available') {
+        if (!isWeekend) {
+          // Block weekdays
+          newOverrides.push({
+            product_id: productId,
+            date: dateStr,
+            status: 'blocked',
+            capacity_override: 0,
+            reason: 'Quick Preset: Weekday blocked',
+            start_at: null,
+            end_at: null,
+          });
+        } else if (!isProtected) {
+          // Set weekends to available with full capacity
+          newOverrides.push({
+            product_id: productId,
+            date: dateStr,
+            status: 'available',
+            capacity_override: dailyCapacity,
+            reason: 'Quick Preset: Weekend available',
+            start_at: null,
+            end_at: null,
+          });
+        } else {
+          skipped++;
+        }
+      }
+    }
+
+    // Bulk create new overrides
+    const createdCount = await bulkCreateOverrides(newOverrides);
+    await fetchOverrides();
+
+    return { applied: createdCount, skipped };
+  };
+
   return {
     overrides,
     loading,
@@ -164,5 +355,9 @@ export const useAvailabilityOverrides = (productId?: string) => {
     updateOverride,
     deleteOverride,
     getOverrideForDate,
+    getDaysWithBookings,
+    bulkDeleteOverrides,
+    bulkCreateOverrides,
+    applyPreset,
   };
 };

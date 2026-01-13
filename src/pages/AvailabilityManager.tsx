@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useAvailabilityComputation, DayAvailability } from '@/hooks/useAvailabilityComputation';
-import { useAvailabilityOverrides } from '@/hooks/useAvailabilityOverrides';
+import { useAvailabilityOverrides, PresetType } from '@/hooks/useAvailabilityOverrides';
 import { useAvailabilityRules, AvailabilityRule } from '@/hooks/useAvailabilityRules';
 import { AvailabilityOverrideModal } from '@/components/availability/AvailabilityOverrideModal';
 import { AvailabilityLegend } from '@/components/availability/AvailabilityLegend';
+import { QuickPresetsPanel } from '@/components/availability/QuickPresetsPanel';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -36,7 +37,7 @@ export default function AvailabilityManager() {
   const [showRulesModal, setShowRulesModal] = useState(false);
   
   const { getMonthAvailability, loading: computingAvailability } = useAvailabilityComputation();
-  const { overrides, fetchOverrides } = useAvailabilityOverrides(selectedProductId);
+  const { overrides, fetchOverrides, getDaysWithBookings, applyPreset } = useAvailabilityOverrides(selectedProductId);
   const { rules, createRule, updateRule } = useAvailabilityRules(selectedProductId);
 
   // Set default product when products load
@@ -72,6 +73,24 @@ export default function AvailabilityManager() {
   };
 
   const handleOverrideSaved = () => {
+    fetchOverrides();
+    loadMonthAvailability();
+  };
+
+  const handleApplyPreset = async (
+    preset: PresetType,
+    startDate: Date,
+    endDate: Date,
+    protectedDates: string[]
+  ): Promise<{ applied: number; skipped: number }> => {
+    // Get daily capacity from active rule
+    const activeRule = rules.find((r) => r.is_active);
+    const dailyCapacity = activeRule?.daily_capacity || 1;
+    
+    return applyPreset(preset, startDate, endDate, protectedDates, dailyCapacity);
+  };
+
+  const handlePresetsRefresh = () => {
     fetchOverrides();
     loadMonthAvailability();
   };
@@ -147,6 +166,18 @@ export default function AvailabilityManager() {
           </div>
         )}
       </div>
+
+      {/* Quick Presets Panel */}
+      {selectedProductId && (
+        <QuickPresetsPanel
+          productId={selectedProductId}
+          currentMonth={currentMonth}
+          rules={rules}
+          onApplyPreset={handleApplyPreset}
+          getDaysWithBookings={getDaysWithBookings}
+          onRefresh={handlePresetsRefresh}
+        />
+      )}
 
       {/* Legend */}
       <AvailabilityLegend />
