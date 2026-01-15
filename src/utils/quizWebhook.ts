@@ -1,7 +1,6 @@
-
 import { trackReferralConversion } from './affiliateTracking';
 
-const QUIZ_WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/2807df9e-fe4b-4ee0-a4c0-e357960d1c31";
+const WEBHOOK_PROXY_URL = "https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy";
 
 export const sendQuizWebhook = async (
   userLead: {
@@ -24,21 +23,24 @@ export const sendQuizWebhook = async (
   }
 ) => {
   try {
-    await fetch(QUIZ_WEBHOOK_URL, {
+    await fetch(WEBHOOK_PROXY_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        event: "quiz_completed",
-        user: {
-          full_name: userLead.fullName,
-          email: userLead.email,
-          wedding_date: userLead.weddingDate,
-        },
-        quiz_answers: answers,
-        recommendation: recommendation,
-        timestamp: new Date().toISOString()
+        webhook_type: "quiz_completion",
+        payload: {
+          event: "quiz_completed",
+          user: {
+            full_name: userLead.fullName,
+            email: userLead.email,
+            wedding_date: userLead.weddingDate,
+          },
+          quiz_answers: answers,
+          recommendation: recommendation,
+          timestamp: new Date().toISOString()
+        }
       }),
     });
     

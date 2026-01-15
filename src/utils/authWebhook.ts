@@ -1,19 +1,21 @@
 
-
-const WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/3d243bf4-c682-4903-a4b7-08bb9ef98b04";
+const WEBHOOK_PROXY_URL = "https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy";
 
 export const sendAuthWebhook = async (event: "login" | "register", userId: string, email: string) => {
   try {
-    await fetch(WEBHOOK_URL, {
+    await fetch(WEBHOOK_PROXY_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        event,
-        user_id: userId,
-        email,
-        timestamp: new Date().toISOString()
+        webhook_type: "auth_events",
+        payload: {
+          event,
+          user_id: userId,
+          email,
+          timestamp: new Date().toISOString()
+        }
       }),
     });
     console.log(`Webhook sent successfully for ${event} event`);
@@ -30,18 +32,21 @@ export const sendGoogleAuthWebhook = async (
   fullName: string
 ) => {
   try {
-    await fetch(WEBHOOK_URL, {
+    await fetch(WEBHOOK_PROXY_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        event,
-        provider: "google",
-        user_id: userId,
-        email,
-        name: fullName,
-        timestamp: new Date().toISOString()
+        webhook_type: "auth_events",
+        payload: {
+          event,
+          provider: "google",
+          user_id: userId,
+          email,
+          name: fullName,
+          timestamp: new Date().toISOString()
+        }
       }),
     });
     console.log(`Google auth webhook sent successfully for ${event} event`);

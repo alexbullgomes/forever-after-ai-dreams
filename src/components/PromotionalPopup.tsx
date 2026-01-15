@@ -146,20 +146,23 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
         submitted_at: new Date().toISOString(),
       }));
 
-      // Send to webhook
-      const response = await fetch("https://agcreationmkt.cloud/webhook/0fe48135-df84-4d58-8998-11a3aafb23b7", {
+      // Send to webhook via proxy
+      const response = await fetch("https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: user?.id,
-          fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
-          email: user?.email,
-          cellphone: phoneNumber.trim(),
-          visitor_id: visitorId,
-          popup_id: config.id,
-          event: "wedding_discount_popup",
+          webhook_type: "promotional_popup",
+          payload: {
+            userId: user?.id,
+            fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
+            email: user?.email,
+            cellphone: phoneNumber.trim(),
+            visitor_id: visitorId,
+            popup_id: config.id,
+            event: "wedding_discount_popup",
+          }
         }),
       });
 

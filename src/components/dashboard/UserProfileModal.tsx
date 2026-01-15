@@ -265,13 +265,17 @@ export const UserProfileModal = ({
         package_consultation: profile.package_consultation
       };
 
-      // Send webhook to n8n
-      const response = await fetch('https://agcreationmkt.cloud/webhook/edc35eb2-12c7-4d57-ab83-5d7d2b2b8f42', {
+      // Send webhook via proxy (admin only)
+      const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
-        body: JSON.stringify(webhookPayload),
+        body: JSON.stringify({
+          webhook_type: 'ai_summary',
+          payload: webhookPayload
+        }),
       });
 
       if (response.ok) {
@@ -306,13 +310,17 @@ export const UserProfileModal = ({
         visitor_id: profile.visitor_id
       };
 
-      // Send webhook to the specified URL
-      const response = await fetch('https://agcreationmkt.cloud/webhook/c3927752-91fc-4737-ade9-eed13cb77928', {
+      // Send webhook via proxy (admin only)
+      const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
-        body: JSON.stringify(webhookPayload),
+        body: JSON.stringify({
+          webhook_type: 'visitor_summary',
+          payload: webhookPayload
+        }),
       });
 
       if (response.ok) {

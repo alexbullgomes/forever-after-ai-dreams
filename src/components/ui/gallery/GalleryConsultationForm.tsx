@@ -86,9 +86,7 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
 
       if (error) throw error;
 
-      // Send webhook notification
-      const webhookUrl = 'https://agcreationmkt.cloud/webhook/8e26e595-d079-4d4b-8c15-a31824f98aed';
-      
+      // Send webhook notification via proxy
       const payload = {
         user_id: user.id,
         user_email: user.email,
@@ -103,12 +101,15 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
         source: 'Gallery Like Button'
       };
 
-      await fetch(webhookUrl, {
+      await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          webhook_type: 'gallery_consultation',
+          payload
+        }),
       });
 
       toast({

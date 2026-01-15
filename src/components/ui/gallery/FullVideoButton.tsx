@@ -41,13 +41,16 @@ const FullVideoButton: React.FC<FullVideoButtonProps> = ({
         }
       };
 
-      // Send webhook request
-      await fetch('https://agcreationmkt.cloud/webhook/8e26e595-d079-4d4b-8c15-a31824f98aed', {
+      // Send webhook request via proxy
+      await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(webhookData),
+        body: JSON.stringify({
+          webhook_type: 'gallery_view',
+          payload: webhookData
+        }),
       });
 
       // Open video in new tab
