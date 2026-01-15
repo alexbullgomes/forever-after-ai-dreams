@@ -27,19 +27,22 @@ export const submitConsultationRequest = async (
   cellphone: string,
   packageInfo: { name: string; price: string; type: string }
 ) => {
-  const response = await fetch('https://agcreationmkt.cloud/webhook/36fb4d39-8ebe-4ab6-b781-c7d8b73cc9cb', {
+  const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      event: 'consultation_request',
-      email,
-      cellphone,
-      package_info: packageInfo,
-      discount_offer: '30% OFF',
-      source: packageInfo.name,
-      timestamp: new Date().toISOString()
+      webhook_type: 'consultation_form',
+      payload: {
+        event: 'consultation_request',
+        email,
+        cellphone,
+        package_info: packageInfo,
+        discount_offer: '30% OFF',
+        source: packageInfo.name,
+        timestamp: new Date().toISOString()
+      }
     }),
   });
 

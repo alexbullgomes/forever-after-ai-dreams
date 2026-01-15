@@ -34,12 +34,15 @@ const Contact = () => {
         source: "Dream Weddings Contact Form"
       };
       console.log('Sending webhook data:', webhookData);
-      const response = await fetch('https://automation.agcreationmkt.com/webhook/8f035739-6773-4408-933c-233326195f92', {
+      const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(webhookData)
+        body: JSON.stringify({
+          webhook_type: 'contact_form',
+          payload: webhookData
+        })
       });
       if (response.ok) {
         // Track referral conversion for contact form

@@ -15,7 +15,7 @@ interface HomepageWebhookPayload {
   }>;
 }
 
-const WEBHOOK_URL = "https://agcreationmkt.cloud/webhook/067583ff-25ca-4f0a-8f67-15d18e8a1264";
+const WEBHOOK_PROXY_URL = "https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy";
 
 const determineMessageType = (files?: File[]): "text" | "audio" | "image" => {
   if (!files || files.length === 0) return "text";
@@ -88,7 +88,7 @@ export const sendHomepageWebhookMessage = async (
   const timestamp = getPacificTimestamp();
 
   console.log('[EVA-CHAT-VISITOR] Initiating request', {
-    url: WEBHOOK_URL,
+    url: WEBHOOK_PROXY_URL,
     messageType,
     hasFiles: !!(files && files.length > 0),
     visitorId,
@@ -107,16 +107,19 @@ export const sendHomepageWebhookMessage = async (
         visitorId,
       };
 
-      console.log('[EVA-CHAT-VISITOR] Sending JSON payload, size:', JSON.stringify(payload).length);
+      console.log('[EVA-CHAT-VISITOR] Sending JSON payload via proxy, size:', JSON.stringify(payload).length);
 
-      const response = await fetchWithRetry(WEBHOOK_URL, {
+      const response = await fetchWithRetry(WEBHOOK_PROXY_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json, text/plain, */*",
         },
         mode: 'cors',
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          webhook_type: 'homepage_chat',
+          payload
+        }),
       });
 
       console.log('[EVA-CHAT-VISITOR] Response received', {
@@ -134,28 +137,35 @@ export const sendHomepageWebhookMessage = async (
 
       return await safeParseResponse(response);
     } else {
-      // Message with files
-      const formData = new FormData();
-      formData.append("message", message);
-      formData.append("timestamp", timestamp);
-      formData.append("source", "Homepage Visitor");
-      formData.append("type", messageType);
-      formData.append("visitorId", visitorId);
+      // Message with files - send as JSON with file metadata
+      // Note: For file uploads, we can't use FormData through proxy easily
+      // Instead, we'll just send the message without file content
+      const payload: HomepageWebhookPayload = {
+        message,
+        timestamp,
+        source: "Homepage Visitor",
+        type: messageType,
+        visitorId,
+        files: files.map((file) => ({
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        })),
+      };
 
-      // Add files to FormData
-      files.forEach((file, index) => {
-        formData.append(`file_${index}`, file);
-        formData.append(`fileName_${index}`, file.name);
-        formData.append(`fileType_${index}`, file.type);
-        formData.append(`fileSize_${index}`, file.size.toString());
-      });
+      console.log('[EVA-CHAT-VISITOR] Sending file metadata via proxy:', files.length, 'files');
 
-      console.log('[EVA-CHAT-VISITOR] Sending FormData with files:', files.length);
-
-      const response = await fetchWithRetry(WEBHOOK_URL, {
+      const response = await fetchWithRetry(WEBHOOK_PROXY_URL, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json, text/plain, */*",
+        },
         mode: 'cors',
-        body: formData,
+        body: JSON.stringify({
+          webhook_type: 'homepage_chat',
+          payload
+        }),
       });
 
       console.log('[EVA-CHAT-VISITOR] Response received', {
@@ -178,7 +188,7 @@ export const sendHomepageWebhookMessage = async (
       name: (error as Error)?.name,
       message: (error as Error)?.message,
       type: error instanceof TypeError ? 'NetworkError/CORS' : 'Other',
-      url: WEBHOOK_URL,
+      url: WEBHOOK_PROXY_URL,
       timestamp: new Date().toISOString()
     };
     console.error('[EVA-CHAT-VISITOR] Request failed:', errorInfo);

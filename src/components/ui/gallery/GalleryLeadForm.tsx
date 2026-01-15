@@ -171,12 +171,15 @@ const GalleryLeadForm = forwardRef<GalleryLeadFormRef, GalleryLeadFormProps>(({
         };
       }
 
-      const response = await fetch('https://agcreationmkt.cloud/webhook/dc84492f-9c06-423a-b4fe-84a7e36f801f', {
+      const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          webhook_type: 'gallery_lead',
+          payload
+        }),
       });
 
       if (!response.ok) {

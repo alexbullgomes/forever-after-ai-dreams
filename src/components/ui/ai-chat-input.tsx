@@ -203,16 +203,19 @@ const AIChatInput = ({ onSendMessage }: AIChatInputProps) => {
     if (onSendMessage) {
       await onSendMessage(message, files);
     } else {
-      // Fallback to original webhook call if no onSendMessage prop
+      // Fallback to webhook proxy call if no onSendMessage prop
       try {
-        const response = await fetch('https://automation.agcreationmkt.com/webhook/79834679-8b0e-4dfb-9fbe-408593849da1', {
+        const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: message,
-            timestamp: new Date().toISOString(),
+            webhook_type: 'ai_chat_input',
+            payload: {
+              message: message,
+              timestamp: new Date().toISOString(),
+            }
           }),
         });
         
