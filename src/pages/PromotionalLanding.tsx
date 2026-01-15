@@ -183,16 +183,43 @@ const PromotionalLanding = () => {
     },
   ];
 
+  // Build Service schema for structured data
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": campaign.title,
+    "description": campaign.meta_description || campaign.banner_tagline,
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Everafter Studio",
+      "url": "https://everafter-studio.lovable.app"
+    },
+    "areaServed": "California, USA",
+    "image": campaign.meta_image_url || campaign.banner_poster_url
+  };
+
   return (
     <>
       <Helmet>
-        <title>{campaign.meta_title || campaign.title} | Everafter</title>
+        <title>{campaign.meta_title || campaign.title} | Everafter Studio</title>
         <meta name="description" content={campaign.meta_description || campaign.banner_tagline} />
-        <meta property="og:title" content={campaign.meta_title || campaign.title} />
+        <link rel="canonical" href={`https://everafter-studio.lovable.app/promo/${campaign.slug}`} />
+        
+        <meta property="og:title" content={`${campaign.meta_title || campaign.title} | Everafter Studio`} />
         <meta property="og:description" content={campaign.meta_description || campaign.banner_tagline} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Everafter Studio" />
         {campaign.meta_image_url && <meta property="og:image" content={campaign.meta_image_url} />}
-        <meta property="og:url" content={`https://everafter.lovable.app/promo/${campaign.slug}`} />
+        <meta property="og:url" content={`https://everafter-studio.lovable.app/promo/${campaign.slug}`} />
+        
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@everafterca" />
+        <meta name="twitter:title" content={`${campaign.meta_title || campaign.title} | Everafter Studio`} />
+        <meta name="twitter:description" content={campaign.meta_description || campaign.banner_tagline} />
+        {campaign.meta_image_url && <meta name="twitter:image" content={campaign.meta_image_url} />}
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
         
         {/* Inject HEAD tracking scripts with sanitization */}
         {headTrackingScripts.map((script: TrackingScript) => {

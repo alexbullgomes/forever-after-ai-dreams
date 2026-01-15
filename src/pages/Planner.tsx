@@ -8,6 +8,7 @@ import { CampaignCardsSection } from "@/components/planner/CampaignCardsSection"
 import { ProductsSection } from "@/components/planner/ProductsSection";
 import EverAfterGallery from "@/components/galleries/EverAfterGallery";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
+import SEO from "@/components/SEO";
 
 const Planner = () => {
   const { user, loading } = useAuth();
@@ -35,6 +36,11 @@ const Planner = () => {
 
   return (
     <div className="min-h-screen bg-brand-light">
+      <SEO 
+        title="Services"
+        description="Explore our wedding photography and videography services."
+        noIndex={true}
+      />
       <DashboardNavigation />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

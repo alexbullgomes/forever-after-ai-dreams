@@ -4,6 +4,7 @@ import QuizLanding from "@/components/quiz/QuizLanding";
 import QuizQuestion from "@/components/quiz/QuizQuestion";
 import LeadCapture from "@/components/quiz/LeadCapture";
 import QuizResult from "@/components/quiz/QuizResult";
+import SEO from "@/components/SEO";
 
 export type QuizAnswer = {
   questionId: number;
@@ -64,6 +65,11 @@ const WeddingQuiz = () => {
 
   return (
     <div className="min-h-screen bg-section-subtle">
+      <SEO 
+        title="Wedding Style Quiz - Find Your Perfect Package"
+        description="Discover your dream wedding photography & videography style with our 2-minute quiz. Get personalized package recommendations and exclusive offers."
+        canonical="/weddingquiz"
+      />
       {currentStep === 'landing' && <QuizLanding onStartQuiz={startQuiz} />}
       
       {currentStep === 'quiz' && (
