@@ -281,24 +281,18 @@ export const useAvailabilityOverrides = (productId?: string) => {
 
     for (const day of days) {
       const dateStr = format(day, 'yyyy-MM-dd');
-      const dayOfWeek = getDay(day); // 0 = Sunday, 6 = Saturday
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const dayOfWeek = getDay(day); // 0 = Sunday, 1 = Monday, ..., 5 = Friday, 6 = Saturday
       const isProtected = protectedDates.includes(dateStr);
+      
+      // Extended weekend: Friday (5), Saturday (6), Sunday (0)
+      const isExtendedWeekend = dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6;
+      // Weekdays: Monday (1) to Thursday (4)
+      const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 4;
 
       if (preset === 'weekdays-available') {
-        if (isWeekend) {
-          // Block weekends
-          newOverrides.push({
-            product_id: productId,
-            date: dateStr,
-            status: 'blocked',
-            capacity_override: 0,
-            reason: 'Quick Preset: Weekend blocked',
-            start_at: null,
-            end_at: null,
-          });
-        } else if (!isProtected) {
-          // Set weekdays to available with full capacity
+        // Mon-Thu → Available, Fri-Sun → Limited
+        if (isWeekday && !isProtected) {
+          // Set weekdays (Mon-Thu) to available with full capacity
           newOverrides.push({
             product_id: productId,
             date: dateStr,
@@ -308,33 +302,45 @@ export const useAvailabilityOverrides = (productId?: string) => {
             start_at: null,
             end_at: null,
           });
-        } else {
-          skipped++;
-        }
-      } else if (preset === 'weekends-available') {
-        if (!isWeekend) {
-          // Block weekdays
+        } else if (isExtendedWeekend) {
+          // Set extended weekend (Fri-Sun) to limited
           newOverrides.push({
             product_id: productId,
             date: dateStr,
-            status: 'blocked',
-            capacity_override: 0,
-            reason: 'Quick Preset: Weekday blocked',
+            status: 'limited',
+            capacity_override: null, // Keep existing capacity from rules
+            reason: 'Quick Preset: Extended weekend limited',
             start_at: null,
             end_at: null,
           });
-        } else if (!isProtected) {
-          // Set weekends to available with full capacity
+        } else if (isProtected) {
+          skipped++;
+        }
+      } else if (preset === 'weekends-available') {
+        // Fri-Sun → Available, Mon-Thu → Limited
+        if (isExtendedWeekend && !isProtected) {
+          // Set extended weekend (Fri-Sun) to available with full capacity
           newOverrides.push({
             product_id: productId,
             date: dateStr,
             status: 'available',
             capacity_override: dailyCapacity,
-            reason: 'Quick Preset: Weekend available',
+            reason: 'Quick Preset: Extended weekend available',
             start_at: null,
             end_at: null,
           });
-        } else {
+        } else if (isWeekday) {
+          // Set weekdays (Mon-Thu) to limited
+          newOverrides.push({
+            product_id: productId,
+            date: dateStr,
+            status: 'limited',
+            capacity_override: null, // Keep existing capacity from rules
+            reason: 'Quick Preset: Weekday limited',
+            start_at: null,
+            end_at: null,
+          });
+        } else if (isProtected) {
           skipped++;
         }
       }
