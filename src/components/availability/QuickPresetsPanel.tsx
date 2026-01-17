@@ -176,9 +176,9 @@ export function QuickPresetsPanel({
   const getPresetLabel = (preset: PresetType): string => {
     switch (preset) {
       case 'weekdays-available':
-        return 'Weekdays Available (Mon-Fri) / Weekends Blocked (Sat-Sun)';
+        return 'Weekdays Available (Mon-Thu) / Extended Weekend Limited (Fri-Sun)';
       case 'weekends-available':
-        return 'Weekends Available (Sat-Sun) / Weekdays Blocked (Mon-Fri)';
+        return 'Extended Weekend Available (Fri-Sun) / Weekdays Limited (Mon-Thu)';
       case 'reset':
         return 'Reset to Default Rules (clear overrides)';
       default:
@@ -263,7 +263,7 @@ export function QuickPresetsPanel({
                 <span className="font-medium">Weekdays Available</span>
               </div>
               <span className="text-xs text-muted-foreground text-left">
-                Mon-Fri open, Sat-Sun blocked
+                Mon-Thu open, Fri-Sun limited
               </span>
             </Button>
 
@@ -278,7 +278,7 @@ export function QuickPresetsPanel({
                 <span className="font-medium">Weekends Available</span>
               </div>
               <span className="text-xs text-muted-foreground text-left">
-                Sat-Sun open, Mon-Fri blocked
+                Fri-Sun open, Mon-Thu limited
               </span>
             </Button>
 
