@@ -114,9 +114,9 @@ export const useAffiliate = () => {
       const referralsList = data || [];
       setReferrals(referralsList);
 
-      // Calculate stats
+      // Calculate stats - totalReferrals counts ALL referrals regardless of status
       const stats: ReferralStats = {
-        totalReferrals: referralsList.filter(r => r.deal_status === 'registered' || !r.deal_status).length,
+        totalReferrals: referralsList.length,
         negotiating: referralsList.filter(r => r.deal_status === 'negotiating').length,
         dealsClosed: referralsList.filter(r => r.deal_status === 'deal_closed').length
       };
