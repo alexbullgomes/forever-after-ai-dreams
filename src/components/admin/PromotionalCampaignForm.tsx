@@ -12,10 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 import { usePromotionalCampaignGallery } from "@/hooks/usePromotionalCampaignGallery";
 import { TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { slugify } from "@/utils/slugify";
-import { Loader2, Plus, Trash2, Eye, EyeOff, Edit, Code } from "lucide-react";
+import { Loader2, Plus, Trash2, Eye, EyeOff, Edit, Code, Check, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { CampaignProductsTab } from "@/components/admin/CampaignProductsTab";
+import { CampaignGalleryItemCard } from "@/components/admin/CampaignGalleryItemCard";
 
 interface Campaign {
   id?: string;
@@ -518,21 +519,14 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                     {loadingGallery ? (
                       <p>Loading gallery items...</p>
                     ) : (
-                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                         {cards?.map((card) => (
-                          <div key={card.id} className="border rounded-md p-2">
-                            <h4 className="text-sm font-semibold">{card.title}</h4>
-                            <p className="text-xs text-muted-foreground">{card.subtitle}</p>
-                            <div className="flex justify-between items-center mt-2">
-                              <Button variant="outline" size="sm">
-                                <Eye className="h-4 w-4 mr-2" />
-                                View
-                              </Button>
-                              <Button variant="destructive" size="sm" onClick={() => deleteCard(card.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
+                          <CampaignGalleryItemCard
+                            key={card.id}
+                            card={card}
+                            onUpdate={updateCard}
+                            onDelete={deleteCard}
+                          />
                         ))}
                       </div>
                     )}
