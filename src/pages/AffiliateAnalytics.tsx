@@ -86,6 +86,8 @@ const AffiliateAnalytics = () => {
     switch (status) {
       case 'deal_closed':
         return <Badge className="bg-green-100 text-green-800">Deal Closed</Badge>;
+      case 'negotiating':
+        return <Badge className="bg-amber-100 text-amber-800">Negotiating</Badge>;
       case 'cancelled':
         return <Badge variant="destructive">Cancelled</Badge>;
       default:
@@ -348,6 +350,7 @@ const AffiliateAnalytics = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="registered">Registered</SelectItem>
+                  <SelectItem value="negotiating">Negotiating</SelectItem>
                   <SelectItem value="deal_closed">Deal Closed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>

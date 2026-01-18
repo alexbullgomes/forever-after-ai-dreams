@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Copy, ExternalLink, Users, DollarSign, Edit, Check, X, Link2, Megaphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateCampaignReferralUrl } from "@/utils/affiliateTracking";
+import ReferralMetricsCards from "./ReferralMetricsCards";
+import ReferralsList from "./ReferralsList";
 
 interface Campaign {
   id: string;
@@ -19,7 +21,16 @@ interface Campaign {
 
 const AffiliatePortal = () => {
   const { user } = useAuth();
-  const { affiliate, loading, createAffiliateAccount, getReferralUrl, updateReferralCode, refetch } = useAffiliate();
+  const { 
+    affiliate, 
+    loading, 
+    createAffiliateAccount, 
+    getReferralUrl, 
+    updateReferralCode, 
+    refetch,
+    referralStats,
+    referrals 
+  } = useAffiliate();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [campaignCopied, setCampaignCopied] = useState(false);
@@ -45,28 +56,6 @@ const AffiliatePortal = () => {
     
     fetchCampaigns();
   }, []);
-
-  // Real-time subscription for affiliate stats updates
-  useEffect(() => {
-    if (!affiliate?.id) return;
-
-    const channel = supabase
-      .channel('affiliate-stats-updates')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'referrals',
-        filter: `affiliate_id=eq.${affiliate.id}`
-      }, () => {
-        console.log('Referral update detected, refetching...');
-        refetch();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [affiliate?.id, refetch]);
 
   // Update campaign referral URL when selection changes
   useEffect(() => {
@@ -229,7 +218,7 @@ const AffiliatePortal = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex items-center gap-4">
             <div>
               <h3 className="font-semibold mb-2">Your Referral Code</h3>
               {!isEditingCode ? (
@@ -276,15 +265,12 @@ const AffiliatePortal = () => {
                 </div>
               )}
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">Total Referrals</h3>
-              <div className="text-3xl font-bold text-brand-primary-from">
-                {affiliate.total_referrals}
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Performance Metrics */}
+      <ReferralMetricsCards stats={referralStats} />
 
       <Card>
         <CardHeader>
@@ -313,7 +299,7 @@ const AffiliatePortal = () => {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            When someone visits this link and fills out a form or registers, you'll earn a commission.
+            Track every deal from start to finish and earn your commission or rewards.
           </p>
         </CardContent>
       </Card>
@@ -381,6 +367,9 @@ const AffiliatePortal = () => {
           </p>
         </CardContent>
       </Card>
+
+      {/* Referrals List */}
+      <ReferralsList referrals={referrals} />
     </div>
   );
 };
