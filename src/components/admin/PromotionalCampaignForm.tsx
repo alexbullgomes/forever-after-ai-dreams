@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { CampaignProductsTab } from "@/components/admin/CampaignProductsTab";
 import { CampaignGalleryItemCard } from "@/components/admin/CampaignGalleryItemCard";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface Campaign {
   id?: string;
@@ -67,7 +82,40 @@ interface PromotionalCampaignFormProps {
 const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: PromotionalCampaignFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { cards, loading: loadingGallery, createCard, updateCard, deleteCard } = usePromotionalCampaignGallery(campaign?.id);
+  const { cards, loading: loadingGallery, createCard, updateCard, deleteCard, reorderCards } = usePromotionalCampaignGallery(campaign?.id);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (over && active.id !== over.id) {
+        const oldIndex = cards.findIndex((card) => card.id === active.id);
+        const newIndex = cards.findIndex((card) => card.id === over.id);
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const reorderedCards = arrayMove(cards, oldIndex, newIndex);
+          const updates = reorderedCards.map((card, index) => ({
+            id: card.id,
+            order_index: index,
+          }));
+          await reorderCards(updates);
+        }
+      }
+    },
+    [cards, reorderCards]
+  );
   
   // Tracking scripts state
   const [trackingScripts, setTrackingScripts] = useState<TrackingScript[]>([]);
@@ -514,21 +562,39 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                 <Card>
                   <CardHeader>
                     <CardTitle>Gallery Items</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Drag items to reorder. Changes save automatically.
+                    </p>
                   </CardHeader>
                   <CardContent>
                     {loadingGallery ? (
                       <p>Loading gallery items...</p>
+                    ) : cards && cards.length > 0 ? (
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={cards.map((card) => card.id)}
+                          strategy={rectSortingStrategy}
+                        >
+                          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                            {cards.map((card) => (
+                              <CampaignGalleryItemCard
+                                key={card.id}
+                                card={card}
+                                onUpdate={updateCard}
+                                onDelete={deleteCard}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
                     ) : (
-                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                        {cards?.map((card) => (
-                          <CampaignGalleryItemCard
-                            key={card.id}
-                            card={card}
-                            onUpdate={updateCard}
-                            onDelete={deleteCard}
-                          />
-                        ))}
-                      </div>
+                      <p className="text-muted-foreground text-center py-8">
+                        No gallery items yet. Add one below.
+                      </p>
                     )}
                   </CardContent>
                 </Card>

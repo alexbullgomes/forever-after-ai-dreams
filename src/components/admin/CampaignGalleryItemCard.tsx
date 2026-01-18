@@ -2,13 +2,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, Edit, Trash2, Check, X } from "lucide-react";
+import { Eye, Edit, Trash2, Check, X, GripVertical } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface GalleryItem {
   id: string;
   title: string;
   subtitle?: string;
   category: string;
+  order_index: number;
   thumb_mp4_url?: string;
   thumb_image_url?: string;
   full_video_url?: string;
@@ -35,6 +38,21 @@ export const CampaignGalleryItemCard = ({
     thumb_image_url: card.thumb_image_url || "",
     full_video_url: card.full_video_url || "",
   });
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: card.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const handleStartEdit = () => {
     setEditFormData({
@@ -75,7 +93,11 @@ export const CampaignGalleryItemCard = ({
 
   if (isEditing) {
     return (
-      <div className="border rounded-md p-3 space-y-3 bg-muted/30">
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="border rounded-md p-3 space-y-3 bg-muted/30"
+      >
         <div className="space-y-2">
           <div>
             <Label htmlFor={`edit-title-${card.id}`} className="text-xs">
@@ -239,9 +261,25 @@ export const CampaignGalleryItemCard = ({
   }
 
   return (
-    <div className="border rounded-md p-2">
-      <h4 className="text-sm font-semibold">{card.title}</h4>
-      <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="border rounded-md p-2 bg-background"
+    >
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          className="mt-1 cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-semibold truncate">{card.title}</h4>
+          <p className="text-xs text-muted-foreground truncate">{card.subtitle}</p>
+        </div>
+      </div>
       <div className="flex justify-between items-center mt-2 gap-1">
         <Button variant="outline" size="sm" className="h-7 px-2">
           <Eye className="h-3 w-3 mr-1" />
