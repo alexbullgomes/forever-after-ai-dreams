@@ -1317,30 +1317,45 @@ export type Database = {
       }
       referrals: {
         Row: {
+          admin_notes: string | null
           affiliate_id: string
+          campaign_source: string | null
+          commission_amount: number | null
+          commission_paid_at: string | null
           conversion_data: Json | null
           conversion_type: string
           created_at: string
+          deal_status: string | null
           id: string
           referral_code: string
           referred_user_id: string | null
           visitor_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           affiliate_id: string
+          campaign_source?: string | null
+          commission_amount?: number | null
+          commission_paid_at?: string | null
           conversion_data?: Json | null
           conversion_type: string
           created_at?: string
+          deal_status?: string | null
           id?: string
           referral_code: string
           referred_user_id?: string | null
           visitor_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           affiliate_id?: string
+          campaign_source?: string | null
+          commission_amount?: number | null
+          commission_paid_at?: string | null
           conversion_data?: Json | null
           conversion_type?: string
           created_at?: string
+          deal_status?: string | null
           id?: string
           referral_code?: string
           referred_user_id?: string | null

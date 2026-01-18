@@ -165,13 +165,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Link visitorId to user profile when signing in
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
-            // Link visitor to user profile (unified visitor tracking)
+        // Link visitor to user profile (unified visitor tracking)
             await linkVisitorToUser(session.user.id);
             linkVisitorIdToProfile(session.user.id);
             
             // Track referral conversion for new registrations
-            const isNewUser = session.user.created_at === session.user.last_sign_in_at;
+            // Use a more reliable check: user was created within last 10 seconds
+            const createdAt = new Date(session.user.created_at);
+            const now = new Date();
+            const isNewUser = (now.getTime() - createdAt.getTime()) < 10000; // 10 seconds
+            
             if (isNewUser) {
+              console.log('New user detected, tracking referral conversion...');
               await trackReferralConversion('registration', {
                 user_email: session.user.email,
                 user_name: session.user.user_metadata?.full_name || '',
