@@ -11,11 +11,31 @@ interface AffiliateData {
   created_at: string;
 }
 
+interface ReferralStats {
+  totalReferrals: number;
+  negotiating: number;
+  dealsClosed: number;
+}
+
+interface UserReferral {
+  id: string;
+  deal_status: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  campaign_source: string | null;
+}
+
 export const useAffiliate = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [affiliate, setAffiliate] = useState<AffiliateData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [referralStats, setReferralStats] = useState<ReferralStats>({
+    totalReferrals: 0,
+    negotiating: 0,
+    dealsClosed: 0
+  });
+  const [referrals, setReferrals] = useState<UserReferral[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -24,6 +44,34 @@ export const useAffiliate = () => {
       setLoading(false);
     }
   }, [user]);
+
+  // Fetch referrals when affiliate is loaded
+  useEffect(() => {
+    if (affiliate?.id) {
+      fetchReferrals();
+    }
+  }, [affiliate?.id]);
+
+  // Real-time subscription for referral updates
+  useEffect(() => {
+    if (!affiliate?.id) return;
+
+    const channel = supabase
+      .channel('user-referral-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'referrals',
+        filter: `affiliate_id=eq.${affiliate.id}`
+      }, () => {
+        fetchReferrals();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [affiliate?.id]);
 
   const fetchAffiliateData = async () => {
     if (!user) return;
@@ -45,6 +93,36 @@ export const useAffiliate = () => {
       console.error('Error in fetchAffiliateData:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchReferrals = async () => {
+    if (!affiliate?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('referrals')
+        .select('id, deal_status, admin_notes, created_at, campaign_source')
+        .eq('affiliate_id', affiliate.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching referrals:', error);
+        return;
+      }
+
+      const referralsList = data || [];
+      setReferrals(referralsList);
+
+      // Calculate stats
+      const stats: ReferralStats = {
+        totalReferrals: referralsList.filter(r => r.deal_status === 'registered' || !r.deal_status).length,
+        negotiating: referralsList.filter(r => r.deal_status === 'negotiating').length,
+        dealsClosed: referralsList.filter(r => r.deal_status === 'deal_closed').length
+      };
+      setReferralStats(stats);
+    } catch (error) {
+      console.error('Error in fetchReferrals:', error);
     }
   };
 
@@ -213,6 +291,9 @@ export const useAffiliate = () => {
     createAffiliateAccount,
     getReferralUrl,
     updateReferralCode,
-    refetch: fetchAffiliateData
+    refetch: fetchAffiliateData,
+    referralStats,
+    referrals,
+    refetchReferrals: fetchReferrals
   };
 };
