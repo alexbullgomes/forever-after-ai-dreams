@@ -8,12 +8,14 @@ import { processFiles } from "./utils/fileUtils";
 import { sendWebhookMessage } from "./utils/webhookService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CardMessageData } from "@/types/chat";
+
 interface DatabaseMessage {
   id: number;
   conversation_id: string;
   user_id: string | null;
   role: 'user' | 'ai' | 'human';
-  type: 'text' | 'audio';
+  type: 'text' | 'audio' | 'card';
   content: string | null;
   audio_url: string | null;
   created_at: string;
@@ -175,11 +177,23 @@ const AIAssistantSection = ({ showHeader = true }: AIAssistantSectionProps) => {
       });
     }
 
+    // Parse card data if message type is 'card'
+    let cardData: CardMessageData | undefined;
+    if (dbMessage.type === 'card' && dbMessage.content) {
+      try {
+        cardData = JSON.parse(dbMessage.content);
+      } catch (e) {
+        console.error('Failed to parse card data:', e);
+      }
+    }
+
     return {
       id: dbMessage.id.toString(),
-      message: dbMessage.content || 'Audio message',
+      message: dbMessage.content || (dbMessage.type === 'card' ? '' : 'Audio message'),
       timestamp: dbMessage.created_at,
       isUser: dbMessage.role === 'user',
+      type: dbMessage.type,
+      cardData,
       files: files.length > 0 ? files : undefined
     };
   };
