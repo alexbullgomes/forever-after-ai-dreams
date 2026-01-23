@@ -52,19 +52,19 @@ const Planner = () => {
           </p>
         </div>
 
-        {/* Products Section - After title, before gallery */}
+        {/* AI Assistant Section */}
+        <AIAssistantSection />
+
+        {/* Active Campaigns Section */}
+        <CampaignCardsSection />
+
+        {/* Products Section */}
         <ProductsSection />
 
         {/* EverAfter Gallery */}
         <div id="everafter-gallery" className="my-16">
           <EverAfterGallery />
         </div>
-
-        {/* Active Campaigns Section */}
-        <CampaignCardsSection />
-
-        {/* AI Assistant Section */}
-        <AIAssistantSection />
         
         {/* Explore Services Section */}
         <ExploreServicesSection />

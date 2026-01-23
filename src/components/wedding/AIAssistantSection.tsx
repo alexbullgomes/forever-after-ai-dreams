@@ -314,14 +314,7 @@ const AIAssistantSection = () => {
           <Heart className="w-8 h-8 text-white" />
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Assistant Planner</h2>
-        <p className="text-lg text-muted-foreground max-w-4xl mx-auto mb-8">Need photo or video services for your family, business, or personal moments? Send a quick message, voice note—we'll help you find the right package for your goals and budget.</p>
-        
-        <div className="mb-6">
-          <h3 className="text-2xl font-bold text-foreground mb-2">🎤 Voice note   💬 Ask anything</h3>
-          <span className="text-muted-foreground italic">
-            Get personalized options, plus exclusive deals or a free consultation.
-          </span>
-        </div>
+        <p className="text-lg text-muted-foreground max-w-4xl mx-auto">Need photo or video services for your family, business, or personal moments? Send a quick message, voice note—we'll help you find the right package for your goals and budget.</p>
       </div>
       
       <ChatHistory chatHistory={chatHistory} playingAudio={playingAudio} onAudioPlay={handleAudioPlay} />
