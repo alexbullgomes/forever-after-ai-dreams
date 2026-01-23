@@ -12,7 +12,10 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
 import { UserProfileModal } from './UserProfileModal';
-
+import { QuickActionsButton } from '@/components/chat/QuickActionsButton';
+import { EntityPickerModal } from '@/components/chat/EntityPickerModal';
+import { ChatCardMessage } from '@/components/chat/ChatCardMessage';
+import { CardMessageData } from '@/types/chat';
 
 interface Conversation {
   id: string;
@@ -32,6 +35,7 @@ interface Message {
   id: number;
   conversation_id: string;
   role: string;
+  type: string;
   content: string | null;
   created_at: string;
   user_name: string | null;
@@ -50,6 +54,7 @@ const ChatAdmin = () => {
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [showEntityPicker, setShowEntityPicker] = useState(false);
   
   // Manual scroll control
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -341,6 +346,43 @@ const ChatAdmin = () => {
     setIsProfileModalOpen(true);
   };
 
+  const handleSendCard = async (cardData: CardMessageData) => {
+    if (!selectedConversation) return;
+    
+    setSendingMessage(true);
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: selectedConversation.id,
+          role: 'human',
+          type: 'card',
+          content: JSON.stringify(cardData),
+          user_name: 'Admin',
+          user_email: 'admin@everafter.com'
+        });
+
+      if (error) throw error;
+
+      await fetchMessages(selectedConversation.id);
+      setShowEntityPicker(false);
+      
+      toast({
+        title: "Card sent",
+        description: `${cardData.entityType === 'product' ? 'Product' : 'Campaign'} card sent to customer.`,
+      });
+    } catch (error) {
+      console.error('Error sending card:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send card.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -499,27 +541,46 @@ const ChatAdmin = () => {
                   onScroll={handleScroll}
                 >
                   <div className="p-4 space-y-4">
-                    {messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
+                    {messages.map((message) => {
+                      // Parse card data if message type is 'card'
+                      let cardData: CardMessageData | null = null;
+                      if (message.type === 'card' && message.content) {
+                        try {
+                          cardData = JSON.parse(message.content);
+                        } catch (e) {
+                          console.error('Failed to parse card data:', e);
+                        }
+                      }
+                      
+                      return (
                         <div
-                          className={`max-w-[70%] p-3 rounded-lg ${
-                            message.role === 'user'
-                              ? 'bg-rose-500 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
+                          key={message.id}
+                          className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.role === 'user' ? 'text-rose-100' : 'text-gray-500'
-                          }`}>
-                            {format(new Date(message.created_at), 'MMM d, HH:mm')}
-                          </p>
+                          <div
+                            className={`max-w-[70%] ${message.type !== 'card' ? 'p-3' : 'p-2'} rounded-lg ${
+                              message.role === 'user'
+                                ? 'bg-rose-500 text-white'
+                                : 'bg-gray-100 text-gray-900'
+                            }`}
+                          >
+                            {message.type === 'card' && cardData ? (
+                              <ChatCardMessage 
+                                data={cardData} 
+                                variant={message.role === 'user' ? 'sent' : 'received'}
+                              />
+                            ) : (
+                              <p className="text-sm">{message.content}</p>
+                            )}
+                            <p className={`text-xs mt-1 ${
+                              message.role === 'user' ? 'text-rose-100' : 'text-gray-500'
+                            }`}>
+                              {format(new Date(message.created_at), 'MMM d, HH:mm')}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {messages.length === 0 && (
                       <div className="text-center py-8 text-gray-500">
                         No messages in this conversation yet
@@ -545,6 +606,13 @@ const ChatAdmin = () => {
               {/* Message Input - Fixed at bottom */}
               <div className="p-4 flex-shrink-0">
                 <div className="flex gap-2">
+                  {/* Quick Actions Button - Only visible in Human mode */}
+                  {selectedConversation.mode === 'human' && (
+                    <QuickActionsButton 
+                      onClick={() => setShowEntityPicker(true)} 
+                      disabled={sendingMessage}
+                    />
+                  )}
                   <Input
                     placeholder={selectedConversation.mode === 'ai' ? "AI mode active - messages disabled" : "Type your message..."}
                     value={newMessage}
@@ -561,6 +629,13 @@ const ChatAdmin = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Entity Picker Modal */}
+              <EntityPickerModal
+                open={showEntityPicker}
+                onOpenChange={setShowEntityPicker}
+                onSendCard={handleSendCard}
+              />
             </>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">

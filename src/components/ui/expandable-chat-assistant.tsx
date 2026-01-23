@@ -22,13 +22,15 @@ import { AudioPlayer } from "@/components/wedding/components/AudioPlayer";
 import { VoiceInput } from "@/components/ui/voice-input";
 import { toast } from "sonner";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
+import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { CardMessageData } from "@/types/chat";
 
 interface DatabaseMessage {
   id: number;
   conversation_id: string;
   user_id: string | null;
   role: 'user' | 'ai' | 'human';
-  type: 'text' | 'audio';
+  type: 'text' | 'audio' | 'card';
   content: string | null;
   audio_url: string | null;
   created_at: string;
@@ -39,6 +41,8 @@ interface ChatMessage {
   content: string;
   sender: "user" | "ai";
   timestamp: string;
+  type?: 'text' | 'audio' | 'card';
+  cardData?: CardMessageData;
   files?: Array<{
     fileUrl: string;
     fileType: string;
@@ -215,11 +219,23 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
       });
     }
 
+    // Parse card data if message type is 'card'
+    let cardData: CardMessageData | undefined;
+    if (dbMessage.type === 'card' && dbMessage.content) {
+      try {
+        cardData = JSON.parse(dbMessage.content);
+      } catch (e) {
+        console.error('Failed to parse card data:', e);
+      }
+    }
+
     return {
       id: dbMessage.id,
-      content: dbMessage.content || 'Audio message',
+      content: dbMessage.content || (dbMessage.type === 'card' ? '' : 'Audio message'),
       sender: dbMessage.role === 'user' ? 'user' : 'ai',
       timestamp: dbMessage.created_at,
+      type: dbMessage.type,
+      cardData,
       files: files.length > 0 ? files : undefined
     };
   };
@@ -539,30 +555,40 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
                 }
               >
                 <div className="space-y-2">
-                  {message.content}
-                  
-                   {/* File previews */}
-                   {message.files && message.files.map((file, fileIndex) => (
-                     <div key={fileIndex} className={`mt-2 ${file.fileType.startsWith('audio/') ? 'w-full' : ''}`}>
-                       {(file.fileType.startsWith('image/') || file.fileName.toLowerCase().endsWith('.heic') || file.fileName.toLowerCase().endsWith('.heif')) ? (
-                         <img 
-                           src={file.fileUrl} 
-                           alt={file.fileName}
-                           className="max-w-48 max-h-32 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                           onClick={() => window.open(file.fileUrl, '_blank')}
-                         />
-                       ) : file.fileType.startsWith('audio/') ? (
-                         <AudioPlayer
-                           fileUrl={file.fileUrl}
-                           fileName={file.fileName}
-                           fileId={`audio-${message.id}-${fileIndex}`}
-                           playingAudio={playingAudio}
-                           onPlay={handleAudioPlay}
-                           isUserMessage={message.sender === "user"}
-                         />
-                       ) : null}
-                     </div>
-                   ))}
+                  {/* Render card message if type is 'card' */}
+                  {message.type === 'card' && message.cardData ? (
+                    <ChatCardMessage 
+                      data={message.cardData} 
+                      variant={message.sender === 'user' ? 'sent' : 'received'}
+                    />
+                  ) : (
+                    <>
+                      {message.content}
+                      
+                      {/* File previews */}
+                      {message.files && message.files.map((file, fileIndex) => (
+                        <div key={fileIndex} className={`mt-2 ${file.fileType.startsWith('audio/') ? 'w-full' : ''}`}>
+                          {(file.fileType.startsWith('image/') || file.fileName.toLowerCase().endsWith('.heic') || file.fileName.toLowerCase().endsWith('.heif')) ? (
+                            <img 
+                              src={file.fileUrl} 
+                              alt={file.fileName}
+                              className="max-w-48 max-h-32 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => window.open(file.fileUrl, '_blank')}
+                            />
+                          ) : file.fileType.startsWith('audio/') ? (
+                            <AudioPlayer
+                              fileUrl={file.fileUrl}
+                              fileName={file.fileName}
+                              fileId={`audio-${message.id}-${fileIndex}`}
+                              playingAudio={playingAudio}
+                              onPlay={handleAudioPlay}
+                              isUserMessage={message.sender === "user"}
+                            />
+                          ) : null}
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
               </ChatBubbleMessage>
             </ChatBubble>

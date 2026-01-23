@@ -1,5 +1,7 @@
 
 import { AudioPlayer } from "./AudioPlayer";
+import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { CardMessageData } from "@/types/chat";
 
 export interface ChatMessage {
   id: string;
@@ -7,6 +9,8 @@ export interface ChatMessage {
   timestamp: string;
   isUser: boolean;
   response?: string;
+  type?: 'text' | 'audio' | 'card';
+  cardData?: CardMessageData;
   files?: Array<{
     fileUrl: string;
     fileType: string;
@@ -25,13 +29,21 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMe
   return (
     <div className={`flex ${chat.isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+        className={`max-w-xs lg:max-w-md ${chat.type !== 'card' ? 'px-4 py-2' : 'p-2'} rounded-lg ${
           chat.isUser
             ? 'bg-brand-primary-from text-white'
             : 'bg-card border border-border text-foreground'
         }`}
       >
-        <p className="text-sm">{chat.message}</p>
+        {/* Render card message if type is 'card' */}
+        {chat.type === 'card' && chat.cardData ? (
+          <ChatCardMessage 
+            data={chat.cardData} 
+            variant={chat.isUser ? 'sent' : 'received'}
+          />
+        ) : (
+          <p className="text-sm">{chat.message}</p>
+        )}
         
         {/* Display files if present */}
         {chat.files && chat.files.length > 0 && (
