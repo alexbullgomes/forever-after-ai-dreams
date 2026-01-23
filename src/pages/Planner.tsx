@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
-import { AIAssistantSection } from "@/components/wedding/AIAssistantSection";
 import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
 import { CampaignCardsSection } from "@/components/planner/CampaignCardsSection";
 import { ProductsSection } from "@/components/planner/ProductsSection";
@@ -51,9 +50,6 @@ const Planner = () => {
             Let our smart assistant help you find the perfect photo or video package for your special moment—whether it's a wedding, family milestone, or business event.
           </p>
         </div>
-
-        {/* AI Assistant Section */}
-        <AIAssistantSection />
 
         {/* Active Campaigns Section */}
         <CampaignCardsSection />

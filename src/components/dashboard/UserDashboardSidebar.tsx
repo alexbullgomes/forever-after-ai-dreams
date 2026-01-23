@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase } from "lucide-react";
+import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -18,6 +18,11 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigationItems = [
+  {
+    title: "AI Assistant",
+    url: "/user-dashboard/ai-assistant",
+    icon: MessageCircle,
+  },
   {
     title: "Service Tracking",
     url: "/user-dashboard/service-tracking",
