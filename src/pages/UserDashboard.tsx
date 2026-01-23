@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSidebar";
 import AffiliatePortal from "@/components/affiliate/AffiliatePortal";
 import ServiceTracking from "./ServiceTracking";
+import AIAssistant from "./AIAssistant";
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -97,6 +98,7 @@ const UserDashboard = () => {
             <Routes>
               <Route path="/" element={<AffiliatePortal />} />
               <Route path="/service-tracking" element={<ServiceTracking />} />
+              <Route path="/ai-assistant" element={<AIAssistant />} />
             </Routes>
           </main>
         </div>

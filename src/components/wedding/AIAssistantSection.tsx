@@ -19,7 +19,11 @@ interface DatabaseMessage {
   created_at: string;
 }
 
-const AIAssistantSection = () => {
+interface AIAssistantSectionProps {
+  showHeader?: boolean;
+}
+
+const AIAssistantSection = ({ showHeader = true }: AIAssistantSectionProps) => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -308,14 +312,16 @@ const AIAssistantSection = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 mb-16">
-      <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Heart className="w-8 h-8 text-white" />
+    <div className={showHeader ? "bg-white rounded-2xl shadow-xl p-8 mb-16" : ""}>
+      {showHeader && (
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-brand-gradient rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Heart className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Assistant Planner</h2>
+          <p className="text-lg text-muted-foreground max-w-4xl mx-auto">Need photo or video services for your family, business, or personal moments? Send a quick message, voice note—we'll help you find the right package for your goals and budget.</p>
         </div>
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Assistant Planner</h2>
-        <p className="text-lg text-muted-foreground max-w-4xl mx-auto">Need photo or video services for your family, business, or personal moments? Send a quick message, voice note—we'll help you find the right package for your goals and budget.</p>
-      </div>
+      )}
       
       <ChatHistory chatHistory={chatHistory} playingAudio={playingAudio} onAudioPlay={handleAudioPlay} />
       
