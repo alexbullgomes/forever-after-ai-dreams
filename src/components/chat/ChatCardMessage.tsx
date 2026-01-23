@@ -5,12 +5,38 @@ import { CardMessageData } from "@/types/chat";
 interface ChatCardMessageProps {
   data: CardMessageData;
   variant?: 'sent' | 'received';
+  onBookProduct?: (data: CardMessageData) => void;
 }
 
-export const ChatCardMessage = ({ data, variant = 'received' }: ChatCardMessageProps) => {
+// Helper to parse numeric price from priceLabel (e.g., "$350" → 350) for legacy cards
+const parsePriceFromLabel = (priceLabel: string | null): number | null => {
+  if (!priceLabel) return null;
+  const match = priceLabel.replace(/[^0-9.]/g, '');
+  const parsed = parseFloat(match);
+  return isNaN(parsed) ? null : parsed;
+};
+
+export const ChatCardMessage = ({ data, variant = 'received', onBookProduct }: ChatCardMessageProps) => {
   const isSent = variant === 'sent';
   
   const IconComponent = data.entityType === 'product' ? Package : Megaphone;
+
+  // Determine if we can trigger booking (product with valid price)
+  const canBook = data.entityType === 'product' && onBookProduct && 
+    (data.price !== undefined || parsePriceFromLabel(data.priceLabel) !== null);
+
+  const handleBookClick = () => {
+    if (!onBookProduct) return;
+    
+    // If price is missing but we can parse it from priceLabel, add it
+    const cardDataWithPrice: CardMessageData = {
+      ...data,
+      price: data.price ?? parsePriceFromLabel(data.priceLabel) ?? undefined,
+      currency: data.currency ?? 'USD'
+    };
+    
+    onBookProduct(cardDataWithPrice);
+  };
   
   return (
     <div className={cn(
@@ -68,7 +94,21 @@ export const ChatCardMessage = ({ data, variant = 'received' }: ChatCardMessageP
             </span>
           )}
           
-          {data.ctaUrl && (
+          {/* Product cards with booking capability use a button */}
+          {canBook ? (
+            <button
+              onClick={handleBookClick}
+              className={cn(
+                "text-xs px-2.5 py-1 rounded-md font-medium inline-flex items-center gap-1 transition-colors cursor-pointer",
+                isSent 
+                  ? "bg-white/20 text-white hover:bg-white/30" 
+                  : "bg-brand-gradient text-white hover:opacity-90"
+              )}
+            >
+              {data.ctaLabel || 'Book Now'}
+            </button>
+          ) : data.ctaUrl ? (
+            /* Campaign cards and fallback use external link */
             <a
               href={data.ctaUrl}
               target="_blank"
@@ -83,7 +123,7 @@ export const ChatCardMessage = ({ data, variant = 'received' }: ChatCardMessageP
               {data.ctaLabel || 'View'}
               <ExternalLink className="w-3 h-3" />
             </a>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

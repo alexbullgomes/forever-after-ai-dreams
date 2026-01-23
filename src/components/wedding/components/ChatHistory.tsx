@@ -1,14 +1,16 @@
 
 import { useEffect, useRef } from "react";
 import { ChatMessage, ChatMessageComponent } from "./ChatMessage";
+import { CardMessageData } from "@/types/chat";
 
 interface ChatHistoryProps {
   chatHistory: ChatMessage[];
   playingAudio: string | null;
   onAudioPlay: (audioUrl: string, audioId: string) => void;
+  onBookProduct?: (data: CardMessageData) => void;
 }
 
-export const ChatHistory = ({ chatHistory, playingAudio, onAudioPlay }: ChatHistoryProps) => {
+export const ChatHistory = ({ chatHistory, playingAudio, onAudioPlay, onBookProduct }: ChatHistoryProps) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages are added
@@ -32,6 +34,7 @@ export const ChatHistory = ({ chatHistory, playingAudio, onAudioPlay }: ChatHist
             chat={chat}
             playingAudio={playingAudio}
             onAudioPlay={onAudioPlay}
+            onBookProduct={onBookProduct}
           />
         ))}
       </div>
