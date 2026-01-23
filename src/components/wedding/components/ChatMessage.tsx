@@ -23,9 +23,10 @@ interface ChatMessageProps {
   chat: ChatMessage;
   playingAudio: string | null;
   onAudioPlay: (audioUrl: string, audioId: string) => void;
+  onBookProduct?: (data: CardMessageData) => void;
 }
 
-export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMessageProps) => {
+export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay, onBookProduct }: ChatMessageProps) => {
   return (
     <div className={`flex ${chat.isUser ? 'justify-end' : 'justify-start'}`}>
       <div
@@ -40,6 +41,7 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay }: ChatMe
           <ChatCardMessage 
             data={chat.cardData} 
             variant={chat.isUser ? 'sent' : 'received'}
+            onBookProduct={onBookProduct}
           />
         ) : (
           <p className="text-sm">{chat.message}</p>

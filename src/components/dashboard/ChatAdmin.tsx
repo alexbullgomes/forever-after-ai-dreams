@@ -16,6 +16,7 @@ import { QuickActionsButton } from '@/components/chat/QuickActionsButton';
 import { EntityPickerModal } from '@/components/chat/EntityPickerModal';
 import { ChatCardMessage } from '@/components/chat/ChatCardMessage';
 import { CardMessageData } from '@/types/chat';
+import { BookingFunnelModal } from '@/components/booking/BookingFunnelModal';
 
 interface Conversation {
   id: string;
@@ -55,6 +56,14 @@ const ChatAdmin = () => {
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
+  
+  // Booking state for product cards (admin can also test booking flow)
+  const [bookingProduct, setBookingProduct] = useState<{
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+  } | null>(null);
   
   // Manual scroll control
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -383,6 +392,18 @@ const ChatAdmin = () => {
     }
   };
 
+  // Handle booking from product card
+  const handleBookProduct = (cardData: CardMessageData) => {
+    if (cardData.entityType === 'product' && cardData.price !== undefined) {
+      setBookingProduct({
+        id: cardData.entityId,
+        title: cardData.title,
+        price: cardData.price,
+        currency: cardData.currency || 'USD',
+      });
+    }
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -568,6 +589,7 @@ const ChatAdmin = () => {
                               <ChatCardMessage 
                                 data={cardData} 
                                 variant={message.role === 'user' ? 'sent' : 'received'}
+                                onBookProduct={handleBookProduct}
                               />
                             ) : (
                               <p className="text-sm">{message.content}</p>
@@ -656,6 +678,18 @@ const ChatAdmin = () => {
           customerId={selectedConversation.customer_id}
           userName={selectedConversation.user_name}
           userEmail={selectedConversation.user_email}
+        />
+      )}
+
+      {/* Booking Modal for Product Cards */}
+      {bookingProduct && (
+        <BookingFunnelModal
+          isOpen={!!bookingProduct}
+          onClose={() => setBookingProduct(null)}
+          productId={bookingProduct.id}
+          productTitle={bookingProduct.title}
+          productPrice={bookingProduct.price}
+          currency={bookingProduct.currency}
         />
       )}
     </div>

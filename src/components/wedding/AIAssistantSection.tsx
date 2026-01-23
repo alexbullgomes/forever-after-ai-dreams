@@ -9,6 +9,7 @@ import { sendWebhookMessage } from "./utils/webhookService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CardMessageData } from "@/types/chat";
+import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
 interface DatabaseMessage {
   id: number;
@@ -32,6 +33,14 @@ const AIAssistantSection = ({ showHeader = true }: AIAssistantSectionProps) => {
   const [conversationMode, setConversationMode] = useState<string>('ai');
   const [isInitializing, setIsInitializing] = useState(false);
   const { user } = useAuth();
+  
+  // Booking state for product cards
+  const [bookingProduct, setBookingProduct] = useState<{
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+  } | null>(null);
   
   // Initialize conversation and load messages
   useEffect(() => {
@@ -313,6 +322,18 @@ const AIAssistantSection = ({ showHeader = true }: AIAssistantSectionProps) => {
       }
     }
   };
+
+  // Handle booking from product card
+  const handleBookProduct = (cardData: CardMessageData) => {
+    if (cardData.entityType === 'product' && cardData.price !== undefined) {
+      setBookingProduct({
+        id: cardData.entityId,
+        title: cardData.title,
+        price: cardData.price,
+        currency: cardData.currency || 'USD',
+      });
+    }
+  };
   
   if (isInitializing) {
     return (
@@ -337,12 +358,29 @@ const AIAssistantSection = ({ showHeader = true }: AIAssistantSectionProps) => {
         </div>
       )}
       
-      <ChatHistory chatHistory={chatHistory} playingAudio={playingAudio} onAudioPlay={handleAudioPlay} />
+      <ChatHistory 
+        chatHistory={chatHistory} 
+        playingAudio={playingAudio} 
+        onAudioPlay={handleAudioPlay}
+        onBookProduct={handleBookProduct}
+      />
       
       {/* AI Chat Input */}
       <div className="max-w-4xl mx-auto">
         <AIChatInput onSendMessage={handleSendMessage} />
       </div>
+
+      {/* Booking Modal for Product Cards */}
+      {bookingProduct && (
+        <BookingFunnelModal
+          isOpen={!!bookingProduct}
+          onClose={() => setBookingProduct(null)}
+          productId={bookingProduct.id}
+          productTitle={bookingProduct.title}
+          productPrice={bookingProduct.price}
+          currency={bookingProduct.currency}
+        />
+      )}
     </div>
   );
 };

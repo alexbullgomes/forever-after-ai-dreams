@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
 import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
 import { CardMessageData } from "@/types/chat";
+import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
 interface DatabaseMessage {
   id: number;
@@ -74,6 +75,14 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
   const [conversationMode, setConversationMode] = useState<string>('ai');
   const [isInitializing, setIsInitializing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Booking state for product cards
+  const [bookingProduct, setBookingProduct] = useState<{
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+  } | null>(null);
 
   // Initialize conversation and load messages
   useEffect(() => {
@@ -512,6 +521,18 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
     }
   };
 
+  // Handle booking from product card
+  const handleBookProduct = (cardData: CardMessageData) => {
+    if (cardData.entityType === 'product' && cardData.price !== undefined) {
+      setBookingProduct({
+        id: cardData.entityId,
+        title: cardData.title,
+        price: cardData.price,
+        currency: cardData.currency || 'USD',
+      });
+    }
+  };
+
   return (
     <ExpandableChat
       size="lg"
@@ -555,11 +576,12 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
                 }
               >
                 <div className="space-y-2">
-                  {/* Render card message if type is 'card' */}
+                {/* Render card message if type is 'card' */}
                   {message.type === 'card' && message.cardData ? (
                     <ChatCardMessage 
                       data={message.cardData} 
                       variant={message.sender === 'user' ? 'sent' : 'received'}
+                      onBookProduct={handleBookProduct}
                     />
                   ) : (
                     <>
@@ -683,6 +705,18 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
           </div>
         </form>
       </ExpandableChatFooter>
+
+      {/* Booking Modal for Product Cards */}
+      {bookingProduct && (
+        <BookingFunnelModal
+          isOpen={!!bookingProduct}
+          onClose={() => setBookingProduct(null)}
+          productId={bookingProduct.id}
+          productTitle={bookingProduct.title}
+          productPrice={bookingProduct.price}
+          currency={bookingProduct.currency}
+        />
+      )}
     </ExpandableChat>
   );
 }
