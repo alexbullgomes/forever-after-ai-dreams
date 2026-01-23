@@ -3,6 +3,7 @@ import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle }
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
+import { useUnreadAssistantMessages } from "@/hooks/useUnreadAssistantMessages";
 import {
   Sidebar,
   SidebarContent,
@@ -41,6 +42,7 @@ export function UserDashboardSidebar() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const isMobile = useIsMobile();
+  const hasUnreadMessages = useUnreadAssistantMessages();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const showText = isMobile || state !== "collapsed";
@@ -99,8 +101,16 @@ export function UserDashboardSidebar() {
                     end={item.url === "/user-dashboard"}
                     className={getNavCls(isActive(item.url))}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <div className="relative">
+                      <item.icon className="h-4 w-4" />
+                      {item.title === "AI Assistant" && hasUnreadMessages && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand-primary-from rounded-full" />
+                      )}
+                    </div>
                     {showText && <span>{item.title}</span>}
+                    {showText && item.title === "AI Assistant" && hasUnreadMessages && (
+                      <span className="ml-auto w-2 h-2 bg-brand-primary-from rounded-full" />
+                    )}
                   </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
