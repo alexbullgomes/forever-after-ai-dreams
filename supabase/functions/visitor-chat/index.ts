@@ -6,10 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// N8N webhook URL for AI responses - production endpoint
-const N8N_WEBHOOK_URL = Deno.env.get('N8N_VISITOR_CHAT_WEBHOOK') 
-  || "https://agcreationmkt.cloud/webhook/067583ff-25ca-4f0a-8f67-15d18e8a1264";
-
 interface VisitorChatRequest {
   action: 'send_message' | 'get_conversation' | 'get_messages';
   visitor_id: string;
@@ -233,7 +229,7 @@ serve(async (req) => {
           }
         }
 
-        // Insert user message
+        // Insert user message - Database trigger will emit webhook to n8n
         const { data: userMsg, error: insertError } = await supabase
           .from('messages')
           .insert({
@@ -257,6 +253,7 @@ serve(async (req) => {
         }
 
         console.log(`[visitor-chat] Saved user message: ${userMsg.id}, mode: ${conversationMode}, audio_url: ${finalAudioUrl || 'none'}`);
+        console.log('[visitor-chat] Database trigger will handle webhook emission to n8n');
 
         // Update conversation new_msg status
         await supabase
@@ -264,90 +261,14 @@ serve(async (req) => {
           .update({ new_msg: 'unread' })
           .eq('id', conversationId);
 
-        // If in AI mode, forward to n8n and get response
-        if (conversationMode === 'ai') {
-          try {
-            console.log('[visitor-chat] Forwarding to n8n...');
-            
-            const n8nPayload = {
-              message: content,
-              visitorId: visitor_id,
-              conversationId: conversationId,
-              messageType: type || 'text',
-              audioUrl: finalAudioUrl,
-              timestamp: new Date().toISOString()
-            };
-
-            const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(n8nPayload)
-            });
-
-            let aiResponseText = "Thank you for your message! I'm here to help you with photography and videography services.";
-            
-            if (n8nResponse.ok) {
-              const n8nData = await n8nResponse.json();
-              aiResponseText = n8nData.output || n8nData.response || n8nData.message || aiResponseText;
-              console.log('[visitor-chat] Got n8n response');
-            } else {
-              console.error('[visitor-chat] n8n error:', n8nResponse.status);
-            }
-
-            // Insert AI response
-            const { data: aiMsg, error: aiError } = await supabase
-              .from('messages')
-              .insert({
-                conversation_id: conversationId,
-                role: 'ai',
-                type: 'text',
-                content: aiResponseText,
-                user_name: 'EVA',
-                new_msg: 'unread'
-              })
-              .select()
-              .single();
-
-            if (aiError) {
-              console.error('[visitor-chat] Error saving AI response:', aiError);
-            }
-
-            return new Response(
-              JSON.stringify({ 
-                success: true,
-                conversation_id: conversationId,
-                message_id: userMsg.id,
-                audio_url: finalAudioUrl,
-                ai_response: aiResponseText,
-                ai_message_id: aiMsg?.id
-              }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          } catch (n8nError) {
-            console.error('[visitor-chat] n8n fetch error:', n8nError);
-            
-            // Return success but with default response
-            return new Response(
-              JSON.stringify({ 
-                success: true,
-                conversation_id: conversationId,
-                message_id: userMsg.id,
-                audio_url: finalAudioUrl,
-                ai_response: "Thank you for your message! Our team will get back to you soon."
-              }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-        }
-
-        // Human mode - just confirm message saved, no AI response
+        // Return immediately - database trigger handles webhook, n8n will call chat-webhook-callback for AI response
         return new Response(
           JSON.stringify({ 
             success: true,
             conversation_id: conversationId,
             message_id: userMsg.id,
             audio_url: finalAudioUrl,
-            mode: 'human'
+            mode: conversationMode
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
