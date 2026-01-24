@@ -16,6 +16,7 @@ interface VisitorChatRequest {
   content?: string;
   type?: 'text' | 'audio';
   audio_url?: string;
+  audio_data?: string; // Base64 encoded audio for upload
   visitor_name?: string;
 }
 
@@ -28,6 +29,55 @@ interface Message {
   audio_url: string | null;
   created_at: string;
   user_name: string | null;
+}
+
+// Upload visitor audio to Supabase Storage
+async function uploadVisitorAudio(
+  supabase: any,
+  visitorId: string,
+  audioData: string
+): Promise<string | null> {
+  try {
+    console.log('[visitor-chat] Uploading audio for visitor:', visitorId);
+    
+    // Remove data URL prefix if present (e.g., "data:audio/webm;base64,")
+    const base64Content = audioData.replace(/^data:audio\/[^;]+;base64,/, '');
+    
+    // Decode base64 to binary
+    const binaryString = atob(base64Content);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Generate unique file path
+    const timestamp = Date.now();
+    const filePath = `visitor-${visitorId}/${timestamp}.webm`;
+    
+    // Upload to storage using service role (bypasses RLS)
+    const { error: uploadError } = await supabase.storage
+      .from('chat-audios')
+      .upload(filePath, bytes, {
+        contentType: 'audio/webm',
+        upsert: false
+      });
+    
+    if (uploadError) {
+      console.error('[visitor-chat] Audio upload error:', uploadError);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('chat-audios')
+      .getPublicUrl(filePath);
+    
+    console.log('[visitor-chat] Audio uploaded successfully:', urlData.publicUrl);
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('[visitor-chat] Error uploading audio:', error);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -43,9 +93,9 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     const body: VisitorChatRequest = await req.json();
-    const { action, visitor_id, content, type, audio_url, visitor_name } = body;
+    const { action, visitor_id, content, type, audio_url, audio_data, visitor_name } = body;
 
-    console.log(`[visitor-chat] Action: ${action}, Visitor: ${visitor_id}`);
+    console.log(`[visitor-chat] Action: ${action}, Visitor: ${visitor_id}, Type: ${type || 'text'}`);
 
     // Validate visitor_id format (should be UUID-like)
     if (!visitor_id || visitor_id.length < 10) {
@@ -108,7 +158,7 @@ serve(async (req) => {
       }
 
       case 'send_message': {
-        if (!content && !audio_url) {
+        if (!content && !audio_url && !audio_data) {
           return new Response(
             JSON.stringify({ success: false, error: 'Message content required' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -156,6 +206,16 @@ serve(async (req) => {
           console.log(`[visitor-chat] Created new conversation: ${conversationId}`);
         }
 
+        // Handle audio upload if audio_data is provided
+        let finalAudioUrl: string | null = audio_url || null;
+        if (audio_data && type === 'audio') {
+          console.log('[visitor-chat] Processing audio upload...');
+          finalAudioUrl = await uploadVisitorAudio(supabase, visitor_id, audio_data);
+          if (!finalAudioUrl) {
+            console.error('[visitor-chat] Failed to upload audio, continuing with null URL');
+          }
+        }
+
         // Insert user message
         const { data: userMsg, error: insertError } = await supabase
           .from('messages')
@@ -164,7 +224,7 @@ serve(async (req) => {
             role: 'user',
             type: type || 'text',
             content: content || null,
-            audio_url: audio_url || null,
+            audio_url: finalAudioUrl,
             user_name: 'Visitor',
             new_msg: 'unread'
           })
@@ -179,7 +239,7 @@ serve(async (req) => {
           );
         }
 
-        console.log(`[visitor-chat] Saved user message: ${userMsg.id}, mode: ${conversationMode}`);
+        console.log(`[visitor-chat] Saved user message: ${userMsg.id}, mode: ${conversationMode}, audio_url: ${finalAudioUrl || 'none'}`);
 
         // Update conversation new_msg status
         await supabase
@@ -197,7 +257,7 @@ serve(async (req) => {
               visitorId: visitor_id,
               conversationId: conversationId,
               messageType: type || 'text',
-              audioUrl: audio_url || null,
+              audioUrl: finalAudioUrl,
               timestamp: new Date().toISOString()
             };
 
@@ -240,6 +300,7 @@ serve(async (req) => {
                 success: true,
                 conversation_id: conversationId,
                 message_id: userMsg.id,
+                audio_url: finalAudioUrl,
                 ai_response: aiResponseText,
                 ai_message_id: aiMsg?.id
               }),
@@ -254,6 +315,7 @@ serve(async (req) => {
                 success: true,
                 conversation_id: conversationId,
                 message_id: userMsg.id,
+                audio_url: finalAudioUrl,
                 ai_response: "Thank you for your message! Our team will get back to you soon."
               }),
               { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -267,6 +329,7 @@ serve(async (req) => {
             success: true,
             conversation_id: conversationId,
             message_id: userMsg.id,
+            audio_url: finalAudioUrl,
             mode: 'human'
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -296,15 +296,16 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 
       recorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
-        const audioUrl = URL.createObjectURL(audioBlob);
+        const localAudioUrl = URL.createObjectURL(audioBlob);
         
-        // Add user voice message to UI
+        // Add user voice message to UI immediately with local URL
+        const tempMessageId = generateId();
         const userMessage: ChatMessage = {
-          id: generateId(),
+          id: tempMessageId,
           content: "Voice message",
           sender: 'user',
           timestamp: new Date(),
-          fileUrl: audioUrl,
+          fileUrl: localAudioUrl,
           fileType: "audio/webm; codecs=opus",
           fileName: "voice-message.webm",
         };
@@ -313,42 +314,78 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         setIsLoading(true);
 
         try {
-          // For voice messages, we still send text description
-          // Full audio upload would require storage integration
-          const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'send_message',
-              visitor_id: visitorId,
-              content: 'Voice message sent',
-              type: 'audio'
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
+          // Convert audio blob to base64 for upload
+          const reader = new FileReader();
+          
+          reader.onloadend = async () => {
+            const base64Audio = reader.result as string;
             
-            if (data.conversation_id && !conversationId) {
-              setConversationId(data.conversation_id);
-              subscribeToMessages(data.conversation_id);
-            }
+            // Send audio data to edge function for upload
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'send_message',
+                visitor_id: visitorId,
+                content: 'Voice message',
+                type: 'audio',
+                audio_data: base64Audio
+              })
+            });
 
-            if (data.ai_response) {
-              const assistantMessage: ChatMessage = {
-                id: data.ai_message_id?.toString() || generateId(),
-                content: data.ai_response,
-                sender: 'assistant',
-                timestamp: new Date(),
-              };
-              setMessages(prev => {
-                if (prev.some(m => m.id === assistantMessage.id)) {
-                  return prev;
-                }
-                return [...prev, assistantMessage];
-              });
+            if (response.ok) {
+              const data = await response.json();
+              
+              if (data.conversation_id && !conversationId) {
+                setConversationId(data.conversation_id);
+                subscribeToMessages(data.conversation_id);
+              }
+
+              // Update the message with the real storage URL if available
+              if (data.audio_url) {
+                setMessages(prev => prev.map(msg => 
+                  msg.id === tempMessageId 
+                    ? { ...msg, fileUrl: data.audio_url }
+                    : msg
+                ));
+              }
+
+              if (data.ai_response) {
+                const assistantMessage: ChatMessage = {
+                  id: data.ai_message_id?.toString() || generateId(),
+                  content: data.ai_response,
+                  sender: 'assistant',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => {
+                  if (prev.some(m => m.id === assistantMessage.id)) {
+                    return prev;
+                  }
+                  return [...prev, assistantMessage];
+                });
+              }
+            } else {
+              throw new Error('Failed to send voice message');
             }
-          }
+            
+            setIsLoading(false);
+          };
+          
+          reader.onerror = () => {
+            console.error("[VisitorChat] Error reading audio blob");
+            const errorMessage: ChatMessage = {
+              id: generateId(),
+              content: "Failed to process voice message. Please try again.",
+              sender: 'assistant',
+              timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+            setIsLoading(false);
+          };
+          
+          // Start reading the blob as base64
+          reader.readAsDataURL(audioBlob);
+          
         } catch (error) {
           console.error("[VisitorChat] Error sending voice message:", error);
           const errorMessage: ChatMessage = {
@@ -358,9 +395,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             timestamp: new Date(),
           };
           setMessages(prev => [...prev, errorMessage]);
+          setIsLoading(false);
         }
-
-        setIsLoading(false);
       };
 
       recorder.start();

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Send, Users, MessageCircle, Clock, ArrowDown } from 'lucide-react';
+import { Send, Users, MessageCircle, Clock, ArrowDown, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,6 +17,7 @@ import { EntityPickerModal } from '@/components/chat/EntityPickerModal';
 import { ChatCardMessage } from '@/components/chat/ChatCardMessage';
 import { CardMessageData } from '@/types/chat';
 import { BookingFunnelModal } from '@/components/booking/BookingFunnelModal';
+import { AudioPlayer } from '@/components/wedding/components/AudioPlayer';
 
 interface Conversation {
   id: string;
@@ -39,6 +40,7 @@ interface Message {
   role: string;
   type: string;
   content: string | null;
+  audio_url: string | null;
   created_at: string;
   user_name: string | null;
   user_email: string | null;
@@ -57,6 +59,7 @@ const ChatAdmin = () => {
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   
   // Booking state for product cards (admin can also test booking flow)
   const [bookingProduct, setBookingProduct] = useState<{
@@ -635,6 +638,34 @@ const ChatAdmin = () => {
                                 variant={message.role === 'user' ? 'sent' : 'received'}
                                 onBookProduct={handleBookProduct}
                               />
+                            ) : message.type === 'audio' && message.audio_url ? (
+                              <div className="space-y-2">
+                                <AudioPlayer
+                                  fileUrl={message.audio_url}
+                                  fileName="voice-message.webm"
+                                  fileId={message.id.toString()}
+                                  playingAudio={playingAudio}
+                                  onPlay={(url, id) => setPlayingAudio(id)}
+                                  isUserMessage={message.role === 'user'}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className={`h-6 px-2 text-xs ${message.role === 'user' ? 'text-rose-100 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(message.audio_url!);
+                                    toast({
+                                      title: "Copied",
+                                      description: "Audio URL copied to clipboard",
+                                    });
+                                  }}
+                                >
+                                  <Copy className="h-3 w-3 mr-1" />
+                                  Copy URL
+                                </Button>
+                              </div>
+                            ) : message.type === 'audio' ? (
+                              <p className="text-sm italic opacity-75">Voice message (audio not available)</p>
                             ) : (
                               <p className="text-sm">{message.content}</p>
                             )}
