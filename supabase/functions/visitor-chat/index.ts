@@ -6,8 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// N8N webhook URL for AI responses
-const N8N_WEBHOOK_URL = "https://n8n.eaproduction.co/webhook/3effc2b9-81b9-4f02-ae33-5eb16dc1ac36";
+// N8N webhook URL for AI responses - uses working agcreationmkt.cloud domain
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_VISITOR_CHAT_WEBHOOK') 
+  || "https://agcreationmkt.cloud/webhook/067583ff-25ca-4f0a-8f67-15d18e8a1264";
 
 interface VisitorChatRequest {
   action: 'send_message' | 'get_conversation' | 'get_messages';
