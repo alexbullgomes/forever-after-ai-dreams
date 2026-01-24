@@ -1,108 +1,81 @@
 
 
-# Unify Chat Architecture: Database-Driven Webhook Emission
+# Fix Chat Event Duplication
 
-## Overview
+## Problem Summary
 
-This plan transforms the chat architecture so that **the database becomes the single source of truth and event emitter**. All chat messages (visitor and authenticated) will be inserted directly into the `messages` table, and a database trigger will emit webhooks to n8n.
+Every visitor message triggers **TWO webhook events** to the same n8n endpoint because there are two database triggers on the `messages` table:
 
-## Current Architecture Analysis
+| Trigger | Function | Issues |
+|---------|----------|--------|
+| `Everafter n8n` | `supabase_functions.http_request()` | Raw row data, no visitor_id |
+| `trigger_emit_message_webhook` | `emit_message_webhook()` | Normalized payload with visitor_id from conversations |
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          CURRENT ARCHITECTURE                               │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  AUTHENTICATED USER:                                                        │
-│  ──────────────────                                                         │
-│  Frontend → INSERT into messages → Real-time subscription → AI response     │
-│                                                                             │
-│  ❌ No webhook triggered                                                    │
-│  ❌ n8n has no visibility into authenticated messages                       │
-│                                                                             │
-│  VISITOR:                                                                   │
-│  ────────                                                                   │
-│  Frontend → visitor-chat Edge Function → INSERT + n8n webhook call          │
-│                                                                             │
-│  ⚠️  Webhook triggered from edge function (not database)                   │
-│  ⚠️  Different payload structure than authenticated messages               │
-│  ⚠️  Audio upload handled in edge function                                 │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+Both send to `https://agcreationmkt.cloud/webhook/79834679-8b0e-4dfb-9fbe-408593849da1`.
 
-### Current Visitor Webhook Payload (Different from DB Schema)
+## Root Cause
 
-```json
-{
-  "message": "Hello",
-  "visitorId": "abc123",
-  "conversationId": "uuid",
-  "messageType": "text",
-  "audioUrl": null,
-  "timestamp": "2026-01-24T..."
-}
-```
+1. **Duplicate triggers** - Two triggers fire on every INSERT
+2. **Missing column** - `messages` table lacks `visitor_id` column, so native trigger cannot include it
+3. **Data lookup overhead** - Current `emit_message_webhook` must JOIN conversations to get visitor_id
 
----
+## Solution
 
-## Target Architecture
+### Step 1: Remove Duplicate Trigger
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          TARGET ARCHITECTURE                                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  BOTH VISITOR + AUTHENTICATED:                                             │
-│  ─────────────────────────────                                              │
-│  Frontend → INSERT into messages → Database Trigger → Webhook to n8n       │
-│                                                                             │
-│  ✅ Single source of truth (messages table)                                │
-│  ✅ Unified payload structure mirroring database schema                    │
-│  ✅ No webhook logic in frontend or edge functions                         │
-│  ✅ n8n receives identical payloads for both user types                    │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Unified Webhook Payload (Mirrors messages table)
-
-```json
-{
-  "source": "visitor",
-  "message": {
-    "id": 12345,
-    "conversation_id": "uuid",
-    "role": "user",
-    "type": "text",
-    "content": "Hello",
-    "audio_url": null,
-    "created_at": "2026-01-24T...",
-    "user_name": "Visitor",
-    "user_email": null
-  },
-  "user_id": null,
-  "visitor_id": "abc123",
-  "conversation": {
-    "id": "uuid",
-    "mode": "ai"
-  }
-}
-```
-
----
-
-## Implementation Steps
-
-### Step 1: Create Database Trigger Function
-
-Create a PostgreSQL function that fires on INSERT to the `messages` table and calls the n8n webhook via `net.http_post`.
-
-**SQL Migration:**
+Drop the `Everafter n8n` trigger that sends raw Supabase events.
 
 ```sql
--- Create function to emit unified webhook on message insert
-CREATE OR REPLACE FUNCTION emit_message_webhook()
+DROP TRIGGER IF EXISTS "Everafter n8n" ON messages;
+```
+
+### Step 2: Add visitor_id Column to messages Table
+
+```sql
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS visitor_id TEXT;
+```
+
+### Step 3: Update visitor-chat Edge Function
+
+Modify the INSERT statement to include `visitor_id`:
+
+**File: `supabase/functions/visitor-chat/index.ts`** (Line ~233-244)
+
+```typescript
+// Current INSERT
+const { data: userMsg, error: insertError } = await supabase
+  .from('messages')
+  .insert({
+    conversation_id: conversationId,
+    role: 'user',
+    type: type || 'text',
+    content: content || null,
+    audio_url: finalAudioUrl,
+    user_name: 'Visitor',
+    new_msg: 'unread'
+  })
+
+// Updated INSERT - add visitor_id
+const { data: userMsg, error: insertError } = await supabase
+  .from('messages')
+  .insert({
+    conversation_id: conversationId,
+    visitor_id: visitor_id,  // <-- NEW
+    role: 'user',
+    type: type || 'text',
+    content: content || null,
+    audio_url: finalAudioUrl,
+    user_name: 'Visitor',
+    new_msg: 'unread'
+  })
+```
+
+### Step 4: Update emit_message_webhook Function
+
+Simplify the function to use `visitor_id` directly from the message row:
+
+```sql
+CREATE OR REPLACE FUNCTION public.emit_message_webhook()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -111,8 +84,8 @@ AS $$
 DECLARE
   conv_record RECORD;
   source_type TEXT;
-  user_id UUID;
-  visitor_id TEXT;
+  v_user_id UUID;
+  v_visitor_id TEXT;
   webhook_url TEXT := 'https://agcreationmkt.cloud/webhook/79834679-8b0e-4dfb-9fbe-408593849da1';
   payload JSONB;
 BEGIN
@@ -121,8 +94,8 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Get conversation details
-  SELECT id, mode, customer_id, visitor_id 
+  -- Get conversation details for mode only
+  SELECT id, mode, customer_id
   INTO conv_record
   FROM conversations 
   WHERE id = NEW.conversation_id;
@@ -131,23 +104,32 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Determine source type and IDs
-  IF conv_record.customer_id IS NOT NULL THEN
-    source_type := 'authenticated';
-    user_id := conv_record.customer_id::UUID;
-    visitor_id := NULL;
-  ELSE
+  -- Determine source type - use visitor_id from message row directly
+  IF NEW.visitor_id IS NOT NULL THEN
     source_type := 'visitor';
-    user_id := NULL;
-    visitor_id := conv_record.visitor_id;
+    v_user_id := NULL;
+    v_visitor_id := NEW.visitor_id;
+  ELSIF conv_record.customer_id IS NOT NULL THEN
+    source_type := 'authenticated';
+    v_user_id := conv_record.customer_id::UUID;
+    v_visitor_id := NULL;
+  ELSE
+    -- Fallback: check conversations.visitor_id for legacy messages
+    SELECT visitor_id INTO v_visitor_id 
+    FROM conversations 
+    WHERE id = NEW.conversation_id;
+    
+    source_type := CASE WHEN v_visitor_id IS NOT NULL THEN 'visitor' ELSE 'unknown' END;
+    v_user_id := NULL;
   END IF;
 
-  -- Build unified payload
+  -- Build unified payload with visitor_id directly from message
   payload := jsonb_build_object(
     'source', source_type,
     'message', jsonb_build_object(
       'id', NEW.id,
       'conversation_id', NEW.conversation_id,
+      'visitor_id', NEW.visitor_id,  -- Include in message object
       'role', NEW.role,
       'type', NEW.type,
       'content', NEW.content,
@@ -156,8 +138,8 @@ BEGIN
       'user_name', NEW.user_name,
       'user_email', NEW.user_email
     ),
-    'user_id', user_id,
-    'visitor_id', visitor_id,
+    'user_id', v_user_id,
+    'visitor_id', v_visitor_id,
     'conversation', jsonb_build_object(
       'id', conv_record.id,
       'mode', conv_record.mode
@@ -174,169 +156,88 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
--- Create trigger on messages table
-DROP TRIGGER IF EXISTS trigger_emit_message_webhook ON messages;
-CREATE TRIGGER trigger_emit_message_webhook
-  AFTER INSERT ON messages
-  FOR EACH ROW
-  EXECUTE FUNCTION emit_message_webhook();
 ```
 
----
+### Step 5: Update TypeScript Types
 
-### Step 2: Update Visitor Chat Flow
+**File: `src/integrations/supabase/types.ts`**
 
-Modify `expandable-chat-webhook.tsx` to:
-1. Remove n8n webhook logic
-2. Insert directly into database (via simplified edge function)
-3. Let database trigger handle webhook emission
-
-**Changes to `visitor-chat` edge function:**
-- Remove the n8n webhook call block (lines 267-340)
-- Keep audio upload logic
-- Keep conversation creation logic
-- Return immediately after message insert (let trigger handle webhook)
-
-**New visitor-chat flow:**
-```
-Frontend → visitor-chat Edge Function → INSERT message → Database Trigger → n8n
-```
-
----
-
-### Step 3: Add Webhook Callback for AI Responses
-
-Create a new edge function `chat-webhook-callback` that n8n will call to insert AI responses.
-
-**Edge Function: `chat-webhook-callback/index.ts`**
-
-```typescript
-// n8n calls this endpoint to insert AI response
-serve(async (req) => {
-  const { conversation_id, content, type } = await req.json();
-  
-  await supabase.from('messages').insert({
-    conversation_id,
-    role: 'ai',
-    type: type || 'text',
-    content,
-    user_name: 'EVA'
-  });
-  
-  return new Response(JSON.stringify({ success: true }));
-});
-```
-
----
-
-### Step 4: Update Authenticated Chat (Optional Enhancement)
-
-The authenticated chat already inserts directly into the database. With the new trigger, it will automatically emit webhooks without any code changes.
-
-**No changes required** - the trigger handles this automatically.
-
----
+Add `visitor_id` to the messages table type definition.
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `supabase/migrations/[new].sql` | Create `emit_message_webhook` function and trigger |
-| `supabase/functions/visitor-chat/index.ts` | Remove n8n webhook call, keep audio upload |
-| `supabase/functions/chat-webhook-callback/index.ts` | NEW - endpoint for n8n to insert AI responses |
-| `supabase/config.toml` | Add new edge function entry |
+| File | Change |
+|------|--------|
+| `supabase/migrations/[new].sql` | Drop old trigger, add visitor_id column, update function |
+| `supabase/functions/visitor-chat/index.ts` | Add visitor_id to INSERT |
+| `src/integrations/supabase/types.ts` | Add visitor_id to messages type |
 
----
+## Expected Result After Fix
 
-## Architecture Comparison
-
-| Aspect | Current | After Fix |
-|--------|---------|-----------|
-| Webhook source | Edge function (visitor) / None (auth) | Database trigger (both) |
-| Payload format | Different per user type | Unified schema |
-| Frontend webhook calls | Visitor chat | None |
-| Source of truth | Mixed | Database only |
-| n8n visibility | Partial (visitors only) | Complete (all messages) |
-
----
-
-## Technical Details
-
-### Why Database Triggers?
-
-1. **Single source of truth**: All messages must pass through the database
-2. **Consistency**: Same payload for all message types
-3. **Decoupling**: Frontend/edge functions don't need webhook knowledge
-4. **Reliability**: `pg_net` handles async HTTP in PostgreSQL
-5. **Auditability**: Every message is tracked before webhook fires
-
-### Conversation Identification
-
-The `conversations` table has:
-- `customer_id`: Set for authenticated users (UUID)
-- `visitor_id`: Set for visitors (string)
-
-The trigger uses this to determine `source` type:
-```sql
-IF conv_record.customer_id IS NOT NULL THEN
-  source_type := 'authenticated';
-ELSE
-  source_type := 'visitor';
-END IF;
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          AFTER FIX                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Triggers on messages table:                                                │
+│  ───────────────────────────                                                │
+│  ✅ trigger_emit_message_webhook (ONLY trigger for webhooks)               │
+│  ✅ trigger_update_conversation_on_new_message (keeps conversation fresh)  │
+│  ❌ "Everafter n8n" - REMOVED                                              │
+│                                                                             │
+│  Message INSERT:                                                            │
+│  ───────────────                                                            │
+│  Visitor: { conversation_id, visitor_id, role, type, content, ... }        │
+│  Auth:    { conversation_id, user_id, role, type, content, ... }           │
+│                                                                             │
+│  Webhook Payload (unified):                                                 │
+│  ─────────────────────────                                                  │
+│  {                                                                          │
+│    source: "visitor" | "authenticated",                                     │
+│    message: { id, conversation_id, visitor_id, role, type, content, ... }, │
+│    visitor_id: "abc123" | null,                                             │
+│    user_id: "uuid" | null,                                                  │
+│    conversation: { id, mode }                                               │
+│  }                                                                          │
+│                                                                             │
+│  Result:                                                                    │
+│  ───────                                                                    │
+│  ✅ ONE webhook per message                                                 │
+│  ✅ visitor_id ALWAYS present for visitor messages                         │
+│  ✅ Unified payload structure                                               │
+│  ✅ Database is single source of truth                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
-
-### Audio Handling
-
-Audio upload remains in the `visitor-chat` edge function because:
-1. Visitors need service role key to bypass RLS
-2. Base64 → Storage upload requires server-side processing
-3. The `audio_url` is inserted into the message record
-4. Database trigger includes `audio_url` in webhook payload
-
----
-
-## n8n Workflow Update
-
-n8n workflow must be updated to:
-
-1. **Accept unified payload** - same structure for both user types
-2. **Check `source` field** - to apply different logic if needed
-3. **Use `conversation.mode`** - to skip AI response when mode is "human"
-4. **Call callback endpoint** - to insert AI response after processing
-
-**n8n Pseudocode:**
-```
-ON webhook receive:
-  IF source == "visitor" OR source == "authenticated":
-    IF conversation.mode == "ai":
-      response = generateAIResponse(message.content)
-      POST to /functions/v1/chat-webhook-callback {
-        conversation_id: message.conversation_id,
-        content: response
-      }
-```
-
----
 
 ## Non-Breaking Guarantees
 
-| Component | Impact |
+| Component | Status |
 |-----------|--------|
-| Authenticated chat | ✅ No changes - trigger handles automatically |
+| Authenticated chat | ✅ No changes - continues to work |
 | Chat Admin | ✅ No changes - reads from messages table |
-| AI/Human takeover | ✅ Preserved - mode checked in trigger |
-| Real-time subscriptions | ✅ Preserved - Supabase realtime unchanged |
-| Audio messages | ✅ Preserved - audio_url included in payload |
+| AI/Human takeover | ✅ Preserved - mode from conversations |
+| Real-time subscriptions | ✅ Unchanged |
+| Existing messages | ✅ Backward compatible (visitor_id nullable) |
 
----
+## SQL Migration Summary
 
-## Testing Checklist
+```sql
+-- 1. Remove duplicate trigger
+DROP TRIGGER IF EXISTS "Everafter n8n" ON messages;
 
-1. Send text message as visitor → verify webhook receives payload with `source: "visitor"`
-2. Send text message as authenticated user → verify webhook receives payload with `source: "authenticated"`
-3. Send audio message as visitor → verify `audio_url` is included in payload
-4. Toggle conversation to Human mode → verify n8n respects `conversation.mode`
-5. Verify Chat Admin displays all messages correctly
-6. Verify real-time updates still work for both user types
+-- 2. Add visitor_id column
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS visitor_id TEXT;
+
+-- 3. Update emit_message_webhook function to use NEW.visitor_id
+CREATE OR REPLACE FUNCTION public.emit_message_webhook() ...
+
+-- 4. Backfill existing visitor messages (optional)
+UPDATE messages m
+SET visitor_id = c.visitor_id
+FROM conversations c
+WHERE m.conversation_id = c.id
+  AND c.visitor_id IS NOT NULL
+  AND m.visitor_id IS NULL;
+```
 
