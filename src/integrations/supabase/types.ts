@@ -489,7 +489,7 @@ export type Database = {
       conversations: {
         Row: {
           created_at: string
-          customer_id: string
+          customer_id: string | null
           id: string
           mode: string | null
           new_msg: string | null
@@ -498,10 +498,11 @@ export type Database = {
           taken_by: string | null
           user_email: string | null
           user_name: string | null
+          visitor_id: string | null
         }
         Insert: {
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
           id?: string
           mode?: string | null
           new_msg?: string | null
@@ -510,10 +511,11 @@ export type Database = {
           taken_by?: string | null
           user_email?: string | null
           user_name?: string | null
+          visitor_id?: string | null
         }
         Update: {
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
           id?: string
           mode?: string | null
           new_msg?: string | null
@@ -522,6 +524,7 @@ export type Database = {
           taken_by?: string | null
           user_email?: string | null
           user_name?: string | null
+          visitor_id?: string | null
         }
         Relationships: []
       }

@@ -169,6 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             await linkVisitorToUser(session.user.id);
             linkVisitorIdToProfile(session.user.id);
             
+            // Link any existing visitor conversations to the user
+            await linkVisitorConversation(session.user.id);
+            
             // Track referral conversion for new registrations
             // Use a more reliable check: user was created within last 10 seconds
             const createdAt = new Date(session.user.created_at);
@@ -234,6 +237,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  // Link visitor conversation to user when they log in
+  const linkVisitorConversation = async (userId: string) => {
+    try {
+      const visitorId = getVisitorId();
+      if (!visitorId) return;
+
+      console.log('Linking visitor conversation to user:', visitorId, userId);
+
+      // Find any conversation with this visitor_id and update it to use customer_id
+      const { data: existingConv, error: fetchError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('visitor_id', visitorId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Error fetching visitor conversation:', fetchError);
+        return;
+      }
+
+      if (existingConv) {
+        // Update conversation to link to user
+        const { error: updateError } = await supabase
+          .from('conversations')
+          .update({ 
+            customer_id: userId, 
+            visitor_id: null,
+            user_email: (await supabase.auth.getUser()).data.user?.email || null,
+            user_name: (await supabase.auth.getUser()).data.user?.user_metadata?.full_name || null
+          })
+          .eq('id', existingConv.id);
+
+        if (updateError) {
+          console.error('Error linking visitor conversation:', updateError);
+        } else {
+          console.log('Successfully linked visitor conversation to user');
+        }
+      }
+    } catch (error) {
+      console.error('Error in linkVisitorConversation:', error);
+    }
+  };
 
   const linkVisitorIdToProfile = async (userId: string) => {
     try {
