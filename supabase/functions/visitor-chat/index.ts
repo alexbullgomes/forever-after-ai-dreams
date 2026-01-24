@@ -40,8 +40,25 @@ async function uploadVisitorAudio(
   try {
     console.log('[visitor-chat] Uploading audio for visitor:', visitorId);
     
-    // Remove data URL prefix if present (e.g., "data:audio/webm;base64,")
-    const base64Content = audioData.replace(/^data:audio\/[^;]+;base64,/, '');
+    // Handle data URL format: data:audio/webm;codecs=opus;base64,XXXXX
+    // or data:audio/webm;base64,XXXXX
+    let base64Content = audioData;
+    
+    // Find the base64 marker and extract content after it
+    const base64Marker = ';base64,';
+    const markerIndex = audioData.indexOf(base64Marker);
+    
+    if (markerIndex !== -1) {
+      base64Content = audioData.substring(markerIndex + base64Marker.length);
+    } else if (audioData.startsWith('data:')) {
+      // Fallback: try comma separator
+      const commaIndex = audioData.indexOf(',');
+      if (commaIndex !== -1) {
+        base64Content = audioData.substring(commaIndex + 1);
+      }
+    }
+    
+    console.log('[visitor-chat] Base64 content length:', base64Content.length);
     
     // Decode base64 to binary
     const binaryString = atob(base64Content);
