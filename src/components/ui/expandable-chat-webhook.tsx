@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { Bot, Send, Paperclip, Mic, MicOff, Play, Pause } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Bot, Send, Mic, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ui/chat-input";
 import { VoiceInput } from "@/components/ui/voice-input";
@@ -18,10 +18,11 @@ import {
   ExpandableChatFooter,
 } from "@/components/ui/expandable-chat";
 import { useToast } from "@/components/ui/use-toast";
-import { sendHomepageWebhookMessage } from "@/utils/homepageWebhook";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
+import { supabase } from "@/integrations/supabase/client";
+import { getOrCreateVisitorId, trackVisitorEvent } from "@/utils/visitor";
 
 interface ChatMessage {
   id: string;
@@ -39,6 +40,8 @@ interface ExpandableChatWebhookProps {
   onOpenChange?: (isOpen: boolean) => void;
 }
 
+const SUPABASE_URL = "https://hmdnronxajctsrlgrhey.supabase.co";
+
 const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   autoOpen = false,
   onOpenLogin,
@@ -53,91 +56,222 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [isListening, setIsListening] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [visitorId, setVisitorId] = useState<string>("");
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationMode, setConversationMode] = useState<'ai' | 'human'>('ai');
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  // Initialize visitor ID and add intro message on first render
-  useEffect(() => {
-    // Get or create visitor ID using unified utility
-    import('@/utils/visitor').then(({ getOrCreateVisitorId }) => {
-      const storedVisitorId = getOrCreateVisitorId();
-      setVisitorId(storedVisitorId);
-    });
-
-    // Add intro message when chat is empty
-    if (messages.length === 0) {
-      const introMessage: ChatMessage = {
-        id: generateId(),
-        content: "intro-with-login",
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages([introMessage]);
-    }
-  }, []);
+  const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
+
+  // Convert database message to UI message
+  const convertDbMessage = (dbMsg: any): ChatMessage => ({
+    id: dbMsg.id?.toString() || generateId(),
+    content: dbMsg.content || '',
+    sender: dbMsg.role === 'user' ? 'user' : 'assistant',
+    timestamp: new Date(dbMsg.created_at),
+    fileUrl: dbMsg.audio_url || undefined,
+    fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
+    fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
+  });
+
+  // Subscribe to real-time messages
+  const subscribeToMessages = useCallback((convId: string) => {
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe();
+    }
+
+    console.log('[VisitorChat] Subscribing to messages for conversation:', convId);
+    
+    const channel = supabase
+      .channel(`visitor-messages-${convId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${convId}`
+        },
+        (payload) => {
+          console.log('[VisitorChat] Received new message:', payload.new);
+          const newMsg = payload.new as any;
+          
+          // Only add messages from non-user (AI or human admin)
+          if (newMsg.role !== 'user') {
+            setMessages(prev => {
+              // Check if message already exists
+              if (prev.some(m => m.id === newMsg.id?.toString())) {
+                return prev;
+              }
+              return [...prev, convertDbMessage(newMsg)];
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${convId}`
+        },
+        (payload) => {
+          console.log('[VisitorChat] Conversation updated:', payload.new);
+          const updated = payload.new as any;
+          if (updated.mode) {
+            setConversationMode(updated.mode as 'ai' | 'human');
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('[VisitorChat] Subscription status:', status);
+      });
+
+    subscriptionRef.current = channel;
+  }, []);
+
+  // Initialize visitor chat
+  useEffect(() => {
+    const initVisitorChat = async () => {
+      const storedVisitorId = getOrCreateVisitorId();
+      setVisitorId(storedVisitorId);
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'get_conversation',
+            visitor_id: storedVisitorId
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.conversation_id) {
+            setConversationId(data.conversation_id);
+            setConversationMode(data.mode || 'ai');
+            
+            // Convert and set existing messages
+            if (data.messages && data.messages.length > 0) {
+              const convertedMessages = data.messages.map(convertDbMessage);
+              setMessages(convertedMessages);
+            }
+            
+            // Subscribe to real-time updates
+            subscribeToMessages(data.conversation_id);
+          } else {
+            // No existing conversation, show intro message
+            const introMessage: ChatMessage = {
+              id: generateId(),
+              content: "intro-with-login",
+              sender: 'assistant',
+              timestamp: new Date(),
+            };
+            setMessages([introMessage]);
+          }
+        }
+      } catch (error) {
+        console.error('[VisitorChat] Error initializing:', error);
+        // Show intro message on error
+        const introMessage: ChatMessage = {
+          id: generateId(),
+          content: "intro-with-login",
+          sender: 'assistant',
+          timestamp: new Date(),
+        };
+        setMessages([introMessage]);
+      }
+
+      setIsInitialized(true);
+    };
+
+    initVisitorChat();
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+      }
+    };
+  }, [subscribeToMessages]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
     
-    if ((!userInput.trim() && selectedFiles.length === 0) || isLoading) return;
+    if (!userInput.trim() || isLoading) return;
 
-    const messageContent = userInput.trim() || (selectedFiles.length > 0 ? `Sent ${selectedFiles.length} file(s)` : "");
+    const messageContent = userInput.trim();
     
     const userMessage: ChatMessage = {
       id: generateId(),
       content: messageContent,
       sender: 'user',
       timestamp: new Date(),
-      fileUrl: selectedFiles.length > 0 ? URL.createObjectURL(selectedFiles[0]) : undefined,
-      fileType: selectedFiles.length > 0 ? selectedFiles[0].type : undefined,
-      fileName: selectedFiles.length > 0 ? selectedFiles[0].name : undefined,
     };
 
     setMessages(prev => [...prev, userMessage]);
+    setUserInput("");
     setIsLoading(true);
 
     try {
       // Track chat message event
-      import('@/utils/visitor').then(({ trackVisitorEvent }) => {
-        trackVisitorEvent('chat_message', 'webhook_chat', {
-          has_files: selectedFiles.length > 0,
-          message_length: messageContent.length,
-        });
+      trackVisitorEvent('chat_message', 'visitor_chat', {
+        message_length: messageContent.length,
+        has_conversation: !!conversationId,
       });
       
-      // Send to webhook with 20s timeout
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('timeout')), 20000);
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send_message',
+          visitor_id: visitorId,
+          content: messageContent,
+          type: 'text'
+        })
       });
 
-      const response = await Promise.race([
-        sendHomepageWebhookMessage(messageContent, visitorId, selectedFiles),
-        timeoutPromise
-      ]);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Set conversation ID if this was first message
+        if (data.conversation_id && !conversationId) {
+          setConversationId(data.conversation_id);
+          subscribeToMessages(data.conversation_id);
+        }
 
-      // Display webhook response
-      const assistantMessage: ChatMessage = {
-        id: generateId(),
-        content: response?.output || "Thank you for your message! Our team will get back to you soon.",
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
+        // If AI mode and we got an immediate response, add it
+        // (realtime will handle human mode responses)
+        if (data.ai_response && data.mode !== 'human') {
+          const assistantMessage: ChatMessage = {
+            id: data.ai_message_id?.toString() || generateId(),
+            content: data.ai_response,
+            sender: 'assistant',
+            timestamp: new Date(),
+          };
+          setMessages(prev => {
+            // Avoid duplicates if realtime already added it
+            if (prev.some(m => m.id === assistantMessage.id)) {
+              return prev;
+            }
+            return [...prev, assistantMessage];
+          });
+        }
+      } else {
+        throw new Error('Failed to send message');
+      }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("[VisitorChat] Error sending message:", error);
       const errorMessage: ChatMessage = {
         id: generateId(),
         content: "We couldn't reach the assistant. Please try again.",
@@ -145,21 +279,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
-      setIsLoading(false);
     }
 
-    setUserInput("");
-    setSelectedFiles([]);
-    setAudioUrl(null);
-  };
-
-  const handleAttachFile = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setSelectedFiles(files);
+    setIsLoading(false);
   };
 
   const handleVoiceStart = async () => {
@@ -174,10 +296,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 
       recorder.onstop = async () => {
         const audioBlob = new Blob(chunks, { type: 'audio/webm; codecs=opus' });
-        const audioFile = new File([audioBlob], 'voice-message.webm', { type: 'audio/webm; codecs=opus' });
         const audioUrl = URL.createObjectURL(audioBlob);
         
-        // Auto-send audio message immediately
+        // Add user voice message to UI
         const userMessage: ChatMessage = {
           id: generateId(),
           content: "Voice message",
@@ -192,27 +313,44 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         setIsLoading(true);
 
         try {
-          // Send to webhook with 20s timeout
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('timeout')), 20000);
+          // For voice messages, we still send text description
+          // Full audio upload would require storage integration
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'send_message',
+              visitor_id: visitorId,
+              content: 'Voice message sent',
+              type: 'audio'
+            })
           });
 
-          const response = await Promise.race([
-            sendHomepageWebhookMessage("Voice message", visitorId, [audioFile]),
-            timeoutPromise
-          ]);
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data.conversation_id && !conversationId) {
+              setConversationId(data.conversation_id);
+              subscribeToMessages(data.conversation_id);
+            }
 
-          // Display webhook response
-          const assistantMessage: ChatMessage = {
-            id: generateId(),
-            content: response?.output || "I received your voice message. Our team will review it and get back to you soon!",
-            sender: 'assistant',
-            timestamp: new Date(),
-          };
-          setMessages(prev => [...prev, assistantMessage]);
-          setIsLoading(false);
+            if (data.ai_response) {
+              const assistantMessage: ChatMessage = {
+                id: data.ai_message_id?.toString() || generateId(),
+                content: data.ai_response,
+                sender: 'assistant',
+                timestamp: new Date(),
+              };
+              setMessages(prev => {
+                if (prev.some(m => m.id === assistantMessage.id)) {
+                  return prev;
+                }
+                return [...prev, assistantMessage];
+              });
+            }
+          }
         } catch (error) {
-          console.error("Error sending voice message:", error);
+          console.error("[VisitorChat] Error sending voice message:", error);
           const errorMessage: ChatMessage = {
             id: generateId(),
             content: "We couldn't reach the assistant. Please try again.",
@@ -220,16 +358,16 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             timestamp: new Date(),
           };
           setMessages(prev => [...prev, errorMessage]);
-          setIsLoading(false);
         }
+
+        setIsLoading(false);
       };
 
       recorder.start();
       setMediaRecorder(recorder);
       setIsRecording(true);
-      setAudioChunks(chunks);
     } catch (error) {
-      console.error("Error starting voice recording:", error);
+      console.error("[VisitorChat] Error starting voice recording:", error);
       toast({
         title: "Error",
         description: "Unable to access microphone",
@@ -243,60 +381,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
-      setIsListening(false);
     }
-  };
-
-  const sendAudioMessage = async () => {
-    if (!audioUrl || selectedFiles.length === 0) return;
-
-    const userMessage: ChatMessage = {
-      id: generateId(),
-      content: "Voice message",
-      sender: 'user',
-      timestamp: new Date(),
-      fileUrl: audioUrl,
-      fileType: "audio/wav",
-      fileName: "voice-message.wav",
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
-
-    try {
-      // Send to webhook with 20s timeout
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('timeout')), 20000);
-      });
-
-      const response = await Promise.race([
-        sendHomepageWebhookMessage("Voice message", visitorId, selectedFiles),
-        timeoutPromise
-      ]);
-
-      // Display webhook response
-      const assistantMessage: ChatMessage = {
-        id: generateId(),
-        content: response?.output || "I received your voice message. Our team will review it and get back to you soon!",
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Error sending voice message:", error);
-      const errorMessage: ChatMessage = {
-        id: generateId(),
-        content: "We couldn't reach the assistant. Please try again.",
-        sender: 'assistant',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-      setIsLoading(false);
-    }
-
-    setSelectedFiles([]);
-    setAudioUrl(null);
   };
 
   const playAudio = (url: string, messageId: string) => {
@@ -322,7 +407,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const renderMessage = (message: ChatMessage) => {
     const isUser = message.sender === 'user';
     
-    // Special intro message without login CTA (button moved to header)
+    // Special intro message
     if (message.content === "intro-with-login") {
       return (
         <ChatBubble key={message.id} variant="received">
@@ -390,7 +475,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
               </div>
               <div>
                 <h3 className="font-semibold">EVA Assistant</h3>
-                <p className="text-xs opacity-90">Here to help with your questions</p>
+                <p className="text-xs opacity-90">
+                  {conversationMode === 'human' ? 'Connected with support' : 'Here to help with your questions'}
+                </p>
               </div>
             </div>
             {!user && (
@@ -419,41 +506,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         </ExpandableChatBody>
 
         <ExpandableChatFooter>
-          {selectedFiles.length > 0 && (
-            <div className="mb-2 p-2 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Selected files:</div>
-              {selectedFiles.map((file, index) => (
-                <div key={index} className="text-xs p-1 bg-background rounded flex items-center justify-between">
-                  <span>{file.name}</span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== index))}
-                    className="h-4 w-4 p-0"
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-              {audioUrl && (
-                <div className="mt-2 flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => playAudio(audioUrl, 'preview')}
-                  >
-                    <Play className="h-3 w-3 mr-1" />
-                    Preview
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="flex items-center gap-2 p-3 rounded-full bg-background border border-input">
             <VoiceInput
               onStart={() => {
-                setIsListening(true);
                 handleVoiceStart();
               }}
               onStop={handleVoiceStop}
@@ -473,7 +528,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 
             <Button
               type="submit"
-              disabled={isLoading || (!userInput.trim() && selectedFiles.length === 0)}
+              disabled={isLoading || !userInput.trim()}
               className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-4 py-2 rounded-full flex items-center gap-1"
             >
               Send Message
@@ -482,15 +537,6 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           </form>
         </ExpandableChatFooter>
       </ExpandableChat>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        className="hidden"
-        onChange={handleFileChange}
-        accept="image/*,audio/*,.pdf,.doc,.docx"
-      />
 
       <audio ref={audioRef} onEnded={() => setPlayingAudio(null)} />
 

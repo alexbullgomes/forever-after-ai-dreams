@@ -20,7 +20,8 @@ import { BookingFunnelModal } from '@/components/booking/BookingFunnelModal';
 
 interface Conversation {
   id: string;
-  customer_id: string;
+  customer_id: string | null;
+  visitor_id: string | null;
   user_name: string | null;
   user_email: string | null;
   mode: string;
@@ -455,6 +456,14 @@ const ChatAdmin = () => {
               <div className="p-4 space-y-2">
                 {conversations.map((conversation) => {
                   const isUnread = conversation.new_msg === 'unread';
+                  const isVisitor = !conversation.customer_id && !!conversation.visitor_id;
+                  const displayName = isVisitor 
+                    ? 'Visitor' 
+                    : (conversation.user_name || conversation.user_email || 'Anonymous');
+                  const displayInitial = isVisitor 
+                    ? 'V' 
+                    : (conversation.user_name?.charAt(0).toUpperCase() || 
+                       conversation.user_email?.charAt(0).toUpperCase() || 'U');
                   
                   return (
                     <div
@@ -473,14 +482,24 @@ const ChatAdmin = () => {
                       )}
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white text-sm font-medium">
-                            {conversation.user_name?.charAt(0).toUpperCase() || 
-                             conversation.user_email?.charAt(0).toUpperCase() || 'U'}
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                            isVisitor 
+                              ? 'bg-gradient-to-r from-gray-500 to-gray-600' 
+                              : 'bg-gradient-to-r from-rose-500 to-pink-500'
+                          }`}>
+                            {displayInitial}
                           </div>
                           <div className="flex flex-col">
-                            <span className={`text-sm ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
-                              {conversation.user_name || conversation.user_email || 'Anonymous'}
-                            </span>
+                            <div className="flex items-center gap-1">
+                              <span className={`text-sm ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
+                                {displayName}
+                              </span>
+                              {isVisitor && (
+                                <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-gray-100 text-gray-600 border-gray-300">
+                                  Guest
+                                </Badge>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <MessageCircle className="h-3 w-3" />
                               {conversation.message_count} messages
@@ -517,23 +536,48 @@ const ChatAdmin = () => {
               {/* Chat Header */}
               <div className="p-4 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center justify-between">
-                  <div 
-                    className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
-                    onClick={handleOpenProfileModal}
-                  >
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center text-white font-medium">
-                      {selectedConversation.user_name?.charAt(0).toUpperCase() || 
-                       selectedConversation.user_email?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 hover:text-rose-600 transition-colors">
-                        {selectedConversation.user_name || selectedConversation.user_email || 'Anonymous User'}
-                      </h3>
-                      <p className="text-sm text-gray-600 hover:text-rose-500 transition-colors">
-                        {selectedConversation.user_email}
-                      </p>
-                    </div>
-                  </div>
+                  {(() => {
+                    const isVisitor = !selectedConversation.customer_id && !!selectedConversation.visitor_id;
+                    const displayName = isVisitor 
+                      ? 'Visitor' 
+                      : (selectedConversation.user_name || selectedConversation.user_email || 'Anonymous User');
+                    const displayInitial = isVisitor 
+                      ? 'V' 
+                      : (selectedConversation.user_name?.charAt(0).toUpperCase() || 
+                         selectedConversation.user_email?.charAt(0).toUpperCase() || 'U');
+                    
+                    return (
+                      <div 
+                        className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+                        onClick={handleOpenProfileModal}
+                      >
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-medium ${
+                          isVisitor 
+                            ? 'bg-gradient-to-r from-gray-500 to-gray-600' 
+                            : 'bg-gradient-to-r from-rose-500 to-pink-500'
+                        }`}>
+                          {displayInitial}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 hover:text-rose-600 transition-colors">
+                              {displayName}
+                            </h3>
+                            {isVisitor && (
+                              <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600 border-gray-300">
+                                Guest
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 hover:text-rose-500 transition-colors">
+                            {isVisitor 
+                              ? `ID: ${selectedConversation.visitor_id?.slice(0, 8)}...` 
+                              : selectedConversation.user_email}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {roleLoading ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500"></div>
                   ) : hasRole ? (
@@ -671,7 +715,7 @@ const ChatAdmin = () => {
       </div>
 
       {/* User Profile Modal */}
-      {selectedConversation && (
+      {selectedConversation && selectedConversation.customer_id && (
         <UserProfileModal
           isOpen={isProfileModalOpen}
           onClose={() => setIsProfileModalOpen(false)}
@@ -679,6 +723,49 @@ const ChatAdmin = () => {
           userName={selectedConversation.user_name}
           userEmail={selectedConversation.user_email}
         />
+      )}
+      
+      {/* Visitor Info Modal - shown when it's a visitor conversation */}
+      {selectedConversation && !selectedConversation.customer_id && selectedConversation.visitor_id && isProfileModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center text-white font-medium">
+                V
+              </div>
+              Visitor Information
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-600">Visitor ID</label>
+                <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border break-all">
+                  {selectedConversation.visitor_id}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">Conversation Started</label>
+                <p className="text-sm text-gray-900">
+                  {format(new Date(selectedConversation.created_at), 'MMMM d, yyyy HH:mm')}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">Status</label>
+                <Badge variant="outline" className="mt-1">
+                  {selectedConversation.mode === 'ai' ? 'AI Handling' : 'Human Takeover'}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-500 mt-4">
+                This is an unauthenticated visitor. If they log in, their conversation will be linked to their account.
+              </p>
+            </div>
+            <Button 
+              onClick={() => setIsProfileModalOpen(false)} 
+              className="w-full mt-6"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Booking Modal for Product Cards */}
