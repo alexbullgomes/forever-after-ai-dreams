@@ -624,6 +624,7 @@ export type Database = {
           user_email: string | null
           user_id: string | null
           user_name: string | null
+          visitor_id: string | null
         }
         Insert: {
           audio_url?: string | null
@@ -637,6 +638,7 @@ export type Database = {
           user_email?: string | null
           user_id?: string | null
           user_name?: string | null
+          visitor_id?: string | null
         }
         Update: {
           audio_url?: string | null
@@ -650,6 +652,7 @@ export type Database = {
           user_email?: string | null
           user_id?: string | null
           user_name?: string | null
+          visitor_id?: string | null
         }
         Relationships: [
           {

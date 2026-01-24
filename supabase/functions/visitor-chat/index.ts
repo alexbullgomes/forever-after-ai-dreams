@@ -229,11 +229,12 @@ serve(async (req) => {
           }
         }
 
-        // Insert user message - Database trigger will emit webhook to n8n
+        // Insert user message with visitor_id - Database trigger will emit webhook to n8n
         const { data: userMsg, error: insertError } = await supabase
           .from('messages')
           .insert({
             conversation_id: conversationId,
+            visitor_id: visitor_id, // Include visitor_id directly in message for webhook payload
             role: 'user',
             type: type || 'text',
             content: content || null,
