@@ -1638,6 +1638,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_booking_hold_rate_limit: {
+        Args: { p_user_id?: string; p_visitor_id: string }
+        Returns: boolean
+      }
+      check_popup_submission_rate_limit: {
+        Args: { p_visitor_id: string }
+        Returns: boolean
+      }
       check_user_role_only: { Args: { _user_id: string }; Returns: string }
       generate_referral_code: { Args: { user_name?: string }; Returns: string }
       get_day_availability: {
