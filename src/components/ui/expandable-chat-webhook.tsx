@@ -80,54 +80,38 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
   });
 
-  // Declarative real-time subscription - mirrors authenticated chat pattern
+  // Real-time subscription using Broadcast (bypasses RLS for visitors)
+  // postgres_changes doesn't work for anon users due to RLS deny policy on messages table
   useEffect(() => {
     if (!conversationId) return;
 
-    console.log('[VisitorChat] Setting up subscription for:', conversationId);
+    console.log('[VisitorChat] Setting up broadcast subscription for:', conversationId);
     
     const channel = supabase
-      .channel(`visitor-messages-${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`
-        },
-        (payload) => {
-          console.log('[VisitorChat] Received new message:', payload.new);
-          const newMsg = payload.new as any;
-          
-          // Only add messages from non-user (AI or human admin)
-          if (newMsg.role !== 'user') {
-            setMessages(prev => {
-              // Check if message already exists
-              if (prev.some(m => m.id === newMsg.id?.toString())) {
-                return prev;
-              }
-              return [...prev, convertDbMessage(newMsg)];
-            });
-          }
+      .channel(`chat:${conversationId}`)
+      .on('broadcast', { event: 'new_message' }, (payload) => {
+        console.log('[VisitorChat] Received broadcast message:', payload);
+        const newMsg = payload.payload;
+        
+        // Only add messages from non-user (AI or human admin)
+        if (newMsg && newMsg.role !== 'user') {
+          setMessages(prev => {
+            // Check if message already exists
+            if (prev.some(m => m.id === newMsg.id?.toString())) {
+              return prev;
+            }
+            return [...prev, convertDbMessage(newMsg)];
+          });
         }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'conversations',
-          filter: `id=eq.${conversationId}`
-        },
-        (payload) => {
-          console.log('[VisitorChat] Conversation updated:', payload.new);
-          const updated = payload.new as any;
-          if (updated.mode) {
-            setConversationMode(updated.mode as 'ai' | 'human');
-          }
+      })
+      .on('broadcast', { event: 'mode_change' }, (payload) => {
+        // Handle conversation mode changes via broadcast
+        console.log('[VisitorChat] Mode change broadcast:', payload);
+        const newMode = payload.payload?.mode;
+        if (newMode) {
+          setConversationMode(newMode as 'ai' | 'human');
         }
-      )
+      })
       .subscribe((status) => {
         console.log('[VisitorChat] Subscription status:', status);
       });
