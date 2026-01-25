@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Bot, Send, Mic, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ui/chat-input";
@@ -66,7 +66,6 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const [isInitialized, setIsInitialized] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
-  const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -81,23 +80,21 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
   });
 
-  // Subscribe to real-time messages
-  const subscribeToMessages = useCallback((convId: string) => {
-    if (subscriptionRef.current) {
-      subscriptionRef.current.unsubscribe();
-    }
+  // Declarative real-time subscription - mirrors authenticated chat pattern
+  useEffect(() => {
+    if (!conversationId) return;
 
-    console.log('[VisitorChat] Subscribing to messages for conversation:', convId);
+    console.log('[VisitorChat] Setting up subscription for:', conversationId);
     
     const channel = supabase
-      .channel(`visitor-messages-${convId}`)
+      .channel(`visitor-messages-${conversationId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `conversation_id=eq.${convId}`
+          filter: `conversation_id=eq.${conversationId}`
         },
         (payload) => {
           console.log('[VisitorChat] Received new message:', payload.new);
@@ -121,7 +118,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           event: 'UPDATE',
           schema: 'public',
           table: 'conversations',
-          filter: `id=eq.${convId}`
+          filter: `id=eq.${conversationId}`
         },
         (payload) => {
           console.log('[VisitorChat] Conversation updated:', payload.new);
@@ -135,8 +132,11 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         console.log('[VisitorChat] Subscription status:', status);
       });
 
-    subscriptionRef.current = channel;
-  }, []);
+    return () => {
+      console.log('[VisitorChat] Cleaning up subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
 
   // Initialize visitor chat
   useEffect(() => {
@@ -166,9 +166,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
               const convertedMessages = data.messages.map(convertDbMessage);
               setMessages(convertedMessages);
             }
-            
-            // Subscribe to real-time updates
-            subscribeToMessages(data.conversation_id);
+            // Subscription handled automatically by useEffect when conversationId changes
           } else {
             // No existing conversation, show intro message
             const introMessage: ChatMessage = {
@@ -196,14 +194,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     };
 
     initVisitorChat();
-
-    // Cleanup subscription on unmount
-    return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
-      }
-    };
-  }, [subscribeToMessages]);
+  }, []);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -245,9 +236,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         const data = await response.json();
         
         // Set conversation ID if this was first message
+        // Subscription handled automatically by useEffect
         if (data.conversation_id && !conversationId) {
           setConversationId(data.conversation_id);
-          subscribeToMessages(data.conversation_id);
         }
 
         // If AI mode and we got an immediate response, add it
@@ -336,9 +327,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             if (response.ok) {
               const data = await response.json();
               
+              // Subscription handled automatically by useEffect
               if (data.conversation_id && !conversationId) {
                 setConversationId(data.conversation_id);
-                subscribeToMessages(data.conversation_id);
               }
 
               // Update the message with the real storage URL if available
