@@ -122,6 +122,49 @@ serve(async (req) => {
       .update({ new_msg: 'unread' })
       .eq('id', conversation_id);
 
+    // Broadcast the message to the conversation channel
+    // This enables real-time updates for visitors who can't use postgres_changes due to RLS
+    console.log(`[chat-webhook-callback] Broadcasting message to channel: chat:${conversation_id}`);
+    try {
+      const broadcastChannel = supabase.channel(`chat:${conversation_id}`);
+      
+      const subscribePromise = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Subscribe timeout')), 5000);
+        broadcastChannel.subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            clearTimeout(timeout);
+            resolve();
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            clearTimeout(timeout);
+            reject(new Error(`Subscribe failed: ${status}`));
+          }
+        });
+      });
+      
+      await subscribePromise;
+      
+      await broadcastChannel.send({
+        type: 'broadcast',
+        event: 'new_message',
+        payload: {
+          id: aiMessage.id,
+          conversation_id: conversation_id,
+          role: 'ai',
+          type: type,
+          content: content || null,
+          audio_url: audio_url || null,
+          user_name: user_name,
+          created_at: aiMessage.created_at
+        }
+      });
+      
+      console.log(`[chat-webhook-callback] Broadcast sent successfully`);
+      await supabase.removeChannel(broadcastChannel);
+    } catch (broadcastError) {
+      // Log but don't fail - the message is already saved
+      console.error('[chat-webhook-callback] Broadcast error (non-fatal):', broadcastError);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
