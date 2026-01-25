@@ -142,12 +142,27 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           
           if (data.messages && data.messages.length > 0) {
             setMessages(prev => {
-              // Get IDs of existing messages
+              // Primary deduplication: Check by ID
               const existingIds = new Set(prev.map(m => m.id));
+              
+              // Secondary deduplication: Content fingerprint (sender + first 50 chars)
+              // This catches edge cases where ID sync fails
+              const existingContent = new Set(
+                prev.map(m => `${m.sender}:${m.content?.substring(0, 50)}`)
+              );
               
               // Find new messages not in current state
               const newMessages = data.messages
-                .filter((m: any) => !existingIds.has(m.id?.toString()))
+                .filter((m: any) => {
+                  // Primary: Check by ID
+                  if (existingIds.has(m.id?.toString())) return false;
+                  
+                  // Secondary: Check by content fingerprint (prevents content duplicates)
+                  const fingerprint = `${m.role === 'user' ? 'user' : 'assistant'}:${m.content?.substring(0, 50)}`;
+                  if (existingContent.has(fingerprint)) return false;
+                  
+                  return true;
+                })
                 .map(convertDbMessage);
               
               if (newMessages.length > 0) {
@@ -275,6 +290,15 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       if (response.ok) {
         const data = await response.json();
         
+        // Update user message with database ID for proper deduplication during polling
+        if (data.message_id) {
+          setMessages(prev => prev.map(msg => 
+            msg.id === userMessage.id 
+              ? { ...msg, id: data.message_id.toString() }
+              : msg
+          ));
+        }
+        
         // Set conversation ID if this was first message
         // Subscription handled automatically by useEffect
         if (data.conversation_id && !conversationId) {
@@ -372,11 +396,16 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
                 setConversationId(data.conversation_id);
               }
 
-              // Update the message with the real storage URL if available
-              if (data.audio_url) {
+              // Update voice message with database ID for proper deduplication during polling
+              // Also update audio_url if available
+              if (data.message_id || data.audio_url) {
                 setMessages(prev => prev.map(msg => 
                   msg.id === tempMessageId 
-                    ? { ...msg, fileUrl: data.audio_url }
+                    ? { 
+                        ...msg, 
+                        id: data.message_id ? data.message_id.toString() : msg.id,
+                        fileUrl: data.audio_url || msg.fileUrl 
+                      }
                     : msg
                 ));
               }
