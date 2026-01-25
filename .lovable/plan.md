@@ -1,146 +1,250 @@
 
-# Fix Visitor Chat Polling Duplication Bug
 
-## Problem Identified
+# Allow Product Cards for Visitors with Auth at Action Level
 
-The screenshot shows the same user message "hello quero saber mais sobre o seviços de fotos" appearing twice, causing repeated AI responses. This happens due to an **ID mismatch** between locally-generated IDs and database IDs.
+## Problem
 
-## Root Cause
+The screenshot shows raw JSON being displayed in the Visitor Chat instead of a properly rendered product card. This happens because:
 
-### The Flow That Causes Duplication:
-
-```text
-1. User sends message
-   └── handleSubmit creates message with LOCAL ID: "abc123"
-   └── setMessages([...prev, { id: "abc123", content: "hello..." }])
-
-2. Edge function saves to database
-   └── Returns message_id: 42 (database ID)
-   └── Frontend IGNORES this ID ❌
-
-3. Polling runs (every 7 seconds)
-   └── Fetches all messages from database
-   └── User message has id: "42" (database ID)
-
-4. Deduplication check fails
-   └── existingIds = Set(["abc123"])
-   └── Is "42" in existingIds? NO ❌
-   └── Adds "duplicate" message with id: "42"
-
-5. Result: Same message appears twice with different IDs
-```
+1. The Visitor Chat (`expandable-chat-webhook.tsx`) doesn't recognize or parse `card` type messages
+2. It renders all messages as plain text: `<p>{message.content}</p>`
+3. There's no `ChatCardMessage` component integration for visitors
 
 ## Solution
 
-### Fix 1: Update Local Message ID After Submission (Primary Fix)
+Update the Visitor Chat to render product/campaign cards identically to the authenticated chat, with authentication gating only at the CTA/booking action level (not at render time).
 
-When the edge function returns `message_id`, update the locally-created user message to use the database ID. This ensures polling deduplication works correctly.
+## Technical Changes
 
-**In `handleSubmit`** (around line 275-282):
+### File: `src/components/ui/expandable-chat-webhook.tsx`
+
+#### 1. Update ChatMessage Interface (lines 27-35)
+
+Add `type` and `cardData` fields to support card messages:
 
 ```typescript
-if (response.ok) {
-  const data = await response.json();
-  
-  // Update user message with database ID for proper deduplication
-  if (data.message_id) {
-    setMessages(prev => prev.map(msg => 
-      msg.id === userMessage.id 
-        ? { ...msg, id: data.message_id.toString() }
-        : msg
-    ));
-  }
-  
-  // Set conversation ID if this was first message
-  if (data.conversation_id && !conversationId) {
-    setConversationId(data.conversation_id);
-  }
-  // ... rest of logic
+interface ChatMessage {
+  id: string;
+  content: string;
+  sender: 'user' | 'assistant';
+  timestamp: Date;
+  type?: 'text' | 'audio' | 'card';  // ADD
+  cardData?: CardMessageData;          // ADD
+  fileUrl?: string;
+  fileType?: string;
+  fileName?: string;
 }
 ```
 
-### Fix 2: Same Fix for Voice Messages
+#### 2. Update Imports (line 1-26)
 
-Apply identical logic in `handleVoiceStart` recorder.onstop (around line 371-373):
+Add necessary imports:
 
 ```typescript
-if (data.message_id) {
-  setMessages(prev => prev.map(msg => 
-    msg.id === tempMessageId 
-      ? { ...msg, id: data.message_id.toString() }
-      : msg
-  ));
-}
+import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { CardMessageData } from "@/types/chat";
+import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 ```
 
-### Fix 3: Add Content-Based Deduplication as Safety Net
+#### 3. Update convertDbMessage Function (lines 72-81)
 
-In the polling logic, add secondary deduplication by checking content + sender:
+Parse card data from content when message type is 'card':
 
 ```typescript
-const pollMessages = async () => {
-  // ... fetch logic ...
-  
-  if (data.messages && data.messages.length > 0) {
-    setMessages(prev => {
-      const existingIds = new Set(prev.map(m => m.id));
-      
-      // Also create content fingerprints for backup deduplication
-      const existingContent = new Set(
-        prev.map(m => `${m.sender}:${m.content?.substring(0, 50)}`)
-      );
-      
-      const newMessages = data.messages
-        .filter((m: any) => {
-          // Primary: Check by ID
-          if (existingIds.has(m.id?.toString())) return false;
-          
-          // Secondary: Check by content fingerprint (prevents content duplicates)
-          const fingerprint = `${m.role === 'user' ? 'user' : 'assistant'}:${m.content?.substring(0, 50)}`;
-          if (existingContent.has(fingerprint)) return false;
-          
-          return true;
-        })
-        .map(convertDbMessage);
-      
-      if (newMessages.length > 0) {
-        console.log('[VisitorChat] Polling found new messages:', newMessages.length);
-        return [...prev, ...newMessages];
-      }
-      return prev;
+const convertDbMessage = (dbMsg: any): ChatMessage => {
+  // Parse card data if type is 'card'
+  let cardData: CardMessageData | undefined;
+  if (dbMsg.type === 'card' && dbMsg.content) {
+    try {
+      cardData = JSON.parse(dbMsg.content);
+    } catch (e) {
+      console.error('[VisitorChat] Failed to parse card data:', e);
+    }
+  }
+
+  return {
+    id: dbMsg.id?.toString() || generateId(),
+    content: dbMsg.content || '',
+    sender: dbMsg.role === 'user' ? 'user' : 'assistant',
+    timestamp: new Date(dbMsg.created_at),
+    type: dbMsg.type || 'text',
+    cardData,
+    fileUrl: dbMsg.audio_url || undefined,
+    fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
+    fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
+  };
+};
+```
+
+#### 4. Add Booking State (after line 66)
+
+Add state for managing product booking:
+
+```typescript
+const [bookingProduct, setBookingProduct] = useState<{
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+} | null>(null);
+```
+
+#### 5. Add handleBookProduct Function (before renderMessage)
+
+Create handler that gates authentication at action level:
+
+```typescript
+const handleBookProduct = (cardData: CardMessageData) => {
+  if (cardData.entityType === 'product' && cardData.price !== undefined) {
+    // For visitors, require login before booking
+    if (!user) {
+      // Store product info for after login, then show auth modal
+      sessionStorage.setItem('pendingChatBooking', JSON.stringify({
+        id: cardData.entityId,
+        title: cardData.title,
+        price: cardData.price,
+        currency: cardData.currency || 'USD',
+      }));
+      setShowAuthModal(true);
+      return;
+    }
+    
+    // User is logged in, open booking modal
+    setBookingProduct({
+      id: cardData.entityId,
+      title: cardData.title,
+      price: cardData.price,
+      currency: cardData.currency || 'USD',
     });
   }
 };
 ```
 
-## Files to Modify
+#### 6. Update renderMessage Function (lines 503-555)
 
-| File | Change |
-|------|--------|
-| `src/components/ui/expandable-chat-webhook.tsx` | 1. Update user message ID after edge function response in `handleSubmit`<br>2. Update voice message ID after edge function response<br>3. Add content fingerprint deduplication in polling |
+Add card rendering support:
 
-## Technical Details
+```typescript
+const renderMessage = (message: ChatMessage) => {
+  const isUser = message.sender === 'user';
+  
+  // Special intro message
+  if (message.content === "intro-with-login") {
+    return (/* existing intro JSX */);
+  }
+  
+  return (
+    <ChatBubble key={message.id} variant={isUser ? "sent" : "received"}>
+      {!isUser && (
+        <ChatBubbleAvatar fallback="EVA" />
+      )}
+      <ChatBubbleMessage variant={isUser ? "sent" : "received"}>
+        {/* Card message rendering */}
+        {message.type === 'card' && message.cardData ? (
+          <ChatCardMessage 
+            data={message.cardData} 
+            variant={isUser ? 'sent' : 'received'}
+            onBookProduct={handleBookProduct}
+          />
+        ) : message.fileType?.startsWith('audio/') ? (
+          /* existing audio JSX */
+        ) : message.fileType?.startsWith('image/') ? (
+          /* existing image JSX */
+        ) : (
+          <p>{message.content}</p>
+        )}
+      </ChatBubbleMessage>
+    </ChatBubble>
+  );
+};
+```
 
-| Aspect | Details |
-|--------|---------|
-| **Primary Fix** | Sync local message ID with database ID immediately after POST |
-| **Backup Fix** | Content-based fingerprint deduplication in polling |
-| **No Backend Changes** | All fixes are frontend-only as requested |
-| **No UI Changes** | Logic-only modifications |
+#### 7. Add BookingFunnelModal to JSX (after AuthModal, around line 642)
 
-## Why This Works
+Add the booking modal component:
 
-1. **ID Sync**: After `handleSubmit`, the user message ID changes from `"abc123"` to `"42"` (matching database)
-2. **Next Poll**: When polling fetches message with `id: "42"`, deduplication finds it already exists
-3. **No Duplicate**: Message is correctly filtered out
-4. **Safety Net**: Content fingerprint catches any edge cases where ID sync fails
+```typescript
+{bookingProduct && (
+  <BookingFunnelModal
+    isOpen={!!bookingProduct}
+    onClose={() => setBookingProduct(null)}
+    productId={bookingProduct.id}
+    productTitle={bookingProduct.title}
+    productPrice={bookingProduct.price}
+    currency={bookingProduct.currency}
+  />
+)}
+```
+
+#### 8. Resume Booking After Auth (in useEffect or after user login)
+
+Check for pending chat booking after authentication:
+
+```typescript
+// Add useEffect to resume booking after login
+useEffect(() => {
+  if (user) {
+    const pendingBooking = sessionStorage.getItem('pendingChatBooking');
+    if (pendingBooking) {
+      try {
+        const bookingData = JSON.parse(pendingBooking);
+        setBookingProduct(bookingData);
+        sessionStorage.removeItem('pendingChatBooking');
+      } catch (e) {
+        console.error('[VisitorChat] Failed to parse pending booking:', e);
+      }
+    }
+  }
+}, [user]);
+```
+
+## Data Flow
+
+```text
+Admin sends product card → Stored as type='card' with JSON content
+                               ↓
+Visitor chat polls/receives message
+                               ↓
+convertDbMessage parses JSON to cardData
+                               ↓
+renderMessage checks type === 'card'
+                               ↓
+ChatCardMessage renders visual card
+                               ↓
+User clicks "Book Now" → handleBookProduct called
+                               ↓
+         ┌──────────────────────┴──────────────────────┐
+         ↓                                             ↓
+   User logged in?                              Not logged in
+         ↓                                             ↓
+   Open BookingFunnelModal                    Save to sessionStorage
+                                                       ↓
+                                              Open AuthModal
+                                                       ↓
+                                              After login, useEffect
+                                              resumes with BookingFunnelModal
+```
+
+## Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/components/ui/expandable-chat-webhook.tsx` | Add card rendering, booking state, auth-gated booking handler |
+
+## Key Benefits
+
+1. **Unified Experience** - Product cards render identically for visitors and authenticated users
+2. **Auth at Action Level** - Cards are always visible, authentication only required when booking
+3. **Session Persistence** - Pending bookings are restored after login
+4. **No Backend Changes** - All logic is frontend-only
+5. **Consistent with Existing Patterns** - Mirrors the authenticated chat's card handling
 
 ## Testing Checklist
 
-1. Send a message as visitor
-2. Wait 7+ seconds for polling to run
-3. Verify message appears only ONCE
-4. Verify AI response appears only ONCE
-5. Send multiple messages in quick succession
-6. Verify no duplicates across all messages
-7. Test voice messages for same behavior
+1. Admin sends a product card to visitor chat
+2. Verify card renders with image, title, price, and "Book Now" button
+3. Click "Book Now" as visitor → Auth modal should appear
+4. Log in → Booking modal should auto-open for the product
+5. Verify campaign cards render with "View" external link
+6. Verify authenticated users can book directly without extra auth prompt
+
