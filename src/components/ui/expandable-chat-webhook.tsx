@@ -23,12 +23,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrCreateVisitorId, trackVisitorEvent } from "@/utils/visitor";
+import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { CardMessageData } from "@/types/chat";
+import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
 interface ChatMessage {
   id: string;
   content: string;
   sender: 'user' | 'assistant';
   timestamp: Date;
+  type?: 'text' | 'audio' | 'card';
+  cardData?: CardMessageData;
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
@@ -64,21 +69,41 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const [conversationMode, setConversationMode] = useState<'ai' | 'human'>('ai');
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [bookingProduct, setBookingProduct] = useState<{
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+  } | null>(null);
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   // Convert database message to UI message
-  const convertDbMessage = (dbMsg: any): ChatMessage => ({
-    id: dbMsg.id?.toString() || generateId(),
-    content: dbMsg.content || '',
-    sender: dbMsg.role === 'user' ? 'user' : 'assistant',
-    timestamp: new Date(dbMsg.created_at),
-    fileUrl: dbMsg.audio_url || undefined,
-    fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
-    fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
-  });
+  const convertDbMessage = (dbMsg: any): ChatMessage => {
+    // Parse card data if type is 'card'
+    let cardData: CardMessageData | undefined;
+    if (dbMsg.type === 'card' && dbMsg.content) {
+      try {
+        cardData = JSON.parse(dbMsg.content);
+      } catch (e) {
+        console.error('[VisitorChat] Failed to parse card data:', e);
+      }
+    }
+
+    return {
+      id: dbMsg.id?.toString() || generateId(),
+      content: dbMsg.content || '',
+      sender: dbMsg.role === 'user' ? 'user' : 'assistant',
+      timestamp: new Date(dbMsg.created_at),
+      type: dbMsg.type || 'text',
+      cardData,
+      fileUrl: dbMsg.audio_url || undefined,
+      fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
+      fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
+    };
+  };
 
   // Real-time subscription using Broadcast (bypasses RLS for visitors)
   // postgres_changes doesn't work for anon users due to RLS deny policy on messages table
@@ -500,6 +525,48 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     }
   };
 
+  // Resume booking after authentication
+  useEffect(() => {
+    if (user) {
+      const pendingBooking = sessionStorage.getItem('pendingChatBooking');
+      if (pendingBooking) {
+        try {
+          const bookingData = JSON.parse(pendingBooking);
+          setBookingProduct(bookingData);
+          sessionStorage.removeItem('pendingChatBooking');
+        } catch (e) {
+          console.error('[VisitorChat] Failed to parse pending booking:', e);
+        }
+      }
+    }
+  }, [user]);
+
+  // Handle product booking - gates auth at action level
+  const handleBookProduct = (cardData: CardMessageData) => {
+    if (cardData.entityType === 'product' && cardData.price !== undefined) {
+      // For visitors, require login before booking
+      if (!user) {
+        // Store product info for after login, then show auth modal
+        sessionStorage.setItem('pendingChatBooking', JSON.stringify({
+          id: cardData.entityId,
+          title: cardData.title,
+          price: cardData.price,
+          currency: cardData.currency || 'USD',
+        }));
+        setShowAuthModal(true);
+        return;
+      }
+      
+      // User is logged in, open booking modal
+      setBookingProduct({
+        id: cardData.entityId,
+        title: cardData.title,
+        price: cardData.price,
+        currency: cardData.currency || 'USD',
+      });
+    }
+  };
+
   const renderMessage = (message: ChatMessage) => {
     const isUser = message.sender === 'user';
     
@@ -521,7 +588,14 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           <ChatBubbleAvatar fallback="EVA" />
         )}
         <ChatBubbleMessage variant={isUser ? "sent" : "received"}>
-          {message.fileType?.startsWith('audio/') ? (
+          {/* Card message rendering */}
+          {message.type === 'card' && message.cardData ? (
+            <ChatCardMessage 
+              data={message.cardData} 
+              variant={isUser ? 'sent' : 'received'}
+              onBookProduct={handleBookProduct}
+            />
+          ) : message.fileType?.startsWith('audio/') ? (
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
@@ -640,6 +714,17 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+
+      {bookingProduct && (
+        <BookingFunnelModal
+          isOpen={!!bookingProduct}
+          onClose={() => setBookingProduct(null)}
+          productId={bookingProduct.id}
+          productTitle={bookingProduct.title}
+          productPrice={bookingProduct.price}
+          currency={bookingProduct.currency}
+        />
+      )}
     </>
   );
 };
