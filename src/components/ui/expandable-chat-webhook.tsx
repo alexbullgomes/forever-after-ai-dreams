@@ -122,6 +122,62 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     };
   }, [conversationId]);
 
+  // Polling fallback: Fetch messages every 7 seconds to catch any missed broadcasts
+  useEffect(() => {
+    if (!conversationId || !isInitialized) return;
+
+    const pollMessages = async () => {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'get_messages',
+            visitor_id: visitorId
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.messages && data.messages.length > 0) {
+            setMessages(prev => {
+              // Get IDs of existing messages
+              const existingIds = new Set(prev.map(m => m.id));
+              
+              // Find new messages not in current state
+              const newMessages = data.messages
+                .filter((m: any) => !existingIds.has(m.id?.toString()))
+                .map(convertDbMessage);
+              
+              if (newMessages.length > 0) {
+                console.log('[VisitorChat] Polling found new messages:', newMessages.length);
+                return [...prev, ...newMessages];
+              }
+              return prev;
+            });
+          }
+          
+          // Also sync conversation mode
+          if (data.mode && data.mode !== conversationMode) {
+            setConversationMode(data.mode);
+          }
+        }
+      } catch (error) {
+        console.error('[VisitorChat] Polling error:', error);
+      }
+    };
+
+    console.log('[VisitorChat] Starting 7-second polling for conversation:', conversationId);
+    
+    const intervalId = setInterval(pollMessages, 7000);
+
+    return () => {
+      console.log('[VisitorChat] Stopping polling');
+      clearInterval(intervalId);
+    };
+  }, [conversationId, isInitialized, visitorId, conversationMode]);
+
   // Initialize visitor chat
   useEffect(() => {
     const initVisitorChat = async () => {
