@@ -1,250 +1,142 @@
 
 
-# Allow Product Cards for Visitors with Auth at Action Level
+# Add Visual Filter to Chat Admin Conversation List
 
-## Problem
+## Overview
 
-The screenshot shows raw JSON being displayed in the Visitor Chat instead of a properly rendered product card. This happens because:
+Add a segmented filter control to the Chat Admin conversation list that allows switching between All, Visitors (unauthenticated guests), and Logged-in Users. This is a frontend-only filter using existing conversation data.
 
-1. The Visitor Chat (`expandable-chat-webhook.tsx`) doesn't recognize or parse `card` type messages
-2. It renders all messages as plain text: `<p>{message.content}</p>`
-3. There's no `ChatCardMessage` component integration for visitors
+## UI Design
 
-## Solution
+The filter will be placed below the "Active Conversations" header, styled as a segmented button group (similar to tabs):
 
-Update the Visitor Chat to render product/campaign cards identically to the authenticated chat, with authentication gating only at the CTA/booking action level (not at render time).
-
-## Technical Changes
-
-### File: `src/components/ui/expandable-chat-webhook.tsx`
-
-#### 1. Update ChatMessage Interface (lines 27-35)
-
-Add `type` and `cardData` fields to support card messages:
-
-```typescript
-interface ChatMessage {
-  id: string;
-  content: string;
-  sender: 'user' | 'assistant';
-  timestamp: Date;
-  type?: 'text' | 'audio' | 'card';  // ADD
-  cardData?: CardMessageData;          // ADD
-  fileUrl?: string;
-  fileType?: string;
-  fileName?: string;
-}
+```text
++--------------------------------------------------+
+|  Active Conversations     26                      |
+|  +------------------------------------------+    |
+|  |  All (26)  |  Visitors (12)  |  Users (14) |  |
+|  +------------------------------------------+    |
++--------------------------------------------------+
 ```
 
-#### 2. Update Imports (line 1-26)
+## Technical Approach
 
-Add necessary imports:
+### File to Modify
+`src/components/dashboard/ChatAdmin.tsx`
 
-```typescript
-import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
-import { CardMessageData } from "@/types/chat";
-import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
-```
+### Changes Required
 
-#### 3. Update convertDbMessage Function (lines 72-81)
+1. **Add Filter State** (after line 62):
+   ```typescript
+   const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
+   ```
 
-Parse card data from content when message type is 'card':
+2. **Create Computed Filtered List** (before the return statement):
+   ```typescript
+   const filteredConversations = conversations.filter((conv) => {
+     if (conversationFilter === 'all') return true;
+     const isVisitor = !conv.customer_id && !!conv.visitor_id;
+     if (conversationFilter === 'visitor') return isVisitor;
+     if (conversationFilter === 'user') return !isVisitor;
+     return true;
+   });
+   
+   // Counts for badges
+   const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
+   const userCount = conversations.filter(c => !!c.customer_id).length;
+   ```
 
-```typescript
-const convertDbMessage = (dbMsg: any): ChatMessage => {
-  // Parse card data if type is 'card'
-  let cardData: CardMessageData | undefined;
-  if (dbMsg.type === 'card' && dbMsg.content) {
-    try {
-      cardData = JSON.parse(dbMsg.content);
-    } catch (e) {
-      console.error('[VisitorChat] Failed to parse card data:', e);
-    }
-  }
+3. **Add Filter UI** (after line 455, below the header):
+   ```typescript
+   <div className="flex items-center gap-1 mt-3">
+     <Button
+       variant={conversationFilter === 'all' ? 'default' : 'outline'}
+       size="sm"
+       onClick={() => setConversationFilter('all')}
+       className="flex-1 text-xs"
+     >
+       All ({conversations.length})
+     </Button>
+     <Button
+       variant={conversationFilter === 'visitor' ? 'default' : 'outline'}
+       size="sm"
+       onClick={() => setConversationFilter('visitor')}
+       className="flex-1 text-xs"
+     >
+       Visitors ({visitorCount})
+     </Button>
+     <Button
+       variant={conversationFilter === 'user' ? 'default' : 'outline'}
+       size="sm"
+       onClick={() => setConversationFilter('user')}
+       className="flex-1 text-xs"
+     >
+       Users ({userCount})
+     </Button>
+   </div>
+   ```
 
-  return {
-    id: dbMsg.id?.toString() || generateId(),
-    content: dbMsg.content || '',
-    sender: dbMsg.role === 'user' ? 'user' : 'assistant',
-    timestamp: new Date(dbMsg.created_at),
-    type: dbMsg.type || 'text',
-    cardData,
-    fileUrl: dbMsg.audio_url || undefined,
-    fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
-    fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
-  };
-};
-```
+4. **Update Conversation Mapping** (line 460):
+   Replace `conversations.map((conversation)` with `filteredConversations.map((conversation)`
 
-#### 4. Add Booking State (after line 66)
+5. **Update Empty State** (line 525):
+   Update the empty state message to reflect filtered state:
+   ```typescript
+   {filteredConversations.length === 0 && (
+     <div className="text-center py-8 text-gray-500">
+       {conversationFilter === 'all' 
+         ? 'No conversations found' 
+         : `No ${conversationFilter === 'visitor' ? 'visitor' : 'user'} conversations`}
+     </div>
+   )}
+   ```
 
-Add state for managing product booking:
-
-```typescript
-const [bookingProduct, setBookingProduct] = useState<{
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-} | null>(null);
-```
-
-#### 5. Add handleBookProduct Function (before renderMessage)
-
-Create handler that gates authentication at action level:
-
-```typescript
-const handleBookProduct = (cardData: CardMessageData) => {
-  if (cardData.entityType === 'product' && cardData.price !== undefined) {
-    // For visitors, require login before booking
-    if (!user) {
-      // Store product info for after login, then show auth modal
-      sessionStorage.setItem('pendingChatBooking', JSON.stringify({
-        id: cardData.entityId,
-        title: cardData.title,
-        price: cardData.price,
-        currency: cardData.currency || 'USD',
-      }));
-      setShowAuthModal(true);
-      return;
-    }
-    
-    // User is logged in, open booking modal
-    setBookingProduct({
-      id: cardData.entityId,
-      title: cardData.title,
-      price: cardData.price,
-      currency: cardData.currency || 'USD',
-    });
-  }
-};
-```
-
-#### 6. Update renderMessage Function (lines 503-555)
-
-Add card rendering support:
-
-```typescript
-const renderMessage = (message: ChatMessage) => {
-  const isUser = message.sender === 'user';
-  
-  // Special intro message
-  if (message.content === "intro-with-login") {
-    return (/* existing intro JSX */);
-  }
-  
-  return (
-    <ChatBubble key={message.id} variant={isUser ? "sent" : "received"}>
-      {!isUser && (
-        <ChatBubbleAvatar fallback="EVA" />
-      )}
-      <ChatBubbleMessage variant={isUser ? "sent" : "received"}>
-        {/* Card message rendering */}
-        {message.type === 'card' && message.cardData ? (
-          <ChatCardMessage 
-            data={message.cardData} 
-            variant={isUser ? 'sent' : 'received'}
-            onBookProduct={handleBookProduct}
-          />
-        ) : message.fileType?.startsWith('audio/') ? (
-          /* existing audio JSX */
-        ) : message.fileType?.startsWith('image/') ? (
-          /* existing image JSX */
-        ) : (
-          <p>{message.content}</p>
-        )}
-      </ChatBubbleMessage>
-    </ChatBubble>
-  );
-};
-```
-
-#### 7. Add BookingFunnelModal to JSX (after AuthModal, around line 642)
-
-Add the booking modal component:
-
-```typescript
-{bookingProduct && (
-  <BookingFunnelModal
-    isOpen={!!bookingProduct}
-    onClose={() => setBookingProduct(null)}
-    productId={bookingProduct.id}
-    productTitle={bookingProduct.title}
-    productPrice={bookingProduct.price}
-    currency={bookingProduct.currency}
-  />
-)}
-```
-
-#### 8. Resume Booking After Auth (in useEffect or after user login)
-
-Check for pending chat booking after authentication:
-
-```typescript
-// Add useEffect to resume booking after login
-useEffect(() => {
-  if (user) {
-    const pendingBooking = sessionStorage.getItem('pendingChatBooking');
-    if (pendingBooking) {
-      try {
-        const bookingData = JSON.parse(pendingBooking);
-        setBookingProduct(bookingData);
-        sessionStorage.removeItem('pendingChatBooking');
-      } catch (e) {
-        console.error('[VisitorChat] Failed to parse pending booking:', e);
-      }
-    }
-  }
-}, [user]);
-```
+6. **Update Active Count Badge** (line 454):
+   Change to show filtered count: `<Badge variant="secondary">{filteredConversations.length}</Badge>`
 
 ## Data Flow
 
 ```text
-Admin sends product card → Stored as type='card' with JSON content
-                               ↓
-Visitor chat polls/receives message
-                               ↓
-convertDbMessage parses JSON to cardData
-                               ↓
-renderMessage checks type === 'card'
-                               ↓
-ChatCardMessage renders visual card
-                               ↓
-User clicks "Book Now" → handleBookProduct called
-                               ↓
-         ┌──────────────────────┴──────────────────────┐
-         ↓                                             ↓
-   User logged in?                              Not logged in
-         ↓                                             ↓
-   Open BookingFunnelModal                    Save to sessionStorage
-                                                       ↓
-                                              Open AuthModal
-                                                       ↓
-                                              After login, useEffect
-                                              resumes with BookingFunnelModal
+conversations (full list from DB)
+        │
+        ▼
+conversationFilter state ('all' | 'visitor' | 'user')
+        │
+        ▼
+filteredConversations (computed array)
+        │
+        ├──► Rendered in list
+        └──► Count shown in badge
 ```
 
-## Files Modified
+## Filter Logic
 
-| File | Changes |
-|------|---------|
-| `src/components/ui/expandable-chat-webhook.tsx` | Add card rendering, booking state, auth-gated booking handler |
+| Filter | Condition |
+|--------|-----------|
+| All | No filter - show all conversations |
+| Visitors | `!customer_id && !!visitor_id` (unauthenticated guests) |
+| Users | `!!customer_id` (authenticated users) |
 
-## Key Benefits
+## What Stays Unchanged
 
-1. **Unified Experience** - Product cards render identically for visitors and authenticated users
-2. **Auth at Action Level** - Cards are always visible, authentication only required when booking
-3. **Session Persistence** - Pending bookings are restored after login
-4. **No Backend Changes** - All logic is frontend-only
-5. **Consistent with Existing Patterns** - Mirrors the authenticated chat's card handling
+- Database queries (no changes to `fetchConversations`)
+- Realtime subscriptions and polling
+- AI/Human mode toggle behavior
+- Message sending/receiving logic
+- Webhook integrations
+- Conversation selection behavior
+- Unread indicator logic
 
 ## Testing Checklist
 
-1. Admin sends a product card to visitor chat
-2. Verify card renders with image, title, price, and "Book Now" button
-3. Click "Book Now" as visitor → Auth modal should appear
-4. Log in → Booking modal should auto-open for the product
-5. Verify campaign cards render with "View" external link
-6. Verify authenticated users can book directly without extra auth prompt
+1. Filter defaults to "All" showing all conversations
+2. Clicking "Visitors" shows only guest conversations (gray avatar, "Guest" badge)
+3. Clicking "Users" shows only authenticated user conversations (rose avatar, name/email)
+4. Counts in filter buttons are accurate
+5. Badge next to header updates with filtered count
+6. Empty state shows appropriate message per filter
+7. Selecting a conversation still works in all filter modes
+8. AI/Human mode toggle still works
+9. Sending messages still works
+10. New messages appear in correct filter view
 
