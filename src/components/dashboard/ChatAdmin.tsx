@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Send, Users, MessageCircle, Clock, ArrowDown, Copy } from 'lucide-react';
+import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -61,6 +61,7 @@ const ChatAdmin = () => {
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Booking state for product cards (admin can also test booking flow)
   const [bookingProduct, setBookingProduct] = useState<{
@@ -450,10 +451,22 @@ const ChatAdmin = () => {
         {(() => {
           // Computed filter values
           const filteredConversations = conversations.filter((conv) => {
-            if (conversationFilter === 'all') return true;
-            const isVisitor = !conv.customer_id && !!conv.visitor_id;
-            if (conversationFilter === 'visitor') return isVisitor;
-            if (conversationFilter === 'user') return !isVisitor;
+            // Type filter
+            if (conversationFilter !== 'all') {
+              const isVisitor = !conv.customer_id && !!conv.visitor_id;
+              if (conversationFilter === 'visitor' && !isVisitor) return false;
+              if (conversationFilter === 'user' && isVisitor) return false;
+            }
+            // Search filter
+            if (searchQuery.trim()) {
+              const query = searchQuery.toLowerCase();
+              const name = (conv.user_name || '').toLowerCase();
+              const email = (conv.user_email || '').toLowerCase();
+              const visitorId = (conv.visitor_id || '').toLowerCase();
+              if (!name.includes(query) && !email.includes(query) && !visitorId.includes(query)) {
+                return false;
+              }
+            }
             return true;
           });
           const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
@@ -466,6 +479,17 @@ const ChatAdmin = () => {
               <Users className="h-5 w-5 text-gray-600" />
               <h3 className="font-semibold text-gray-900">Active Conversations</h3>
               <Badge variant="secondary">{filteredConversations.length}</Badge>
+            </div>
+            {/* Search Bar */}
+            <div className="relative mt-3">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 h-9 text-sm"
+              />
             </div>
             {/* Filter Buttons */}
             <div className="flex items-center gap-1 mt-3">
