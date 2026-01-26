@@ -60,6 +60,7 @@ const ChatAdmin = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
   
   // Booking state for product cards (admin can also test booking flow)
   const [bookingProduct, setBookingProduct] = useState<{
@@ -446,18 +447,58 @@ const ChatAdmin = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Conversations List */}
+        {(() => {
+          // Computed filter values
+          const filteredConversations = conversations.filter((conv) => {
+            if (conversationFilter === 'all') return true;
+            const isVisitor = !conv.customer_id && !!conv.visitor_id;
+            if (conversationFilter === 'visitor') return isVisitor;
+            if (conversationFilter === 'user') return !isVisitor;
+            return true;
+          });
+          const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
+          const userCount = conversations.filter(c => !!c.customer_id).length;
+
+          return (
         <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
           <div className="p-4 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-gray-600" />
               <h3 className="font-semibold text-gray-900">Active Conversations</h3>
-              <Badge variant="secondary">{conversations.length}</Badge>
+              <Badge variant="secondary">{filteredConversations.length}</Badge>
+            </div>
+            {/* Filter Buttons */}
+            <div className="flex items-center gap-1 mt-3">
+              <Button
+                variant={conversationFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setConversationFilter('all')}
+                className="flex-1 text-xs"
+              >
+                All ({conversations.length})
+              </Button>
+              <Button
+                variant={conversationFilter === 'visitor' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setConversationFilter('visitor')}
+                className="flex-1 text-xs"
+              >
+                Visitors ({visitorCount})
+              </Button>
+              <Button
+                variant={conversationFilter === 'user' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setConversationFilter('user')}
+                className="flex-1 text-xs"
+              >
+                Users ({userCount})
+              </Button>
             </div>
           </div>
           <div className="h-96 overflow-hidden">
             <ScrollArea className="h-full">
               <div className="p-4 space-y-2">
-                {conversations.map((conversation) => {
+                {filteredConversations.map((conversation) => {
                   const isUnread = conversation.new_msg === 'unread';
                   const isVisitor = !conversation.customer_id && !!conversation.visitor_id;
                   const displayName = isVisitor 
@@ -522,15 +563,19 @@ const ChatAdmin = () => {
                     </div>
                   );
                 })}
-                {conversations.length === 0 && (
+                {filteredConversations.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No conversations found
+                    {conversationFilter === 'all' 
+                      ? 'No conversations found' 
+                      : `No ${conversationFilter === 'visitor' ? 'visitor' : 'user'} conversations`}
                   </div>
                 )}
               </div>
             </ScrollArea>
           </div>
         </div>
+          );
+        })()}
 
         {/* Chat Interface */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
