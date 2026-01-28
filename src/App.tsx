@@ -19,6 +19,8 @@ import UserDashboard from "./pages/UserDashboard";
 import PromotionalLanding from "./pages/PromotionalLanding";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AffiliatePortal from "./components/affiliate/AffiliatePortal";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ const AppContent = () => {
             <Route path="/weddingquiz" element={<WeddingQuiz />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/promo/:slug" element={<PromotionalLanding />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/affiliate" element={
               <div className="min-h-screen bg-section-subtle py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

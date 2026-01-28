@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings, Package, CalendarCheck, CalendarClock, Users } from "lucide-react";
+import { LayoutDashboard, MessageSquare, LogOut, Workflow, Images, User, Home, Briefcase, Megaphone, Gift, Settings, Package, CalendarCheck, CalendarClock, Users, BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
@@ -67,6 +67,11 @@ const navigationItems = [
     title: "Promotional Pop-Ups",
     url: "/dashboard/promotional-popups",
     icon: Gift,
+  },
+  {
+    title: "Blog",
+    url: "/dashboard/blog",
+    icon: BookOpen,
   },
 ];
 

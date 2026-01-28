@@ -10,6 +10,7 @@ import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assista
 import PromotionalFooter from "@/components/PromotionalFooter";
 import PromotionalPopup from "@/components/PromotionalPopup";
 import SEO from "@/components/SEO";
+import BlogSection from "@/components/blog/BlogSection";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
@@ -54,6 +55,7 @@ const Index = () => {
       <Services onBookingClick={() => setIsAuthModalOpen(true)} />
       <Portfolio onBookingClick={() => setIsAuthModalOpen(true)} />
       <Testimonials />
+      <BlogSection />
       <Contact />
       <AuthModal 
         isOpen={isAuthModalOpen} 
