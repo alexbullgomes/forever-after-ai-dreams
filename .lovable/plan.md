@@ -1,163 +1,107 @@
 
 
-# Fix MP4 Video Playback Issues Across All Gallery Components
+# Fix External Supabase Video URLs Blocked by CSP
 
 ## Problem Summary
 
-Videos in gallery components are not playing correctly due to two main issues:
+After a recent security update, public video links from the external Supabase project (`supabasestudio.agcreationmkt.cloud`) stopped working. The Content Security Policy (CSP) in `index.html` was hardened to only allow media from the main EverAfter Supabase (`hmdnronxajctsrlgrhey.supabase.co`), blocking all videos from the external storage.
 
-1. **Incorrect URL Field Mapping**: The `PromotionalCampaignGallery.tsx` maps the `url` field to image URLs instead of video URLs. The `MediaItem.tsx` component expects `url` to contain the WebM video source for desktop playback.
+## Root Cause
 
-2. **Missing autoPlay Attribute**: `MediaItem.tsx` lacks the HTML `autoPlay` attribute, relying solely on JavaScript-based play triggers which can fail on iOS devices with restricted autoplay policies.
-
-3. **Missing iOS Compatibility**: No tap-to-play fallback exists when autoplay is blocked on iOS, unlike `VideoThumbnail.tsx` which handles this gracefully.
-
-## Root Cause Analysis
+The `media-src` directive in the CSP meta tag is missing the external Supabase domain:
 
 ```text
-MediaItem.tsx video source logic:
-┌─────────────────────────────────────────────────────────────┐
-│  Mobile: <source src={item.mp4Url} />                       │
-│  Desktop: <source src={item.url} />  ◄── Expects WebM here  │
-│  Fallback: <source src={item.mp4Url} />                     │
-└─────────────────────────────────────────────────────────────┘
+Current CSP media-src:
+  media-src 'self' https://hmdnronxajctsrlgrhey.supabase.co blob:;
+                   ▲
+                   Only allows main Supabase, NOT external
 
-PromotionalCampaignGallery.tsx (INCORRECT):
-  url: card.thumb_image_url  ◄── Maps to IMAGE, not video!
-
-EverAfterGallery.tsx (CORRECT):
-  url: card.thumb_webm_url || card.thumb_mp4_url  ◄── Maps to VIDEO
+Missing domain:
+  https://supabasestudio.agcreationmkt.cloud
 ```
 
-## Files to Modify
+### Affected Content
 
-| File | Changes |
-|------|---------|
-| `src/components/galleries/PromotionalCampaignGallery.tsx` | Fix `url` field mapping to prioritize video URLs |
-| `src/components/ui/gallery/MediaItem.tsx` | Add `autoPlay` attribute, iOS detection, and tap-to-play fallback |
+| Source | Examples |
+|--------|----------|
+| `Hero.tsx` | Banner video `bannerhomepage.webm/mp4`, poster `Homepicture.webp` |
+| `gallery_cards` table | Multiple video URLs for portfolio items |
+| `service_gallery_cards` table | Service gallery videos |
+| Promotional campaigns | Campaign banner videos |
 
-## Technical Changes
+## Solution
 
-### 1. Fix PromotionalCampaignGallery.tsx (Line 28)
+Add the external Supabase storage domain to the `media-src` directive in the CSP. This is the correct, standards-compliant approach that:
+- Allows only the specific external domain needed
+- Does not weaken security globally
+- Is scalable for future external media sources
+- Requires no code changes to components
 
-**Current (Incorrect):**
-```typescript
-url: card.thumb_image_url || card.thumbnail_url || '',
+## File to Modify
+
+`index.html` (line 7)
+
+## Technical Change
+
+**Current CSP `media-src`:**
+```
+media-src 'self' https://hmdnronxajctsrlgrhey.supabase.co blob:;
 ```
 
-**Fixed:**
-```typescript
-url: card.thumb_webm_url || card.thumb_mp4_url || card.thumb_image_url || card.thumbnail_url || '',
+**Fixed CSP `media-src`:**
+```
+media-src 'self' https://hmdnronxajctsrlgrhey.supabase.co https://supabasestudio.agcreationmkt.cloud blob:;
 ```
 
-This ensures the `url` field contains a video URL (WebM preferred for desktop) when available, matching the pattern used in other gallery components.
+### Full Updated CSP Line
 
-### 2. Enhance MediaItem.tsx
-
-**Add iOS Detection** (line 12-16):
-```typescript
-const isIOSDevice = () => {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-};
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://s.pinimg.com https://analytics.tiktok.com https://snap.licdn.com https://static.ads-twitter.com; connect-src 'self' https://hmdnronxajctsrlgrhey.supabase.co wss://hmdnronxajctsrlgrhey.supabase.co https://www.google-analytics.com https://facebook.com https://analytics.tiktok.com https://snap.licdn.com; img-src * data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; media-src 'self' https://hmdnronxajctsrlgrhey.supabase.co https://supabasestudio.agcreationmkt.cloud blob:; frame-src 'self' https://js.stripe.com https://hooks.stripe.com;" />
 ```
 
-**Add State for Play Button** (after line 21):
-```typescript
-const [isIOS] = useState(isIOSDevice());
-const [showPlayButton, setShowPlayButton] = useState(false);
-```
+## Why This Is Safe
 
-**Add autoPlay Attribute and iOS Handlers** (lines 95-118):
-```typescript
-<video
-  ref={videoRef}
-  className="w-full h-full object-cover"
-  onClick={onClick}
-  playsInline
-  muted
-  loop
-  autoPlay                              // ◄── Add HTML autoPlay attribute
-  preload={isIOS ? "metadata" : "auto"} // ◄── iOS optimization
-  poster={item.posterUrl}
-  onPlaying={() => setShowPlayButton(false)}  // ◄── Hide button when playing
-  style={{...}}
->
-  {/* iOS Priority: MP4 first with explicit codec */}
-  {isIOS && item.mp4Url && (
-    <source src={item.mp4Url} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
-  )}
-  {/* Desktop: WebM preferred */}
-  {!isIOS && <source src={item.url} type="video/webm" />}
-  {/* Fallback */}
-  {item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
-  {!item.mp4Url && <source src={item.url} type="video/mp4" />}
-</video>
-```
+| Concern | Mitigation |
+|---------|------------|
+| Opens up to untrusted media? | No - only whitelists a specific, known domain under your control |
+| Affects other CSP rules? | No - only modifies `media-src` directive |
+| Allows arbitrary external domains? | No - explicit domain allowlist pattern |
+| Can be exploited? | External Supabase bucket must already be configured as public |
 
-**Add Tap-to-Play Fallback** (after the buffering indicator):
-```typescript
-{showPlayButton && !isBuffering && (
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      if (videoRef.current) {
-        videoRef.current.play().catch(console.warn);
-      }
-    }}
-    className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors"
-    aria-label="Play video"
-  >
-    <div className="bg-white/90 rounded-full p-3 shadow-lg">
-      <Play className="w-6 h-6 text-gray-900" fill="currentColor" />
-    </div>
-  </button>
-)}
-```
+## Security Considerations
 
-**Update Play Logic** (in the useEffect around line 52):
-```typescript
-try {
-  await videoRef.current.play();
-  setShowPlayButton(false);  // Success - hide button
-} catch (error) {
-  console.warn("Video playback failed:", error);
-  setShowPlayButton(true);   // Show tap-to-play on iOS
-}
-```
+The external Supabase storage (`supabasestudio.agcreationmkt.cloud`) is:
+1. A known, controlled domain (your external Supabase project)
+2. Using HTTPS (secure transport)
+3. Already configured with public bucket access
+4. Only serving media files (videos/images), not executable code
 
-**Remove Aggressive Cleanup** (lines 82-89):
-The current cleanup that removes `src` and calls `load()` can cause issues. Replace with a simpler pause:
-```typescript
-return () => {
-  mounted = false;
-  if (videoRef.current) {
-    videoRef.current.pause();
-  }
-};
-```
-
-### Import Play Icon
-
-Add to imports at line 2:
-```typescript
-import { Play } from 'lucide-react';
-```
+Adding it to `media-src` is the appropriate CSP approach for this use case.
 
 ## Verification
 
 After implementation, verify:
-1. Videos autoplay on desktop (Chrome, Firefox, Safari)
-2. Videos autoplay on iOS Safari when muted
-3. If autoplay blocked on iOS, tap-to-play button appears
-4. Videos pause when scrolled out of view
-5. Videos resume when scrolled back into view
-6. Promotional campaign gallery videos play correctly
-7. No console errors related to video playback
+1. Homepage hero video plays correctly (`bannerhomepage.webm/mp4`)
+2. Portfolio gallery videos from external Supabase load and autoplay
+3. Service gallery videos play on `/services` page
+4. Promotional campaign banner videos work
+5. No CSP violation errors in browser console
+6. All internal Supabase videos still work
 
-## Unchanged Components
+## Alternative Approaches (Not Recommended)
 
-The following galleries already have correct URL mapping and need no changes:
-- `EverAfterGallery.tsx` 
-- `WeddingGallery.tsx` 
-- `PlannerGallery.tsx`
+| Approach | Why Not Recommended |
+|----------|-------------------|
+| Migrate all files to main Supabase | User explicitly stated not to do this |
+| Use `media-src *` | Weakens security globally |
+| Create a proxy edge function | Adds latency and complexity unnecessarily |
+| Remove CSP entirely | Severely weakens security |
+
+## Future Scalability
+
+If additional external media domains are needed in the future, they can be added to the `media-src` directive using the same pattern:
+
+```
+media-src 'self' https://domain1.com https://domain2.com blob:;
+```
 
