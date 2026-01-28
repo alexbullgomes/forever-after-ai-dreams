@@ -1,142 +1,163 @@
 
 
-# Add Visual Filter to Chat Admin Conversation List
+# Fix MP4 Video Playback Issues Across All Gallery Components
 
-## Overview
+## Problem Summary
 
-Add a segmented filter control to the Chat Admin conversation list that allows switching between All, Visitors (unauthenticated guests), and Logged-in Users. This is a frontend-only filter using existing conversation data.
+Videos in gallery components are not playing correctly due to two main issues:
 
-## UI Design
+1. **Incorrect URL Field Mapping**: The `PromotionalCampaignGallery.tsx` maps the `url` field to image URLs instead of video URLs. The `MediaItem.tsx` component expects `url` to contain the WebM video source for desktop playback.
 
-The filter will be placed below the "Active Conversations" header, styled as a segmented button group (similar to tabs):
+2. **Missing autoPlay Attribute**: `MediaItem.tsx` lacks the HTML `autoPlay` attribute, relying solely on JavaScript-based play triggers which can fail on iOS devices with restricted autoplay policies.
 
-```text
-+--------------------------------------------------+
-|  Active Conversations     26                      |
-|  +------------------------------------------+    |
-|  |  All (26)  |  Visitors (12)  |  Users (14) |  |
-|  +------------------------------------------+    |
-+--------------------------------------------------+
-```
+3. **Missing iOS Compatibility**: No tap-to-play fallback exists when autoplay is blocked on iOS, unlike `VideoThumbnail.tsx` which handles this gracefully.
 
-## Technical Approach
-
-### File to Modify
-`src/components/dashboard/ChatAdmin.tsx`
-
-### Changes Required
-
-1. **Add Filter State** (after line 62):
-   ```typescript
-   const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
-   ```
-
-2. **Create Computed Filtered List** (before the return statement):
-   ```typescript
-   const filteredConversations = conversations.filter((conv) => {
-     if (conversationFilter === 'all') return true;
-     const isVisitor = !conv.customer_id && !!conv.visitor_id;
-     if (conversationFilter === 'visitor') return isVisitor;
-     if (conversationFilter === 'user') return !isVisitor;
-     return true;
-   });
-   
-   // Counts for badges
-   const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
-   const userCount = conversations.filter(c => !!c.customer_id).length;
-   ```
-
-3. **Add Filter UI** (after line 455, below the header):
-   ```typescript
-   <div className="flex items-center gap-1 mt-3">
-     <Button
-       variant={conversationFilter === 'all' ? 'default' : 'outline'}
-       size="sm"
-       onClick={() => setConversationFilter('all')}
-       className="flex-1 text-xs"
-     >
-       All ({conversations.length})
-     </Button>
-     <Button
-       variant={conversationFilter === 'visitor' ? 'default' : 'outline'}
-       size="sm"
-       onClick={() => setConversationFilter('visitor')}
-       className="flex-1 text-xs"
-     >
-       Visitors ({visitorCount})
-     </Button>
-     <Button
-       variant={conversationFilter === 'user' ? 'default' : 'outline'}
-       size="sm"
-       onClick={() => setConversationFilter('user')}
-       className="flex-1 text-xs"
-     >
-       Users ({userCount})
-     </Button>
-   </div>
-   ```
-
-4. **Update Conversation Mapping** (line 460):
-   Replace `conversations.map((conversation)` with `filteredConversations.map((conversation)`
-
-5. **Update Empty State** (line 525):
-   Update the empty state message to reflect filtered state:
-   ```typescript
-   {filteredConversations.length === 0 && (
-     <div className="text-center py-8 text-gray-500">
-       {conversationFilter === 'all' 
-         ? 'No conversations found' 
-         : `No ${conversationFilter === 'visitor' ? 'visitor' : 'user'} conversations`}
-     </div>
-   )}
-   ```
-
-6. **Update Active Count Badge** (line 454):
-   Change to show filtered count: `<Badge variant="secondary">{filteredConversations.length}</Badge>`
-
-## Data Flow
+## Root Cause Analysis
 
 ```text
-conversations (full list from DB)
-        │
-        ▼
-conversationFilter state ('all' | 'visitor' | 'user')
-        │
-        ▼
-filteredConversations (computed array)
-        │
-        ├──► Rendered in list
-        └──► Count shown in badge
+MediaItem.tsx video source logic:
+┌─────────────────────────────────────────────────────────────┐
+│  Mobile: <source src={item.mp4Url} />                       │
+│  Desktop: <source src={item.url} />  ◄── Expects WebM here  │
+│  Fallback: <source src={item.mp4Url} />                     │
+└─────────────────────────────────────────────────────────────┘
+
+PromotionalCampaignGallery.tsx (INCORRECT):
+  url: card.thumb_image_url  ◄── Maps to IMAGE, not video!
+
+EverAfterGallery.tsx (CORRECT):
+  url: card.thumb_webm_url || card.thumb_mp4_url  ◄── Maps to VIDEO
 ```
 
-## Filter Logic
+## Files to Modify
 
-| Filter | Condition |
-|--------|-----------|
-| All | No filter - show all conversations |
-| Visitors | `!customer_id && !!visitor_id` (unauthenticated guests) |
-| Users | `!!customer_id` (authenticated users) |
+| File | Changes |
+|------|---------|
+| `src/components/galleries/PromotionalCampaignGallery.tsx` | Fix `url` field mapping to prioritize video URLs |
+| `src/components/ui/gallery/MediaItem.tsx` | Add `autoPlay` attribute, iOS detection, and tap-to-play fallback |
 
-## What Stays Unchanged
+## Technical Changes
 
-- Database queries (no changes to `fetchConversations`)
-- Realtime subscriptions and polling
-- AI/Human mode toggle behavior
-- Message sending/receiving logic
-- Webhook integrations
-- Conversation selection behavior
-- Unread indicator logic
+### 1. Fix PromotionalCampaignGallery.tsx (Line 28)
 
-## Testing Checklist
+**Current (Incorrect):**
+```typescript
+url: card.thumb_image_url || card.thumbnail_url || '',
+```
 
-1. Filter defaults to "All" showing all conversations
-2. Clicking "Visitors" shows only guest conversations (gray avatar, "Guest" badge)
-3. Clicking "Users" shows only authenticated user conversations (rose avatar, name/email)
-4. Counts in filter buttons are accurate
-5. Badge next to header updates with filtered count
-6. Empty state shows appropriate message per filter
-7. Selecting a conversation still works in all filter modes
-8. AI/Human mode toggle still works
-9. Sending messages still works
-10. New messages appear in correct filter view
+**Fixed:**
+```typescript
+url: card.thumb_webm_url || card.thumb_mp4_url || card.thumb_image_url || card.thumbnail_url || '',
+```
+
+This ensures the `url` field contains a video URL (WebM preferred for desktop) when available, matching the pattern used in other gallery components.
+
+### 2. Enhance MediaItem.tsx
+
+**Add iOS Detection** (line 12-16):
+```typescript
+const isIOSDevice = () => {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+};
+```
+
+**Add State for Play Button** (after line 21):
+```typescript
+const [isIOS] = useState(isIOSDevice());
+const [showPlayButton, setShowPlayButton] = useState(false);
+```
+
+**Add autoPlay Attribute and iOS Handlers** (lines 95-118):
+```typescript
+<video
+  ref={videoRef}
+  className="w-full h-full object-cover"
+  onClick={onClick}
+  playsInline
+  muted
+  loop
+  autoPlay                              // ◄── Add HTML autoPlay attribute
+  preload={isIOS ? "metadata" : "auto"} // ◄── iOS optimization
+  poster={item.posterUrl}
+  onPlaying={() => setShowPlayButton(false)}  // ◄── Hide button when playing
+  style={{...}}
+>
+  {/* iOS Priority: MP4 first with explicit codec */}
+  {isIOS && item.mp4Url && (
+    <source src={item.mp4Url} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
+  )}
+  {/* Desktop: WebM preferred */}
+  {!isIOS && <source src={item.url} type="video/webm" />}
+  {/* Fallback */}
+  {item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
+  {!item.mp4Url && <source src={item.url} type="video/mp4" />}
+</video>
+```
+
+**Add Tap-to-Play Fallback** (after the buffering indicator):
+```typescript
+{showPlayButton && !isBuffering && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      if (videoRef.current) {
+        videoRef.current.play().catch(console.warn);
+      }
+    }}
+    className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors"
+    aria-label="Play video"
+  >
+    <div className="bg-white/90 rounded-full p-3 shadow-lg">
+      <Play className="w-6 h-6 text-gray-900" fill="currentColor" />
+    </div>
+  </button>
+)}
+```
+
+**Update Play Logic** (in the useEffect around line 52):
+```typescript
+try {
+  await videoRef.current.play();
+  setShowPlayButton(false);  // Success - hide button
+} catch (error) {
+  console.warn("Video playback failed:", error);
+  setShowPlayButton(true);   // Show tap-to-play on iOS
+}
+```
+
+**Remove Aggressive Cleanup** (lines 82-89):
+The current cleanup that removes `src` and calls `load()` can cause issues. Replace with a simpler pause:
+```typescript
+return () => {
+  mounted = false;
+  if (videoRef.current) {
+    videoRef.current.pause();
+  }
+};
+```
+
+### Import Play Icon
+
+Add to imports at line 2:
+```typescript
+import { Play } from 'lucide-react';
+```
+
+## Verification
+
+After implementation, verify:
+1. Videos autoplay on desktop (Chrome, Firefox, Safari)
+2. Videos autoplay on iOS Safari when muted
+3. If autoplay blocked on iOS, tap-to-play button appears
+4. Videos pause when scrolled out of view
+5. Videos resume when scrolled back into view
+6. Promotional campaign gallery videos play correctly
+7. No console errors related to video playback
+
+## Unchanged Components
+
+The following galleries already have correct URL mapping and need no changes:
+- `EverAfterGallery.tsx` 
+- `WeddingGallery.tsx` 
+- `PlannerGallery.tsx`
 
