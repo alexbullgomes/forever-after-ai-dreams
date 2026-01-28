@@ -471,6 +471,11 @@ const ChatAdmin = () => {
           });
           const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
           const userCount = conversations.filter(c => !!c.customer_id).length;
+          
+          // Unread counts per category
+          const allUnread = conversations.filter(c => c.new_msg === 'unread').length;
+          const visitorUnread = conversations.filter(c => !c.customer_id && !!c.visitor_id && c.new_msg === 'unread').length;
+          const userUnread = conversations.filter(c => !!c.customer_id && c.new_msg === 'unread').length;
 
           return (
         <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
@@ -497,25 +502,40 @@ const ChatAdmin = () => {
                 variant={conversationFilter === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('all')}
-                className="flex-1 text-xs"
+                className="flex-1 text-xs relative"
               >
                 All ({conversations.length})
+                {allUnread > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                    {allUnread}
+                  </span>
+                )}
               </Button>
               <Button
                 variant={conversationFilter === 'visitor' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('visitor')}
-                className="flex-1 text-xs"
+                className="flex-1 text-xs relative"
               >
                 Visitors ({visitorCount})
+                {visitorUnread > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                    {visitorUnread}
+                  </span>
+                )}
               </Button>
               <Button
                 variant={conversationFilter === 'user' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('user')}
-                className="flex-1 text-xs"
+                className="flex-1 text-xs relative"
               >
                 Users ({userCount})
+                {userUnread > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                    {userUnread}
+                  </span>
+                )}
               </Button>
             </div>
           </div>
