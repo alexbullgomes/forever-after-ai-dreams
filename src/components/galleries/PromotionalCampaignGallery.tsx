@@ -25,7 +25,7 @@ export const PromotionalCampaignGallery = memo(({ campaignId }: PromotionalCampa
     type: card.thumb_mp4_url || card.thumb_webm_url ? 'video' : 'image',
     title: card.title,
     desc: card.subtitle || '',
-    url: card.thumb_image_url || card.thumbnail_url || '',
+    url: card.thumb_webm_url || card.thumb_mp4_url || card.thumb_image_url || card.thumbnail_url || '',
     span: index === 0 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1',
     mp4Url: card.thumb_mp4_url,
     posterUrl: card.thumb_image_url || card.thumbnail_url,

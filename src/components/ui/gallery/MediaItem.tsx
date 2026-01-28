@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState, memo } from 'react';
+import { Play } from 'lucide-react';
 import { MediaItemType } from './types';
 
 interface MediaItemProps {
@@ -14,11 +15,18 @@ const isMobileDevice = () => {
            (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
 };
 
+// iOS detection for autoplay handling
+const isIOSDevice = () => {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+};
+
 const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isInView, setIsInView] = useState(false);
     const [isBuffering, setIsBuffering] = useState(true);
     const [isMobile] = useState(isMobileDevice());
+    const [isIOS] = useState(isIOSDevice());
+    const [showPlayButton, setShowPlayButton] = useState(false);
 
     // Intersection Observer to detect if video is in view and play/pause accordingly
     useEffect(() => {
@@ -56,6 +64,7 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                 if (videoRef.current.readyState >= 3) {
                     setIsBuffering(false);
                     await videoRef.current.play();
+                    setShowPlayButton(false);
                 } else {
                     setIsBuffering(true);
                     await new Promise((resolve) => {
@@ -66,10 +75,14 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                     if (mounted) {
                         setIsBuffering(false);
                         await videoRef.current.play();
+                        setShowPlayButton(false);
                     }
                 }
             } catch (error) {
                 console.warn("Video playback failed:", error);
+                if (mounted) {
+                    setShowPlayButton(true);
+                }
             }
         };
 
@@ -83,8 +96,6 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
             mounted = false;
             if (videoRef.current) {
                 videoRef.current.pause();
-                videoRef.current.removeAttribute('src');
-                videoRef.current.load();
             }
         };
     }, [isInView]);
@@ -99,8 +110,10 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                     playsInline
                     muted
                     loop
-                    preload="metadata"
+                    autoPlay
+                    preload={isIOS ? "metadata" : "auto"}
                     poster={item.posterUrl}
+                    onPlaying={() => setShowPlayButton(false)}
                     style={{
                         opacity: isBuffering ? 0.8 : 1,
                         transition: 'opacity 0.2s',
@@ -108,10 +121,15 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                         willChange: 'transform',
                     }}
                 >
+                    {/* iOS Priority: MP4 first with explicit codec */}
+                    {isIOS && item.mp4Url && (
+                        <source src={item.mp4Url} type="video/mp4; codecs=avc1.42E01E,mp4a.40.2" />
+                    )}
                     {/* For mobile devices, prioritize MP4 format */}
-                    {isMobile && item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
-                    {!isMobile && <source src={item.url} type="video/webm" />}
-                    {/* Fallback to MP4 for non-mobile or if WebM fails */}
+                    {isMobile && !isIOS && item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
+                    {/* Desktop: WebM preferred */}
+                    {!isMobile && !isIOS && <source src={item.url} type="video/webm" />}
+                    {/* Fallback to MP4 */}
                     {item.mp4Url && <source src={item.mp4Url} type="video/mp4" />}
                     {/* Additional fallback if no MP4 is available */}
                     {!item.mp4Url && <source src={item.url} type="video/mp4" />}
@@ -120,6 +138,23 @@ const MediaItem: React.FC<MediaItemProps> = memo(({ item, className, onClick }) 
                     <div className="absolute inset-0 flex items-center justify-center bg-black/10">
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     </div>
+                )}
+                {showPlayButton && !isBuffering && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (videoRef.current) {
+                                videoRef.current.play().catch(console.warn);
+                                setShowPlayButton(false);
+                            }
+                        }}
+                        className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/30 transition-colors"
+                        aria-label="Play video"
+                    >
+                        <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                            <Play className="w-6 h-6 text-gray-900" fill="currentColor" />
+                        </div>
+                    </button>
                 )}
             </div>
         );
