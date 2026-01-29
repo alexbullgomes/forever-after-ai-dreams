@@ -1,454 +1,317 @@
 
-# EverAfter Blog System Implementation Plan
+
+# Rich Text Editor Enhancement for Blog Content Field
 
 ## Overview
 
-This plan implements a complete blog system for EverAfter Studio following the existing patterns and design system. The implementation is **additive only** - no existing functionality will be modified.
+This plan upgrades the existing plain `<Textarea>` in the Blog Post editor to a feature-rich Tiptap editor. The change is scoped strictly to the `BlogPostForm.tsx` component within the Admin Dashboard, with corresponding updates to the frontend `BlogPostContent.tsx` renderer to properly display HTML content.
 
-## Database Schema
+## Current State Analysis
 
-### New Tables
+### Current Editor (`BlogPostForm.tsx`)
+- Lines 153-162: Plain `<Textarea>` with `font-mono` class
+- Placeholder text mentions "Markdown supported"
+- Content stored as plain text with basic Markdown notation
+- Uses `react-hook-form` with `register("content")`
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              BLOG TABLES                                     │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  blog_posts                    blog_categories          blog_tags           │
-│  ┌──────────────────────┐      ┌─────────────────┐      ┌──────────────┐   │
-│  │ id (uuid, PK)        │      │ id (uuid, PK)   │      │ id (uuid, PK)│   │
-│  │ title (text)         │      │ name (text)     │      │ name (text)  │   │
-│  │ slug (text, unique)  │      │ slug (text)     │      │ slug (text)  │   │
-│  │ excerpt (text)       │      │ created_at      │      │ created_at   │   │
-│  │ content (text)       │      │ updated_at      │      │ updated_at   │   │
-│  │ cover_image_url      │      └─────────────────┘      └──────────────┘   │
-│  │ author_name (text)   │                                                   │
-│  │ status (text)        │◄──────────────────────────────────────────────►  │
-│  │ published_at (ts)    │                                                   │
-│  │ seo_title (text)     │      blog_posts_categories   blog_posts_tags     │
-│  │ seo_description      │      ┌──────────────────┐    ┌──────────────────┐│
-│  │ seo_image_url        │      │ post_id (FK)     │    │ post_id (FK)     ││
-│  │ canonical_url        │      │ category_id (FK) │    │ tag_id (FK)      ││
-│  │ reading_time_minutes │      └──────────────────┘    └──────────────────┘│
-│  │ created_at           │                                                   │
-│  │ updated_at           │                                                   │
-│  └──────────────────────┘                                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
+### Current Renderer (`BlogPostContent.tsx`)
+- Lines 17-48: Custom `renderContent()` function
+- Splits content by double newlines
+- Only handles `## ` and `### ` headings
+- Regular paragraphs rendered with simple `<p>` tags
+- Does NOT handle bold, italic, lists, links, or embedded videos
+
+### Key Dependencies Already Installed
+- `dompurify` v3.3.1 - For HTML sanitization (already used in PromotionalLanding.tsx)
+- `@tailwindcss/typography` - Already in devDependencies (for `prose` classes)
+- `react-hook-form` - Already managing form state
+
+## Implementation Approach
+
+### New Dependencies Required
+```
+@tiptap/react
+@tiptap/starter-kit
+@tiptap/extension-link
+@tiptap/extension-youtube
+@tiptap/pm
 ```
 
-### Table: `blog_posts`
+**Why Tiptap?**
+- Lightweight, modular architecture
+- Outputs clean semantic HTML (no inline styles)
+- Well-supported with shadcn/ui ecosystem
+- Used in shadcn-minimal-tiptap patterns
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | uuid | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| title | text | NOT NULL | Post title |
-| slug | text | UNIQUE, NOT NULL | URL-friendly identifier |
-| excerpt | text | | Short summary for cards |
-| content | text | | Full post content (Markdown) |
-| cover_image_url | text | | Hero image URL |
-| author_name | text | DEFAULT 'EverAfter Team' | Author display name |
-| status | text | DEFAULT 'draft' | draft, scheduled, published |
-| published_at | timestamptz | | Publication date (supports scheduling) |
-| seo_title | text | | Custom SEO title |
-| seo_description | text | | Meta description |
-| seo_image_url | text | | OG image override |
-| canonical_url | text | | Canonical URL override |
-| reading_time_minutes | integer | DEFAULT 5 | Estimated reading time |
-| created_at | timestamptz | DEFAULT now() | Creation timestamp |
-| updated_at | timestamptz | DEFAULT now() | Last update timestamp |
+### File Changes Summary
 
-### Table: `blog_categories`
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `package.json` | Modify | Add Tiptap dependencies |
+| `src/components/admin/blog/RichTextEditor.tsx` | Create | New Tiptap editor component |
+| `src/components/admin/blog/BlogPostForm.tsx` | Modify | Replace Textarea with RichTextEditor |
+| `src/components/blog/BlogPostContent.tsx` | Modify | Render HTML content safely |
+| `src/index.css` | Modify | Add Tiptap editor styles |
+| `tailwind.config.ts` | Modify | Add typography plugin to plugins array |
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | uuid | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| name | text | NOT NULL | Category name |
-| slug | text | UNIQUE, NOT NULL | URL-friendly identifier |
-| created_at | timestamptz | DEFAULT now() | Creation timestamp |
-| updated_at | timestamptz | DEFAULT now() | Last update timestamp |
+## Detailed Implementation
 
-### Table: `blog_tags`
+### 1. New Component: RichTextEditor.tsx
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | uuid | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| name | text | NOT NULL | Tag name |
-| slug | text | UNIQUE, NOT NULL | URL-friendly identifier |
-| created_at | timestamptz | DEFAULT now() | Creation timestamp |
-| updated_at | timestamptz | DEFAULT now() | Last update timestamp |
+A self-contained Tiptap editor with toolbar that matches the admin dashboard design.
 
-### Pivot Tables
+**Toolbar Features:**
+- Headings dropdown (H1, H2, H3)
+- Bold, Italic toggle buttons
+- Bullet list, Ordered list buttons
+- Link insertion/removal
+- YouTube/Vimeo embed button
+- Blockquote button
 
-**blog_posts_categories**
-| Column | Type | Constraints |
-|--------|------|-------------|
-| post_id | uuid | FK to blog_posts.id, ON DELETE CASCADE |
-| category_id | uuid | FK to blog_categories.id, ON DELETE CASCADE |
-| PRIMARY KEY | | (post_id, category_id) |
-
-**blog_posts_tags**
-| Column | Type | Constraints |
-|--------|------|-------------|
-| post_id | uuid | FK to blog_posts.id, ON DELETE CASCADE |
-| tag_id | uuid | FK to blog_tags.id, ON DELETE CASCADE |
-| PRIMARY KEY | | (post_id, tag_id) |
-
-### RLS Policies
-
-All tables will have RLS enabled with:
-- **Public read** for published posts (`status = 'published' AND published_at <= now()`)
-- **Admin full access** via `has_role(auth.uid(), 'admin')`
-
-### Database Triggers
-
-- `update_blog_posts_updated_at` - Auto-update `updated_at` on blog_posts changes
-- `update_blog_categories_updated_at` - Auto-update `updated_at` on categories
-- `update_blog_tags_updated_at` - Auto-update `updated_at` on tags
-
----
-
-## File Structure
-
-### New Files to Create
-
-```text
-src/
-├── components/
-│   ├── blog/
-│   │   ├── BlogSection.tsx           # Homepage 4-card section
-│   │   ├── BlogCard.tsx              # Reusable blog card component
-│   │   └── BlogPostContent.tsx       # Single post content renderer
-│   └── admin/
-│       ├── blog/
-│       │   ├── BlogPostForm.tsx      # Create/Edit form with tabs
-│       │   ├── BlogCategoryForm.tsx  # Category CRUD form
-│       │   └── BlogTagForm.tsx       # Tag CRUD form
-├── hooks/
-│   ├── useBlogPosts.ts               # Public posts hook
-│   ├── useBlogPostsAdmin.ts          # Admin posts CRUD hook
-│   ├── useBlogCategories.ts          # Categories hook
-│   └── useBlogTags.ts                # Tags hook
-└── pages/
-    ├── Blog.tsx                       # /blog - All posts
-    ├── BlogPost.tsx                   # /blog/:slug - Single post
-    └── BlogAdmin.tsx                  # Admin blog management
-```
-
----
-
-## Component Details
-
-### 1. Homepage Blog Section (`src/components/blog/BlogSection.tsx`)
-
-**Placement**: After `Testimonials` section, before `Contact` section in `Index.tsx`
-
-**Design**:
-- Matches existing section patterns (Portfolio, Testimonials)
-- Uses brand color tokens
-- Badge header: "Latest Stories" with BookOpen icon
-- 4 cards in a responsive grid
-- "View all articles" button linking to `/blog`
-
-**Data Fetching**:
+**Component Props:**
 ```typescript
-// Fetch only 4 published posts, ordered by published_at DESC
-const { data: posts } = await supabase
-  .from('blog_posts')
-  .select('*')
-  .eq('status', 'published')
-  .lte('published_at', new Date().toISOString())
-  .order('published_at', { ascending: false })
-  .limit(4);
-```
-
-### 2. Blog Card (`src/components/blog/BlogCard.tsx`)
-
-**Props**:
-```typescript
-interface BlogCardProps {
-  title: string;
-  slug: string;
-  excerpt: string;
-  coverImageUrl: string;
-  authorName: string;
-  publishedAt: string;
-  readingTime: number;
+interface RichTextEditorProps {
+  value: string;
+  onChange: (html: string) => void;
+  placeholder?: string;
 }
 ```
 
-**Design**:
-- Reuses Card, CardContent from shadcn/ui
-- Cover image with hover scale effect
-- Title, excerpt, author, date, reading time
-- Matches existing card styles (Portfolio, Services)
+**Key Implementation Details:**
+- Uses Tiptap `StarterKit` (includes headings, bold, italic, lists, blockquote)
+- Adds `@tiptap/extension-link` for link editing
+- Adds `@tiptap/extension-youtube` for video embeds
+- Syncs editor content with form via `onUpdate` callback
+- Toolbar styled with existing `Button`, `Toggle`, `Popover` from shadcn/ui
 
-### 3. Public Blog Page (`src/pages/Blog.tsx`)
+**Toolbar Layout (Visual Reference):**
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ [H▼] │ B │ I │ ⋮ │ • │ 1. │ ⋮ │ 🔗 │ ▶ │ ❝ │                       │
+│ ▼    │   │   │   │   │    │   │    │   │   │                       │
+│ H1   │   │   │   │   │    │   │    │   │   │                       │
+│ H2   │   │   │   │   │    │   │    │   │   │                       │
+│ H3   │   │   │   │   │    │   │    │   │   │                       │
+└─────────────────────────────────────────────────────────────────────┘
+│                                                                     │
+│  [Editor content area with placeholder text]                        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-**Route**: `/blog`
+### 2. BlogPostForm.tsx Modifications
 
-**Features**:
-- SEO component with unique title/description
-- H1: "Our Blog" or "Stories & Insights"
-- All published posts in responsive grid
-- Pagination (8-12 posts per page)
-- Category filter tabs (optional enhancement)
+**Lines 153-162 Changes:**
 
-**SEO**:
-```typescript
-<SEO 
-  title="Blog | EverAfter Studio"
-  description="Wedding photography tips, behind-the-scenes stories, and inspiration from EverAfter Studio in California."
-  canonical="/blog"
+Remove:
+```tsx
+<Textarea
+  id="content"
+  {...register("content")}
+  placeholder="Write your blog post content here... (Markdown supported)"
+  rows={15}
+  className="font-mono"
 />
 ```
 
-### 4. Single Blog Post Page (`src/pages/BlogPost.tsx`)
+Replace with:
+```tsx
+<RichTextEditor
+  value={content}
+  onChange={(html) => setValue("content", html)}
+  placeholder="Write your blog post content here..."
+/>
+```
 
-**Route**: `/blog/:slug`
+**Additional Changes:**
+- Add import for `RichTextEditor`
+- Update reading time calculation to strip HTML tags before word count
 
-**Features**:
-- Fetch post by slug
-- 404 if not found or not published
-- H1: Post title
-- Meta: date, author, reading time
-- Cover image (full width)
-- Content rendered from Markdown
-- Back to blog link
+### 3. BlogPostContent.tsx Modifications
 
-**SEO with Structured Data**:
-```typescript
-const blogPostSchema = {
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": post.title,
-  "image": post.cover_image_url,
-  "author": {
-    "@type": "Person",
-    "name": post.author_name
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "EverAfter Studio",
-    "logo": "https://everafter-studio.lovable.app/og-image.jpg"
-  },
-  "datePublished": post.published_at,
-  "dateModified": post.updated_at,
-  "description": post.seo_description || post.excerpt
+**Remove:** The entire `renderContent()` function (lines 17-48)
+
+**Replace with:** Sanitized HTML rendering using DOMPurify
+
+```tsx
+const renderContent = (content: string | null) => {
+  if (!content) return null;
+  
+  // Sanitize HTML to prevent XSS
+  const sanitizedHtml = DOMPurify.sanitize(content, {
+    ADD_TAGS: ['iframe'],
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'src'],
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  });
+  
+  return (
+    <div 
+      className="prose prose-lg max-w-none"
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+    />
+  );
 };
 ```
 
-### 5. Admin Blog Management (`src/pages/BlogAdmin.tsx`)
+**Why iframe is allowed:**
+- YouTube/Vimeo embeds require iframe
+- DOMPurify sanitizes src attributes to prevent XSS
+- Only HTTPS sources will work
 
-**Tabs Structure**:
-1. **Posts** - Table with filters, actions
-2. **Categories** - Simple CRUD list
-3. **Tags** - Simple CRUD list
+### 4. Tailwind Typography Plugin Activation
 
-**Posts Table Columns**:
-- Title
-- Status (badge: draft/scheduled/published)
-- Published date
-- Actions (Edit, Preview, Duplicate, Delete)
-
-**Filters**:
-- Status dropdown
-- Category dropdown
-- Date range picker
-
-### 6. Blog Post Form (`src/components/admin/blog/BlogPostForm.tsx`)
-
-**Form Tabs**:
-
-**Tab 1: Content**
-- Title (required)
-- Slug (auto-generated, editable)
-- Excerpt (textarea, 200 char limit suggestion)
-- Content (textarea for Markdown - future: rich text)
-- Cover image URL
-- Author name
-
-**Tab 2: SEO**
-- SEO Title (with character count, max 60)
-- Meta Description (with character count, max 160)
-- OG Image URL
-- Canonical URL
-- Google-style preview component
-
-**Tab 3: Organization**
-- Categories (multi-select)
-- Tags (multi-select)
-- Status (select: draft, scheduled, published)
-- Publish date (date-time picker)
-- Reading time (auto-calculated or manual)
-
----
-
-## Routing Changes
-
-### App.tsx Additions
-
+**tailwind.config.ts:**
 ```typescript
-// New imports
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-
-// New routes (add BEFORE the catch-all)
-<Route path="/blog" element={<Blog />} />
-<Route path="/blog/:slug" element={<BlogPost />} />
+plugins: [
+  require("tailwindcss-animate"),
+  require("@tailwindcss/typography"),  // Add this
+],
 ```
 
-### AdminDashboard.tsx Additions
+### 5. Editor Styles in index.css
 
-```typescript
-// New import
-import BlogAdmin from "@/pages/BlogAdmin";
+Add at the end of the file:
+```css
+/* Tiptap Editor Styles */
+.tiptap-editor {
+  @apply min-h-[300px] border rounded-md;
+}
 
-// New route in admin Routes
-<Route path="/blog" element={<BlogAdmin />} />
-```
+.tiptap-editor .ProseMirror {
+  @apply p-4 min-h-[280px] focus:outline-none;
+}
 
-### AppSidebar.tsx Additions
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground pointer-events-none float-left h-0;
+  content: attr(data-placeholder);
+}
 
-```typescript
-// Add to navigationItems array
-{
-  title: "Blog",
-  url: "/dashboard/blog",
-  icon: BookOpen, // from lucide-react
-},
-```
+/* Toolbar styling */
+.tiptap-toolbar {
+  @apply flex flex-wrap gap-1 p-2 border-b bg-muted/50;
+}
 
----
+.tiptap-toolbar button {
+  @apply h-8 w-8 rounded hover:bg-accent;
+}
 
-## Hooks Implementation
-
-### `useBlogPosts.ts` (Public)
-
-```typescript
-export function useBlogPosts(options?: { limit?: number }) {
-  // Fetch published posts only
-  // Returns: posts, loading, error
+/* Content styling in editor */
+.tiptap-editor .ProseMirror h1 { @apply text-3xl font-bold mt-6 mb-3; }
+.tiptap-editor .ProseMirror h2 { @apply text-2xl font-semibold mt-5 mb-2; }
+.tiptap-editor .ProseMirror h3 { @apply text-xl font-medium mt-4 mb-2; }
+.tiptap-editor .ProseMirror p { @apply mb-4 leading-relaxed; }
+.tiptap-editor .ProseMirror ul { @apply list-disc pl-6 mb-4; }
+.tiptap-editor .ProseMirror ol { @apply list-decimal pl-6 mb-4; }
+.tiptap-editor .ProseMirror blockquote { 
+  @apply border-l-4 border-brand-primary-from/50 pl-4 italic my-4; 
+}
+.tiptap-editor .ProseMirror a { 
+  @apply text-brand-primary-from underline hover:opacity-80; 
+}
+.tiptap-editor .ProseMirror iframe {
+  @apply w-full aspect-video rounded-lg my-4;
 }
 ```
 
-### `useBlogPostsAdmin.ts` (Admin)
+## Reading Time Calculation Update
+
+The `calculateReadingTime` function in `useBlogPostsAdmin.ts` needs to strip HTML:
 
 ```typescript
-export function useBlogPostsAdmin() {
-  // Full CRUD for admin
-  // Returns: posts, loading, createPost, updatePost, deletePost, duplicatePost
-}
-```
-
-### `useBlogCategories.ts`
-
-```typescript
-export function useBlogCategories(options?: { adminMode?: boolean }) {
-  // Categories with post count
-  // Returns: categories, loading, create, update, delete
-}
-```
-
-### `useBlogTags.ts`
-
-```typescript
-export function useBlogTags(options?: { adminMode?: boolean }) {
-  // Tags with post count
-  // Returns: tags, loading, create, update, delete
-}
-```
-
----
-
-## Index.tsx Modification
-
-The only change to Index.tsx will be adding the BlogSection component:
-
-```typescript
-// Add import
-import BlogSection from "@/components/blog/BlogSection";
-
-// In the component JSX, after Testimonials:
-<Testimonials />
-<BlogSection />  {/* NEW */}
-<Contact />
-```
-
----
-
-## Safety Checklist
-
-| Requirement | Implementation |
-|-------------|----------------|
-| No existing routes modified | New routes only: /blog, /blog/:slug, /dashboard/blog |
-| No existing components refactored | New components in src/components/blog/ and src/components/admin/blog/ |
-| No homepage layout changed | BlogSection inserted as a new section (same pattern as others) |
-| No booking/chat/campaigns affected | Isolated blog functionality with separate tables |
-| Reuses existing tokens | Uses bg-brand-gradient, text-brand-text-accent, etc. |
-| Reuses existing UI components | Card, Button, Badge, Table, Form, Dialog from shadcn/ui |
-
----
-
-## Implementation Order
-
-### Phase 1: Database
-1. Create blog_posts table with RLS
-2. Create blog_categories table with RLS
-3. Create blog_tags table with RLS
-4. Create pivot tables
-5. Add update triggers
-
-### Phase 2: Hooks
-1. Create useBlogPosts.ts
-2. Create useBlogPostsAdmin.ts
-3. Create useBlogCategories.ts
-4. Create useBlogTags.ts
-
-### Phase 3: Public Pages
-1. Create BlogCard.tsx component
-2. Create BlogSection.tsx (homepage)
-3. Create Blog.tsx page (/blog)
-4. Create BlogPost.tsx page (/blog/:slug)
-5. Add routes to App.tsx
-6. Add BlogSection to Index.tsx
-
-### Phase 4: Admin
-1. Create BlogPostForm.tsx
-2. Create BlogCategoryForm.tsx
-3. Create BlogTagForm.tsx
-4. Create BlogAdmin.tsx page
-5. Add route to AdminDashboard.tsx
-6. Add sidebar item to AppSidebar.tsx
-
----
-
-## Estimated Reading Time Calculation
-
-Auto-calculate based on content:
-```typescript
-const calculateReadingTime = (content: string): number => {
+export function calculateReadingTime(content: string): number {
   const wordsPerMinute = 200;
-  const wordCount = content.trim().split(/\s+/).length;
+  // Strip HTML tags for accurate word count
+  const textContent = content.replace(/<[^>]*>/g, ' ').trim();
+  const wordCount = textContent.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
-};
+}
 ```
 
----
+## Backward Compatibility
 
-## SEO Implementation Summary
+### Existing Plain Text Posts
+- Old posts stored as plain text will render correctly
+- DOMPurify will treat them as safe text content
+- No migration needed - they'll just lack HTML formatting
 
-| Page | Title Pattern | Meta Description | Canonical | Structured Data |
-|------|--------------|------------------|-----------|-----------------|
-| /blog | Blog \| EverAfter Studio | Wedding tips and stories... | /blog | WebPage |
-| /blog/:slug | {Post Title} \| EverAfter Blog | {Post excerpt or seo_description} | /blog/{slug} | BlogPosting |
+### Mixed Content Handling
+- If a post contains both plain text and HTML, both render
+- Editor loads existing HTML correctly for re-editing
+- No data loss during the transition
 
----
+## Security Implementation
 
-## Pagination Strategy (SEO-Friendly)
+### Input (Editor):
+- Tiptap only generates clean, semantic HTML
+- No inline styles or dangerous attributes
+- YouTube extension validates URLs before embedding
 
-For /blog page:
-- Use query params: `/blog?page=2`
-- Add rel="prev" and rel="next" link tags
-- 8 posts per page (configurable)
-- Show page numbers, not infinite scroll
+### Output (Renderer):
+- DOMPurify sanitizes all HTML before rendering
+- Iframe restricted to allowed attributes only
+- XSS vectors blocked by sanitizer
+
+### Allowed HTML Elements:
+```
+p, h1, h2, h3, strong, em, ul, ol, li, a, blockquote, br, iframe
+```
+
+### Blocked Patterns:
+```
+script, onclick, onerror, javascript:, data:
+```
+
+## Files Created/Modified
+
+| File | Action | Lines Changed |
+|------|--------|---------------|
+| `src/components/admin/blog/RichTextEditor.tsx` | CREATE | ~180 lines |
+| `src/components/admin/blog/BlogPostForm.tsx` | MODIFY | ~15 lines |
+| `src/components/blog/BlogPostContent.tsx` | MODIFY | ~35 lines |
+| `src/hooks/useBlogPostsAdmin.ts` | MODIFY | ~3 lines |
+| `src/index.css` | MODIFY | ~40 lines |
+| `tailwind.config.ts` | MODIFY | ~1 line |
+
+## What Remains Unchanged
+
+- Database schema (`blog_posts` table)
+- All routes (`/blog`, `/blog/:slug`, `/dashboard/blog`)
+- BlogAdmin.tsx page structure
+- Form tabs structure (Content, SEO, Settings)
+- All other form fields (title, slug, excerpt, etc.)
+- Public blog page layout
+- Blog card components
+- Categories and Tags management
+
+## Testing Verification
+
+After implementation, verify:
+
+1. **Editor Functionality**
+   - Create new post with H1, H2, H3 headings
+   - Apply bold and italic formatting
+   - Create bullet and numbered lists
+   - Insert and edit links
+   - Embed YouTube video URL
+   - Add blockquote
+
+2. **Content Persistence**
+   - Save post, reload page, re-edit - content preserved
+   - Formatting visible in edit mode
+
+3. **Frontend Rendering**
+   - Published post shows all formatting correctly
+   - Links are clickable
+   - YouTube embeds play
+   - No console XSS warnings
+
+4. **Backward Compatibility**
+   - Edit existing plain-text post
+   - Content still readable and editable
+   - Can add formatting to old posts
+
+5. **SEO Verification**
+   - View page source for published post
+   - Confirm semantic HTML (proper h1, h2, p tags)
+   - No inline styles or editor artifacts
 
