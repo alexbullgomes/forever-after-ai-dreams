@@ -211,9 +211,11 @@ export function useDuplicateBlogPost() {
   });
 }
 
-// Helper to calculate reading time
+// Helper to calculate reading time (strips HTML tags for accurate word count)
 export function calculateReadingTime(content: string): number {
   const wordsPerMinute = 200;
-  const wordCount = content.trim().split(/\s+/).length;
+  // Strip HTML tags for accurate word count
+  const textContent = content.replace(/<[^>]*>/g, " ").trim();
+  const wordCount = textContent.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }

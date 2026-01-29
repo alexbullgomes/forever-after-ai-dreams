@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "./RichTextEditor";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -152,12 +153,10 @@ const BlogPostForm = ({ post, onSubmit, onCancel, isLoading }: BlogPostFormProps
 
             <div className="grid gap-2">
               <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                {...register("content")}
-                placeholder="Write your blog post content here... (Markdown supported)"
-                rows={15}
-                className="font-mono"
+              <RichTextEditor
+                value={content || ""}
+                onChange={(html) => setValue("content", html)}
+                placeholder="Write your blog post content here..."
               />
             </div>
 

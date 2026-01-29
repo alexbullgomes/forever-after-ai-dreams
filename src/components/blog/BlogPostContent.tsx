@@ -1,6 +1,7 @@
 import { Calendar, Clock, User, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import type { BlogPost } from "@/hooks/useBlogPosts";
 
@@ -13,39 +14,23 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
     ? format(new Date(post.published_at), "MMMM d, yyyy")
     : null;
 
-  // Simple Markdown-like rendering for paragraphs
+  // Sanitize and render HTML content safely
   const renderContent = (content: string | null) => {
     if (!content) return null;
-    
-    return content.split("\n\n").map((paragraph, index) => {
-      // Handle headings
-      if (paragraph.startsWith("## ")) {
-        return (
-          <h2
-            key={index}
-            className="text-2xl font-bold text-foreground mt-8 mb-4"
-          >
-            {paragraph.replace("## ", "")}
-          </h2>
-        );
-      }
-      if (paragraph.startsWith("### ")) {
-        return (
-          <h3
-            key={index}
-            className="text-xl font-semibold text-foreground mt-6 mb-3"
-          >
-            {paragraph.replace("### ", "")}
-          </h3>
-        );
-      }
-      // Regular paragraph
-      return (
-        <p key={index} className="text-foreground/90 leading-relaxed mb-4">
-          {paragraph}
-        </p>
-      );
+
+    // Sanitize HTML to prevent XSS while allowing iframe for video embeds
+    const sanitizedHtml = DOMPurify.sanitize(content, {
+      ADD_TAGS: ["iframe"],
+      ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "src", "target", "rel"],
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     });
+
+    return (
+      <div
+        className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-a:text-brand-primary-from prose-blockquote:border-brand-primary-from/50"
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+      />
+    );
   };
 
   return (
