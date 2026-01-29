@@ -367,6 +367,69 @@
 }
 
 /* Prevent iOS Safari auto-zoom on input focus - inputs must be 16px+ */
+/* ===== Tiptap Rich Text Editor Styles ===== */
+.tiptap-editor .ProseMirror {
+  @apply min-h-[280px] focus:outline-none;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground pointer-events-none float-left h-0;
+  content: attr(data-placeholder);
+}
+
+/* Editor content styling */
+.tiptap-editor .ProseMirror h1 {
+  @apply text-3xl font-bold mt-6 mb-3;
+}
+
+.tiptap-editor .ProseMirror h2 {
+  @apply text-2xl font-semibold mt-5 mb-2;
+}
+
+.tiptap-editor .ProseMirror h3 {
+  @apply text-xl font-medium mt-4 mb-2;
+}
+
+.tiptap-editor .ProseMirror p {
+  @apply mb-4 leading-relaxed;
+}
+
+.tiptap-editor .ProseMirror ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.tiptap-editor .ProseMirror ol {
+  @apply list-decimal pl-6 mb-4;
+}
+
+.tiptap-editor .ProseMirror li {
+  @apply mb-1;
+}
+
+.tiptap-editor .ProseMirror blockquote {
+  @apply border-l-4 pl-4 italic my-4 text-muted-foreground;
+  border-color: hsl(var(--brand-primary-from) / 0.5);
+}
+
+.tiptap-editor .ProseMirror a {
+  @apply underline;
+  color: hsl(var(--brand-primary-from));
+}
+
+.tiptap-editor .ProseMirror a:hover {
+  opacity: 0.8;
+}
+
+.tiptap-editor .ProseMirror iframe,
+.tiptap-editor .ProseMirror .youtube-embed {
+  @apply w-full aspect-video rounded-lg my-4;
+}
+
+/* Prose styling for blog post content */
+.prose iframe {
+  @apply w-full aspect-video rounded-lg my-6;
+}
+
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="email"],
