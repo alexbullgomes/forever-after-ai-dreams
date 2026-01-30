@@ -338,8 +338,11 @@ export default function BookingsPipeline() {
             ) : (
               filteredBookings.map((booking) => (
                 <TableRow key={booking.id}>
-                  <TableCell className="font-medium">
-                    {format(new Date(booking.event_date), 'MMM d, yyyy')}
+                <TableCell className="font-medium">
+                    {(() => {
+                      const [year, month, day] = booking.event_date.split('-').map(Number);
+                      return format(new Date(year, month - 1, day), 'MMM d, yyyy');
+                    })()}
                   </TableCell>
                   <TableCell>{formatTime(booking.selected_time)}</TableCell>
                   <TableCell>
@@ -449,7 +452,10 @@ export default function BookingsPipeline() {
                 <div>
                   <p className="text-muted-foreground">Event Date</p>
                   <p className="font-medium">
-                    {format(new Date(selectedBooking.event_date), 'MMMM d, yyyy')}
+                    {(() => {
+                      const [year, month, day] = selectedBooking.event_date.split('-').map(Number);
+                      return format(new Date(year, month - 1, day), 'MMMM d, yyyy');
+                    })()}
                   </p>
                 </div>
                 <div>
