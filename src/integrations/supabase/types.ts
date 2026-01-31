@@ -1334,6 +1334,7 @@ export type Database = {
           pricing_card_3_popular: boolean | null
           pricing_card_3_price: string | null
           pricing_card_3_title: string | null
+          pricing_section_enabled: boolean
           products_section_enabled: boolean
           promotional_footer_enabled: boolean | null
           slug: string
@@ -1375,6 +1376,7 @@ export type Database = {
           pricing_card_3_popular?: boolean | null
           pricing_card_3_price?: string | null
           pricing_card_3_title?: string | null
+          pricing_section_enabled?: boolean
           products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
           slug: string
@@ -1416,6 +1418,7 @@ export type Database = {
           pricing_card_3_popular?: boolean | null
           pricing_card_3_price?: string | null
           pricing_card_3_title?: string | null
+          pricing_section_enabled?: boolean
           products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
           slug?: string

@@ -70,6 +70,7 @@ interface Campaign {
   promotional_footer_enabled: boolean;
   tracking_scripts?: TrackingScript[];
   products_section_enabled: boolean;
+  pricing_section_enabled: boolean;
 }
 
 interface PromotionalCampaignFormProps {
@@ -168,6 +169,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     promotional_footer_enabled: false,
     tracking_scripts: [],
     products_section_enabled: false,
+    pricing_section_enabled: true,
   });
 
   // Tracking script handlers
@@ -271,6 +273,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
       setFormData({
         ...campaign,
         products_section_enabled: campaign.products_section_enabled ?? false,
+        pricing_section_enabled: campaign.pricing_section_enabled ?? true,
       });
       setTrackingScripts(campaign.tracking_scripts || []);
     }
@@ -474,6 +477,27 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
               </TabsContent>
 
               <TabsContent value="pricing" className="space-y-6">
+                {/* Master section toggle */}
+                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
+                  <div>
+                    <Label htmlFor="pricing_section_enabled" className="text-base font-medium">
+                      Show Promotional Packages Section
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Toggle to show or hide the entire pricing section on the campaign page
+                    </p>
+                  </div>
+                  <Switch
+                    id="pricing_section_enabled"
+                    checked={formData.pricing_section_enabled}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({ ...prev, pricing_section_enabled: checked }))
+                    }
+                  />
+                </div>
+
+                {/* Pricing cards - wrapped in conditional opacity */}
+                <div className={formData.pricing_section_enabled ? '' : 'opacity-50 pointer-events-none'}>
                 {[1, 2, 3].map((num) => {
                   const cardNum = num as 1 | 2 | 3;
                   const prefix = `pricing_card_${cardNum}`;
@@ -555,6 +579,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                     </div>
                   );
                 })}
+                </div>
               </TabsContent>
 
               {/* Gallery Tab */}
