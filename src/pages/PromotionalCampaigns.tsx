@@ -64,6 +64,9 @@ interface Campaign {
   promotional_footer_enabled: boolean;
   products_section_enabled: boolean;
   pricing_section_enabled: boolean;
+  vendors_section_enabled: boolean;
+  vendors_section_headline: string | null;
+  vendors_section_description: string | null;
 }
 
 const PromotionalCampaigns = () => {

@@ -12,6 +12,7 @@ import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assista
 import { useAuth } from "@/contexts/AuthContext";
 import { PromotionalCampaignGallery } from "@/components/galleries/PromotionalCampaignGallery";
 import { CampaignProductsSection } from "@/components/promo/CampaignProductsSection";
+import { CampaignVendorSection } from "@/components/promo/CampaignVendorSection";
 import AuthModal from "@/components/AuthModal";
 
 // Allowed tracking script domains for validation
@@ -252,6 +253,15 @@ const PromotionalLanding = () => {
 
         {/* Campaign Gallery Section */}
         <PromotionalCampaignGallery campaignId={campaign.id} />
+
+        {/* Vendor Section - appears at the end before Contact */}
+        {campaign.vendors_section_enabled && (
+          <CampaignVendorSection
+            campaignId={campaign.id}
+            headline={campaign.vendors_section_headline || 'Our Partners'}
+            description={campaign.vendors_section_description}
+          />
+        )}
 
         <Contact />
 

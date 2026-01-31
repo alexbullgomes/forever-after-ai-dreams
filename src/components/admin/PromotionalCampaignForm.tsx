@@ -16,6 +16,7 @@ import { Loader2, Plus, Trash2, Eye, EyeOff, Edit, Code, Check, X } from "lucide
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { CampaignProductsTab } from "@/components/admin/CampaignProductsTab";
+import { CampaignVendorsTab } from "@/components/admin/CampaignVendorsTab";
 import { CampaignGalleryItemCard } from "@/components/admin/CampaignGalleryItemCard";
 import {
   DndContext,
@@ -71,6 +72,9 @@ interface Campaign {
   tracking_scripts?: TrackingScript[];
   products_section_enabled: boolean;
   pricing_section_enabled: boolean;
+  vendors_section_enabled: boolean;
+  vendors_section_headline: string;
+  vendors_section_description: string;
 }
 
 interface PromotionalCampaignFormProps {
@@ -170,6 +174,9 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     tracking_scripts: [],
     products_section_enabled: false,
     pricing_section_enabled: true,
+    vendors_section_enabled: false,
+    vendors_section_headline: 'Our Partners',
+    vendors_section_description: '',
   });
 
   // Tracking script handlers
@@ -274,6 +281,9 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
         ...campaign,
         products_section_enabled: campaign.products_section_enabled ?? false,
         pricing_section_enabled: campaign.pricing_section_enabled ?? true,
+        vendors_section_enabled: campaign.vendors_section_enabled ?? false,
+        vendors_section_headline: campaign.vendors_section_headline ?? 'Our Partners',
+        vendors_section_description: campaign.vendors_section_description ?? '',
       });
       setTrackingScripts(campaign.tracking_scripts || []);
     }
@@ -371,12 +381,13 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
 
           <form onSubmit={handleSubmit}>
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-7">
+              <TabsList className="grid w-full grid-cols-8">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="banner">Banner</TabsTrigger>
                 <TabsTrigger value="pricing">Pricing</TabsTrigger>
                 <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
                 <TabsTrigger value="products" disabled={!campaign}>Products</TabsTrigger>
+                <TabsTrigger value="vendors" disabled={!campaign}>Vendors</TabsTrigger>
                 <TabsTrigger value="ads">Ads</TabsTrigger>
                 <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
@@ -696,6 +707,25 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                   productsSectionEnabled={formData.products_section_enabled}
                   onToggleProductsSection={(enabled) =>
                     setFormData((prev) => ({ ...prev, products_section_enabled: enabled }))
+                  }
+                />
+              </TabsContent>
+
+              {/* Vendors Tab */}
+              <TabsContent value="vendors">
+                <CampaignVendorsTab
+                  campaignId={campaign?.id}
+                  vendorsSectionEnabled={formData.vendors_section_enabled}
+                  vendorsSectionHeadline={formData.vendors_section_headline}
+                  vendorsSectionDescription={formData.vendors_section_description}
+                  onSectionEnabledChange={(enabled) =>
+                    setFormData((prev) => ({ ...prev, vendors_section_enabled: enabled }))
+                  }
+                  onHeadlineChange={(headline) =>
+                    setFormData((prev) => ({ ...prev, vendors_section_headline: headline }))
+                  }
+                  onDescriptionChange={(description) =>
+                    setFormData((prev) => ({ ...prev, vendors_section_description: description }))
                   }
                 />
               </TabsContent>

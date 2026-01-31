@@ -49,6 +49,9 @@ interface PromotionalCampaign {
   tracking_scripts: TrackingScript[];
   products_section_enabled: boolean;
   pricing_section_enabled: boolean;
+  vendors_section_enabled: boolean;
+  vendors_section_headline: string | null;
+  vendors_section_description: string | null;
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -90,6 +93,9 @@ export const usePromotionalCampaign = (slug: string) => {
           tracking_scripts: (data.tracking_scripts as any) || [],
           products_section_enabled: data.products_section_enabled ?? false,
           pricing_section_enabled: data.pricing_section_enabled ?? true,
+          vendors_section_enabled: data.vendors_section_enabled ?? false,
+          vendors_section_headline: data.vendors_section_headline ?? 'Our Partners',
+          vendors_section_description: data.vendors_section_description ?? null,
         };
         setCampaign(parsedData as PromotionalCampaign);
 
