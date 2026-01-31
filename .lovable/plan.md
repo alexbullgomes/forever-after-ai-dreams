@@ -1,287 +1,181 @@
 
+# Gallery Modal Portrait Media Layout Fix
 
-# Promotional Campaign Pricing Section Enhancement Plan
+## Problem Analysis
 
-## Overview
+When viewing 9:16 (vertical) media in the gallery modal, the navigation dock is pushed outside the visible viewport. This happens because:
 
-This plan implements two changes to promotional campaign pages:
-1. **Reorder sections** - Move the "Special Promotional Packages" (pricing cards) section to appear BEFORE Products and Gallery
-2. **Add visibility toggle** - Allow admins to show/hide the entire pricing section via a new database field and admin toggle
+1. The modal content uses `flex-1` which allows content to expand freely
+2. The portrait media container has `max-h-[75vh]` but combined with padding, buttons, and navigation dock, the total height exceeds 100vh
+3. There's no guaranteed reserved space for the navigation elements
 
-## Current Section Order (PromotionalLanding.tsx)
-
-```text
-1. PromoHero
-2. CampaignProductsSection (conditional)
-3. PromotionalCampaignGallery
-4. PromoPricing ← Currently last
-5. Contact
-```
-
-## New Section Order
-
-```text
-1. PromoHero
-2. PromoPricing ← Moved here (conditional on pricing_section_enabled)
-3. CampaignProductsSection (conditional)
-4. PromotionalCampaignGallery
-5. Contact
-```
+**Screenshot Analysis**: The uploaded screenshot shows the vertical media taking up almost the entire modal height, with the "Like" button barely visible and the navigation dock completely cut off below the viewport.
 
 ---
 
-## Database Change
+## Solution Overview
 
-### New Column
-
-| Table | Column | Type | Default | Description |
-|-------|--------|------|---------|-------------|
-| `promotional_campaigns` | `pricing_section_enabled` | boolean | true | Controls visibility of the entire pricing section |
-
-**Migration SQL:**
-```sql
-ALTER TABLE promotional_campaigns 
-ADD COLUMN pricing_section_enabled boolean NOT NULL DEFAULT true;
-```
-
-**Why default is `true`:**
-- Preserves current behavior for all existing campaigns
-- Pricing cards will continue to display unless admin explicitly disables them
+Restructure the `ModalContent.tsx` layout to:
+1. Use a fixed-height flex column that respects viewport bounds
+2. Give the navigation area a guaranteed minimum space
+3. Reduce portrait media max-height to account for UI elements
+4. Apply responsive constraints for mobile vs desktop
 
 ---
 
-## File Changes Summary
+## Technical Implementation
 
-| File | Change Type | Description |
-|------|-------------|-------------|
-| Database migration | CREATE | Add `pricing_section_enabled` column |
-| `src/hooks/usePromotionalCampaign.ts` | MODIFY | Add `pricing_section_enabled` to interface and parsing |
-| `src/components/admin/PromotionalCampaignForm.tsx` | MODIFY | Add master toggle at top of Pricing tab |
-| `src/pages/PromotionalLanding.tsx` | MODIFY | Reorder sections and add conditional check |
+### File: `src/components/ui/gallery/ModalContent.tsx`
 
----
-
-## Detailed Implementation
-
-### 1. Database Migration
-
-Add new boolean column with safe default:
-
-```sql
--- Add pricing_section_enabled to promotional_campaigns
-ALTER TABLE promotional_campaigns 
-ADD COLUMN IF NOT EXISTS pricing_section_enabled boolean NOT NULL DEFAULT true;
-
--- Add comment for documentation
-COMMENT ON COLUMN promotional_campaigns.pricing_section_enabled IS 
-  'Controls visibility of the Special Promotional Packages section on campaign landing pages';
+**Current Structure (problematic):**
+```
+<div h-full flex-col>
+  <div flex-1>              ← Can grow unbounded
+    <media max-h-[75vh]/>   ← 75vh doesn't leave room for rest
+    <buttons/>
+    <navigation/>
+  </div>
+</div>
 ```
 
-### 2. Update usePromotionalCampaign.ts
+**New Structure (fixed):**
+```
+<div h-full flex-col overflow-hidden>
+  <div flex-1 min-h-0 overflow-y-auto>   ← Scrollable if needed, but constrained
+    <media max-h-[55vh] md:max-h-[60vh]/> ← Reduced to leave room for UI
+    <buttons/>
+  </div>
+  <div flex-shrink-0>                     ← Navigation always visible
+    <navigation/>
+  </div>
+</div>
+```
 
-Add `pricing_section_enabled` to the TypeScript interface:
+### Key Changes:
 
+| Aspect | Before | After |
+|--------|--------|-------|
+| Portrait media max-height | `max-h-[75vh]` | `max-h-[55vh] md:max-h-[60vh]` |
+| Landscape media max-height | `max-h-[60vh]` | `max-h-[50vh] md:max-h-[55vh]` |
+| Content container | `flex-1` only | `flex-1 min-h-0 overflow-y-auto` |
+| Navigation container | Inside flex-1 | Separate `flex-shrink-0` container |
+| Outer container | `h-full flex flex-col` | `h-full flex flex-col overflow-hidden` |
+
+### Specific Code Changes:
+
+**Line 25-27 - Update container classes:**
 ```typescript
-interface PromotionalCampaign {
-  // ... existing fields
-  products_section_enabled: boolean;
-  pricing_section_enabled: boolean;  // NEW
-}
+// Portrait: smaller on mobile, slightly larger on desktop
+const containerClasses = isPortrait
+  ? "relative aspect-[9/16] max-h-[55vh] md:max-h-[60vh] w-auto rounded-lg overflow-hidden shadow-lg"
+  : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl max-h-[50vh] md:max-h-[55vh] rounded-lg overflow-hidden shadow-lg";
 ```
 
-Update the parsing logic to handle the new field:
-
-```typescript
-const parsedData = {
-  ...data,
-  tracking_scripts: (data.tracking_scripts as any) || [],
-  products_section_enabled: data.products_section_enabled ?? false,
-  pricing_section_enabled: data.pricing_section_enabled ?? true,  // NEW - default true
-};
-```
-
-### 3. Update PromotionalCampaignForm.tsx
-
-**Location:** At the top of the Pricing tab content (line 476)
-
-**Add this before the pricing cards loop:**
-
+**Line 29-30 - Update outer container:**
 ```tsx
-<TabsContent value="pricing" className="space-y-6">
-  {/* NEW: Master section toggle */}
-  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
-    <div>
-      <Label htmlFor="pricing_section_enabled" className="text-base font-medium">
-        Show Promotional Packages Section
-      </Label>
-      <p className="text-sm text-muted-foreground mt-1">
-        Toggle to show or hide the entire pricing section on the campaign page
-      </p>
+<div className="h-full flex flex-col overflow-hidden">
+```
+
+**Line 31 - Update content container:**
+```tsx
+<div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 flex flex-col items-center justify-start">
+```
+
+**Lines 68-92 - Move navigation outside scrollable area:**
+
+Before:
+```tsx
+{/* Action Buttons */}
+<div className="flex items-center justify-center gap-4 mb-6">
+  ...
+</div>
+
+{/* Navigation - INSIDE scrollable area */}
+<div className="flex justify-center items-center w-full max-w-4xl mt-4">
+  <NavigationDock ... />
+</div>
+```
+
+After:
+```tsx
+      {/* Action Buttons */}
+      <div className="flex items-center justify-center gap-4 mt-4">
+        ...
+      </div>
     </div>
-    <Switch
-      id="pricing_section_enabled"
-      checked={formData.pricing_section_enabled}
-      onCheckedChange={(checked) =>
-        setFormData((prev) => ({ ...prev, pricing_section_enabled: checked }))
-      }
-    />
   </div>
 
-  {/* Existing pricing cards - wrapped in conditional opacity */}
-  <div className={formData.pricing_section_enabled ? '' : 'opacity-50 pointer-events-none'}>
-    {[1, 2, 3].map((num) => {
-      // ... existing card rendering
-    })}
+  {/* Navigation - OUTSIDE scrollable area, always visible */}
+  <div className="flex-shrink-0 py-3 sm:py-4 flex justify-center items-center w-full">
+    <NavigationDock ... />
   </div>
-</TabsContent>
-```
-
-**Also update the Campaign interface (line 36-73) to include:**
-
-```typescript
-interface Campaign {
-  // ... existing fields
-  products_section_enabled: boolean;
-  pricing_section_enabled: boolean;  // NEW
-}
-```
-
-**Update default form state (line 142-171):**
-
-```typescript
-const [formData, setFormData] = useState<Campaign>({
-  // ... existing defaults
-  products_section_enabled: false,
-  pricing_section_enabled: true,  // NEW - default true
-});
-```
-
-**Update the useEffect for loading existing campaign (line 269-277):**
-
-```typescript
-useEffect(() => {
-  if (campaign) {
-    setFormData({
-      ...campaign,
-      products_section_enabled: campaign.products_section_enabled ?? false,
-      pricing_section_enabled: campaign.pricing_section_enabled ?? true,  // NEW
-    });
-    setTrackingScripts(campaign.tracking_scripts || []);
-  }
-}, [campaign]);
-```
-
-### 4. Update PromotionalLanding.tsx
-
-**Reorder sections and add conditional rendering:**
-
-Current (lines 232-253):
-```tsx
-<PromoHero ... />
-
-{/* Products Section */}
-{campaign.products_section_enabled && (
-  <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
-)}
-
-{/* Gallery Section */}
-<PromotionalCampaignGallery campaignId={campaign.id} />
-
-{/* Pricing Section - currently at bottom */}
-<PromoPricing cards={pricingCards} campaignId={campaign.id} campaignSlug={campaign.slug} />
-
-<Contact />
-```
-
-New order:
-```tsx
-<PromoHero ... />
-
-{/* Pricing Section - MOVED HERE with conditional */}
-{campaign.pricing_section_enabled && (
-  <PromoPricing cards={pricingCards} campaignId={campaign.id} campaignSlug={campaign.slug} />
-)}
-
-{/* Products Section */}
-{campaign.products_section_enabled && (
-  <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
-)}
-
-{/* Gallery Section */}
-<PromotionalCampaignGallery campaignId={campaign.id} />
-
-<Contact />
+</div>
 ```
 
 ---
 
-## Visual Reference - Admin Pricing Tab
+## Visual Comparison
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ Pricing Tab                                                                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│ ┌─────────────────────────────────────────────────────────────────────────┐ │
-│ │ Show Promotional Packages Section                              [TOGGLE]│ │
-│ │ Toggle to show or hide the entire pricing section on the campaign page │ │
-│ └─────────────────────────────────────────────────────────────────────────┘ │
-│                                                                              │
-│ ┌─ Card 1 ──────────────────────────────────────────────────────[TOGGLE]──┐ │
-│ │ Brand Photography Content                                               │ │
-│ │ Starting at $250                                                        │ │
-│ │ ...                                                                     │ │
-│ └─────────────────────────────────────────────────────────────────────────┘ │
-│                                                                              │
-│ ┌─ Card 2 ──────────────────────────────────────────────────────[TOGGLE]──┐ │
-│ │ ...                                                                     │ │
-│ └─────────────────────────────────────────────────────────────────────────┘ │
-│                                                                              │
-│ ┌─ Card 3 ──────────────────────────────────────────────────────[TOGGLE]──┐ │
-│ │ ...                                                                     │ │
-│ └─────────────────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
+BEFORE (Portrait 9:16):                    AFTER (Portrait 9:16):
+┌──────────────────────┐                   ┌──────────────────────┐
+│     Close [X]        │                   │     Close [X]        │
+│                      │                   │                      │
+│  ┌────────────────┐  │                   │  ┌────────────────┐  │
+│  │                │  │                   │  │                │  │
+│  │                │  │                   │  │    PORTRAIT    │  │
+│  │    PORTRAIT    │  │                   │  │     MEDIA      │  │
+│  │     MEDIA      │  │                   │  │   (smaller)    │  │
+│  │   (too tall)   │  │                   │  │                │  │
+│  │                │  │                   │  └────────────────┘  │
+│  │                │  │                   │                      │
+│  └────────────────┘  │                   │    [Like] [Watch]    │
+│                      │                   │                      │
+│    [Like] [Watch]    │                   │  ┌────────────────┐  │
+└──────────────────────┘                   │  │  Navigation    │  │
+   Navigation hidden                       │  │     Dock       │  │
+   below viewport!                         │  └────────────────┘  │
+                                           └──────────────────────┘
+                                              All elements visible!
 ```
 
 ---
 
-## Behavior Logic
+## Affected Components
 
-| `pricing_section_enabled` | Card toggles | Result |
-|--------------------------|--------------|--------|
-| `true` | At least 1 enabled | Section displays with enabled cards |
-| `true` | All disabled | Section hidden (existing `PromoPricing` logic) |
-| `false` | Any | Section hidden entirely |
+| Component | Change | Impact |
+|-----------|--------|--------|
+| `ModalContent.tsx` | Layout restructure | All galleries fixed |
+| `NavigationDock.tsx` | No changes | Works as-is |
+| `GalleryModal.tsx` | No changes | Works as-is |
+| Gallery consumers | No changes | Automatic fix |
 
----
-
-## Backward Compatibility
-
-- Default value of `true` ensures all existing campaigns continue showing pricing cards
-- No data migration needed
-- Individual card toggles still work as before
-- Only adds new control; does not remove any functionality
+**Galleries automatically fixed:**
+- Homepage Portfolio gallery
+- Services / EverAfter gallery
+- Wedding Packages gallery  
+- Campaign galleries (`/promo/:slug`)
 
 ---
 
-## What Remains Unchanged
+## Constraints Preserved
 
-- Database schema for individual pricing card fields
-- PromoPricing component internal logic
-- CampaignPricingCard component
-- Products section behavior
-- Gallery section behavior
-- Mobile responsiveness (section ordering adapts)
-- Visual styling (pink gradient, spacing, buttons)
+- Gallery navigation logic unchanged
+- Media loading behavior unchanged
+- Animations and transitions unchanged
+- Desktop behavior for horizontal (16:9) media similar (slightly smaller)
+- Orientation detection hook unchanged
+- Like button, Full Video button functionality unchanged
 
 ---
 
 ## Testing Checklist
 
-1. **New campaigns** - Pricing section enabled by default
-2. **Existing campaigns** - Pricing section still visible after update
-3. **Toggle OFF** - Pricing section disappears from landing page
-4. **Toggle ON** - Pricing section reappears
-5. **Section order** - Verify Pricing now appears before Products and Gallery
-6. **Card combinations** - Test with 1, 2, and 3 cards enabled
-7. **Mobile view** - Confirm responsive layout preserved
-
+1. Open any gallery with portrait (9:16) media
+2. Verify navigation dock is fully visible at bottom
+3. Verify Like and Watch buttons are visible
+4. Test on mobile viewport (should be even more compact)
+5. Test with landscape media - should remain similar to before
+6. Test navigation dock drag functionality
+7. Test keyboard navigation (arrow keys, Escape)
+8. Verify animations still work smoothly
