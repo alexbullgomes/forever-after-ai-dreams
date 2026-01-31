@@ -651,6 +651,50 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_vendors: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_vendors_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -1341,6 +1385,9 @@ export type Database = {
           title: string
           tracking_scripts: Json | null
           updated_at: string | null
+          vendors_section_description: string | null
+          vendors_section_enabled: boolean
+          vendors_section_headline: string | null
           views_count: number | null
         }
         Insert: {
@@ -1383,6 +1430,9 @@ export type Database = {
           title: string
           tracking_scripts?: Json | null
           updated_at?: string | null
+          vendors_section_description?: string | null
+          vendors_section_enabled?: boolean
+          vendors_section_headline?: string | null
           views_count?: number | null
         }
         Update: {
@@ -1425,6 +1475,9 @@ export type Database = {
           title?: string
           tracking_scripts?: Json | null
           updated_at?: string | null
+          vendors_section_description?: string | null
+          vendors_section_enabled?: boolean
+          vendors_section_headline?: string | null
           views_count?: number | null
         }
         Relationships: []
