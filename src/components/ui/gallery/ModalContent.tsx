@@ -32,7 +32,7 @@ const ModalContent: React.FC<ModalContentProps> = ({
   // Dynamic classes based on orientation - reduced max-height to ensure navigation stays visible
   const containerClasses = isPortrait ? "relative aspect-[9/16] max-h-[55vh] md:max-h-[60vh] w-auto rounded-lg overflow-hidden shadow-lg" : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl max-h-[50vh] md:max-h-[55vh] rounded-lg overflow-hidden shadow-lg";
   return <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 items-center justify-start flex flex-col pt-[150px]">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 flex-col pt-[150px] flex items-center justify-end">
         <AnimatePresence mode="wait">
           <motion.div key={selectedItem.id} className={containerClasses} initial={{
           y: 20,
