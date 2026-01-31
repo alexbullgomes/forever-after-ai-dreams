@@ -7,7 +7,6 @@ import FullVideoButton from './FullVideoButton';
 import ModalCloseButton from './ModalCloseButton';
 import NavigationDock from './NavigationDock';
 import { useMediaOrientation } from './useMediaOrientation';
-
 interface ModalContentProps {
   selectedItem: MediaItemType;
   isLiked: boolean;
@@ -17,40 +16,43 @@ interface ModalContentProps {
   mediaItems: MediaItemType[];
   setSelectedItem: (item: MediaItemType) => void;
 }
-
-const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose, mediaItems, setSelectedItem }) => {
-  const { isPortrait } = useMediaOrientation(selectedItem);
+const ModalContent: React.FC<ModalContentProps> = ({
+  selectedItem,
+  isLiked,
+  onToggleLike,
+  pageSource,
+  onClose,
+  mediaItems,
+  setSelectedItem
+}) => {
+  const {
+    isPortrait
+  } = useMediaOrientation(selectedItem);
 
   // Dynamic classes based on orientation - reduced max-height to ensure navigation stays visible
-  const containerClasses = isPortrait
-    ? "relative aspect-[9/16] max-h-[55vh] md:max-h-[60vh] w-auto rounded-lg overflow-hidden shadow-lg"
-    : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl max-h-[50vh] md:max-h-[55vh] rounded-lg overflow-hidden shadow-lg";
-
-  return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 pt-8 flex flex-col items-center justify-start">
+  const containerClasses = isPortrait ? "relative aspect-[9/16] max-h-[55vh] md:max-h-[60vh] w-auto rounded-lg overflow-hidden shadow-lg" : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl max-h-[50vh] md:max-h-[55vh] rounded-lg overflow-hidden shadow-lg";
+  return <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 items-center justify-start flex flex-col pt-[94px]">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={selectedItem.id}
-            className={containerClasses}
-            initial={{ y: 20, scale: 0.97 }}
-            animate={{
-              y: 0,
-              scale: 1,
-              transition: {
-                type: "spring",
-                stiffness: 500,
-                damping: 30,
-                mass: 0.5
-              }
-            }}
-            exit={{
-              y: 20,
-              scale: 0.97,
-              transition: { duration: 0.15 }
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <motion.div key={selectedItem.id} className={containerClasses} initial={{
+          y: 20,
+          scale: 0.97
+        }} animate={{
+          y: 0,
+          scale: 1,
+          transition: {
+            type: "spring",
+            stiffness: 500,
+            damping: 30,
+            mass: 0.5
+          }
+        }} exit={{
+          y: 20,
+          scale: 0.97,
+          transition: {
+            duration: 0.15
+          }
+        }} onClick={e => e.stopPropagation()}>
             <MediaItem item={selectedItem} className="w-full h-full object-contain bg-muted dark:bg-muted" />
             <ModalCloseButton onClose={onClose} />
             <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5 
@@ -67,32 +69,16 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
         
         {/* Action Buttons */}
         <div className="flex items-center justify-center gap-4 mt-4">
-          <LikeButton 
-            selectedItem={selectedItem} 
-            isLiked={isLiked}
-            onToggleLike={onToggleLike}
-            pageSource={pageSource}
-          />
+          <LikeButton selectedItem={selectedItem} isLiked={isLiked} onToggleLike={onToggleLike} pageSource={pageSource} />
           
-          {selectedItem.fullVideoUrl && (
-            <FullVideoButton
-              videoUrl={selectedItem.fullVideoUrl}
-              eventName={selectedItem.title}
-            />
-          )}
+          {selectedItem.fullVideoUrl && <FullVideoButton videoUrl={selectedItem.fullVideoUrl} eventName={selectedItem.title} />}
         </div>
       </div>
       
       {/* Navigation - OUTSIDE scrollable area, always visible */}
       <div className="flex-shrink-0 py-3 sm:py-4 pb-6 flex justify-center items-center w-full">
-        <NavigationDock 
-          mediaItems={mediaItems}
-          selectedItem={selectedItem}
-          setSelectedItem={setSelectedItem}
-        />
+        <NavigationDock mediaItems={mediaItems} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ModalContent;
