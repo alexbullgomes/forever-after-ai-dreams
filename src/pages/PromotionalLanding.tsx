@@ -240,15 +240,18 @@ const PromotionalLanding = () => {
           tagline={campaign.banner_tagline}
         />
 
-        {/* Campaign Products Section - renders between Hero and Gallery */}
+        {/* Pricing Section - now appears first after Hero */}
+        {campaign.pricing_section_enabled && (
+          <PromoPricing cards={pricingCards} campaignId={campaign.id} campaignSlug={campaign.slug} />
+        )}
+
+        {/* Campaign Products Section */}
         {campaign.products_section_enabled && (
           <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
         )}
 
         {/* Campaign Gallery Section */}
         <PromotionalCampaignGallery campaignId={campaign.id} />
-
-        <PromoPricing cards={pricingCards} campaignId={campaign.id} campaignSlug={campaign.slug} />
 
         <Contact />
 
