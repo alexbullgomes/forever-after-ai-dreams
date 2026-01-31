@@ -1,181 +1,426 @@
 
-# Gallery Modal Portrait Media Layout Fix
 
-## Problem Analysis
+# Vendor Section Implementation Plan
 
-When viewing 9:16 (vertical) media in the gallery modal, the navigation dock is pushed outside the visible viewport. This happens because:
+## Executive Summary
 
-1. The modal content uses `flex-1` which allows content to expand freely
-2. The portrait media container has `max-h-[75vh]` but combined with padding, buttons, and navigation dock, the total height exceeds 100vh
-3. There's no guaranteed reserved space for the navigation elements
+This plan adds a new **Vendor Section** to the bottom of Promotional Campaign landing pages (`/promo/:slug`). The section displays vendor/partner logos using an animated carousel component and is fully manageable from the Admin Campaign Editor.
 
-**Screenshot Analysis**: The uploaded screenshot shows the vertical media taking up almost the entire modal height, with the "Like" button barely visible and the navigation dock completely cut off below the viewport.
-
----
-
-## Solution Overview
-
-Restructure the `ModalContent.tsx` layout to:
-1. Use a fixed-height flex column that respects viewport bounds
-2. Give the navigation area a guaranteed minimum space
-3. Reduce portrait media max-height to account for UI elements
-4. Apply responsive constraints for mobile vs desktop
+**Key Design Decisions:**
+- Create a separate `campaign_vendors` table (following the existing pattern of `promotional_campaign_gallery` and `promotional_campaign_products`)
+- Add minimal fields to `promotional_campaigns` for section configuration (enabled, headline, description)
+- Follow existing admin patterns with a new "Vendors" tab in the Campaign Editor
+- Section disabled by default for backward compatibility
 
 ---
 
-## Technical Implementation
+## Architecture Analysis
 
-### File: `src/components/ui/gallery/ModalContent.tsx`
+### Current Campaign Section Pattern
 
-**Current Structure (problematic):**
-```
-<div h-full flex-col>
-  <div flex-1>              ← Can grow unbounded
-    <media max-h-[75vh]/>   ← 75vh doesn't leave room for rest
-    <buttons/>
-    <navigation/>
-  </div>
-</div>
-```
+The codebase follows a consistent pattern for optional campaign sections:
 
-**New Structure (fixed):**
-```
-<div h-full flex-col overflow-hidden>
-  <div flex-1 min-h-0 overflow-y-auto>   ← Scrollable if needed, but constrained
-    <media max-h-[55vh] md:max-h-[60vh]/> ← Reduced to leave room for UI
-    <buttons/>
-  </div>
-  <div flex-shrink-0>                     ← Navigation always visible
-    <navigation/>
-  </div>
-</div>
-```
+| Section | Enable Flag | Related Table | Hook | Frontend Component |
+|---------|-------------|---------------|------|-------------------|
+| Pricing | `pricing_section_enabled` | None (inline JSONB) | `usePromotionalCampaign` | `PromoPricing` |
+| Products | `products_section_enabled` | `promotional_campaign_products` | `useCampaignProducts` | `CampaignProductsSection` |
+| Gallery | N/A (renders if items exist) | `promotional_campaign_gallery` | `usePromotionalCampaignGallery` | `PromotionalCampaignGallery` |
 
-### Key Changes:
+**Vendor Section will follow the Products pattern:**
+- Enable flag in `promotional_campaigns` table
+- Separate `campaign_vendors` table for vendor data
+- Dedicated hook for CRUD operations
+- New frontend section component
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Portrait media max-height | `max-h-[75vh]` | `max-h-[55vh] md:max-h-[60vh]` |
-| Landscape media max-height | `max-h-[60vh]` | `max-h-[50vh] md:max-h-[55vh]` |
-| Content container | `flex-1` only | `flex-1 min-h-0 overflow-y-auto` |
-| Navigation container | Inside flex-1 | Separate `flex-shrink-0` container |
-| Outer container | `h-full flex flex-col` | `h-full flex flex-col overflow-hidden` |
-
-### Specific Code Changes:
-
-**Line 25-27 - Update container classes:**
-```typescript
-// Portrait: smaller on mobile, slightly larger on desktop
-const containerClasses = isPortrait
-  ? "relative aspect-[9/16] max-h-[55vh] md:max-h-[60vh] w-auto rounded-lg overflow-hidden shadow-lg"
-  : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl max-h-[50vh] md:max-h-[55vh] rounded-lg overflow-hidden shadow-lg";
-```
-
-**Line 29-30 - Update outer container:**
-```tsx
-<div className="h-full flex flex-col overflow-hidden">
-```
-
-**Line 31 - Update content container:**
-```tsx
-<div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 flex flex-col items-center justify-start">
-```
-
-**Lines 68-92 - Move navigation outside scrollable area:**
-
-Before:
-```tsx
-{/* Action Buttons */}
-<div className="flex items-center justify-center gap-4 mb-6">
-  ...
-</div>
-
-{/* Navigation - INSIDE scrollable area */}
-<div className="flex justify-center items-center w-full max-w-4xl mt-4">
-  <NavigationDock ... />
-</div>
-```
-
-After:
-```tsx
-      {/* Action Buttons */}
-      <div className="flex items-center justify-center gap-4 mt-4">
-        ...
-      </div>
-    </div>
-  </div>
-
-  {/* Navigation - OUTSIDE scrollable area, always visible */}
-  <div className="flex-shrink-0 py-3 sm:py-4 flex justify-center items-center w-full">
-    <NavigationDock ... />
-  </div>
-</div>
-```
-
----
-
-## Visual Comparison
+### Current Page Layout (PromotionalLanding.tsx)
 
 ```text
-BEFORE (Portrait 9:16):                    AFTER (Portrait 9:16):
-┌──────────────────────┐                   ┌──────────────────────┐
-│     Close [X]        │                   │     Close [X]        │
-│                      │                   │                      │
-│  ┌────────────────┐  │                   │  ┌────────────────┐  │
-│  │                │  │                   │  │                │  │
-│  │                │  │                   │  │    PORTRAIT    │  │
-│  │    PORTRAIT    │  │                   │  │     MEDIA      │  │
-│  │     MEDIA      │  │                   │  │   (smaller)    │  │
-│  │   (too tall)   │  │                   │  │                │  │
-│  │                │  │                   │  └────────────────┘  │
-│  │                │  │                   │                      │
-│  └────────────────┘  │                   │    [Like] [Watch]    │
-│                      │                   │                      │
-│    [Like] [Watch]    │                   │  ┌────────────────┐  │
-└──────────────────────┘                   │  │  Navigation    │  │
-   Navigation hidden                       │  │     Dock       │  │
-   below viewport!                         │  └────────────────┘  │
-                                           └──────────────────────┘
-                                              All elements visible!
+1. Header
+2. PromoHero
+3. PromoPricing (conditional)
+4. CampaignProductsSection (conditional)
+5. PromotionalCampaignGallery
+6. Contact
+7. Chat
+```
+
+**New layout with Vendor Section:**
+
+```text
+1. Header
+2. PromoHero
+3. PromoPricing (conditional)
+4. CampaignProductsSection (conditional)
+5. PromotionalCampaignGallery
+6. CampaignVendorSection (conditional) ← NEW (at END before Contact)
+7. Contact
+8. Chat
 ```
 
 ---
 
-## Affected Components
+## Data Model
 
-| Component | Change | Impact |
-|-----------|--------|--------|
-| `ModalContent.tsx` | Layout restructure | All galleries fixed |
-| `NavigationDock.tsx` | No changes | Works as-is |
-| `GalleryModal.tsx` | No changes | Works as-is |
-| Gallery consumers | No changes | Automatic fix |
+### Option A: Separate Table (Recommended)
 
-**Galleries automatically fixed:**
-- Homepage Portfolio gallery
-- Services / EverAfter gallery
-- Wedding Packages gallery  
-- Campaign galleries (`/promo/:slug`)
+This approach aligns with existing patterns and provides maximum flexibility.
+
+**New Table: `campaign_vendors`**
+
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| `id` | uuid | NO | gen_random_uuid() | Primary key |
+| `campaign_id` | uuid | NO | - | FK to promotional_campaigns |
+| `name` | text | NO | - | Vendor display name |
+| `logo_url` | text | YES | NULL | URL to vendor logo (SVG preferred) |
+| `website_url` | text | YES | NULL | Optional link to vendor website |
+| `sort_order` | integer | NO | 0 | Display order |
+| `is_active` | boolean | NO | true | Visibility toggle |
+| `created_at` | timestamptz | NO | now() | Creation timestamp |
+| `updated_at` | timestamptz | NO | now() | Last update timestamp |
+
+**Why separate table?**
+- Unlimited vendors per campaign
+- Easier ordering with drag-and-drop
+- Future extensibility (categories, sponsorship levels, etc.)
+- Consistent with existing `promotional_campaign_gallery` pattern
+- Individual vendor visibility toggles
+- Cleaner data model
+
+**Extend `promotional_campaigns` table with:**
+
+| Column | Type | Default | Description |
+|--------|------|---------|-------------|
+| `vendors_section_enabled` | boolean | false | Master toggle |
+| `vendors_section_headline` | text | 'Our Partners' | Section title |
+| `vendors_section_description` | text | NULL | Optional subheadline |
+
+### Database Migration SQL
+
+```sql
+-- Add vendor section configuration to promotional_campaigns
+ALTER TABLE promotional_campaigns
+ADD COLUMN IF NOT EXISTS vendors_section_enabled boolean NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS vendors_section_headline text DEFAULT 'Our Partners',
+ADD COLUMN IF NOT EXISTS vendors_section_description text;
+
+-- Create campaign_vendors table
+CREATE TABLE campaign_vendors (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id uuid NOT NULL REFERENCES promotional_campaigns(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  logo_url text,
+  website_url text,
+  sort_order integer NOT NULL DEFAULT 0,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Create index for efficient queries
+CREATE INDEX idx_campaign_vendors_campaign_id ON campaign_vendors(campaign_id);
+CREATE INDEX idx_campaign_vendors_sort_order ON campaign_vendors(campaign_id, sort_order);
+
+-- Enable RLS
+ALTER TABLE campaign_vendors ENABLE ROW LEVEL SECURITY;
+
+-- Public read access for active vendors
+CREATE POLICY "Anyone can view active vendors"
+ON campaign_vendors FOR SELECT
+USING (is_active = true);
+
+-- Admin full access
+CREATE POLICY "Admins can manage vendors"
+ON campaign_vendors FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+  )
+);
+
+-- Trigger for updated_at
+CREATE TRIGGER update_campaign_vendors_updated_at
+  BEFORE UPDATE ON campaign_vendors
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Comments for documentation
+COMMENT ON TABLE campaign_vendors IS 'Stores vendor/partner logos for promotional campaigns';
+COMMENT ON COLUMN campaign_vendors.logo_url IS 'URL to vendor logo image (SVG preferred for scalability)';
+COMMENT ON COLUMN promotional_campaigns.vendors_section_enabled IS 'Controls visibility of the Vendor Section on campaign landing pages';
+```
 
 ---
 
-## Constraints Preserved
+## File Changes Summary
 
-- Gallery navigation logic unchanged
-- Media loading behavior unchanged
-- Animations and transitions unchanged
-- Desktop behavior for horizontal (16:9) media similar (slightly smaller)
-- Orientation detection hook unchanged
-- Like button, Full Video button functionality unchanged
+| File | Action | Description |
+|------|--------|-------------|
+| **Database** | CREATE | Migration for `campaign_vendors` table + campaign columns |
+| `src/integrations/supabase/types.ts` | AUTO-UPDATE | TypeScript types will regenerate |
+| `src/components/ui/logo-carousel.tsx` | CREATE | LogoCarousel component (provided) |
+| `src/components/ui/gradient-heading.tsx` | CREATE | GradientHeading component (provided) |
+| `src/hooks/useCampaignVendors.ts` | CREATE | Hook for vendor CRUD operations |
+| `src/components/promo/CampaignVendorSection.tsx` | CREATE | Frontend vendor section component |
+| `src/components/admin/CampaignVendorsTab.tsx` | CREATE | Admin tab for vendor management |
+| `src/hooks/usePromotionalCampaign.ts` | MODIFY | Add vendor section fields |
+| `src/components/admin/PromotionalCampaignForm.tsx` | MODIFY | Add Vendors tab |
+| `src/pages/PromotionalCampaigns.tsx` | MODIFY | Update Campaign interface |
+| `src/pages/PromotionalLanding.tsx` | MODIFY | Render CampaignVendorSection |
+
+---
+
+## Implementation Details
+
+### 1. UI Components (New Files)
+
+**`src/components/ui/gradient-heading.tsx`**
+- Copy the provided GradientHeading component
+- Provides consistent heading styling with gradient variants
+
+**`src/components/ui/logo-carousel.tsx`**
+- Copy the provided LogoCarousel component
+- Adapt for dynamic vendor logos (replace static SVG components with dynamic images)
+- The component will need a small modification to accept image URLs instead of React components
+
+**Modified LogoCarousel for URL-based logos:**
+
+```tsx
+interface Logo {
+  name: string;
+  id: number;
+  logoUrl: string; // Changed from React component to URL
+  websiteUrl?: string;
+}
+
+// LogoColumn updated to render img elements instead of React components
+```
+
+### 2. Data Hook
+
+**`src/hooks/useCampaignVendors.ts`**
+
+Following the pattern of `useCampaignProducts.ts`:
+
+```typescript
+export interface CampaignVendor {
+  id: string;
+  campaign_id: string;
+  name: string;
+  logo_url: string | null;
+  website_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useCampaignVendors(campaignId: string | undefined) {
+  // State for vendors list
+  // fetchVendors - query by campaign_id, order by sort_order
+  // createVendor - insert new vendor
+  // updateVendor - update vendor details
+  // deleteVendor - remove vendor
+  // reorderVendors - batch update sort_order
+  // toggleActive - toggle is_active flag
+}
+```
+
+### 3. Frontend Section Component
+
+**`src/components/promo/CampaignVendorSection.tsx`**
+
+Structure:
+```tsx
+<section className="py-16 px-4 bg-muted/30">
+  <div className="container mx-auto max-w-7xl">
+    {/* Headline */}
+    <div className="text-center mb-12">
+      <GradientHeading variant="secondary" size="lg">
+        {headline}
+      </GradientHeading>
+      {description && (
+        <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+          {description}
+        </p>
+      )}
+    </div>
+    
+    {/* Logo Carousel */}
+    <LogoCarousel logos={vendors} columnCount={4} />
+  </div>
+</section>
+```
+
+Features:
+- Fetches active vendors for the campaign
+- Renders nothing if no active vendors
+- Uses GradientHeading with `variant="secondary"` as specified
+- Responsive layout matching existing sections
+
+### 4. Admin Tab Component
+
+**`src/components/admin/CampaignVendorsTab.tsx`**
+
+Following the pattern of `CampaignProductsTab.tsx`:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│ Vendors Tab                                                      │
+├─────────────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────────────┐ │
+│ │ Enable Vendor Section                              [TOGGLE] │ │
+│ │ Show vendor logos on the campaign landing page              │ │
+│ └─────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+│ ┌─ Section Text ───────────────────────────────────────────────┐│
+│ │ Headline: [Our Partners                                    ] ││
+│ │ Description: [Optional supporting text...                  ] ││
+│ └──────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│ ┌─ Vendors ──────────────────────────────────── [+ Add Vendor] ┐│
+│ │  ⋮⋮  [Logo] Vendor Name           [👁] [✏] [🗑]              ││
+│ │  ⋮⋮  [Logo] Vendor Name           [👁] [✏] [🗑]              ││
+│ │  ⋮⋮  [Logo] Vendor Name           [👁] [✏] [🗑]              ││
+│ └──────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+Features:
+- Master section toggle (mirrors Pricing/Products pattern)
+- Headline and description text inputs
+- Vendor list with drag-and-drop reordering (@dnd-kit)
+- Each vendor shows: logo preview, name, visibility toggle, edit, delete
+- Add Vendor modal with fields: name, logo URL, website URL
+
+### 5. Updates to Existing Files
+
+**`src/hooks/usePromotionalCampaign.ts`**
+
+Add to interface:
+```typescript
+vendors_section_enabled: boolean;
+vendors_section_headline: string | null;
+vendors_section_description: string | null;
+```
+
+Update parsing:
+```typescript
+vendors_section_enabled: data.vendors_section_enabled ?? false,
+vendors_section_headline: data.vendors_section_headline ?? 'Our Partners',
+vendors_section_description: data.vendors_section_description ?? null,
+```
+
+**`src/components/admin/PromotionalCampaignForm.tsx`**
+
+Changes:
+1. Add to TabsList: `<TabsTrigger value="vendors" disabled={!campaign}>Vendors</TabsTrigger>`
+2. Update grid-cols from 7 to 8
+3. Add new TabsContent for vendors
+4. Update Campaign interface with vendor fields
+5. Update form state defaults
+
+**`src/pages/PromotionalLanding.tsx`**
+
+Add import and conditional render:
+```tsx
+import { CampaignVendorSection } from "@/components/promo/CampaignVendorSection";
+
+// After PromotionalCampaignGallery, before Contact:
+{campaign.vendors_section_enabled && (
+  <CampaignVendorSection 
+    campaignId={campaign.id}
+    headline={campaign.vendors_section_headline || 'Our Partners'}
+    description={campaign.vendors_section_description}
+  />
+)}
+```
+
+---
+
+## Implementation Sequence
+
+```text
+Phase 1: Database & Types
+├── 1.1 Create database migration
+├── 1.2 TypeScript types will auto-regenerate
+
+Phase 2: UI Components
+├── 2.1 Create gradient-heading.tsx
+├── 2.2 Create logo-carousel.tsx (adapted for URLs)
+
+Phase 3: Data Layer
+├── 3.1 Create useCampaignVendors.ts hook
+├── 3.2 Update usePromotionalCampaign.ts
+
+Phase 4: Admin UI
+├── 4.1 Create CampaignVendorsTab.tsx
+├── 4.2 Update PromotionalCampaignForm.tsx
+├── 4.3 Update Campaign interface in PromotionalCampaigns.tsx
+
+Phase 5: Frontend
+├── 5.1 Create CampaignVendorSection.tsx
+├── 5.2 Update PromotionalLanding.tsx
+```
+
+---
+
+## Risk Assessment & Mitigation
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Breaking existing campaigns | Low | High | Default `vendors_section_enabled` to `false` |
+| Tab overflow in admin form | Low | Low | Grid-cols-8 fits within modal width |
+| Logo carousel performance | Medium | Medium | Limit vendor count or add pagination |
+| RLS policy conflicts | Low | Medium | Follow existing policy patterns exactly |
+| Image loading issues | Medium | Low | Add fallback/placeholder for missing logos |
+
+### No Regressions Guarantee
+
+1. **No schema changes to existing columns** - only adding new columns
+2. **Default values preserve current behavior** - existing campaigns unaffected
+3. **Conditional rendering** - section only renders when explicitly enabled
+4. **Separate table** - vendor data isolated from existing campaign data
+5. **Tab only enabled for saved campaigns** - matches Gallery/Products pattern
 
 ---
 
 ## Testing Checklist
 
-1. Open any gallery with portrait (9:16) media
-2. Verify navigation dock is fully visible at bottom
-3. Verify Like and Watch buttons are visible
-4. Test on mobile viewport (should be even more compact)
-5. Test with landscape media - should remain similar to before
-6. Test navigation dock drag functionality
-7. Test keyboard navigation (arrow keys, Escape)
-8. Verify animations still work smoothly
+1. **New campaigns**: Vendor section disabled by default
+2. **Existing campaigns**: No change in appearance or behavior
+3. **Toggle ON**: Vendor section appears at bottom of page
+4. **Toggle OFF**: Vendor section hidden
+5. **Add vendor**: Appears in list with drag handle
+6. **Reorder vendors**: Drag-and-drop works, persists
+7. **Edit vendor**: Name/logo/URL update correctly
+8. **Delete vendor**: Removes from list
+9. **Visibility toggle**: Individual vendor can be hidden
+10. **Empty state**: Section hidden if no active vendors
+11. **Headline/description**: Custom text displays correctly
+12. **Mobile responsiveness**: Carousel adapts to screen width
+13. **Logo animation**: Carousel cycles through vendors smoothly
+
+---
+
+## Technical Notes
+
+### Logo Storage
+
+Logos should be stored via external URLs (not base64 in database). Recommended approaches:
+1. Supabase Storage bucket for uploaded logos
+2. External CDN URLs for vendor logos
+3. Direct links to vendor-provided logo assets
+
+### LogoCarousel Adaptation
+
+The provided LogoCarousel uses React component references for logos. For dynamic URL-based logos, the component will be adapted to render `<img>` elements instead:
+
+```tsx
+// Instead of: <CurrentLogo className="..." />
+// Use: <img src={currentLogo.logoUrl} alt={currentLogo.name} className="..." />
+```
+
+This maintains the animation behavior while supporting dynamic content.
+
