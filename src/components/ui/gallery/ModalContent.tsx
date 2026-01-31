@@ -21,14 +21,14 @@ interface ModalContentProps {
 const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onToggleLike, pageSource, onClose, mediaItems, setSelectedItem }) => {
   const { isPortrait } = useMediaOrientation(selectedItem);
 
-  // Dynamic classes based on orientation
+  // Dynamic classes based on orientation - reduced max-height to ensure navigation stays visible
   const containerClasses = isPortrait
-    ? "relative aspect-[9/16] max-h-[75vh] w-auto rounded-lg overflow-hidden shadow-lg mb-6"
-    : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl h-auto max-h-[60vh] rounded-lg overflow-hidden shadow-lg mb-6";
+    ? "relative aspect-[9/16] max-h-[55vh] md:max-h-[60vh] w-auto rounded-lg overflow-hidden shadow-lg"
+    : "relative w-full aspect-[16/9] max-w-[95%] sm:max-w-[90%] md:max-w-4xl max-h-[50vh] md:max-h-[55vh] rounded-lg overflow-hidden shadow-lg";
 
   return (
-    <div className="h-full flex flex-col pt-8 pb-12">
-      <div className="flex-1 p-3 sm:p-4 md:p-6 flex flex-col items-center justify-center">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6 pt-8 flex flex-col items-center justify-start">
         <AnimatePresence mode="wait">
           <motion.div
             key={selectedItem.id}
@@ -66,7 +66,7 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
         </AnimatePresence>
         
         {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-4 mb-6">
+        <div className="flex items-center justify-center gap-4 mt-4">
           <LikeButton 
             selectedItem={selectedItem} 
             isLiked={isLiked}
@@ -81,15 +81,15 @@ const ModalContent: React.FC<ModalContentProps> = ({ selectedItem, isLiked, onTo
             />
           )}
         </div>
-        
-        {/* Centered Thumbnail Navigation */}
-        <div className="flex justify-center items-center w-full max-w-4xl mt-4">
-          <NavigationDock 
-            mediaItems={mediaItems}
-            selectedItem={selectedItem}
-            setSelectedItem={setSelectedItem}
-          />
-        </div>
+      </div>
+      
+      {/* Navigation - OUTSIDE scrollable area, always visible */}
+      <div className="flex-shrink-0 py-3 sm:py-4 pb-6 flex justify-center items-center w-full">
+        <NavigationDock 
+          mediaItems={mediaItems}
+          selectedItem={selectedItem}
+          setSelectedItem={setSelectedItem}
+        />
       </div>
     </div>
   );
