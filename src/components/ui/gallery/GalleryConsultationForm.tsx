@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { MediaItemType } from './types';
+import { isDateInPast } from '@/utils/dateValidation';
 
 interface GalleryConsultationFormProps {
   isOpen: boolean;
@@ -207,8 +208,9 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
                     mode="single"
                     selected={eventDate}
                     onSelect={setEventDate}
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) => isDateInPast(date)}
                     initialFocus
+                    className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
