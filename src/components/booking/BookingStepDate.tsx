@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { CalendarDays } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 
 interface BookingStepDateProps {
   productTitle: string;
@@ -20,9 +20,9 @@ export function BookingStepDate({ productTitle, onSubmit, isLoading }: BookingSt
     }
   };
 
-  // Disable dates in the past and the next 2 days (minimum notice)
+  // Disable only past dates (before today)
   const disabledDays = {
-    before: addDays(new Date(), 3),
+    before: startOfDay(new Date()),
   };
 
   return (
