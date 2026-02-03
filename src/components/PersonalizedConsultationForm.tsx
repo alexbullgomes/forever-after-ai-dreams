@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
+import { isDateInPast } from '@/utils/dateValidation';
 
 interface PersonalizedConsultationFormProps {
   isOpen: boolean;
@@ -203,7 +204,7 @@ const PersonalizedConsultationForm = ({
                   mode="single"
                   selected={formData.weddingDate}
                   onSelect={(date) => setFormData({ ...formData, weddingDate: date })}
-                  disabled={(date) => date < new Date()}
+                  disabled={(date) => isDateInPast(date)}
                   initialFocus
                   className="p-3 pointer-events-auto"
                 />

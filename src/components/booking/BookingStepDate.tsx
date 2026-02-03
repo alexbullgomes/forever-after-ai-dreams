@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { CalendarDays } from 'lucide-react';
-import { format, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
+import { useBookingDateValidation } from '@/utils/dateValidation';
 
 interface BookingStepDateProps {
   productTitle: string;
@@ -12,17 +13,16 @@ interface BookingStepDateProps {
 
 export function BookingStepDate({ productTitle, onSubmit, isLoading }: BookingStepDateProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // Use centralized date validation for consistent timezone-safe behavior
+  // This ensures today and all future dates are selectable
+  // Only past dates (< today) are disabled
+  const { disabledDays, timezone } = useBookingDateValidation();
 
   const handleSubmit = () => {
     if (selectedDate) {
       onSubmit(selectedDate, timezone);
     }
-  };
-
-  // Disable only past dates (before today)
-  const disabledDays = {
-    before: startOfDay(new Date()),
   };
 
   return (
