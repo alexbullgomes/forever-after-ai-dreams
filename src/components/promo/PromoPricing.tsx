@@ -1,25 +1,16 @@
 import { CampaignPricingCard } from "./CampaignPricingCard";
-
-interface PricingCard {
-  enabled: boolean;
-  title: string;
-  price: string;
-  description: string;
-  features: string[];
-  popular: boolean;
-  idealFor?: string;
-}
+import { CampaignPackage } from "@/hooks/useCampaignPackages";
 
 interface PromoPricingProps {
-  cards: PricingCard[];
+  packages: CampaignPackage[];
   campaignId: string;
   campaignSlug: string;
 }
 
-const PromoPricing = ({ cards, campaignId, campaignSlug }: PromoPricingProps) => {
-  const enabledCards = cards.filter(card => card.enabled);
+const PromoPricing = ({ packages, campaignId, campaignSlug }: PromoPricingProps) => {
+  const enabledPackages = packages.filter(pkg => pkg.is_enabled);
 
-  if (enabledCards.length === 0) {
+  if (enabledPackages.length === 0) {
     return null;
   }
 
@@ -36,22 +27,23 @@ const PromoPricing = ({ cards, campaignId, campaignSlug }: PromoPricingProps) =>
         </div>
 
         <div className={`grid gap-8 ${
-          enabledCards.length === 1 ? 'max-w-md mx-auto' :
-          enabledCards.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' :
+          enabledPackages.length === 1 ? 'max-w-md mx-auto' :
+          enabledPackages.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' :
           'md:grid-cols-3'
         }`}>
-          {enabledCards.map((card, index) => (
+          {enabledPackages.map((pkg) => (
             <CampaignPricingCard
-              key={index}
-              name={card.title}
-              price={card.price}
-              description={card.description}
-              features={card.features}
-              popular={card.popular}
-              idealFor={card.idealFor}
+              key={pkg.id}
+              name={pkg.title}
+              price={pkg.price_display}
+              description={pkg.description || ''}
+              features={pkg.features}
+              popular={pkg.is_popular}
+              idealFor={pkg.ideal_for || undefined}
               campaignId={campaignId}
               campaignSlug={campaignSlug}
-              cardIndex={index}
+              packageId={pkg.id}
+              minimumDepositCents={pkg.minimum_deposit_cents}
             />
           ))}
         </div>

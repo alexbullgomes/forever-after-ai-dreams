@@ -43,6 +43,10 @@ serve(async (req) => {
       campaign_mode,
       campaign_id,
       campaign_slug,
+      // NEW: Package fields (replaces card_index)
+      package_id,
+      minimum_deposit_cents,
+      // Legacy: card_index for backward compatibility
       card_index,
     } = body;
 
@@ -52,12 +56,27 @@ serve(async (req) => {
       event_date, 
       selected_time, 
       campaign_mode,
-      campaign_id 
+      campaign_id,
+      package_id,
+      minimum_deposit_cents,
     });
 
     // Determine charge amount and currency
-    // For campaign mode: fixed $150 USD deposit
-    const chargeAmount = campaign_mode ? 150 : product_price;
+    // For campaign mode: use per-package deposit or fallback to $150
+    let chargeAmount: number;
+    if (campaign_mode) {
+      // Validate deposit is configured
+      if (!minimum_deposit_cents || minimum_deposit_cents < 100) {
+        logStep("ERROR: Package deposit not configured", { minimum_deposit_cents });
+        return new Response(
+          JSON.stringify({ error: "Package deposit not configured. Please contact support." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+      chargeAmount = minimum_deposit_cents / 100; // Convert cents to dollars
+    } else {
+      chargeAmount = product_price;
+    }
     const chargeCurrency = campaign_mode ? 'usd' : (currency?.toLowerCase() || 'usd');
     
     logStep("Charge details", { chargeAmount, chargeCurrency, campaign_mode });
@@ -88,19 +107,26 @@ serve(async (req) => {
 
     logStep("End time calculated", { end_time });
 
-    // For campaigns, we need to check holds differently (by campaign_id instead of product_id)
-    const holdIdentifier = campaign_mode ? campaign_id : product_id;
-    const holdIdentifierColumn = campaign_mode ? "campaign_id" : "product_id";
-
     // Check for existing active/converted hold
-    const { data: existingHold } = await supabase
+    // For campaigns with package_id, scope by package_id to prevent different packages from blocking each other
+    let existingHoldQuery = supabase
       .from("booking_slot_holds")
       .select("id, status, expires_at")
-      .eq(holdIdentifierColumn, holdIdentifier)
       .eq("event_date", event_date)
       .eq("start_time", selected_time)
-      .in("status", ["active", "converted"])
-      .maybeSingle();
+      .in("status", ["active", "converted"]);
+
+    if (campaign_mode && package_id) {
+      // NEW: Scope by package_id for proper isolation
+      existingHoldQuery = existingHoldQuery.eq("package_id", package_id);
+    } else if (campaign_mode && campaign_id) {
+      // Legacy fallback: scope by campaign_id
+      existingHoldQuery = existingHoldQuery.eq("campaign_id", campaign_id);
+    } else if (product_id) {
+      existingHoldQuery = existingHoldQuery.eq("product_id", product_id);
+    }
+
+    const { data: existingHold } = await existingHoldQuery.maybeSingle();
 
     if (existingHold) {
       // Check if it's an active hold that hasn't expired
@@ -141,9 +167,10 @@ serve(async (req) => {
       expires_at: expiresAt,
     };
 
-    // Set either product_id or campaign_id
+    // Set identifiers based on mode
     if (campaign_mode) {
       holdData.campaign_id = campaign_id;
+      holdData.package_id = package_id || null;
       holdData.product_id = null;
     } else {
       holdData.product_id = product_id;
@@ -169,10 +196,18 @@ serve(async (req) => {
 
     logStep("Hold created", { holdId: newHold.id, expiresAt });
 
-    // Update booking request with checkout started stage
+    // Update booking request with checkout started stage and package_id
+    const bookingRequestUpdate: any = { 
+      stage: "checkout_started", 
+      selected_time 
+    };
+    if (package_id) {
+      bookingRequestUpdate.package_id = package_id;
+    }
+    
     await supabase
       .from("booking_requests")
-      .update({ stage: "checkout_started", selected_time })
+      .update(bookingRequestUpdate)
       .eq("id", booking_request_id);
 
     logStep("Booking request updated to checkout_started");
@@ -196,7 +231,7 @@ serve(async (req) => {
 
     // Build product description
     const productDescription = campaign_mode 
-      ? `Campaign deposit for ${event_date} at ${selected_time}`
+      ? `Deposit for ${product_title} on ${event_date} at ${selected_time}`
       : `Booking for ${event_date} at ${selected_time}`;
     
     // Set Stripe checkout session to expire in 60 minutes
@@ -233,9 +268,12 @@ serve(async (req) => {
         campaign_mode: campaign_mode ? "true" : "false",
         campaign_id: campaign_id || "",
         campaign_slug: campaign_slug || "",
+        // NEW: Package metadata
+        package_id: package_id || "",
+        minimum_deposit_cents: minimum_deposit_cents?.toString() || "",
+        // Legacy: card_index for backward compatibility
         card_index: card_index?.toString() || "",
         payment_type: campaign_mode ? "campaign_deposit" : "full",
-        deposit_amount_usd: campaign_mode ? "150" : "",
       },
       expires_at: Math.floor(Date.now() / 1000) + stripeExpiryMinutes * 60,
     });

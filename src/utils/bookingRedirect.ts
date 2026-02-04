@@ -7,20 +7,29 @@
 export const BOOKING_RETURN_URL_KEY = 'bookingReturnUrl';
 export const PENDING_BOOKING_STATE_KEY = 'pendingBookingState';
 
-export interface PendingBookingState {
-  // Common fields
-  type: 'campaign_pricing_card' | 'campaign_product';
+export type PendingBookingState = PendingCampaignPricingCardState | PendingCampaignProductState;
+
+export interface PendingCampaignPricingCardState {
+  type: 'campaign_pricing_card';
   campaignId: string;
   campaignSlug: string;
+  packageId: string;
+  packageTitle: string;
+  minimumDepositCents: number;
   selectedDate: string;
   timezone: string;
   timestamp: number;
-  // For campaign pricing cards
-  cardIndex?: number;
-  cardTitle?: string;
-  // For campaign products
-  productId?: string;
-  productTitle?: string;
+}
+
+export interface PendingCampaignProductState {
+  type: 'campaign_product';
+  campaignId: string;
+  campaignSlug: string;
+  productId: string;
+  productTitle: string;
+  selectedDate: string;
+  timezone: string;
+  timestamp: number;
 }
 
 /**

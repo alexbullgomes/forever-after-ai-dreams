@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { CampaignPackage } from './useCampaignPackages';
 
 export interface TrackingScript {
   id: string;
@@ -20,6 +21,7 @@ interface PromotionalCampaign {
   banner_headline: string;
   banner_subheadline: string;
   banner_tagline: string;
+  // Legacy pricing card fields (for backward compatibility)
   pricing_card_1_enabled: boolean;
   pricing_card_1_title: string;
   pricing_card_1_price: string;
@@ -52,6 +54,8 @@ interface PromotionalCampaign {
   vendors_section_enabled: boolean;
   vendors_section_headline: string | null;
   vendors_section_description: string | null;
+  // NEW: Packages from campaign_packages table
+  packages: CampaignPackage[];
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -87,6 +91,24 @@ export const usePromotionalCampaign = (slug: string) => {
           return;
         }
 
+        // Fetch packages from campaign_packages table
+        const { data: packagesData, error: packagesError } = await supabase
+          .from('campaign_packages')
+          .select('*')
+          .eq('campaign_id', data.id)
+          .eq('is_enabled', true)
+          .order('sort_order', { ascending: true });
+
+        if (packagesError) {
+          console.error('Error fetching packages:', packagesError);
+        }
+
+        // Parse packages features from JSONB
+        const packages: CampaignPackage[] = (packagesData || []).map((pkg: any) => ({
+          ...pkg,
+          features: Array.isArray(pkg.features) ? pkg.features : [],
+        }));
+
         // Parse tracking_scripts from JSONB
         const parsedData = {
           ...data,
@@ -96,6 +118,7 @@ export const usePromotionalCampaign = (slug: string) => {
           vendors_section_enabled: data.vendors_section_enabled ?? false,
           vendors_section_headline: data.vendors_section_headline ?? 'Our Partners',
           vendors_section_description: data.vendors_section_description ?? null,
+          packages,
         };
         setCampaign(parsedData as PromotionalCampaign);
 

@@ -23,11 +23,12 @@ const BOOKING_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
 interface PendingCampaignBooking {
   campaignId: string;
   campaignSlug: string;
-  cardIndex: number;
-  cardTitle: string;
+  packageId: string;
+  packageTitle: string;
   bookingRequestId: string;
   eventDate: string;
   selectedTime: string;
+  minimumDepositCents: number;
   timestamp: number;
 }
 
@@ -40,7 +41,8 @@ interface CampaignPricingCardProps {
   idealFor?: string;
   campaignId: string;
   campaignSlug: string;
-  cardIndex: number;
+  packageId: string;
+  minimumDepositCents: number;
 }
 
 export function CampaignPricingCard({
@@ -52,7 +54,8 @@ export function CampaignPricingCard({
   idealFor,
   campaignId,
   campaignSlug,
-  cardIndex,
+  packageId,
+  minimumDepositCents,
 }: CampaignPricingCardProps) {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -75,15 +78,16 @@ export function CampaignPricingCard({
           product_id: null,
           event_date: pending.eventDate,
           selected_time: pending.selectedTime,
-          product_title: pending.cardTitle,
-          product_price: 150, // Fixed $150 deposit
+          product_title: pending.packageTitle,
+          product_price: pending.minimumDepositCents / 100,
           currency: 'USD',
           user_id: user?.id || null,
           visitor_id: user?.id ? null : getOrCreateVisitorId(),
           campaign_mode: true,
           campaign_id: pending.campaignId,
           campaign_slug: pending.campaignSlug,
-          card_index: pending.cardIndex,
+          package_id: pending.packageId,
+          minimum_deposit_cents: pending.minimumDepositCents,
         },
       });
 
@@ -112,8 +116,8 @@ export function CampaignPricingCard({
     // Check for unified pending booking state (new approach)
     const pendingState = getPendingBookingState();
     if (pendingState && pendingState.type === 'campaign_pricing_card') {
-      // Validate it's for this campaign and card
-      if (pendingState.campaignId === campaignId && pendingState.cardIndex === cardIndex) {
+      // Validate it's for this campaign and package
+      if (pendingState.campaignId === campaignId && pendingState.packageId === packageId) {
         console.log('Resuming pricing card booking:', pendingState);
         
         // Clear all booking state
@@ -141,14 +145,14 @@ export function CampaignPricingCard({
         return;
       }
 
-      if (pending.campaignId !== campaignId || pending.cardIndex !== cardIndex) return;
+      if (pending.campaignId !== campaignId || pending.packageId !== packageId) return;
 
       localStorage.removeItem(PENDING_CAMPAIGN_BOOKING_KEY);
       resumeCheckout(pending);
     } catch (e) {
       localStorage.removeItem(PENDING_CAMPAIGN_BOOKING_KEY);
     }
-  }, [user, campaignId, cardIndex, resumeCheckout]);
+  }, [user, campaignId, packageId, resumeCheckout]);
 
   // Clear pending date resume after modal closes
   const handleBookingClose = useCallback(() => {
@@ -163,6 +167,9 @@ export function CampaignPricingCard({
   const handleAuthClose = () => {
     setIsAuthModalOpen(false);
   };
+
+  // Format deposit amount for display
+  const depositAmount = minimumDepositCents / 100;
 
   return (
     <>
@@ -207,7 +214,7 @@ export function CampaignPricingCard({
               disabled={isResuming}
               className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
             >
-              {isResuming ? 'Resuming...' : 'Secure Your Booking'}
+              {isResuming ? 'Resuming...' : `Secure Your Booking - $${depositAmount}`}
             </Button>
             
             <Button
@@ -233,12 +240,13 @@ export function CampaignPricingCard({
         onClose={handleBookingClose}
         productId={null}
         productTitle={name}
-        productPrice={150}
+        productPrice={depositAmount}
         currency="USD"
         campaignMode={true}
         campaignId={campaignId}
         campaignSlug={campaignSlug}
-        cardIndex={cardIndex}
+        packageId={packageId}
+        minimumDepositCents={minimumDepositCents}
         onAuthRequired={handleAuthRequired}
         resumeFromDate={pendingDateResume}
       />

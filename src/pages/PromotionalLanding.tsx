@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { usePromotionalCampaign, TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
-import DOMPurify from "dompurify";
 import Header from "@/components/Header";
 import PromoHero from "@/components/promo/PromoHero";
 import PromoPricing from "@/components/promo/PromoPricing";
@@ -153,37 +152,6 @@ const PromotionalLanding = () => {
     (s: TrackingScript) => s.enabled && s.placement === 'head'
   ) || [];
 
-  // Prepare pricing cards from campaign data
-  const pricingCards = [
-    {
-      enabled: campaign.pricing_card_1_enabled,
-      title: campaign.pricing_card_1_title,
-      price: campaign.pricing_card_1_price,
-      description: campaign.pricing_card_1_description || '',
-      features: campaign.pricing_card_1_features,
-      popular: campaign.pricing_card_1_popular,
-      idealFor: campaign.pricing_card_1_ideal_for || undefined,
-    },
-    {
-      enabled: campaign.pricing_card_2_enabled,
-      title: campaign.pricing_card_2_title,
-      price: campaign.pricing_card_2_price,
-      description: campaign.pricing_card_2_description || '',
-      features: campaign.pricing_card_2_features,
-      popular: campaign.pricing_card_2_popular,
-      idealFor: campaign.pricing_card_2_ideal_for || undefined,
-    },
-    {
-      enabled: campaign.pricing_card_3_enabled,
-      title: campaign.pricing_card_3_title,
-      price: campaign.pricing_card_3_price,
-      description: campaign.pricing_card_3_description || '',
-      features: campaign.pricing_card_3_features,
-      popular: campaign.pricing_card_3_popular,
-      idealFor: campaign.pricing_card_3_ideal_for || undefined,
-    },
-  ];
-
   // Build Service schema for structured data
   const serviceSchema = {
     "@context": "https://schema.org",
@@ -241,9 +209,13 @@ const PromotionalLanding = () => {
           tagline={campaign.banner_tagline}
         />
 
-        {/* Pricing Section - now appears first after Hero */}
-        {campaign.pricing_section_enabled && (
-          <PromoPricing cards={pricingCards} campaignId={campaign.id} campaignSlug={campaign.slug} />
+        {/* Pricing Section - now uses packages from campaign_packages table */}
+        {campaign.pricing_section_enabled && campaign.packages.length > 0 && (
+          <PromoPricing 
+            packages={campaign.packages} 
+            campaignId={campaign.id} 
+            campaignSlug={campaign.slug} 
+          />
         )}
 
         {/* Campaign Products Section */}
