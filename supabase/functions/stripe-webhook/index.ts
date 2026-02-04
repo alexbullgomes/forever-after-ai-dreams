@@ -90,7 +90,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     user_id,
     campaign_mode,
     campaign_id,
-    campaign_card_index,
+    // NEW: Package fields
+    package_id,
     payment_type,
   } = metadata;
 
@@ -100,6 +101,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     event_date, 
     selected_time,
     campaign_mode,
+    package_id,
     payment_type
   });
 
@@ -115,6 +117,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       hold_id,
       user_id,
       campaign_id: campaign_mode === 'true' ? campaign_id : null,
+      package_id: campaign_mode === 'true' ? package_id : null,
     });
   } 
   // For wedding package payments (deposit or full)
@@ -140,6 +143,7 @@ async function processBookingPayment(params: {
   hold_id?: string;
   user_id?: string;
   campaign_id?: string | null;
+  package_id?: string | null;
 }) {
   const { 
     supabase, 
@@ -150,10 +154,11 @@ async function processBookingPayment(params: {
     selected_time, 
     hold_id, 
     user_id,
-    campaign_id 
+    campaign_id,
+    package_id,
   } = params;
 
-  logStep('Processing booking payment', { booking_request_id, product_id });
+  logStep('Processing booking payment', { booking_request_id, product_id, package_id });
 
   // Calculate end_time based on slot duration
   let slotDuration = 60; // default 60 minutes
@@ -182,25 +187,41 @@ async function processBookingPayment(params: {
   logStep('Calculated booking times', { start: selected_time, end: end_time, duration: slotDuration });
 
   // Create confirmed booking
+  // CRITICAL: product_id is now nullable for campaign bookings
+  const bookingInsert: any = {
+    booking_request_id,
+    event_date,
+    start_time: selected_time,
+    end_time,
+    status: 'confirmed',
+    stripe_payment_intent: session.payment_intent as string,
+    customer_name: session.customer_details?.name || null,
+    customer_email: session.customer_details?.email || null,
+  };
+
+  // Only set product_id if it exists (null for campaign bookings)
+  if (product_id) {
+    bookingInsert.product_id = product_id;
+  }
+
+  // Set package_id for campaign bookings
+  if (package_id) {
+    bookingInsert.package_id = package_id;
+  }
+
+  // Set user_id if available
+  if (user_id) {
+    bookingInsert.user_id = user_id;
+  }
+
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .insert({
-      booking_request_id,
-      product_id,
-      user_id: user_id || null,
-      event_date,
-      start_time: selected_time,
-      end_time,
-      status: 'confirmed',
-      stripe_payment_intent: session.payment_intent as string,
-      customer_name: session.customer_details?.name || null,
-      customer_email: session.customer_details?.email || null,
-    })
+    .insert(bookingInsert)
     .select()
     .single();
 
   if (bookingError) {
-    logStep('ERROR creating booking', { error: bookingError.message });
+    logStep('ERROR creating booking', { error: bookingError.message, code: bookingError.code });
     throw bookingError;
   }
 

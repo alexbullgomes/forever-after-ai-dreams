@@ -20,12 +20,12 @@ export interface BookingRequest {
   created_at: string;
   updated_at: string;
   campaign_id?: string | null;
-  campaign_card_index?: number | null;
+  package_id?: string | null;
 }
 
 interface CampaignData {
   campaignId: string;
-  cardIndex: number;
+  packageId: string;
 }
 
 export function useBookingRequest(
@@ -64,7 +64,7 @@ export function useBookingRequest(
       } else if (campaignData) {
         query = query
           .eq('campaign_id', campaignData.campaignId)
-          .eq('campaign_card_index', campaignData.cardIndex)
+          .eq('package_id', campaignData.packageId)
           .is('product_id', null);
       }
 
@@ -121,7 +121,7 @@ export function useBookingRequest(
       // Add campaign fields if in campaign mode
       if (campaignData) {
         newRequest.campaign_id = campaignData.campaignId;
-        newRequest.campaign_card_index = campaignData.cardIndex;
+        newRequest.package_id = campaignData.packageId;
       }
 
       const { data: created, error: createError } = await supabase

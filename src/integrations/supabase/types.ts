@@ -393,6 +393,7 @@ export type Database = {
           id: string
           last_seen_at: string
           offer_expires_at: string
+          package_id: string | null
           product_id: string | null
           selected_time: string | null
           stage: string
@@ -411,6 +412,7 @@ export type Database = {
           id?: string
           last_seen_at?: string
           offer_expires_at: string
+          package_id?: string | null
           product_id?: string | null
           selected_time?: string | null
           stage?: string
@@ -429,6 +431,7 @@ export type Database = {
           id?: string
           last_seen_at?: string
           offer_expires_at?: string
+          package_id?: string | null
           product_id?: string | null
           selected_time?: string | null
           stage?: string
@@ -444,6 +447,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_requests_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_packages"
             referencedColumns: ["id"]
           },
           {
@@ -464,6 +474,7 @@ export type Database = {
           event_date: string
           expires_at: string
           id: string
+          package_id: string | null
           product_id: string | null
           source: string | null
           start_time: string
@@ -479,6 +490,7 @@ export type Database = {
           event_date: string
           expires_at: string
           id?: string
+          package_id?: string | null
           product_id?: string | null
           source?: string | null
           start_time: string
@@ -494,6 +506,7 @@ export type Database = {
           event_date?: string
           expires_at?: string
           id?: string
+          package_id?: string | null
           product_id?: string | null
           source?: string | null
           start_time?: string
@@ -517,6 +530,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "booking_slot_holds_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_packages"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "booking_slot_holds_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -534,7 +554,8 @@ export type Database = {
           end_time: string
           event_date: string
           id: string
-          product_id: string
+          package_id: string | null
+          product_id: string | null
           start_time: string
           status: string
           stripe_payment_intent: string | null
@@ -549,7 +570,8 @@ export type Database = {
           end_time: string
           event_date: string
           id?: string
-          product_id: string
+          package_id?: string | null
+          product_id?: string | null
           start_time: string
           status?: string
           stripe_payment_intent?: string | null
@@ -564,7 +586,8 @@ export type Database = {
           end_time?: string
           event_date?: string
           id?: string
-          product_id?: string
+          package_id?: string | null
+          product_id?: string | null
           start_time?: string
           status?: string
           stripe_payment_intent?: string | null
@@ -577,6 +600,13 @@ export type Database = {
             columns: ["booking_request_id"]
             isOneToOne: false
             referencedRelation: "booking_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_packages"
             referencedColumns: ["id"]
           },
           {
@@ -650,6 +680,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      campaign_packages: {
+        Row: {
+          campaign_id: string
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          ideal_for: string | null
+          is_enabled: boolean | null
+          is_popular: boolean | null
+          minimum_deposit_cents: number
+          price_display: string
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          ideal_for?: string | null
+          is_enabled?: boolean | null
+          is_popular?: boolean | null
+          minimum_deposit_cents?: number
+          price_display: string
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          ideal_for?: string | null
+          is_enabled?: boolean | null
+          is_popular?: boolean | null
+          minimum_deposit_cents?: number
+          price_display?: string
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_packages_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campaign_vendors: {
         Row: {

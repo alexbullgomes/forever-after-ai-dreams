@@ -65,6 +65,9 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
   useEffect(() => {
     if (!pendingResumeState || products.length === 0) return;
     
+    // Type guard: ensure it's a campaign_product state with productId
+    if (pendingResumeState.type !== 'campaign_product') return;
+    
     const matchingCampaignProduct = products.find(cp => cp.product.id === pendingResumeState.productId);
     if (!matchingCampaignProduct) {
       console.warn('Pending booking product not found in campaign products');

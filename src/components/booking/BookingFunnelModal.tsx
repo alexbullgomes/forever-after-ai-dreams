@@ -30,7 +30,9 @@ interface BookingFunnelModalProps {
   campaignMode?: boolean;
   campaignId?: string;
   campaignSlug?: string;
-  cardIndex?: number;
+  // NEW: Package-based booking (replaces cardIndex)
+  packageId?: string;
+  minimumDepositCents?: number;
   onAuthRequired?: () => void;
   // Campaign product mode props (for products on campaign pages)
   campaignProductMode?: boolean;
@@ -51,7 +53,8 @@ export function BookingFunnelModal({
   campaignMode = false,
   campaignId,
   campaignSlug,
-  cardIndex,
+  packageId,
+  minimumDepositCents,
   onAuthRequired,
   campaignProductMode = false,
   resumeFromDate,
@@ -74,6 +77,7 @@ export function BookingFunnelModal({
         product_id: productId,
         campaign_mode: campaignMode,
         campaign_id: campaignId,
+        package_id: packageId,
         event_date: resumeFromDate.date.toISOString(),
         resumed_after_login: true,
       });
@@ -89,7 +93,7 @@ export function BookingFunnelModal({
     findOrCreateRequest,
     updateSelectedTime,
     generateTimeSlots,
-  } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, cardIndex: cardIndex! } : undefined);
+  } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, packageId: packageId! } : undefined);
 
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
     // For campaign pricing card mode, check auth BEFORE proceeding to availability check
@@ -98,8 +102,9 @@ export function BookingFunnelModal({
         type: 'campaign_pricing_card',
         campaignId: campaignId!,
         campaignSlug: campaignSlug!,
-        cardIndex: cardIndex!,
-        cardTitle: productTitle,
+        packageId: packageId!,
+        packageTitle: productTitle,
+        minimumDepositCents: minimumDepositCents!,
         selectedDate: date.toISOString(),
         timezone: timezone,
         timestamp: Date.now(),
@@ -141,12 +146,13 @@ export function BookingFunnelModal({
       campaign_mode: campaignMode,
       campaign_product_mode: campaignProductMode,
       campaign_id: campaignId,
+      package_id: packageId,
       event_date: date.toISOString(),
     });
     
     // Create/find booking request while showing loading
     await findOrCreateRequest(date, timezone);
-  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignProductMode, campaignId, user, campaignSlug, cardIndex, onClose, onAuthRequired]);
+  }, [findOrCreateRequest, productId, productTitle, campaignMode, campaignProductMode, campaignId, user, campaignSlug, packageId, minimumDepositCents, onClose, onAuthRequired]);
 
   const handleCheckingComplete = useCallback(() => {
     setStep('slots');
@@ -166,11 +172,12 @@ export function BookingFunnelModal({
       const pendingBooking = {
         campaignId: campaignId!,
         campaignSlug: campaignSlug!,
-        cardIndex: cardIndex!,
-        cardTitle: productTitle,
+        packageId: packageId!,
+        packageTitle: productTitle,
         bookingRequestId: bookingRequest.id,
         eventDate: bookingRequest.event_date,
         selectedTime,
+        minimumDepositCents: minimumDepositCents!,
         timestamp: Date.now(),
       };
       localStorage.setItem(PENDING_CAMPAIGN_BOOKING_KEY, JSON.stringify(pendingBooking));
@@ -181,6 +188,16 @@ export function BookingFunnelModal({
       return;
     }
 
+    // Validate deposit configuration for campaign mode
+    if (campaignMode && (!minimumDepositCents || minimumDepositCents < 100)) {
+      toast({
+        title: 'Configuration Error',
+        description: 'This package does not have a minimum deposit configured. Please contact the admin.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     // Track the checkout initiation event
@@ -188,6 +205,7 @@ export function BookingFunnelModal({
       product_id: productId,
       campaign_mode: campaignMode,
       campaign_id: campaignId,
+      package_id: packageId,
       event_date: bookingRequest.event_date,
       selected_time: selectedTime,
       price: productPrice,
@@ -210,7 +228,9 @@ export function BookingFunnelModal({
           campaign_mode: campaignMode,
           campaign_id: campaignId || null,
           campaign_slug: campaignSlug || null,
-          card_index: cardIndex ?? null,
+          // NEW: Package fields
+          package_id: packageId || null,
+          minimum_deposit_cents: minimumDepositCents || null,
         },
       });
 
@@ -239,7 +259,7 @@ export function BookingFunnelModal({
     } finally {
       setIsProcessing(false);
     }
-  }, [bookingRequest, selectedTime, productId, productTitle, productPrice, currency, user, toast, campaignMode, campaignId, campaignSlug, cardIndex, onClose, onAuthRequired]);
+  }, [bookingRequest, selectedTime, productId, productTitle, productPrice, currency, user, toast, campaignMode, campaignId, campaignSlug, packageId, minimumDepositCents, onClose, onAuthRequired]);
 
   const handleClose = () => {
     // Reset state on close
