@@ -19,7 +19,7 @@ export interface AvailabilityOverride {
 
 export type PresetType = 'weekdays-available' | 'weekends-available' | 'reset';
 
-export const useAvailabilityOverrides = (productId?: string) => {
+export const useAvailabilityOverrides = () => {
   const [overrides, setOverrides] = useState<AvailabilityOverride[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();

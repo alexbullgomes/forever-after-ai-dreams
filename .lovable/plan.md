@@ -1,6 +1,8 @@
 
 # Global Availability Cleanup and Bug Fix Plan
 
+**STATUS: ✅ COMPLETED**
+
 ## Summary
 
 This plan addresses four main tasks:
@@ -151,3 +153,15 @@ CREATE OR REPLACE FUNCTION public.get_global_slot_availability(...)
 - Quick presets functionality
 - Override modal functionality
 - Global availability as single source of truth
+
+---
+
+## Changes Made
+
+1. **SQL Migration**: Fixed `get_global_slot_availability` function logic - now only marks slots as "limited" when `capacity > 1 AND remaining = 1`
+2. **AvailabilityManager.tsx**: Removed product selector dropdown and per-product state
+3. **useAvailabilityRules.ts**: Removed unused `productId` parameter
+4. **useAvailabilityOverrides.ts**: Removed unused `productId` parameter
+5. **QuickPresetsPanel.tsx**: Removed `productId` prop
+6. **AvailabilityOverrideModal.tsx**: Removed `productId` prop
+7. **BookingsPipeline.tsx**: Removed `productId` prop from override modal usage

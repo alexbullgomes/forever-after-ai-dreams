@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useProducts } from '@/hooks/useProducts';
 import { useAvailabilityComputation, DayAvailability } from '@/hooks/useAvailabilityComputation';
-import { useAvailabilityOverrides, PresetType } from '@/hooks/useAvailabilityOverrides';
-import { useAvailabilityRules, AvailabilityRule } from '@/hooks/useAvailabilityRules';
+import { useAvailabilityOverrides } from '@/hooks/useAvailabilityOverrides';
+import type { PresetType } from '@/hooks/useAvailabilityOverrides';
+import { useAvailabilityRules } from '@/hooks/useAvailabilityRules';
 import { AvailabilityOverrideModal } from '@/components/availability/AvailabilityOverrideModal';
 import { AvailabilityLegend } from '@/components/availability/AvailabilityLegend';
 import { QuickPresetsPanel } from '@/components/availability/QuickPresetsPanel';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, RefreshCw, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameMonth, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -28,31 +21,19 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AvailabilityManager() {
-  const { products, loading: productsLoading } = useProducts();
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showOverrideModal, setShowOverrideModal] = useState(false);
-  const [showRulesModal, setShowRulesModal] = useState(false);
   
   const { getMonthAvailability, loading: computingAvailability } = useAvailabilityComputation();
-  const { overrides, fetchOverrides, getDaysWithBookings, applyPreset } = useAvailabilityOverrides(selectedProductId);
-  const { rules, createRule, updateRule } = useAvailabilityRules(selectedProductId);
+  const { overrides, fetchOverrides, getDaysWithBookings, applyPreset } = useAvailabilityOverrides();
+  const { rules, createRule } = useAvailabilityRules();
 
-  // Set default product when products load
+  // Fetch availability when month changes
   useEffect(() => {
-    if (products.length > 0 && !selectedProductId) {
-      setSelectedProductId(products[0].id);
-    }
-  }, [products, selectedProductId]);
-
-  // Fetch availability when product or month changes
-  useEffect(() => {
-    if (selectedProductId) {
-      loadMonthAvailability();
-    }
-  }, [selectedProductId, currentMonth]);
+    loadMonthAvailability();
+  }, [currentMonth]);
 
   const loadMonthAvailability = async () => {
     const result = await getMonthAvailability(
@@ -105,46 +86,30 @@ export default function AvailabilityManager() {
     return overrides.find(o => o.date === dateStr);
   };
 
-  // Check if product has rules
+  // Check if global rules exist
   const hasRules = rules.some(r => r.is_active);
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Availability Manager</h1>
+        <h1 className="text-2xl font-bold">Global Availability Calendar</h1>
         <Button variant="outline" size="sm" onClick={loadMonthAvailability}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
       </div>
 
-      {/* Product Selector */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="w-64">
-          <Select value={selectedProductId} onValueChange={setSelectedProductId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a product" />
-            </SelectTrigger>
-            <SelectContent>
-              {products.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
-                  {product.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {selectedProductId && !hasRules && (
-          <div className="text-sm text-orange-600 flex items-center gap-2">
-            <span>⚠️ No availability rules configured for this product.</span>
+      {/* Rules Warning */}
+      {!hasRules && (
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="text-sm text-orange-600 flex items-center gap-2 bg-orange-50 dark:bg-orange-950/50 p-3 rounded-md">
+            <span>⚠️ No global availability rules configured.</span>
             <Button
               variant="outline"
               size="sm"
               onClick={async () => {
-                // Create default rules for this product
                 await createRule({
-                  product_id: selectedProductId,
+                  product_id: null,
                   timezone: 'America/Los_Angeles',
                   workdays: [0, 1, 2, 3, 4, 5, 6],
                   start_time: '10:00',
@@ -155,27 +120,24 @@ export default function AvailabilityManager() {
                   daily_capacity: 1,
                   slot_capacity: 1,
                   is_active: true,
-                });
+                } as any);
                 loadMonthAvailability();
               }}
             >
               Create Default Rules
             </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Quick Presets Panel */}
-      {selectedProductId && (
-        <QuickPresetsPanel
-          productId={selectedProductId}
-          currentMonth={currentMonth}
-          rules={rules}
-          onApplyPreset={handleApplyPreset}
-          getDaysWithBookings={getDaysWithBookings}
-          onRefresh={handlePresetsRefresh}
-        />
-      )}
+      <QuickPresetsPanel
+        currentMonth={currentMonth}
+        rules={rules}
+        onApplyPreset={handleApplyPreset}
+        getDaysWithBookings={getDaysWithBookings}
+        onRefresh={handlePresetsRefresh}
+      />
 
       {/* Legend */}
       <AvailabilityLegend />
@@ -277,7 +239,6 @@ export default function AvailabilityManager() {
             setShowOverrideModal(false);
             setSelectedDate(null);
           }}
-          productId={selectedProductId}
           date={selectedDate}
           existingOverride={getOverrideForDate(selectedDate)}
           onSaved={handleOverrideSaved}
