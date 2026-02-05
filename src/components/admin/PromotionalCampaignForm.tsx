@@ -18,6 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { CampaignProductsTab } from "@/components/admin/CampaignProductsTab";
 import { CampaignVendorsTab } from "@/components/admin/CampaignVendorsTab";
 import { CampaignGalleryItemCard } from "@/components/admin/CampaignGalleryItemCard";
+ import { CampaignPackagesTab } from "@/components/admin/CampaignPackagesTab";
 import {
   DndContext,
   closestCenter,
@@ -384,7 +385,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
               <TabsList className="grid w-full grid-cols-8">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="banner">Banner</TabsTrigger>
-                <TabsTrigger value="pricing">Pricing</TabsTrigger>
+                <TabsTrigger value="packages">Packages</TabsTrigger>
                 <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
                 <TabsTrigger value="products" disabled={!campaign}>Products</TabsTrigger>
                 <TabsTrigger value="vendors" disabled={!campaign}>Vendors</TabsTrigger>
@@ -487,110 +488,14 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                 </div>
               </TabsContent>
 
-              <TabsContent value="pricing" className="space-y-6">
-                {/* Master section toggle */}
-                <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
-                  <div>
-                    <Label htmlFor="pricing_section_enabled" className="text-base font-medium">
-                      Show Promotional Packages Section
-                    </Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Toggle to show or hide the entire pricing section on the campaign page
-                    </p>
-                  </div>
-                  <Switch
-                    id="pricing_section_enabled"
-                    checked={formData.pricing_section_enabled}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({ ...prev, pricing_section_enabled: checked }))
-                    }
-                  />
-                </div>
-
-                {/* Pricing cards - wrapped in conditional opacity */}
-                <div className={formData.pricing_section_enabled ? '' : 'opacity-50 pointer-events-none'}>
-                {[1, 2, 3].map((num) => {
-                  const cardNum = num as 1 | 2 | 3;
-                  const prefix = `pricing_card_${cardNum}`;
-                  return (
-                    <div key={num} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold">Card {num}</h3>
-                        <Switch
-                          checked={formData[`${prefix}_enabled`]}
-                          onCheckedChange={(checked) => 
-                            setFormData(prev => ({ ...prev, [`${prefix}_enabled`]: checked }))
-                          }
-                        />
-                      </div>
-                      {formData[`${prefix}_enabled`] && (
-                        <>
-                          <Input
-                            placeholder="Title"
-                            value={formData[`${prefix}_title`]}
-                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_title`]: e.target.value }))}
-                          />
-                          <Input
-                            placeholder="Price"
-                            value={formData[`${prefix}_price`]}
-                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_price`]: e.target.value }))}
-                          />
-                          <Textarea
-                            placeholder="Description"
-                            value={formData[`${prefix}_description`]}
-                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_description`]: e.target.value }))}
-                            rows={2}
-                          />
-                          <div>
-                            <Label>Features</Label>
-                            {formData[`${prefix}_features`].map((feature, idx) => (
-                              <div key={idx} className="flex gap-2 mt-2">
-                                <Input
-                                  value={feature}
-                                  onChange={(e) => updateFeatureText(cardNum, idx, e.target.value)}
-                                  placeholder="Feature"
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => removeFeature(cardNum, idx)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="mt-2"
-                              onClick={() => addFeature(cardNum)}
-                            >
-                              <Plus className="h-4 w-4 mr-1" />
-                              Add Feature
-                            </Button>
-                          </div>
-                          <Input
-                            placeholder="Ideal For (optional)"
-                            value={formData[`${prefix}_ideal_for`] || ''}
-                            onChange={(e) => setFormData(prev => ({ ...prev, [`${prefix}_ideal_for`]: e.target.value }))}
-                          />
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={formData[`${prefix}_popular`]}
-                              onCheckedChange={(checked) => 
-                                setFormData(prev => ({ ...prev, [`${prefix}_popular`]: checked }))
-                              }
-                            />
-                            <Label>Mark as Popular</Label>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-                </div>
+              <TabsContent value="packages" className="space-y-6">
+                <CampaignPackagesTab
+                  campaignId={campaign?.id}
+                  pricingSectionEnabled={formData.pricing_section_enabled}
+                  onPricingSectionToggle={(enabled) =>
+                    setFormData((prev) => ({ ...prev, pricing_section_enabled: enabled }))
+                  }
+                />
               </TabsContent>
 
               {/* Gallery Tab */}
