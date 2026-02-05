@@ -214,7 +214,7 @@ export function CampaignPricingCard({
               disabled={isResuming}
               className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
             >
-              {isResuming ? 'Resuming...' : `Secure Your Booking - $${depositAmount}`}
+              {isResuming ? 'Resuming...' : 'Secure Your Booking'}
             </Button>
             
             <Button
