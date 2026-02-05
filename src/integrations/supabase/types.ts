@@ -120,7 +120,7 @@ export type Database = {
           date: string | null
           end_at: string | null
           id: string
-          product_id: string
+          product_id: string | null
           reason: string | null
           start_at: string | null
           status: string
@@ -132,7 +132,7 @@ export type Database = {
           date?: string | null
           end_at?: string | null
           id?: string
-          product_id: string
+          product_id?: string | null
           reason?: string | null
           start_at?: string | null
           status: string
@@ -144,7 +144,7 @@ export type Database = {
           date?: string | null
           end_at?: string | null
           id?: string
-          product_id?: string
+          product_id?: string | null
           reason?: string | null
           start_at?: string | null
           status?: string
@@ -168,7 +168,7 @@ export type Database = {
           end_time: string
           id: string
           is_active: boolean
-          product_id: string
+          product_id: string | null
           slot_capacity: number
           slot_minutes: number
           start_time: string
@@ -184,7 +184,7 @@ export type Database = {
           end_time?: string
           id?: string
           is_active?: boolean
-          product_id: string
+          product_id?: string | null
           slot_capacity?: number
           slot_minutes?: number
           start_time?: string
@@ -200,7 +200,7 @@ export type Database = {
           end_time?: string
           id?: string
           is_active?: boolean
-          product_id?: string
+          product_id?: string | null
           slot_capacity?: number
           slot_minutes?: number
           start_time?: string
