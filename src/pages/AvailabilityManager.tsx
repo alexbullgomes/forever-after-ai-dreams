@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAvailabilityComputation, DayAvailability } from '@/hooks/useAvailabilityComputation';
 import { useAvailabilityOverrides } from '@/hooks/useAvailabilityOverrides';
 import type { PresetType } from '@/hooks/useAvailabilityOverrides';
@@ -34,6 +35,40 @@ export default function AvailabilityManager() {
   useEffect(() => {
     loadMonthAvailability();
   }, [currentMonth]);
+
+  // Realtime subscription for availability changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('availability-manager-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'availability_overrides',
+        filter: 'product_id=is.null'
+      }, () => {
+        loadMonthAvailability();
+        fetchOverrides();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'bookings'
+      }, () => {
+        loadMonthAvailability();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'booking_slot_holds'
+      }, () => {
+        loadMonthAvailability();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const loadMonthAvailability = async () => {
     const result = await getMonthAvailability(

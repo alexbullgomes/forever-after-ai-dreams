@@ -292,12 +292,12 @@ export const useAvailabilityOverrides = () => {
       if (preset === 'weekdays-available') {
         // Mon-Thu → Available, Fri-Sun → Limited
         if (isWeekday && !isProtected) {
-          // Set weekdays (Mon-Thu) to available with full capacity
+          // Set weekdays (Mon-Thu) to available - status only, no capacity override
           newOverrides.push({
             product_id: null,
             date: dateStr,
             status: 'available',
-            capacity_override: dailyCapacity,
+            capacity_override: null, // Status-only, let global rule handle capacity
             reason: 'Quick Preset: Weekday available',
             start_at: null,
             end_at: null,
@@ -319,12 +319,12 @@ export const useAvailabilityOverrides = () => {
       } else if (preset === 'weekends-available') {
         // Fri-Sun → Available, Mon-Thu → Limited
         if (isExtendedWeekend && !isProtected) {
-          // Set extended weekend (Fri-Sun) to available with full capacity
+          // Set extended weekend (Fri-Sun) to available - status only
           newOverrides.push({
             product_id: null,
             date: dateStr,
             status: 'available',
-            capacity_override: dailyCapacity,
+            capacity_override: null, // Status-only, let global rule handle capacity
             reason: 'Quick Preset: Extended weekend available',
             start_at: null,
             end_at: null,

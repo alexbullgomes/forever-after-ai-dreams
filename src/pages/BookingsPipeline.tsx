@@ -132,22 +132,45 @@ export default function BookingsPipeline() {
     fetchBookings();
   }, [stageFilter, dateRange]);
 
+  // Realtime subscription for availability changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('bookings-pipeline-availability')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'bookings'
+      }, () => {
+        fetchBookings();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'booking_slot_holds'
+      }, () => {
+        fetchBookings();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'availability_overrides',
+        filter: 'product_id=is.null'
+      }, () => {
+        fetchBookings();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   // Compute availability for each booking
   const computeAvailabilities = useCallback(async (bookingList: BookingRequest[]) => {
     const newMap: Record<string, SlotAvailability> = {};
     
     for (const booking of bookingList) {
-      if (!booking.product_id) {
-        newMap[booking.id] = {
-          status: 'needs_review',
-          reason: 'Missing product_id',
-          capacity: 0,
-          used: 0,
-          override_applied: false,
-        };
-        continue;
-      }
-
+      // Compute global availability for ALL bookings (products and campaign packages)
       if (booking.selected_time) {
         const [hours, minutes] = booking.selected_time.split(':').map(Number);
         const slotStart = new Date(booking.event_date);
@@ -398,15 +421,8 @@ export default function BookingsPipeline() {
                           status={status}
                           reason={reason}
                           onClick={() => {
-                            if (booking.product_id) {
-                              setOverrideModalBooking(booking);
-                            } else {
-                              toast({
-                                title: 'Cannot manage availability',
-                                description: 'This booking has no product assigned',
-                                variant: 'destructive',
-                              });
-                            }
+                            // All bookings can manage global availability
+                            setOverrideModalBooking(booking);
                           }}
                         />
                       );
