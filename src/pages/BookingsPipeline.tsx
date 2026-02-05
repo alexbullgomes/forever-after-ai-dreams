@@ -46,7 +46,10 @@ interface BookingRequest {
   selected_time: string | null;
   last_seen_at: string;
   stripe_checkout_session_id: string | null;
+  campaign_id: string | null;
+  package_id: string | null;
   products?: { title: string; price: number } | null;
+  campaign_packages?: { title: string; minimum_deposit_cents: number } | null;
 }
 
 const STAGE_OPTIONS = [
@@ -93,7 +96,8 @@ export default function BookingsPipeline() {
         .from('booking_requests')
         .select(`
           *,
-          products:product_id (title, price)
+          products:product_id (title, price),
+          campaign_packages:package_id (title, minimum_deposit_cents)
         `)
         .order('created_at', { ascending: false });
 
@@ -224,7 +228,8 @@ export default function BookingsPipeline() {
     return (
       b.visitor_id?.toLowerCase().includes(query) ||
       b.user_id?.toLowerCase().includes(query) ||
-      b.products?.title?.toLowerCase().includes(query)
+      b.products?.title?.toLowerCase().includes(query) ||
+      b.campaign_packages?.title?.toLowerCase().includes(query)
     );
   });
 
@@ -347,9 +352,15 @@ export default function BookingsPipeline() {
                   <TableCell>{formatTime(booking.selected_time)}</TableCell>
                   <TableCell>
                     <div>
-                      <p className="font-medium">{booking.products?.title || 'Unknown'}</p>
+                      <p className="font-medium">
+                        {booking.products?.title || booking.campaign_packages?.title || 'Unknown'}
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        ${booking.products?.price?.toLocaleString() || '-'}
+                        {booking.products?.price
+                          ? `$${booking.products.price.toLocaleString()}`
+                          : booking.campaign_packages?.minimum_deposit_cents
+                            ? `$${(booking.campaign_packages.minimum_deposit_cents / 100).toLocaleString()}`
+                            : '$-'}
                       </p>
                     </div>
                   </TableCell>
@@ -464,11 +475,19 @@ export default function BookingsPipeline() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Product</p>
-                  <p className="font-medium">{selectedBooking.products?.title}</p>
+                  <p className="font-medium">
+                    {selectedBooking.products?.title || selectedBooking.campaign_packages?.title || 'Unknown'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Price</p>
-                  <p className="font-medium">${selectedBooking.products?.price?.toLocaleString()}</p>
+                  <p className="font-medium">
+                    {selectedBooking.products?.price
+                      ? `$${selectedBooking.products.price.toLocaleString()}`
+                      : selectedBooking.campaign_packages?.minimum_deposit_cents
+                        ? `$${(selectedBooking.campaign_packages.minimum_deposit_cents / 100).toLocaleString()}`
+                        : '$-'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Timezone</p>
