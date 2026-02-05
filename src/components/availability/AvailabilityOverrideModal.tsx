@@ -203,12 +203,14 @@ export const AvailabilityOverrideModal: React.FC<AvailabilityOverrideModalProps>
           <div>
             {existingOverride && (
               <Button
-                variant="destructive"
+                variant="outline"
                 onClick={handleDelete}
                 disabled={saving}
+                className="text-destructive hover:text-destructive"
+                title="Remove override and revert to default rule-based availability"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                Reset to Default
               </Button>
             )}
           </div>

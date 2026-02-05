@@ -107,24 +107,15 @@ serve(async (req) => {
 
     logStep("End time calculated", { end_time });
 
-    // Check for existing active/converted hold
-    // For campaigns with package_id, scope by package_id to prevent different packages from blocking each other
+    // Check for existing active/converted hold GLOBALLY
+    // No product/package scoping - global calendar source of truth
     let existingHoldQuery = supabase
       .from("booking_slot_holds")
       .select("id, status, expires_at")
       .eq("event_date", event_date)
       .eq("start_time", selected_time)
       .in("status", ["active", "converted"]);
-
-    if (campaign_mode && package_id) {
-      // NEW: Scope by package_id for proper isolation
-      existingHoldQuery = existingHoldQuery.eq("package_id", package_id);
-    } else if (campaign_mode && campaign_id) {
-      // Legacy fallback: scope by campaign_id
-      existingHoldQuery = existingHoldQuery.eq("campaign_id", campaign_id);
-    } else if (product_id) {
-      existingHoldQuery = existingHoldQuery.eq("product_id", product_id);
-    }
+    // GLOBAL CHECK: Any hold on this date/time blocks ALL products/packages
 
     const { data: existingHold } = await existingHoldQuery.maybeSingle();
 
