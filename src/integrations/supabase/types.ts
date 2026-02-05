@@ -1959,6 +1959,11 @@ export type Database = {
         Args: { p_day: string; p_product_id: string }
         Returns: Json
       }
+      get_global_day_availability: { Args: { p_day: string }; Returns: Json }
+      get_global_slot_availability: {
+        Args: { p_slot_end: string; p_slot_start: string }
+        Returns: Json
+      }
       get_slot_availability: {
         Args: { p_product_id: string; p_slot_end: string; p_slot_start: string }
         Returns: Json

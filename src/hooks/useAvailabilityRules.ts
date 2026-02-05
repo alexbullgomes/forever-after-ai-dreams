@@ -32,9 +32,8 @@ export const useAvailabilityRules = (productId?: string) => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (productId) {
-        query = query.eq('product_id', productId);
-      }
+      // Always fetch global rules (product_id IS NULL)
+      query = query.is('product_id', null);
 
       const { data, error } = await query;
 
@@ -50,7 +49,7 @@ export const useAvailabilityRules = (productId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [productId, toast]);
+  }, [toast]);
 
   useEffect(() => {
     fetchRules();
@@ -58,9 +57,10 @@ export const useAvailabilityRules = (productId?: string) => {
 
   const createRule = async (rule: Omit<AvailabilityRule, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Force product_id to null for global rule
       const { data, error } = await supabase
         .from('availability_rules')
-        .insert(rule)
+        .insert({ ...rule, product_id: null })
         .select()
         .single();
 
@@ -81,9 +81,11 @@ export const useAvailabilityRules = (productId?: string) => {
 
   const updateRule = async (id: string, updates: Partial<AvailabilityRule>) => {
     try {
+      // Ensure product_id stays null for global rules
+      const { product_id, ...safeUpdates } = updates;
       const { data, error } = await supabase
         .from('availability_rules')
-        .update(updates)
+        .update(safeUpdates)
         .eq('id', id)
         .select()
         .single();

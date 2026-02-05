@@ -6,7 +6,7 @@ import { format, eachDayOfInterval, getDay } from 'date-fns';
 
 export interface AvailabilityOverride {
   id: string;
-  product_id: string;
+  product_id: string | null;
   start_at: string | null;
   end_at: string | null;
   date: string | null;
@@ -33,9 +33,8 @@ export const useAvailabilityOverrides = (productId?: string) => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (productId) {
-        query = query.eq('product_id', productId);
-      }
+      // Always fetch global overrides (product_id IS NULL)
+      query = query.is('product_id', null);
 
       const { data, error } = await query;
 
@@ -51,7 +50,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [productId, toast]);
+  }, [toast]);
 
   useEffect(() => {
     fetchOverrides();
@@ -61,10 +60,12 @@ export const useAvailabilityOverrides = (productId?: string) => {
     override: Omit<AvailabilityOverride, 'id' | 'created_at' | 'created_by'>
   ) => {
     try {
+      // Force product_id to null for global override
       const { data, error } = await supabase
         .from('availability_overrides')
         .insert({
           ...override,
+          product_id: null,
           created_by: user?.id || null,
         })
         .select()
@@ -95,9 +96,11 @@ export const useAvailabilityOverrides = (productId?: string) => {
 
   const updateOverride = async (id: string, updates: Partial<AvailabilityOverride>) => {
     try {
+      // Ensure product_id stays null for global overrides
+      const { product_id, ...safeUpdates } = updates;
       const { data, error } = await supabase
         .from('availability_overrides')
-        .update(updates)
+        .update(safeUpdates)
         .eq('id', id)
         .select()
         .single();
@@ -164,13 +167,11 @@ export const useAvailabilityOverrides = (productId?: string) => {
     startDate: string,
     endDate: string
   ): Promise<string[]> => {
-    if (!productId) return [];
-    
     try {
+      // Get ALL bookings globally (not filtered by product)
       const { data, error } = await supabase
         .from('bookings')
         .select('event_date')
-        .eq('product_id', productId)
         .gte('event_date', startDate)
         .lte('event_date', endDate)
         .in('status', ['confirmed', 'paid']);
@@ -188,13 +189,12 @@ export const useAvailabilityOverrides = (productId?: string) => {
 
   // Bulk delete overrides for a date range
   const bulkDeleteOverrides = async (startDate: string, endDate: string): Promise<number> => {
-    if (!productId) return 0;
-
     try {
+      // Delete global overrides only (product_id IS NULL)
       const { data, error } = await supabase
         .from('availability_overrides')
         .delete()
-        .eq('product_id', productId)
+        .is('product_id', null)
         .gte('date', startDate)
         .lte('date', endDate)
         .select();
@@ -207,7 +207,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
       await supabase.from('availability_audit_log').insert({
         action: 'bulk_overrides_deleted',
         actor_id: user?.id,
-        payload: { product_id: productId, start_date: startDate, end_date: endDate, count: deletedCount },
+        payload: { global: true, start_date: startDate, end_date: endDate, count: deletedCount },
       });
 
       return deletedCount;
@@ -224,8 +224,10 @@ export const useAvailabilityOverrides = (productId?: string) => {
     if (overridesToCreate.length === 0) return 0;
 
     try {
+      // Force product_id to null for all global overrides
       const overridesWithUser = overridesToCreate.map((o) => ({
         ...o,
+        product_id: null,
         created_by: user?.id || null,
       }));
 
@@ -242,7 +244,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
       await supabase.from('availability_audit_log').insert({
         action: 'bulk_overrides_created',
         actor_id: user?.id,
-        payload: { product_id: productId, count: createdCount },
+        payload: { global: true, count: createdCount },
       });
 
       return createdCount;
@@ -260,8 +262,6 @@ export const useAvailabilityOverrides = (productId?: string) => {
     protectedDates: string[],
     dailyCapacity: number = 1
   ): Promise<{ applied: number; skipped: number }> => {
-    if (!productId) throw new Error('No product selected');
-
     const startStr = format(startDate, 'yyyy-MM-dd');
     const endStr = format(endDate, 'yyyy-MM-dd');
     const days = eachDayOfInterval({ start: startDate, end: endDate });
@@ -294,7 +294,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
         if (isWeekday && !isProtected) {
           // Set weekdays (Mon-Thu) to available with full capacity
           newOverrides.push({
-            product_id: productId,
+            product_id: null,
             date: dateStr,
             status: 'available',
             capacity_override: dailyCapacity,
@@ -305,7 +305,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
         } else if (isExtendedWeekend) {
           // Set extended weekend (Fri-Sun) to limited
           newOverrides.push({
-            product_id: productId,
+            product_id: null,
             date: dateStr,
             status: 'limited',
             capacity_override: null, // Keep existing capacity from rules
@@ -321,7 +321,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
         if (isExtendedWeekend && !isProtected) {
           // Set extended weekend (Fri-Sun) to available with full capacity
           newOverrides.push({
-            product_id: productId,
+            product_id: null,
             date: dateStr,
             status: 'available',
             capacity_override: dailyCapacity,
@@ -332,7 +332,7 @@ export const useAvailabilityOverrides = (productId?: string) => {
         } else if (isWeekday) {
           // Set weekdays (Mon-Thu) to limited
           newOverrides.push({
-            product_id: productId,
+            product_id: null,
             date: dateStr,
             status: 'limited',
             capacity_override: null, // Keep existing capacity from rules

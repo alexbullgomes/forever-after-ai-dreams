@@ -45,16 +45,14 @@ export function BookingStepSlots({
   // Fetch month availability when productId or month changes
   useEffect(() => {
     const loadMonthAvailability = async () => {
-      if (!productId) return;
       const result = await getMonthAvailability(
-        productId,
         calendarMonth.getFullYear(),
         calendarMonth.getMonth() // 0-indexed to match JS Date constructor
       );
       setMonthAvailability(result);
     };
     loadMonthAvailability();
-  }, [productId, calendarMonth, getMonthAvailability]);
+  }, [calendarMonth, getMonthAvailability]);
 
   const formatPrice = (price: number) => {
     const formatter = new Intl.NumberFormat('en-US', {
