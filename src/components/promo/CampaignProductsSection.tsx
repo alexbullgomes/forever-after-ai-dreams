@@ -160,6 +160,13 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
     setIsAuthModalOpen(false);
   }, []);
 
+  // Handle opening chat with a pre-filled message from booking modal (limited slots)
+  const handleOpenChatWithMessage = useCallback((message: string) => {
+    window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
+      detail: { message }
+    }));
+  }, []);
+
   if (loading) {
     return (
       <section className="py-16 px-4 bg-muted/30">
@@ -247,6 +254,7 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
                 ? { date: pendingProductResume.date, timezone: pendingProductResume.timezone }
                 : undefined
             }
+            onOpenChatWithMessage={handleOpenChatWithMessage}
           />
         )}
 

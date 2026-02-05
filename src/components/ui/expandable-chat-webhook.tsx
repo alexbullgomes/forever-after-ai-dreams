@@ -50,7 +50,7 @@ const SUPABASE_URL = "https://hmdnronxajctsrlgrhey.supabase.co";
 const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   autoOpen = false,
   onOpenLogin,
-  onOpenChange,
+  onOpenChange: externalOnOpenChange,
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -75,6 +75,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
     price: number;
     currency: string;
   } | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -275,6 +276,101 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 
     initVisitorChat();
   }, []);
+
+  // Listen for custom event to open chat with pre-filled message
+  useEffect(() => {
+    const handleChatMessage = async (event: CustomEvent<{ message: string }>) => {
+      const { message } = event.detail;
+      
+      // Set the input with the message
+      setUserInput(message);
+      
+      // Open the chat
+      setIsChatOpen(true);
+      
+      // Auto-submit after a short delay to ensure chat is open and initialized
+      setTimeout(async () => {
+        if (visitorId && isInitialized) {
+          const tempId = generateId();
+          const userMessage: ChatMessage = {
+            id: tempId,
+            content: message,
+            sender: 'user',
+            timestamp: new Date(),
+          };
+
+          setMessages(prev => [...prev, userMessage]);
+          setUserInput("");
+          setIsLoading(true);
+
+          try {
+            trackVisitorEvent('chat_message', 'visitor_chat', {
+              message_length: message.length,
+              has_conversation: !!conversationId,
+              source: 'limited_slot_inquiry',
+            });
+            
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'send_message',
+                visitor_id: visitorId,
+                content: message,
+                type: 'text'
+              })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              
+              if (data.message_id) {
+                setMessages(prev => prev.map(msg => 
+                  msg.id === tempId 
+                    ? { ...msg, id: data.message_id.toString() }
+                    : msg
+                ));
+              }
+              
+              if (data.conversation_id && !conversationId) {
+                setConversationId(data.conversation_id);
+              }
+
+              if (data.ai_response && data.mode !== 'human') {
+                const assistantMessage: ChatMessage = {
+                  id: data.ai_message_id?.toString() || generateId(),
+                  content: data.ai_response,
+                  sender: 'assistant',
+                  timestamp: new Date(),
+                };
+                setMessages(prev => {
+                  if (prev.some(m => m.id === assistantMessage.id)) {
+                    return prev;
+                  }
+                  return [...prev, assistantMessage];
+                });
+              }
+            }
+          } catch (error) {
+            console.error("[VisitorChat] Error sending auto-message:", error);
+          }
+          
+          setIsLoading(false);
+        }
+      }, 500);
+    };
+
+    window.addEventListener('everafter:open-chat-with-message', handleChatMessage as EventListener);
+    return () => {
+      window.removeEventListener('everafter:open-chat-with-message', handleChatMessage as EventListener);
+    };
+  }, [visitorId, isInitialized, conversationId]);
+
+  // Handle open change - sync internal state with external
+  const handleOpenChange = (isOpen: boolean) => {
+    setIsChatOpen(isOpen);
+    externalOnOpenChange?.(isOpen);
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -633,8 +729,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       <ExpandableChat 
         size="md" 
         position="bottom-right"
-        autoOpen={autoOpen || shouldAutoOpen}
-        onOpenChange={onOpenChange}
+        autoOpen={autoOpen || shouldAutoOpen || isChatOpen}
+        onOpenChange={handleOpenChange}
         icon={<Bot className="h-6 w-6" />}
       >
         <ExpandableChatHeader className="bg-brand-gradient text-white">

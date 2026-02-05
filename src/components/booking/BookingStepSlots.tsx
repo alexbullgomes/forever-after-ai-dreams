@@ -3,7 +3,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarCheck, Clock, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
+import { CalendarCheck, Clock, Sparkles, AlertCircle, Loader2, MessageCircle } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useAvailabilityComputation, DayAvailability } from '@/hooks/useAvailabilityComputation';
@@ -20,6 +20,7 @@ interface BookingStepSlotsProps {
   onCheckout: () => void;
   isLoading: boolean;
   selectedTime: string | null;
+  onChatAvailability?: (date: Date, time: string, productTitle: string, price: number) => void;
 }
 
 export function BookingStepSlots({
@@ -34,6 +35,7 @@ export function BookingStepSlots({
   onCheckout,
   isLoading,
   selectedTime,
+  onChatAvailability,
 }: BookingStepSlotsProps) {
   const [calendarMonth, setCalendarMonth] = useState(eventDate);
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
@@ -122,6 +124,17 @@ export function BookingStepSlots({
       onDateChange?.(date);
     }
   };
+
+  // Determine if the selected slot is limited
+  const selectedSlotStatus = useMemo(() => {
+    if (!selectedTime) return null;
+    const slot = timeSlots.find(s => 
+      (typeof s === 'string' ? s : s.start) === selectedTime
+    );
+    return typeof slot === 'object' ? slot.status : 'available';
+  }, [selectedTime, timeSlots]);
+
+  const isLimitedSlot = selectedSlotStatus === 'limited';
 
   return (
     <div className="flex flex-col space-y-6">
@@ -248,18 +261,37 @@ export function BookingStepSlots({
           </div>
         )}
 
-        <Button
-          onClick={onCheckout}
-          disabled={!selectedTime || isLoading}
-          className="w-full bg-brand-gradient hover:opacity-90"
-          size="lg"
-        >
-          {isLoading ? 'Processing...' : 'Hold my date & pay'}
-        </Button>
+        {isLimitedSlot ? (
+          <>
+            <Button
+              onClick={() => onChatAvailability?.(eventDate, selectedTime!, productTitle, productPrice)}
+              disabled={!selectedTime}
+              className="w-full bg-warning text-warning-foreground hover:bg-warning/90"
+              size="lg"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Check availability with our team
+            </Button>
+            <p className="text-xs text-center text-warning">
+              This slot has limited availability. Our team will confirm within 24 hours.
+            </p>
+          </>
+        ) : (
+          <>
+            <Button
+              onClick={onCheckout}
+              disabled={!selectedTime || isLoading}
+              className="w-full bg-brand-gradient hover:opacity-90"
+              size="lg"
+            >
+              {isLoading ? 'Processing...' : 'Hold my date & pay'}
+            </Button>
 
-        <p className="text-xs text-center text-muted-foreground">
-          Your slot will be held for 15 minutes while you complete payment
-        </p>
+            <p className="text-xs text-center text-muted-foreground">
+              Your slot will be held for 15 minutes while you complete payment
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

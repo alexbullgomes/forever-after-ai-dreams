@@ -57,7 +57,7 @@ interface ExpandableChatAssistantProps {
   onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: ExpandableChatAssistantProps) {
+export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: externalOnOpenChange }: ExpandableChatAssistantProps) {
   const { user } = useAuth();
   const shouldAutoOpen = useAutoOpenChat({ 
     sessionKey: 'everafter-chat-auto-opened-authenticated',
@@ -75,6 +75,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
   const [conversationMode, setConversationMode] = useState<string>('ai');
   const [isInitializing, setIsInitializing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   
   // Booking state for product cards
   const [bookingProduct, setBookingProduct] = useState<{
@@ -533,14 +535,75 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
     }
   };
 
+  // Listen for custom event to open chat with pre-filled message
+  useEffect(() => {
+    const handleChatMessage = (event: CustomEvent<{ message: string }>) => {
+      const { message } = event.detail;
+      
+      // Set the input with the message
+      setInput(message);
+      
+      // Open the chat
+      setIsChatOpen(true);
+      
+      // Auto-submit after a short delay to ensure chat is open and initialized
+      setTimeout(async () => {
+        if (conversationId && user) {
+          // Insert message directly instead of form submit
+          const tempUserMessage: ChatMessage = {
+            id: Date.now(),
+            content: message,
+            sender: "user",
+            timestamp: new Date().toISOString(),
+          };
+
+          setMessages((prev) => [...prev, tempUserMessage]);
+          setInput("");
+          setIsLoading(true);
+
+          const { error: insertError } = await supabase
+            .from('messages')
+            .insert({
+              conversation_id: conversationId,
+              user_id: user.id,
+              role: 'user',
+              type: 'text',
+              content: message,
+              audio_url: null,
+              user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+              user_email: user.email
+            });
+
+          if (insertError) {
+            console.error('Error inserting message:', insertError);
+            setMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
+          }
+          
+          setIsLoading(false);
+        }
+      }, 500);
+    };
+
+    window.addEventListener('everafter:open-chat-with-message', handleChatMessage as EventListener);
+    return () => {
+      window.removeEventListener('everafter:open-chat-with-message', handleChatMessage as EventListener);
+    };
+  }, [conversationId, user]);
+
+  // Handle open change - sync internal state with external
+  const handleOpenChange = (isOpen: boolean) => {
+    setIsChatOpen(isOpen);
+    externalOnOpenChange?.(isOpen);
+  };
+
   return (
     <ExpandableChat
       size="lg"
       position="bottom-right"
       icon={<Bot className="h-6 w-6" />}
       className="border-0 shadow-2xl bg-transparent"
-      autoOpen={autoOpen || shouldAutoOpen}
-      onOpenChange={onOpenChange}
+      autoOpen={autoOpen || shouldAutoOpen || isChatOpen}
+      onOpenChange={handleOpenChange}
     >
       <ExpandableChatHeader className="flex-col text-center justify-center bg-brand-gradient text-white border-0">
         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
@@ -670,6 +733,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange }: Expa
         )}
         
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
           className="relative rounded-xl border border-brand-primary-from/30 bg-card focus-within:ring-2 focus-within:ring-brand-primary-from focus-within:border-brand-primary-from p-1 shadow-md"
         >
