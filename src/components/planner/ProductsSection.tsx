@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { InteractiveProduct3DCard } from "@/components/ui/3d-product-card";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,12 +6,18 @@ import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
 export function ProductsSection() {
   const { products, loading } = useProducts();
-  const navigate = useNavigate();
   const [bookingProduct, setBookingProduct] = useState<Product | null>(null);
 
   const handleProductClick = (product: Product) => {
     // Open the booking funnel modal instead of navigating
     setBookingProduct(product);
+  };
+
+  // Handle opening chat with a pre-filled message from booking modal (limited slots)
+  const handleOpenChatWithMessage = (message: string) => {
+    window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
+      detail: { message }
+    }));
   };
 
   if (loading) {
@@ -103,6 +108,7 @@ export function ProductsSection() {
           productTitle={bookingProduct.title}
           productPrice={bookingProduct.price}
           currency={bookingProduct.currency || 'USD'}
+          onOpenChatWithMessage={handleOpenChatWithMessage}
         />
       )}
     </section>

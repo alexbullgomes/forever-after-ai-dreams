@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
@@ -11,12 +12,21 @@ import SEO from "@/components/SEO";
 
 const Planner = () => {
   const { user, loading } = useAuth();
+  const [pendingChatMessage, setPendingChatMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
       window.location.href = '/';
     }
   }, [user, loading]);
+
+  // Handle opening chat with a pre-filled message from booking modal
+  const handleOpenChatWithMessage = (message: string) => {
+    // Dispatch custom event for the ExpandableChatAssistant to handle
+    window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
+      detail: { message }
+    }));
+  };
 
   if (loading) {
     return (

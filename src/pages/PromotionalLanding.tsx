@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { usePromotionalCampaign, TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Header from "@/components/Header";
 import PromoHero from "@/components/promo/PromoHero";
 import PromoPricing from "@/components/promo/PromoPricing";
@@ -83,6 +83,14 @@ const PromotionalLanding = () => {
   const { user } = useAuth();
   const { campaign, loading, error } = usePromotionalCampaign(slug || '');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Handle opening chat with a pre-filled message from booking modal
+  const handleOpenChatWithMessage = useCallback((message: string) => {
+    // Dispatch custom event for the chat components to handle
+    window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
+      detail: { message }
+    }));
+  }, []);
 
   // Inject tracking scripts for body_end placement with sanitization
   useEffect(() => {

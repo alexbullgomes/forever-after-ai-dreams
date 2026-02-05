@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
 import { saveBookingState, PendingBookingState } from '@/utils/bookingRedirect';
+import { format } from 'date-fns';
 
 type BookingStep = 'date' | 'checking' | 'slots';
 
@@ -41,6 +42,8 @@ interface BookingFunnelModalProps {
     date: Date;
     timezone: string;
   };
+  // Chat integration for limited slots
+  onOpenChatWithMessage?: (message: string) => void;
 }
 
 export function BookingFunnelModal({
@@ -58,6 +61,7 @@ export function BookingFunnelModal({
   onAuthRequired,
   campaignProductMode = false,
   resumeFromDate,
+  onOpenChatWithMessage,
 }: BookingFunnelModalProps) {
   const [step, setStep] = useState<BookingStep>('date');
   const [eventDate, setEventDate] = useState<Date | null>(null);
@@ -261,6 +265,44 @@ export function BookingFunnelModal({
     }
   }, [bookingRequest, selectedTime, productId, productTitle, productPrice, currency, user, toast, campaignMode, campaignId, campaignSlug, packageId, minimumDepositCents, onClose, onAuthRequired]);
 
+  // Handler for chat availability - when slot is limited
+  const handleChatAvailability = useCallback((
+    date: Date,
+    time: string,
+    title: string,
+    price: number
+  ) => {
+    const formatTime = (timeStr: string) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    };
+
+    const formattedDate = format(date, 'MMMM d, yyyy');
+    const formattedTime = formatTime(time);
+    const priceFormatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 0,
+    }).format(price);
+    
+    const message = `Hi! I'm interested in booking the following slot, but it shows as limited.\n\nDate: ${formattedDate}\nTime: ${formattedTime}\nPackage/Product: ${title}\nValue: ${priceFormatted}\n\nCan you confirm availability?`;
+    
+    // Close modal and trigger chat
+    onClose();
+    
+    // Use custom event to open chat with message
+    if (onOpenChatWithMessage) {
+      onOpenChatWithMessage(message);
+    } else {
+      // Fallback: dispatch custom event for global chat listener
+      window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
+        detail: { message }
+      }));
+    }
+  }, [onClose, onOpenChatWithMessage, currency]);
+
   const handleClose = () => {
     // Reset state on close
     setStep('date');
@@ -328,6 +370,7 @@ export function BookingFunnelModal({
             onCheckout={handleCheckout}
             isLoading={isProcessing || loading}
             selectedTime={selectedTime}
+            onChatAvailability={handleChatAvailability}
           />
         )}
       </DialogContent>
