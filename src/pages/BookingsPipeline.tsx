@@ -564,11 +564,10 @@ export default function BookingsPipeline() {
       />
 
       {/* Availability Override Modal */}
-      {overrideModalBooking && overrideModalBooking.product_id && (
+      {overrideModalBooking && (
         <AvailabilityOverrideModal
           isOpen={!!overrideModalBooking}
           onClose={() => setOverrideModalBooking(null)}
-          productId={overrideModalBooking.product_id}
           date={new Date(overrideModalBooking.event_date)}
           onSaved={() => {
             computeAvailabilities(bookings);

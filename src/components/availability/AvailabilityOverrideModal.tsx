@@ -25,7 +25,6 @@ import { Trash2 } from 'lucide-react';
 interface AvailabilityOverrideModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productId: string;
   date?: Date;
   existingOverride?: AvailabilityOverride | null;
   onSaved?: () => void;
@@ -34,7 +33,6 @@ interface AvailabilityOverrideModalProps {
 export const AvailabilityOverrideModal: React.FC<AvailabilityOverrideModalProps> = ({
   isOpen,
   onClose,
-  productId,
   date,
   existingOverride,
   onSaved,
@@ -73,7 +71,7 @@ export const AvailabilityOverrideModal: React.FC<AvailabilityOverrideModalProps>
   }, [existingOverride, isOpen]);
 
   const handleSave = async () => {
-    if (!productId || !date) return;
+    if (!date) return;
 
     setSaving(true);
     try {

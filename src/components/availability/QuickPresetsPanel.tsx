@@ -30,7 +30,6 @@ export type PresetType = 'weekdays-available' | 'weekends-available' | 'reset';
 export type RangeType = 'this-month' | 'next-3-months' | 'next-6-months' | 'custom';
 
 interface QuickPresetsPanelProps {
-  productId: string;
   currentMonth: Date;
   rules: AvailabilityRule[];
   onApplyPreset: (
@@ -53,7 +52,6 @@ interface PresetSummary {
 }
 
 export function QuickPresetsPanel({
-  productId,
   currentMonth,
   rules,
   onApplyPreset,

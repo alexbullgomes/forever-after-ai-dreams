@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface AvailabilityRule {
   id: string;
-  product_id: string;
+  product_id: string | null;
   timezone: string;
   workdays: number[];
   start_time: string;
@@ -19,7 +19,7 @@ export interface AvailabilityRule {
   updated_at: string;
 }
 
-export const useAvailabilityRules = (productId?: string) => {
+export const useAvailabilityRules = () => {
   const [rules, setRules] = useState<AvailabilityRule[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
