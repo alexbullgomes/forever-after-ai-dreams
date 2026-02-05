@@ -55,9 +55,7 @@ export default function AvailabilityManager() {
   }, [selectedProductId, currentMonth]);
 
   const loadMonthAvailability = async () => {
-    if (!selectedProductId) return;
     const result = await getMonthAvailability(
-      selectedProductId,
       currentMonth.getFullYear(),
       currentMonth.getMonth()
     );
