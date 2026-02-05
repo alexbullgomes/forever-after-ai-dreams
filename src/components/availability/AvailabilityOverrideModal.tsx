@@ -80,7 +80,7 @@ export const AvailabilityOverrideModal: React.FC<AvailabilityOverrideModalProps>
       const dateStr = format(date, 'yyyy-MM-dd');
       
       const overrideData = {
-        product_id: productId,
+        product_id: null, // Always use global overrides
         status,
         capacity_override: capacityOverride ? parseInt(capacityOverride) : null,
         reason: reason || null,

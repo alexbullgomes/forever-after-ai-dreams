@@ -155,7 +155,7 @@ export default function BookingsPipeline() {
         const slotEnd = new Date(slotStart);
         slotEnd.setHours(slotEnd.getHours() + 1);
 
-        const availability = await getSlotAvailability(booking.product_id, slotStart, slotEnd);
+        const availability = await getSlotAvailability(slotStart, slotEnd);
         newMap[booking.id] = availability;
       } else {
         // No time selected - check day availability

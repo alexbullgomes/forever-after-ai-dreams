@@ -113,15 +113,6 @@ export function QuickPresetsPanel({
   };
 
   const handlePresetClick = async (preset: PresetType) => {
-    if (!productId) {
-      toast({
-        title: 'No product selected',
-        description: 'Please select a product first.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     const { start, end } = getDateRange();
     const startStr = format(start, 'yyyy-MM-dd');
     const endStr = format(end, 'yyyy-MM-dd');
@@ -256,7 +247,6 @@ export function QuickPresetsPanel({
               variant="outline"
               className="h-auto py-3 px-4 flex flex-col items-start gap-1 hover:bg-green-50 hover:border-green-300 dark:hover:bg-green-950"
               onClick={() => handlePresetClick('weekdays-available')}
-              disabled={!productId}
             >
               <div className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-green-600" />
@@ -271,7 +261,6 @@ export function QuickPresetsPanel({
               variant="outline"
               className="h-auto py-3 px-4 flex flex-col items-start gap-1 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950"
               onClick={() => handlePresetClick('weekends-available')}
-              disabled={!productId}
             >
               <div className="flex items-center gap-2">
                 <Palmtree className="h-4 w-4 text-blue-600" />
@@ -286,7 +275,6 @@ export function QuickPresetsPanel({
               variant="outline"
               className="h-auto py-3 px-4 flex flex-col items-start gap-1 hover:bg-orange-50 hover:border-orange-300 dark:hover:bg-orange-950"
               onClick={() => handlePresetClick('reset')}
-              disabled={!productId}
             >
               <div className="flex items-center gap-2">
                 <RotateCcw className="h-4 w-4 text-orange-600" />
