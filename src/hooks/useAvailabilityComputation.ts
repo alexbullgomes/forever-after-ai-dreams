@@ -40,9 +40,9 @@ export const useAvailabilityComputation = (useGlobal: boolean = true) => {
       if (error) {
         console.error('Error getting slot availability:', error);
         return {
-          status: 'needs_review',
-          reason: error.message,
-          capacity: 0,
+          status: 'available',
+          reason: 'Using default (computation error)',
+          capacity: 2,
           used: 0,
           override_applied: false,
         };
@@ -52,9 +52,9 @@ export const useAvailabilityComputation = (useGlobal: boolean = true) => {
     } catch (err) {
       console.error('Error in getSlotAvailability:', err);
       return {
-        status: 'needs_review',
-        reason: 'Failed to compute global availability',
-        capacity: 0,
+        status: 'available',
+        reason: 'Using default (computation error)',
+        capacity: 2,
         used: 0,
         override_applied: false,
       };
@@ -77,8 +77,8 @@ export const useAvailabilityComputation = (useGlobal: boolean = true) => {
       if (error) {
         console.error('Error getting day availability:', error);
         return {
-          status: 'needs_review',
-          reason: error.message,
+          status: 'available',
+          reason: 'Using default (computation error)',
           slots: [],
           available_count: 0,
           total_count: 0,
@@ -89,8 +89,8 @@ export const useAvailabilityComputation = (useGlobal: boolean = true) => {
     } catch (err) {
       console.error('Error in getDayAvailability:', err);
       return {
-        status: 'needs_review',
-        reason: 'Failed to compute global availability',
+        status: 'available',
+        reason: 'Using default (computation error)',
         slots: [],
         available_count: 0,
         total_count: 0,

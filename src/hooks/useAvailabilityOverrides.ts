@@ -60,7 +60,22 @@ export const useAvailabilityOverrides = () => {
     override: Omit<AvailabilityOverride, 'id' | 'created_at' | 'created_by'>
   ) => {
     try {
-      // Force product_id to null for global override
+      // UPSERT pattern: Check if override already exists for this date
+      if (override.date) {
+        const { data: existing } = await supabase
+          .from('availability_overrides')
+          .select('id')
+          .is('product_id', null)
+          .eq('date', override.date)
+          .maybeSingle();
+        
+        if (existing) {
+          // Update existing instead of creating duplicate
+          return updateOverride(existing.id, override);
+        }
+      }
+      
+      // Create new if no existing
       const { data, error } = await supabase
         .from('availability_overrides')
         .insert({
