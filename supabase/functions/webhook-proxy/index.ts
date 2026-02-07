@@ -18,7 +18,8 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
   const isAllowed = origin && (
     ALLOWED_ORIGINS.includes(origin) || 
     origin.includes('localhost') ||
-    origin.includes('127.0.0.1')
+    origin.includes('127.0.0.1') ||
+    origin.endsWith('.lovable.app')
   );
   
   return {
@@ -35,7 +36,7 @@ const WEBHOOK_URLS: Record<string, string | undefined> = {
   quiz_completion: Deno.env.get('N8N_QUIZ_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/2807df9e-fe4b-4ee0-a4c0-e357960d1c31',
   consultation_form: Deno.env.get('N8N_QUIZ_CONSULTATION_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/36fb4d39-8ebe-4ab6-b781-c7d8b73cc9cb',
   gallery_lead: Deno.env.get('N8N_GALLERY_LEAD_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/dc84492f-9c06-423a-b4fe-84a7e36f801f',
-  contact_form: Deno.env.get('N8N_CONTACT_WEBHOOK') || 'https://automation.agcreationmkt.com/webhook/8f035739-6773-4408-933c-233326195f92',
+  contact_form: Deno.env.get('N8N_CONTACT_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/8f035739-6773-4408-933c-233326195f92',
   ai_summary: Deno.env.get('N8N_AI_SUMMARY_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/edc35eb2-12c7-4d57-ab83-5d7d2b2b8f42',
   visitor_summary: Deno.env.get('N8N_VISITOR_SUMMARY_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/c3927752-91fc-4737-ade9-eed13cb77928',
   gallery_view: Deno.env.get('N8N_GALLERY_VIEW_WEBHOOK') || 'https://agcreationmkt.cloud/webhook/8e26e595-d079-4d4b-8c15-a31824f98aed',

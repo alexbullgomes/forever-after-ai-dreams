@@ -19,7 +19,8 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
   const isAllowed = origin && (
     ALLOWED_ORIGINS.includes(origin) || 
     origin.includes('localhost') ||
-    origin.includes('127.0.0.1')
+    origin.includes('127.0.0.1') ||
+    origin.endsWith('.lovable.app')
   );
   
   return {
