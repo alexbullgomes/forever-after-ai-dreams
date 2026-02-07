@@ -1,51 +1,86 @@
 
 
-## Root Cause
+## Overview
 
-The browser's Content Security Policy (CSP) is blocking requests to `https://agcreationmkt.cloud` because this domain is not listed in the `connect-src` directive.
-
-**Location**: `index.html`, line 7
-
-**Current `connect-src` directive**:
-```
-connect-src 'self' https://hmdnronxajctsrlgrhey.supabase.co wss://hmdnronxajctsrlgrhey.supabase.co https://www.google-analytics.com https://facebook.com https://analytics.tiktok.com https://snap.licdn.com;
-```
-
-**Missing domain**: `https://agcreationmkt.cloud`
+Add the production domains `https://everafterca.com` and `https://www.everafterca.com` to the CORS allowed origins in both webhook proxy edge functions, and also fix the missing `.lovableproject.com` pattern that was causing CORS issues in the preview environment.
 
 ---
 
-## Fix
+## Files to Update
 
-Add `https://agcreationmkt.cloud` to the `connect-src` directive in the CSP meta tag.
+### 1. `supabase/functions/webhook-proxy/index.ts`
 
-**File**: `index.html`
+**Lines 6-10** - Add new domains to ALLOWED_ORIGINS:
 
-**Change**: Update line 7 to include the webhook domain:
+```javascript
+const ALLOWED_ORIGINS = [
+  'https://everafter.lovable.app',
+  'https://everafter-studio.lovable.app',
+  'https://hmdnronxajctsrlgrhey.lovableproject.com',
+  'https://everafterca.com',
+  'https://www.everafterca.com',
+];
+```
 
-```html
-connect-src 'self' https://hmdnronxajctsrlgrhey.supabase.co wss://hmdnronxajctsrlgrhey.supabase.co https://www.google-analytics.com https://facebook.com https://analytics.tiktok.com https://snap.licdn.com https://agcreationmkt.cloud;
+**Lines 17-23** - Add `.lovableproject.com` pattern to getCorsHeaders:
+
+```javascript
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const isAllowed = origin && (
+    ALLOWED_ORIGINS.includes(origin) || 
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1') ||
+    origin.endsWith('.lovable.app') ||
+    origin.endsWith('.lovableproject.com')
+  );
 ```
 
 ---
 
-## What Changes
+### 2. `supabase/functions/consultation-webhook-proxy/index.ts`
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| `agcreationmkt.cloud` requests | Blocked by CSP | Allowed |
-| All existing allowed domains | Unchanged | Unchanged |
-| UI/UX | Unchanged | Unchanged |
-| Submit handlers | Unchanged | Unchanged |
+**Lines 6-9** - Add new domains to ALLOWED_ORIGINS:
+
+```javascript
+const ALLOWED_ORIGINS = [
+  'https://everafter.lovable.app',
+  'https://hmdnronxajctsrlgrhey.lovableproject.com',
+  'https://everafterca.com',
+  'https://www.everafterca.com',
+];
+```
+
+**Lines 17-24** - Add `.lovableproject.com` pattern to getCorsHeaders:
+
+```javascript
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const isAllowed = origin && (
+    ALLOWED_ORIGINS.includes(origin) || 
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1') ||
+    origin.endsWith('.lovable.app') ||
+    origin.endsWith('.lovableproject.com')
+  );
+```
 
 ---
 
-## Verification
+## Summary
 
-1. Refresh the page after the fix
-2. Open the consultation modal
-3. Fill in name and cellphone
-4. Click "Call in Seconds"
-5. Verify no CSP error in console
-6. Verify form submits successfully
+| Change | Purpose |
+|--------|---------|
+| Add `everafterca.com` to ALLOWED_ORIGINS | Allow production domain |
+| Add `www.everafterca.com` to ALLOWED_ORIGINS | Allow www subdomain |
+| Add `.lovableproject.com` pattern | Allow preview environments |
+
+---
+
+## After Implementation
+
+The edge functions will be automatically redeployed, and all forms will work from:
+- `everafterca.com` (production)
+- `www.everafterca.com` (www subdomain)
+- `*.lovable.app` (Lovable hosted)
+- `*.lovableproject.com` (preview environments)
+- `localhost` (development)
 
