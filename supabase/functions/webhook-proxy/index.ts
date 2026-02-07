@@ -7,6 +7,8 @@ const ALLOWED_ORIGINS = [
   'https://everafter.lovable.app',
   'https://everafter-studio.lovable.app',
   'https://hmdnronxajctsrlgrhey.lovableproject.com',
+  'https://everafterca.com',
+  'https://www.everafterca.com',
 ];
 
 const corsHeaders = {
@@ -19,7 +21,8 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
     ALLOWED_ORIGINS.includes(origin) || 
     origin.includes('localhost') ||
     origin.includes('127.0.0.1') ||
-    origin.endsWith('.lovable.app')
+    origin.endsWith('.lovable.app') ||
+    origin.endsWith('.lovableproject.com')
   );
   
   return {
