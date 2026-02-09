@@ -84,9 +84,13 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
                 onChange={(e) => handleInputChange("fullName", e.target.value)}
                 className="mt-1"
                 placeholder="Enter your full name"
+                aria-required="true"
+                aria-invalid={Boolean(errors.fullName)}
+                aria-describedby={errors.fullName ? "fullName-error" : undefined}
+                autoComplete="name"
               />
               {errors.fullName && (
-                <p className="text-error text-sm mt-1">{errors.fullName}</p>
+                <p id="fullName-error" className="text-error text-sm mt-1" role="alert">{errors.fullName}</p>
               )}
             </div>
 
@@ -101,9 +105,13 @@ const LeadCapture = ({ onSubmit }: LeadCaptureProps) => {
                 onChange={(e) => handleInputChange("email", e.target.value)}
                 className="mt-1"
                 placeholder="Enter your email"
+                aria-required="true"
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                autoComplete="email"
               />
               {errors.email && (
-                <p className="text-error text-sm mt-1">{errors.email}</p>
+                <p id="email-error" className="text-error text-sm mt-1" role="alert">{errors.email}</p>
               )}
             </div>
 

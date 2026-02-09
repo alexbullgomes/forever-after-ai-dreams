@@ -72,6 +72,9 @@ const GalleryModal: React.FC<GalleryModalProps> = ({
             
             {/* Main Modal */}
             <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-label={`Gallery viewer: ${selectedItem.title}`}
                 initial={{ scale: 0.98 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.98 }}

@@ -242,6 +242,9 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
                       className="w-full"
                       maxLength={14}
                       required
+                      aria-required="true"
+                      aria-describedby={config.legal_note ? "popup-legal-note" : undefined}
+                      autoComplete="tel"
                     />
                   </div>
                 )}
@@ -257,7 +260,7 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
 
               <div className="text-center space-y-2">
                 {config.legal_note && (
-                  <p className="text-xs text-muted-foreground">
+                  <p id="popup-legal-note" className="text-xs text-muted-foreground">
                     👉 {config.legal_note}
                   </p>
                 )}

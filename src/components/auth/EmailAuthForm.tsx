@@ -132,59 +132,68 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
     <form onSubmit={handleSubmit} className="space-y-4">
       {!isLogin && (
         <div>
-          <label className="block text-sm font-medium text-foreground/80 mb-2">
+          <label htmlFor="auth-fullname" className="block text-sm font-medium text-foreground/80 mb-2">
             Full Name
           </label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" aria-hidden="true" />
             <Input
+              id="auth-fullname"
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
               required
+              aria-required="true"
               disabled={loading}
               className="pl-10 h-12 border-border focus:border-brand-primary-from focus:ring-brand-primary-from"
               placeholder="Your full name"
+              autoComplete="name"
             />
           </div>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-foreground/80 mb-2">
+        <label htmlFor="auth-email" className="block text-sm font-medium text-foreground/80 mb-2">
           Email Address
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" aria-hidden="true" />
           <Input
+            id="auth-email"
             name="email"
             type="email"
             value={formData.email}
             onChange={handleChange}
             required
+            aria-required="true"
             disabled={loading}
             className="pl-10 h-12 border-border focus:border-brand-primary-from focus:ring-brand-primary-from"
             placeholder="your@email.com"
+            autoComplete="email"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground/80 mb-2">
+        <label htmlFor="auth-password" className="block text-sm font-medium text-foreground/80 mb-2">
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" aria-hidden="true" />
           <Input
+            id="auth-password"
             name="password"
             type="password"
             value={formData.password}
             onChange={handleChange}
             required
+            aria-required="true"
             disabled={loading}
             className="pl-10 h-12 border-border focus:border-brand-primary-from focus:ring-brand-primary-from"
             placeholder={isLogin ? "Enter your password" : "Create a secure password (min 6 chars)"}
             minLength={6}
+            autoComplete={isLogin ? "current-password" : "new-password"}
           />
         </div>
       </div>

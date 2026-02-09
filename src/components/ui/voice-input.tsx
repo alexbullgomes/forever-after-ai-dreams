@@ -48,6 +48,10 @@ export function VoiceInput({
   return (
     <div className={cn("flex flex-col items-center justify-center", className)}>
       <motion.div
+        role="button"
+        tabIndex={0}
+        aria-label={_listening ? "Stop voice recording" : "Start voice recording"}
+        aria-pressed={_listening}
         className={cn(
           "flex p-2 border items-center justify-center rounded-full cursor-pointer transition-colors",
           _listening ? "border-rose-500 bg-rose-50" : "border-border"
@@ -59,6 +63,12 @@ export function VoiceInput({
           },
         }}
         onClick={onClickHandler}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClickHandler();
+          }
+        }}
       >
         <div className="h-6 w-6 items-center justify-center flex ">
           {_listening ? (
