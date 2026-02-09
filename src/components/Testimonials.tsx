@@ -52,7 +52,16 @@ const Testimonials = () => {
           {testimonials.map((testimonial, index) => <Card key={testimonial.id} className={`group hover:shadow-2xl transition-all duration-500 border-0 bg-card/70 backdrop-blur-sm hover:scale-105 ${index % 2 === 1 ? 'md:mt-8' : ''}`}>
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
-                  <img src={testimonial.image} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover mr-4 ring-2" style={{ '--tw-ring-color': `hsl(var(--brand-badge-bg))` } as React.CSSProperties} />
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name} 
+                    className="w-16 h-16 rounded-full object-cover mr-4 ring-2" 
+                    style={{ '--tw-ring-color': `hsl(var(--brand-badge-bg))` } as React.CSSProperties}
+                    loading="lazy"
+                    decoding="async"
+                    width={64}
+                    height={64}
+                  />
                   <div>
                     <h4 className="text-lg font-bold text-foreground">{testimonial.name}</h4>
                     <p className="text-brand-text-accent text-sm font-medium">{testimonial.location}</p>

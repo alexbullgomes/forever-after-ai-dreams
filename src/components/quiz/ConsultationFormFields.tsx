@@ -24,6 +24,7 @@ const ConsultationFormFields = ({
           required
           className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
           autoComplete="tel"
+          name="phone"
         />
       </div>
     </>

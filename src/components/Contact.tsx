@@ -139,13 +139,13 @@ const Contact = () => {
                     <label className="block text-sm font-medium text-white/70 mb-2">
                       Your Name *
                     </label>
-                    <Input name="name" value={formData.name} onChange={handleChange} required className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="Your full name" />
+                    <Input name="name" value={formData.name} onChange={handleChange} required className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="Your full name" autoComplete="name" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-white/70 mb-2">
                       Email *
                     </label>
-                    <Input name="email" type="email" value={formData.email} onChange={handleChange} required className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="your@email.com" />
+                    <Input name="email" type="email" value={formData.email} onChange={handleChange} required className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="your@email.com" autoComplete="email" />
                   </div>
                 </div>
 
@@ -154,7 +154,7 @@ const Contact = () => {
                     <label className="block text-sm font-medium text-white/70 mb-2">
                       Phone
                     </label>
-                    <Input name="phone" type="tel" value={formData.phone} onChange={handlePhoneChange} className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="(555) 123-4567" />
+                    <Input name="phone" type="tel" value={formData.phone} onChange={handlePhoneChange} className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="(555) 123-4567" autoComplete="tel" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-white/70 mb-2">
