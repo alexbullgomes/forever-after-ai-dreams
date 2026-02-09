@@ -716,6 +716,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
                   <button
                     onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
                     className="text-brand-primary-from/60 hover:text-brand-primary-from transition-colors"
+                    aria-label={`Remove file ${file.name}`}
+                    type="button"
                   >
                     ×
                   </button>
@@ -762,9 +764,10 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
               size="sm" 
               className="ml-auto gap-1.5 bg-brand-gradient hover:bg-brand-gradient-hover text-white shadow-lg transition-all duration-200"
               disabled={isLoading || (!input.trim() && selectedFiles.length === 0)}
+              aria-label="Send message"
             >
               Send Message
-              <CornerDownLeft className="size-3.5" />
+              <CornerDownLeft className="size-3.5" aria-hidden="true" />
             </Button>
           </div>
         </form>

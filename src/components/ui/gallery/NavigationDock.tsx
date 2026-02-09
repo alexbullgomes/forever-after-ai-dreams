@@ -40,9 +40,20 @@ const NavigationDock: React.FC<NavigationDockProps> = ({
           {mediaItems.map((item, index) => (
             <motion.div
               key={item.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`View ${item.title}`}
+              aria-pressed={selectedItem.id === item.id}
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedItem(item);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedItem(item);
+                }
               }}
               style={{
                 zIndex: selectedItem.id === item.id ? 30 : mediaItems.length - index,

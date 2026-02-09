@@ -116,11 +116,14 @@ const DashboardNavigation = () => {
               variant="ghost"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-muted-foreground hover:text-foreground"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
             >
               {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               ) : (
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5" aria-hidden="true" />
               )}
             </Button>
           </div>
@@ -128,7 +131,7 @@ const DashboardNavigation = () => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-border py-4">
+          <div id="mobile-navigation-menu" className="md:hidden border-t border-border py-4">
             <div className="space-y-4">
               {/* Mobile Navigation Links */}
               <div className="space-y-2">

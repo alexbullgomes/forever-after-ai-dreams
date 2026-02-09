@@ -203,8 +203,17 @@ const Portfolio = ({
           {filteredItems.map(item => (
             <Card 
               key={item.id} 
+              role="button"
+              tabIndex={0}
+              aria-label={`View ${item.title} - ${item.type} in ${item.location}`}
               className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 bg-card cursor-pointer" 
               onClick={() => handleCardClick(item)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCardClick(item);
+                }
+              }}
             >
               <div className="relative overflow-hidden">
                 <VideoThumbnail

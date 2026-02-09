@@ -114,7 +114,16 @@ const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`View promotion: ${campaign.banner_headline}`}
       onClick={() => navigate(`/promo/${campaign.slug}`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/promo/${campaign.slug}`);
+        }
+      }}
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50 bg-brand-gradient hover:bg-brand-gradient-hover cursor-pointer py-3 px-4 text-white text-center shadow-lg overflow-hidden",
         "md:block", // Always show on desktop

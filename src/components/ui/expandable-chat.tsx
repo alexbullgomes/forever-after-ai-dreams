@@ -89,6 +89,7 @@ const ExpandableChat: React.FC<ExpandableChatProps> = ({
           size="icon"
           className="absolute top-2 right-2 sm:hidden"
           onClick={toggleChat}
+          aria-label="Close chat"
         >
           <X className="h-4 w-4" />
         </Button>
@@ -147,6 +148,8 @@ const ExpandableChatToggle: React.FC<ExpandableChatToggleProps> = ({
   <Button
     variant="default"
     onClick={toggleChat}
+    aria-label={isOpen ? "Close chat" : "Open chat"}
+    aria-expanded={isOpen}
     className={cn(
       "w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-brand-gradient hover:bg-brand-gradient-hover text-white hover:shadow-xl transition-all duration-300 border-2 border-white",
       !isOpen && "animate-[pulse-subtle_20s_ease-in-out_infinite]",
