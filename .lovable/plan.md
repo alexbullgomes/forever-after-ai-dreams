@@ -1,248 +1,183 @@
 
 
-## Performance & Accessibility Optimization Plan
+## Accessibility Fixes Plan (No UI/UX Changes)
 
-This plan addresses Mobile Performance and Accessibility findings without changing any UI/UX, business logic, or media assets.
-
----
-
-## Audit Summary: Top Bottlenecks
-
-### Performance Issues
-
-| Issue | Location | Impact |
-|-------|----------|--------|
-| **No route-based code splitting** | `App.tsx` - all pages imported eagerly | Large initial bundle, slow FCP/LCP |
-| **No lazy loading for below-fold images** | Testimonials, Hero, Portfolio, Blog | Images loaded before visible |
-| **No `font-display: swap`** | No font optimization configured | Potential FOIT (Flash of Invisible Text) |
-| **Heavy framer-motion bundle** | 15+ components import framer-motion | Animation library loaded on all routes |
-| **Admin pages in initial bundle** | `AdminDashboard.tsx` imports 10+ admin pages | Unnecessary code for public visitors |
-| **Video preload strategy** | Hero video uses no preload hint | Delays LCP for hero section |
-| **Missing image dimensions** | Multiple `<img>` tags lack width/height | Causes layout shifts (CLS) |
-
-### Accessibility Issues
-
-| Issue | Location | Impact |
-|-------|----------|--------|
-| **Missing skip link** | `index.html` | Keyboard users cannot skip navigation |
-| **No focus-visible styles** | Global CSS | Focus states unclear for keyboard navigation |
-| **Images missing lazy + decoding** | Testimonials, Portfolio, Blog | No `loading="lazy"` or `decoding="async"` |
-| **Form inputs missing autocomplete** | Contact, Consultation forms | Reduces usability for autofill |
-| **No reduced motion support** | Animations throughout | Accessibility for vestibular disorders |
-| **External links missing rel attributes** | Contact social links | Security best practice |
+This plan addresses Lighthouse/PageSpeed accessibility issues by adding non-visual semantic attributes to the EverAfter codebase. All changes are purely accessibility-focused—no visual, layout, or behavioral modifications.
 
 ---
 
-## Implementation Plan
+## Audit Summary: Accessibility Issues Found
 
-### Phase 1: Code Splitting (High Impact)
-
-**1.1 Add React.lazy for route-level code splitting**
-
-Update `App.tsx` to lazy-load pages:
-
-```typescript
-// Replace static imports with lazy imports
-const WeddingPackages = lazy(() => import('./pages/WeddingPackages'));
-const WeddingQuiz = lazy(() => import('./pages/WeddingQuiz'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const UserDashboard = lazy(() => import('./pages/UserDashboard'));
-const PromotionalLanding = lazy(() => import('./pages/PromotionalLanding'));
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
-const Planner = lazy(() => import('./pages/Planner'));
-// Keep Index eager as it's the landing page
-```
-
-Wrap routes in Suspense with minimal fallback.
-
-**1.2 Lazy load Admin sub-pages**
-
-Update `AdminDashboard.tsx` to lazy-load all admin routes:
-
-```typescript
-const ChatAdmin = lazy(() => import('@/components/dashboard/ChatAdmin'));
-const PipelineProcess = lazy(() => import('@/pages/PipelineProcess'));
-// ... etc
-```
+| Issue Category | Components Affected | Lighthouse Report |
+|----------------|---------------------|-------------------|
+| Icon-only buttons missing accessible names | 12 components | "Buttons do not have an accessible name" |
+| Links missing discernible names | 4 components | "Links do not have a discernible name" |
+| Form inputs missing labels or IDs | 5 components | "Form elements do not have associated labels" |
+| Form inputs missing autocomplete | 3 components | Form autocomplete improvements |
+| Form error states missing aria-invalid | 2 components | Improve error accessibility |
 
 ---
 
-### Phase 2: LCP & Image Optimization (Medium Impact)
+## File-by-File Execution Plan
 
-**2.1 Add fetchpriority to LCP element**
+### 1. Icon-Only Buttons & Links (Task 1)
 
-In `Hero.tsx`, mark the hero video/poster with priority:
+#### `src/components/ui/expandable-chat.tsx`
+- **Line 87-93**: Add `aria-label="Close chat"` to the X button inside ExpandableChat
+- **Line 147-162**: Add `aria-label` prop support to ExpandableChatToggle, defaulting to "Open chat" / "Close chat" based on `isOpen` state
 
-```tsx
-<video
-  autoPlay muted loop playsInline
-  poster="..."
-  fetchpriority="high"  // Signal browser priority
-  ...
->
-```
+#### `src/components/Contact.tsx`
+- **Line 223-225**: Add `aria-label="Follow us on Instagram"` to Instagram icon link
+- **Line 226-230**: Add `aria-label="Follow us on TikTok"` to TikTok icon link  
+- **Line 231-235**: Add `aria-label="Message us on WhatsApp"` to WhatsApp icon link
+- **Line 196-206**: Add `aria-label="Chat with us on WhatsApp"` to the WhatsApp contact link
 
-**2.2 Add preload hint for hero video poster**
+#### `src/components/ui/voice-input.tsx`
+- **Line 50-119**: Add `aria-label="Start voice recording"` / `"Stop voice recording"` to the voice input button based on `_listening` state
+- Add `role="button"` and `tabIndex={0}` for keyboard accessibility
 
-In `index.html`, add preload for LCP image:
+#### `src/components/ui/expandable-chat-assistant.tsx`
+- **Line 716-721**: Add `aria-label="Remove file"` to the file removal button (×)
+- **Line 760-768**: Add `aria-label="Send message"` to the submit button
 
-```html
-<link rel="preload" as="image" href="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homepicture.webp" fetchpriority="high" />
-```
+#### `src/components/PromotionalFooter.tsx`
+- **Line 116-140**: Add `role="button"` and `aria-label` with dynamic campaign headline to the clickable footer div
 
-**2.3 Add lazy loading to below-fold images**
+#### `src/components/dashboard/DashboardNavigation.tsx`
+- **Line 115-125**: Add `aria-label="Open menu"` / `"Close menu"` to mobile menu toggle button based on `isMobileMenuOpen` state
+- **Line 129-203**: Add `aria-expanded` attribute and `aria-controls` to mobile menu button
 
-Update these components to add `loading="lazy"` and `decoding="async"`:
+#### `src/components/gallery/GalleryModal.tsx`
+- **Line 74-86**: Add `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` referencing the media item title
 
-- `Testimonials.tsx` - testimonial avatars
-- `BlogCard.tsx` - blog cover images
-- `Portfolio.tsx` - VideoThumbnail fallback images
-- `Contact.tsx` - social icons (if any images)
-
-**2.4 Add aspect-ratio to image containers**
-
-Ensure all image containers have explicit aspect-ratio to prevent CLS:
-
-```tsx
-// Already good: BlogCard uses aspect-[16/10]
-// Add to: Testimonials avatars (w-16 h-16 is fine)
-// Add to: Portfolio cards
-```
+#### `src/components/ui/gallery/NavigationDock.tsx`
+- **Line 41-83**: Add `role="button"` and `aria-label` with item title to each thumbnail button in the dock
 
 ---
 
-### Phase 3: Reduce Render-Blocking Resources
+### 2. Form Labels, IDs, and Error States (Task 2)
 
-**3.1 Add font-display: swap for system fonts**
+#### `src/components/Contact.tsx`
+- **Lines 139-148**: Add `id="contact-name"` to name input, add `htmlFor="contact-name"` to label
+- **Lines 145-149**: Add `id="contact-email"` to email input, add `htmlFor="contact-email"` to label
+- **Lines 155-158**: Add `id="contact-phone"` to phone input, add `htmlFor="contact-phone"` to label
+- **Lines 160-164**: Add `id="contact-date"` to date input, add `htmlFor="contact-date"` to label
+- **Lines 169-172**: Add `id="contact-message"` to textarea, add `htmlFor="contact-message"` to label
+- Add `aria-required="true"` to required fields
 
-No custom font files detected - system fonts are used. No changes needed.
+#### `src/components/auth/EmailAuthForm.tsx`
+- **Lines 134-150**: Add `id="auth-fullname"` to fullName input, add `htmlFor="auth-fullname"` to label
+- **Lines 153-170**: Add `id="auth-email"` to email input, add `htmlFor="auth-email"` to label
+- **Lines 172-190**: Add `id="auth-password"` to password input, add `htmlFor="auth-password"` to label
+- Add `autoComplete` attributes: `name` for fullName, `email` for email, `current-password` / `new-password` for password
 
-**3.2 Defer non-critical scripts**
+#### `src/components/quiz/LeadCapture.tsx`
+- Already has proper `id` and `Label htmlFor` structure
+- **Lines 88-90, 105-107**: Add `aria-invalid={Boolean(errors.fullName)}` and `aria-describedby="fullName-error"` to inputs with errors
+- Add `id="fullName-error"` and `id="email-error"` to error message paragraphs
 
-The external script is already `type="module"` which is non-blocking. No changes needed.
+#### `src/components/quiz/ConsultationFormFields.tsx`
+- **Lines 12-22**: Add `id="consultation-cellphone"` to input, add `htmlFor="consultation-cellphone"` to label
+- Add `aria-required="true"` to required field
 
----
-
-### Phase 4: Accessibility Fixes (Non-Visual Only)
-
-**4.1 Add skip-to-main link**
-
-Add to `index.html` body:
-
-```html
-<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">
-  Skip to main content
-</a>
-```
-
-Add `id="main-content"` to main content areas.
-
-**4.2 Add focus-visible utility class**
-
-In `index.css`, add:
-
-```css
-@layer base {
-  :focus-visible {
-    outline: 2px solid hsl(var(--ring-brand));
-    outline-offset: 2px;
-  }
-  
-  /* Remove outline for mouse users, keep for keyboard */
-  :focus:not(:focus-visible) {
-    outline: none;
-  }
-}
-```
-
-**4.3 Add reduced motion media query**
-
-In `index.css`, add:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
-
-**4.4 Add autocomplete attributes to forms**
-
-Update form inputs in:
-
-- `Contact.tsx`: name="name" autocomplete="name", email autocomplete="email", phone autocomplete="tel"
-- `ConsultationForm.tsx`: Similar updates
-
-**4.5 Add rel="noopener noreferrer" to external links**
-
-Already present in `Contact.tsx` - verified. No changes needed.
+#### `src/components/PromotionalPopup.tsx`
+- **Lines 232-246**: Already has `id="phone"` and `htmlFor="phone"` - verified correct
+- Add `aria-describedby` linking to the legal note text
 
 ---
 
-### Phase 5: Minor Optimizations
+### 3. Heading Hierarchy Fixes (Task 3)
 
-**5.1 Add Vite build optimizations**
+#### `src/pages/Planner.tsx`
+- **Line 58**: Change `<h1>` to remain as `<h1>` (main page heading, correct)
+- Verify `<h2>` usage in ProductsSection and CampaignCardsSection is correct
 
-Update `vite.config.ts`:
+#### `src/components/planner/ProductsSection.tsx`
+- **Line 27, 60, 75**: Verify `<h2>` headings are semantically correct (they are section headings under the main `<h1>`)
 
-```typescript
-export default defineConfig(({ mode }) => ({
-  // ... existing config
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          'vendor-motion': ['framer-motion'],
-        }
-      }
-    }
-  }
-}));
-```
+#### `src/components/Contact.tsx`
+- **Line 118**: Keep `<h2>` as the main section heading
+- **Line 135**: Keep `<h3>` for "Send us a message" subheading
+- **Line 184**: Keep `<h3>` for "Get in touch" subheading
+- **Line 221**: Change `<h4>` to remain as `<h4>` (correct level under `<h3>`)
+- **Line 240**: Keep `<h4>` for "Quick Response Promise" (correct level)
 
-This separates vendor chunks for better caching.
+#### `src/components/Testimonials.tsx`
+- **Line 42**: Keep `<h2>` as section heading
+- **Line 66**: Keep `<h4>` for testimonial names (correct level inside cards)
+
+#### `src/components/Portfolio.tsx`
+- **Line 158, 181**: Keep `<h2>` for "Recent Stories" section
+- **Line 238-239**: Keep `<h3>` for portfolio item titles (correct level)
+
+---
+
+### 4. Keyboard Focus & Interactive Semantics (Task 4)
+
+#### `src/components/Portfolio.tsx`
+- **Lines 203-249**: The Card is clickable via `onClick` - add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler for Enter/Space
+
+#### `src/components/ui/gallery/NavigationDock.tsx`
+- **Lines 41-83**: The motion.div items use `onClick` - add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler
+
+#### `src/components/PromotionalFooter.tsx`
+- **Lines 116-140**: The div has `onClick` - add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler for Enter/Space
+
+#### Dialog Modal Accessibility (already mostly correct via Radix)
+- `src/components/ui/dialog.tsx`: Radix Dialog already provides `role="dialog"` and `aria-modal="true"` automatically
+- Verify DialogTitle is always present (it is in all usages)
+
+#### `src/components/ui/gallery/GalleryModal.tsx`
+- **Lines 73-98**: This is a custom modal (not using Radix Dialog) - add `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` pointing to a heading
 
 ---
 
 ## Technical Summary
 
-| Change Category | Files Modified | Risk Level |
-|-----------------|---------------|------------|
-| Code splitting | App.tsx, AdminDashboard.tsx | Low |
-| LCP optimization | index.html, Hero.tsx | Low |
-| Image lazy loading | Testimonials.tsx, BlogCard.tsx | Low |
-| Accessibility | index.html, index.css, Contact.tsx, ConsultationForm.tsx | Low |
-| Build optimization | vite.config.ts | Low |
+| File | Change Type | Changes |
+|------|-------------|---------|
+| `src/components/ui/expandable-chat.tsx` | aria-label | 2 buttons |
+| `src/components/Contact.tsx` | aria-label, ids, htmlFor | 4 links, 5 form fields |
+| `src/components/ui/voice-input.tsx` | aria-label, role, tabIndex | 1 button |
+| `src/components/ui/expandable-chat-assistant.tsx` | aria-label | 2 buttons |
+| `src/components/PromotionalFooter.tsx` | role, aria-label, keyboard | 1 div |
+| `src/components/dashboard/DashboardNavigation.tsx` | aria-label, aria-expanded | 1 button |
+| `src/components/ui/gallery/GalleryModal.tsx` | role, aria-modal, aria-labelledby | 1 modal |
+| `src/components/ui/gallery/NavigationDock.tsx` | role, aria-label, keyboard | multiple items |
+| `src/components/auth/EmailAuthForm.tsx` | id, htmlFor, autoComplete | 3 fields |
+| `src/components/quiz/LeadCapture.tsx` | aria-invalid, aria-describedby | 2 fields |
+| `src/components/quiz/ConsultationFormFields.tsx` | id, htmlFor | 1 field |
+| `src/components/Portfolio.tsx` | role, tabIndex, keyboard | card items |
+| `src/components/PromotionalPopup.tsx` | aria-describedby | 1 field |
+
+**Total Estimated Changes:** ~14 files, ~50 attribute additions
 
 ---
 
 ## What This Does NOT Change
 
-- No media asset modifications (URLs, sizes, formats unchanged)
-- No UI/UX changes (layout, spacing, colors preserved)
-- No business logic changes (booking, auth, payments unchanged)
-- No copy or content changes
+- No visual styling changes
+- No layout or spacing changes
+- No copy/text changes
+- No business logic changes
+- No booking, auth, or Stripe behavior changes
+- No media asset changes
 
 ---
 
 ## Verification Checklist
 
-After implementation, test these pages:
+After implementation, test these pages/features:
 
-| Page | What to Check |
-|------|---------------|
-| **Homepage (/)** | Hero video loads, Portfolio cards render, Chat works |
-| **Services (/services)** | Products display, booking modal opens, chat accessible |
-| **Campaign pages (/promo/*)** | Dynamic content loads, pricing cards work |
-| **Admin (/dashboard/*)** | Login redirect works, all admin tabs accessible |
-| **Booking flow** | Date selection, Stripe checkout, success page |
-| **Contact form** | Autocomplete works, submission succeeds |
+| Page/Feature | What to Check |
+|--------------|---------------|
+| **Homepage (/)** | Tab through all interactive elements, verify focus is visible, screen reader announces button purposes |
+| **Services (/services)** | Product cards are keyboard accessible, chat toggle announces state |
+| **Booking Modal** | Date picker and time slots are labeled, form fields announce properly |
+| **Campaign pages (/promo/*)** | Pricing cards are keyboard accessible, consultation form is labeled |
+| **Contact Section** | All form fields have proper labels, social links announce destinations |
+| **Admin (/dashboard/*)** | Mobile menu toggle announces state, navigation is keyboard accessible |
+| **Gallery Modal** | Modal is announced as dialog, close button is labeled, navigation dock is accessible |
 
-Run Lighthouse after deployment to verify improvements.
+**Run Lighthouse Accessibility audit** after implementation to verify score improvement.
 
