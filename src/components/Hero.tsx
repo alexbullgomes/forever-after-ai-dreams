@@ -25,7 +25,16 @@ const Hero = ({
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Video Background */}
         <div className="absolute inset-0 z-0">
-          <video autoPlay muted loop playsInline poster="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homepicture.webp" className="absolute inset-0 w-full h-full object-cover">
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline 
+            poster="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homepicture.webp" 
+            className="absolute inset-0 w-full h-full object-cover"
+            // @ts-expect-error fetchpriority is not yet in React types
+            fetchpriority="high"
+          >
             <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/bannerhomepage.webm" type="video/webm" />
             <source src="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/bannerhomepage.mp4?t=2025-10-06T20%3A46%3A21.431Z" type="video/mp4" />
             Your browser does not support the video tag.

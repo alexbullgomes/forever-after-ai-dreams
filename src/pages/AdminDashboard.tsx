@@ -1,22 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
+
+// Eager load main dashboard content
 import DashboardContent from "@/components/dashboard/DashboardContent";
-import ChatAdmin from "@/components/dashboard/ChatAdmin";
-import PipelineProcess from "@/pages/PipelineProcess";
-import GalleryCardsAdmin from "@/pages/GalleryCardsAdmin";
-import PromotionalCampaigns from "@/pages/PromotionalCampaigns";
-import PromotionalPopups from "@/pages/PromotionalPopups";
-import ProjectSettings from "@/pages/ProjectSettings";
-import ProductsAdmin from "@/pages/ProductsAdmin";
-import BookingsPipeline from "@/pages/BookingsPipeline";
-import AvailabilityManager from "@/pages/AvailabilityManager";
-import AffiliateAnalytics from "@/pages/AffiliateAnalytics";
-import BlogAdmin from "@/pages/BlogAdmin";
+
+// Lazy load admin sub-pages
+const ChatAdmin = lazy(() => import("@/components/dashboard/ChatAdmin"));
+const PipelineProcess = lazy(() => import("@/pages/PipelineProcess"));
+const GalleryCardsAdmin = lazy(() => import("@/pages/GalleryCardsAdmin"));
+const PromotionalCampaigns = lazy(() => import("@/pages/PromotionalCampaigns"));
+const PromotionalPopups = lazy(() => import("@/pages/PromotionalPopups"));
+const ProjectSettings = lazy(() => import("@/pages/ProjectSettings"));
+const ProductsAdmin = lazy(() => import("@/pages/ProductsAdmin"));
+const BookingsPipeline = lazy(() => import("@/pages/BookingsPipeline"));
+const AvailabilityManager = lazy(() => import("@/pages/AvailabilityManager"));
+const AffiliateAnalytics = lazy(() => import("@/pages/AffiliateAnalytics"));
+const BlogAdmin = lazy(() => import("@/pages/BlogAdmin"));
+
+// Minimal loading fallback for admin pages
+const AdminLoader = () => (
+  <div className="flex-1 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary-from"></div>
+  </div>
+);
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -105,20 +116,22 @@ const AdminDashboard = () => {
 
           {/* Main Content */}
           <main className="flex-1 overflow-hidden">
-            <Routes>
-              <Route path="/" element={<DashboardContent />} />
-              <Route path="/chat-admin" element={<ChatAdmin />} />
-              <Route path="/pipeline-process" element={<PipelineProcess />} />
-              <Route path="/gallery-cards" element={<GalleryCardsAdmin />} />
-              <Route path="/products" element={<ProductsAdmin />} />
-              <Route path="/bookings-pipeline" element={<BookingsPipeline />} />
-              <Route path="/availability" element={<AvailabilityManager />} />
-              <Route path="/affiliate-analytics" element={<AffiliateAnalytics />} />
-              <Route path="/promotional-campaigns" element={<PromotionalCampaigns />} />
-              <Route path="/promotional-popups" element={<PromotionalPopups />} />
-              <Route path="/project-settings" element={<ProjectSettings />} />
-              <Route path="/blog" element={<BlogAdmin />} />
-            </Routes>
+            <Suspense fallback={<AdminLoader />}>
+              <Routes>
+                <Route path="/" element={<DashboardContent />} />
+                <Route path="/chat-admin" element={<ChatAdmin />} />
+                <Route path="/pipeline-process" element={<PipelineProcess />} />
+                <Route path="/gallery-cards" element={<GalleryCardsAdmin />} />
+                <Route path="/products" element={<ProductsAdmin />} />
+                <Route path="/bookings-pipeline" element={<BookingsPipeline />} />
+                <Route path="/availability" element={<AvailabilityManager />} />
+                <Route path="/affiliate-analytics" element={<AffiliateAnalytics />} />
+                <Route path="/promotional-campaigns" element={<PromotionalCampaigns />} />
+                <Route path="/promotional-popups" element={<PromotionalPopups />} />
+                <Route path="/project-settings" element={<ProjectSettings />} />
+                <Route path="/blog" element={<BlogAdmin />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       </div>

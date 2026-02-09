@@ -44,6 +44,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <main id="main-content">
       <SEO 
         title="Wedding Videography & Photography California"
         description="California's premier wedding videography & photography studio. Award-winning cinematic films and professional photos for weddings, families, and businesses."
@@ -79,6 +80,7 @@ const Index = () => {
       )}
       
       <PromotionalFooter isChatOpen={isChatOpen} />
+      </main>
     </div>
   );
 };

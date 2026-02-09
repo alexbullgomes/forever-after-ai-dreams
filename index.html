@@ -24,9 +24,16 @@
 
     <link rel="preload" as="style" href="/src/index.css">
     <link rel="stylesheet" href="/src/index.css">
+    
+    <!-- Preload LCP image for faster rendering -->
+    <link rel="preload" as="image" href="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/Homepicture.webp" fetchpriority="high" />
   </head>
 
   <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:text-foreground focus:px-4 focus:py-2 focus:rounded focus:shadow-lg focus:outline-none">
+      Skip to main content
+    </a>
     <script>
       // Synchronously apply brand colors before React loads to prevent FOUC
       (function() {

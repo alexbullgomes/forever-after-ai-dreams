@@ -333,6 +333,17 @@
     @apply bg-background text-foreground;
   }
 
+  /* Accessibility: Focus-visible styles for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring-brand));
+    outline-offset: 2px;
+  }
+  
+  /* Remove outline for mouse users, keep for keyboard */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
   /* Suppress mobile tap highlight (yellow flash) */
   button {
     -webkit-tap-highlight-color: transparent;
@@ -363,6 +374,18 @@
   /* Dark mode button adjustments */
   .dark button.bg-brand-gradient {
     background-image: linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to))) !important;
+  }
+}
+
+/* Accessibility: Respect user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
