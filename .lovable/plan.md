@@ -1,183 +1,142 @@
 
 
-## Accessibility Fixes Plan (No UI/UX Changes)
+## Country Dial Code Selector for All Phone Inputs
 
-This plan addresses Lighthouse/PageSpeed accessibility issues by adding non-visual semantic attributes to the EverAfter codebase. All changes are purely accessibility-focused—no visual, layout, or behavioral modifications.
+### Overview
 
----
-
-## Audit Summary: Accessibility Issues Found
-
-| Issue Category | Components Affected | Lighthouse Report |
-|----------------|---------------------|-------------------|
-| Icon-only buttons missing accessible names | 12 components | "Buttons do not have an accessible name" |
-| Links missing discernible names | 4 components | "Links do not have a discernible name" |
-| Form inputs missing labels or IDs | 5 components | "Form elements do not have associated labels" |
-| Form inputs missing autocomplete | 3 components | Form autocomplete improvements |
-| Form error states missing aria-invalid | 2 components | Improve error accessibility |
+Add a reusable `PhoneNumberField` component with a country dial code selector (defaulting to US +1) to all 6 phone input locations across the app, without changing existing UI layout, styling, or business logic.
 
 ---
 
-## File-by-File Execution Plan
+### New Component: `src/components/ui/phone-number-field.tsx`
 
-### 1. Icon-Only Buttons & Links (Task 1)
+A reusable component that renders `[Dial Code Select] + [Phone Input]` in a single visual row matching existing input height and styling.
 
-#### `src/components/ui/expandable-chat.tsx`
-- **Line 87-93**: Add `aria-label="Close chat"` to the X button inside ExpandableChat
-- **Line 147-162**: Add `aria-label` prop support to ExpandableChatToggle, defaulting to "Open chat" / "Close chat" based on `isOpen` state
+**Structure:**
+- Uses a shadcn `Select` for dial code (compact, ~70px wide showing "+1")
+- Uses the existing `Input` for the national number
+- Wrapped in a `div` with `flex` layout and shared border styling to look like a single input
+- Country list: ~20 most common countries (US, CA, MX, BR, UK, etc.) with dial codes
+- Default: US (+1)
+- Keyboard accessible, proper tab order, aria-labels
 
-#### `src/components/Contact.tsx`
-- **Line 223-225**: Add `aria-label="Follow us on Instagram"` to Instagram icon link
-- **Line 226-230**: Add `aria-label="Follow us on TikTok"` to TikTok icon link  
-- **Line 231-235**: Add `aria-label="Message us on WhatsApp"` to WhatsApp icon link
-- **Line 196-206**: Add `aria-label="Chat with us on WhatsApp"` to the WhatsApp contact link
+**Props interface:**
+```typescript
+interface PhoneNumberFieldProps {
+  value: string;              // national number (formatted)
+  onChange: (value: string) => void;
+  dialCode: string;           // e.g. "+1"
+  onDialCodeChange: (code: string) => void;
+  id?: string;
+  placeholder?: string;
+  required?: boolean;
+  className?: string;         // applied to wrapper
+  inputClassName?: string;    // applied to inner input
+  disabled?: boolean;
+}
+```
 
-#### `src/components/ui/voice-input.tsx`
-- **Line 50-119**: Add `aria-label="Start voice recording"` / `"Stop voice recording"` to the voice input button based on `_listening` state
-- Add `role="button"` and `tabIndex={0}` for keyboard accessibility
-
-#### `src/components/ui/expandable-chat-assistant.tsx`
-- **Line 716-721**: Add `aria-label="Remove file"` to the file removal button (×)
-- **Line 760-768**: Add `aria-label="Send message"` to the submit button
-
-#### `src/components/PromotionalFooter.tsx`
-- **Line 116-140**: Add `role="button"` and `aria-label` with dynamic campaign headline to the clickable footer div
-
-#### `src/components/dashboard/DashboardNavigation.tsx`
-- **Line 115-125**: Add `aria-label="Open menu"` / `"Close menu"` to mobile menu toggle button based on `isMobileMenuOpen` state
-- **Line 129-203**: Add `aria-expanded` attribute and `aria-controls` to mobile menu button
-
-#### `src/components/gallery/GalleryModal.tsx`
-- **Line 74-86**: Add `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` referencing the media item title
-
-#### `src/components/ui/gallery/NavigationDock.tsx`
-- **Line 41-83**: Add `role="button"` and `aria-label` with item title to each thumbnail button in the dock
-
----
-
-### 2. Form Labels, IDs, and Error States (Task 2)
-
-#### `src/components/Contact.tsx`
-- **Lines 139-148**: Add `id="contact-name"` to name input, add `htmlFor="contact-name"` to label
-- **Lines 145-149**: Add `id="contact-email"` to email input, add `htmlFor="contact-email"` to label
-- **Lines 155-158**: Add `id="contact-phone"` to phone input, add `htmlFor="contact-phone"` to label
-- **Lines 160-164**: Add `id="contact-date"` to date input, add `htmlFor="contact-date"` to label
-- **Lines 169-172**: Add `id="contact-message"` to textarea, add `htmlFor="contact-message"` to label
-- Add `aria-required="true"` to required fields
-
-#### `src/components/auth/EmailAuthForm.tsx`
-- **Lines 134-150**: Add `id="auth-fullname"` to fullName input, add `htmlFor="auth-fullname"` to label
-- **Lines 153-170**: Add `id="auth-email"` to email input, add `htmlFor="auth-email"` to label
-- **Lines 172-190**: Add `id="auth-password"` to password input, add `htmlFor="auth-password"` to label
-- Add `autoComplete` attributes: `name` for fullName, `email` for email, `current-password` / `new-password` for password
-
-#### `src/components/quiz/LeadCapture.tsx`
-- Already has proper `id` and `Label htmlFor` structure
-- **Lines 88-90, 105-107**: Add `aria-invalid={Boolean(errors.fullName)}` and `aria-describedby="fullName-error"` to inputs with errors
-- Add `id="fullName-error"` and `id="email-error"` to error message paragraphs
-
-#### `src/components/quiz/ConsultationFormFields.tsx`
-- **Lines 12-22**: Add `id="consultation-cellphone"` to input, add `htmlFor="consultation-cellphone"` to label
-- Add `aria-required="true"` to required field
-
-#### `src/components/PromotionalPopup.tsx`
-- **Lines 232-246**: Already has `id="phone"` and `htmlFor="phone"` - verified correct
-- Add `aria-describedby` linking to the legal note text
+**Output helpers** (exported utility functions in same file):
+```typescript
+export function buildPhoneE164(dialCode: string, national: string): string
+export function buildPhonePayload(dialCode: string, national: string): {
+  phone_e164: string;
+  phone_country_dial_code: string;
+  phone_national: string;
+}
+```
 
 ---
 
-### 3. Heading Hierarchy Fixes (Task 3)
+### Files to Update (6 forms)
 
-#### `src/pages/Planner.tsx`
-- **Line 58**: Change `<h1>` to remain as `<h1>` (main page heading, correct)
-- Verify `<h2>` usage in ProductsSection and CampaignCardsSection is correct
+#### 1. `src/components/PromotionalPopup.tsx`
+- Add `dialCode` state (default "+1")
+- Replace `<Input type="tel">` with `<PhoneNumberField>`
+- On submit, keep sending `cellphone: phoneNumber` (legacy) AND add `phone_e164`, `phone_country_dial_code`, `phone_national` to webhook payload
+- Update `isValidPhone` to work with selected country (for US: 10 digits, for others: 7-15 digits)
+- Keep `formatPhoneNumber` for US format; skip formatting for non-US dial codes
 
-#### `src/components/planner/ProductsSection.tsx`
-- **Line 27, 60, 75**: Verify `<h2>` headings are semantically correct (they are section headings under the main `<h1>`)
+#### 2. `src/components/Contact.tsx`
+- Add `dialCode` state (default "+1")
+- Replace phone `<Input>` with `<PhoneNumberField>`
+- Webhook payload: keep `phone` (legacy, now E.164) and add new fields
+- Keep `formatPhoneNumber` conditional on US dial code
 
-#### `src/components/Contact.tsx`
-- **Line 118**: Keep `<h2>` as the main section heading
-- **Line 135**: Keep `<h3>` for "Send us a message" subheading
-- **Line 184**: Keep `<h3>` for "Get in touch" subheading
-- **Line 221**: Change `<h4>` to remain as `<h4>` (correct level under `<h3>`)
-- **Line 240**: Keep `<h4>` for "Quick Response Promise" (correct level)
+#### 3. `src/components/ConsultationForm.tsx` (root)
+- Add `dialCode` state (default "+1")
+- Replace phone `<Input>` with `<PhoneNumberField>`
+- Webhook payload: keep `phone` (legacy) and add E.164 fields
 
-#### `src/components/Testimonials.tsx`
-- **Line 42**: Keep `<h2>` as section heading
-- **Line 66**: Keep `<h4>` for testimonial names (correct level inside cards)
+#### 4. `src/components/PersonalizedConsultationForm.tsx`
+- Add `dialCode` state (default "+1")
+- Replace phone `<Input>` with `<PhoneNumberField>`
+- Webhook payload: keep `phone` (legacy) and add E.164 fields
 
-#### `src/components/Portfolio.tsx`
-- **Line 158, 181**: Keep `<h2>` for "Recent Stories" section
-- **Line 238-239**: Keep `<h3>` for portfolio item titles (correct level)
+#### 5. `src/components/ui/gallery/GalleryConsultationForm.tsx`
+- Add `dialCode` state (default "+1")
+- Replace phone `<Input>` with `<PhoneNumberField>`
+- Webhook payload: keep `phone_number` (legacy) and add E.164 fields
+- `profiles.user_number` update: send E.164 format
 
----
-
-### 4. Keyboard Focus & Interactive Semantics (Task 4)
-
-#### `src/components/Portfolio.tsx`
-- **Lines 203-249**: The Card is clickable via `onClick` - add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler for Enter/Space
-
-#### `src/components/ui/gallery/NavigationDock.tsx`
-- **Lines 41-83**: The motion.div items use `onClick` - add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler
-
-#### `src/components/PromotionalFooter.tsx`
-- **Lines 116-140**: The div has `onClick` - add `role="button"`, `tabIndex={0}`, and `onKeyDown` handler for Enter/Space
-
-#### Dialog Modal Accessibility (already mostly correct via Radix)
-- `src/components/ui/dialog.tsx`: Radix Dialog already provides `role="dialog"` and `aria-modal="true"` automatically
-- Verify DialogTitle is always present (it is in all usages)
-
-#### `src/components/ui/gallery/GalleryModal.tsx`
-- **Lines 73-98**: This is a custom modal (not using Radix Dialog) - add `role="dialog"`, `aria-modal="true"`, and `aria-labelledby` pointing to a heading
+#### 6. `src/components/quiz/ConsultationFormFields.tsx`
+- Extend props to include `dialCode` and `onDialCodeChange`
+- Replace `<Input>` with `<PhoneNumberField>`
+- Parent (`quiz/ConsultationForm.tsx`) needs `dialCode` state
+- `formValidation.ts`: update `submitConsultationRequest` to accept and send E.164 fields alongside legacy `cellphone`
 
 ---
 
-## Technical Summary
+### Backward Compatibility Strategy
 
-| File | Change Type | Changes |
-|------|-------------|---------|
-| `src/components/ui/expandable-chat.tsx` | aria-label | 2 buttons |
-| `src/components/Contact.tsx` | aria-label, ids, htmlFor | 4 links, 5 form fields |
-| `src/components/ui/voice-input.tsx` | aria-label, role, tabIndex | 1 button |
-| `src/components/ui/expandable-chat-assistant.tsx` | aria-label | 2 buttons |
-| `src/components/PromotionalFooter.tsx` | role, aria-label, keyboard | 1 div |
-| `src/components/dashboard/DashboardNavigation.tsx` | aria-label, aria-expanded | 1 button |
-| `src/components/ui/gallery/GalleryModal.tsx` | role, aria-modal, aria-labelledby | 1 modal |
-| `src/components/ui/gallery/NavigationDock.tsx` | role, aria-label, keyboard | multiple items |
-| `src/components/auth/EmailAuthForm.tsx` | id, htmlFor, autoComplete | 3 fields |
-| `src/components/quiz/LeadCapture.tsx` | aria-invalid, aria-describedby | 2 fields |
-| `src/components/quiz/ConsultationFormFields.tsx` | id, htmlFor | 1 field |
-| `src/components/Portfolio.tsx` | role, tabIndex, keyboard | card items |
-| `src/components/PromotionalPopup.tsx` | aria-describedby | 1 field |
+Every webhook payload will continue to send the **exact same legacy key** (`phone`, `cellphone`, or `phone_number`) with the national format value, PLUS three new fields:
 
-**Total Estimated Changes:** ~14 files, ~50 attribute additions
+| New Field | Example | Purpose |
+|-----------|---------|---------|
+| `phone_e164` | `+14155552671` | International standard |
+| `phone_country_dial_code` | `+1` | Selected country code |
+| `phone_national` | `(415) 555-2671` | Formatted national number |
+
+No existing webhook consumer (n8n, edge functions) will break because legacy keys remain unchanged.
 
 ---
 
-## What This Does NOT Change
+### Formatting Logic
 
-- No visual styling changes
-- No layout or spacing changes
-- No copy/text changes
-- No business logic changes
-- No booking, auth, or Stripe behavior changes
-- No media asset changes
+- When dial code is `+1` (US/CA): apply `(XXX) XXX-XXXX` formatting (existing behavior preserved)
+- When dial code is anything else: allow raw digit input with no formatting mask, placeholder changes to "Phone number"
+- Validation: US requires 10 digits; other countries require 7-15 digits
 
 ---
 
-## Verification Checklist
+### Country List (minimal, ~15 entries)
 
-After implementation, test these pages/features:
+US +1, CA +1, MX +52, BR +55, GB +44, FR +33, DE +49, ES +34, IT +39, AU +61, IN +91, JP +81, KR +82, CO +57, AR +54, CL +56
 
-| Page/Feature | What to Check |
-|--------------|---------------|
-| **Homepage (/)** | Tab through all interactive elements, verify focus is visible, screen reader announces button purposes |
-| **Services (/services)** | Product cards are keyboard accessible, chat toggle announces state |
-| **Booking Modal** | Date picker and time slots are labeled, form fields announce properly |
-| **Campaign pages (/promo/*)** | Pricing cards are keyboard accessible, consultation form is labeled |
-| **Contact Section** | All form fields have proper labels, social links announce destinations |
-| **Admin (/dashboard/*)** | Mobile menu toggle announces state, navigation is keyboard accessible |
-| **Gallery Modal** | Modal is announced as dialog, close button is labeled, navigation dock is accessible |
+The select shows flag emoji + dial code (e.g. "🇺🇸 +1"). Compact width.
 
-**Run Lighthouse Accessibility audit** after implementation to verify score improvement.
+---
+
+### Admin Dashboard (UserProfileModal)
+
+The `UserProfileModal.tsx` only **displays** phone numbers (read-only `<p>` tags). No phone inputs to modify there. No changes needed.
+
+---
+
+### Testing Checklist
+
+For each of the 6 forms:
+1. Default +1 selected, US number formatting works, submit succeeds
+2. Switch to +52, enter Mexican number, payload has correct E.164
+3. Invalid number shows existing error behavior
+4. Webhook payload includes both legacy key and new E.164 fields
+5. Tab order: dial code select is tabbable, then phone input
+
+Pages to verify:
+- Homepage Contact section
+- Promotional popup (triggered by active popup config)
+- Portfolio card consultation modal
+- Wedding packages consultation modal
+- Gallery like consultation modal
+- Wedding quiz consultation popup
 
