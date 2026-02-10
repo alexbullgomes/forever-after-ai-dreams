@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Heart, Gift, Star, Zap, Sparkles, Tag } from "lucide-react";
+import PhoneNumberField, { isValidPhone, buildPhonePayload } from "@/components/ui/phone-number-field";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ const iconMap: Record<string, any> = {
 
 const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) => {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [dialCode, setDialCode] = useState("+1");
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     hours: 0,
@@ -76,31 +77,12 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
     return () => clearInterval(timer);
   }, [isOpen, onClose, config.id, config.countdown_hours]);
 
-  const isValidPhone = (phone: string) => {
-    const digits = phone.replace(/[^\d]/g, '');
-    return digits.length === 10;
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    const phoneNumber = value.replace(/[^\d]/g, '');
-    const phoneNumberLength = phoneNumber.length;
-    
-    if (phoneNumberLength < 4) return phoneNumber;
-    if (phoneNumberLength < 7) {
-      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-    }
-    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhoneNumber(formatted);
-  };
+  const phoneValid = isValidPhone(dialCode, phoneNumber);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (config.phone_required && (!phoneNumber.trim() || !isValidPhone(phoneNumber))) {
+    if (config.phone_required && (!phoneNumber.trim() || !phoneValid)) {
       toast({
         title: "Valid phone number required",
         description: "Please enter a valid phone number to claim the offer",
@@ -159,6 +141,7 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
             fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
             email: user?.email,
             cellphone: phoneNumber.trim(),
+            ...buildPhonePayload(dialCode, phoneNumber),
             visitor_id: visitorId,
             popup_id: config.id,
             event: "wedding_discount_popup",
@@ -233,25 +216,21 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
                     <label htmlFor="phone" className="text-sm font-medium text-foreground">
                       📱 Phone Number
                     </label>
-                    <Input
+                    <PhoneNumberField
                       id="phone"
-                      type="tel"
-                      placeholder="(555) 123-4567"
                       value={phoneNumber}
-                      onChange={handlePhoneChange}
-                      className="w-full"
-                      maxLength={14}
+                      onChange={setPhoneNumber}
+                      dialCode={dialCode}
+                      onDialCodeChange={setDialCode}
                       required
-                      aria-required="true"
-                      aria-describedby={config.legal_note ? "popup-legal-note" : undefined}
-                      autoComplete="tel"
+                      className="w-full"
                     />
                   </div>
                 )}
                 
                 <Button
                   type="submit"
-                  disabled={loading || (config.phone_required && (!phoneNumber.trim() || !isValidPhone(phoneNumber)))}
+                  disabled={loading || (config.phone_required && (!phoneNumber.trim() || !phoneValid))}
                   className="w-full bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Claiming..." : `🎁 ${config.cta_label}`}

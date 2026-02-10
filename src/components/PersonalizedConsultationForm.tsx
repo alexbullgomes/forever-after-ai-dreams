@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import PhoneNumberField, { buildPhonePayload } from '@/components/ui/phone-number-field';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Heart, Sparkles } from 'lucide-react';
@@ -33,25 +34,14 @@ const PersonalizedConsultationForm = ({
     city: '',
     weddingDate: undefined as Date | undefined,
   });
+  const [dialCode, setDialCode] = useState('+1');
 
   const getPersonalizedMessage = () => {
     return `Perfect choice! Let's capture your special day beautifully.`;
   };
 
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 3) {
-      return numbers;
-    }
-    if (numbers.length <= 6) {
-      return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
-    }
-    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setFormData({ ...formData, phone: formatted });
+  const handlePhoneChange = (value: string) => {
+    setFormData({ ...formData, phone: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +63,7 @@ const PersonalizedConsultationForm = ({
         userId: user?.id || null,
         email: user?.email || '',
         phone: formData.phone,
+        ...buildPhonePayload(dialCode, formData.phone),
         city: formData.city,
         weddingDate: format(formData.weddingDate, 'yyyy-MM-dd'),
         packageName: packageName,
@@ -159,12 +150,12 @@ const PersonalizedConsultationForm = ({
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
           <div className="space-y-2">
             <Label htmlFor="phone">Cellphone</Label>
-            <Input
+            <PhoneNumberField
               id="phone"
-              type="tel"
               value={formData.phone}
               onChange={handlePhoneChange}
-              placeholder="(555) 123-4567"
+              dialCode={dialCode}
+              onDialCodeChange={setDialCode}
               required
             />
           </div>
