@@ -25,7 +25,8 @@ export const getPhoneValidationError = (phone: string): string | null => {
 export const submitConsultationRequest = async (
   email: string,
   cellphone: string,
-  packageInfo: { name: string; price: string; type: string }
+  packageInfo: { name: string; price: string; type: string },
+  phonePayload?: { phone_e164: string; phone_country_dial_code: string; phone_national: string }
 ) => {
   const response = await fetch('https://hmdnronxajctsrlgrhey.supabase.co/functions/v1/webhook-proxy', {
     method: 'POST',
@@ -38,6 +39,7 @@ export const submitConsultationRequest = async (
         event: 'consultation_request',
         email,
         cellphone,
+        ...phonePayload,
         package_info: packageInfo,
         discount_offer: '30% OFF',
         source: packageInfo.name,

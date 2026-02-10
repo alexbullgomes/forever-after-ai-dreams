@@ -4,6 +4,7 @@ import { X, Calendar, MapPin, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import PhoneNumberField, { buildPhonePayload, buildPhoneE164 } from '@/components/ui/phone-number-field';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -25,28 +26,16 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
   selectedItem
 }) => {
   const [phone, setPhone] = useState('');
+  const [dialCode, setDialCode] = useState('+1');
   const [city, setCity] = useState('');
   const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const formatPhoneNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/);
-    if (match) {
-      return [match[1], match[2], match[3]].filter(Boolean).join('-');
-    }
-    return value;
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhone(formatted);
-  };
-
   const resetForm = () => {
     setPhone('');
+    setDialCode('+1');
     setCity('');
     setEventDate(undefined);
   };
@@ -68,7 +57,7 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
     try {
       // Update user profile with form data
       const updateData: any = {
-        user_number: phone,
+        user_number: buildPhoneE164(dialCode, phone),
         gallery_event: selectedItem.title
       };
 
@@ -96,6 +85,7 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
         gallery_item_title: selectedItem.title,
         gallery_item_type: selectedItem.type,
         phone_number: phone,
+        ...buildPhonePayload(dialCode, phone),
         city: city || 'Not provided',
         event_date: eventDate ? format(eventDate, 'yyyy-MM-dd') : 'Not provided',
         timestamp: new Date().toISOString(),
@@ -161,14 +151,13 @@ const GalleryConsultationForm: React.FC<GalleryConsultationFormProps> = ({
                 <Phone className="inline w-4 h-4 mr-1" />
                 Phone Number *
               </label>
-              <Input
-                type="tel"
+              <PhoneNumberField
                 value={phone}
-                onChange={handlePhoneChange}
-                placeholder="123-456-7890"
+                onChange={setPhone}
+                dialCode={dialCode}
+                onDialCodeChange={setDialCode}
                 required
-                className="w-full focus:ring-2 focus:ring-rose-500 focus:border-rose-500 rounded-lg"
-                autoComplete="tel"
+                inputClassName="focus:ring-2 focus:ring-rose-500 focus:border-rose-500 rounded-lg"
               />
             </div>
 

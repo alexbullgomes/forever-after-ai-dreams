@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Heart, Sparkles } from 'lucide-react';
+import PhoneNumberField, { buildPhonePayload } from '@/components/ui/phone-number-field';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
@@ -38,6 +39,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
     name: '',
     phone: '',
   });
+  const [dialCode, setDialCode] = useState('+1');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +71,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
         email: user?.email || '',
         name: formData.name,
         phone: formData.phone,
+        ...buildPhonePayload(dialCode, formData.phone),
         visitorId: visitorId,
         timestamp: new Date().toISOString(),
         source: portfolioItem ? 'portfolio_card_click' : serviceName ? 'service_card_click' : 'wedding_consultation_form',
@@ -170,12 +173,12 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
 
           <div className="space-y-2">
             <Label htmlFor="phone">Cellphone</Label>
-            <Input
+            <PhoneNumberField
               id="phone"
-              type="tel"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="(555) 123-4567"
+              onChange={(v) => setFormData({ ...formData, phone: v })}
+              dialCode={dialCode}
+              onDialCodeChange={setDialCode}
               required
             />
           </div>

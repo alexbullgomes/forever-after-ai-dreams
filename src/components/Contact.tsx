@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackReferralConversion } from "@/utils/affiliateTracking";
+import PhoneNumberField, { buildPhonePayload } from "@/components/ui/phone-number-field";
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -15,6 +16,7 @@ const Contact = () => {
     date: "",
     message: ""
   });
+  const [dialCode, setDialCode] = useState("+1");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     toast
@@ -28,6 +30,7 @@ const Contact = () => {
     try {
       const webhookData = {
         ...formData,
+        ...buildPhonePayload(dialCode, formData.phone),
         userId: user?.id || null,
         userEmail: user?.email || null,
         submittedAt: new Date().toISOString(),
@@ -79,22 +82,8 @@ const Contact = () => {
       setIsSubmitting(false);
     }
   };
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 3) {
-      return numbers;
-    }
-    if (numbers.length <= 6) {
-      return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
-    }
-    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-  };
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setFormData({
-      ...formData,
-      phone: formatted
-    });
+  const handlePhoneChange = (value: string) => {
+    setFormData({ ...formData, phone: value });
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -154,7 +143,14 @@ const Contact = () => {
                     <label htmlFor="contact-phone" className="block text-sm font-medium text-white/70 mb-2">
                       Phone
                     </label>
-                    <Input id="contact-phone" name="phone" type="tel" value={formData.phone} onChange={handlePhoneChange} className="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from" placeholder="(555) 123-4567" autoComplete="tel" />
+                    <PhoneNumberField
+                      id="contact-phone"
+                      value={formData.phone}
+                      onChange={handlePhoneChange}
+                      dialCode={dialCode}
+                      onDialCodeChange={setDialCode}
+                      inputClassName="bg-white/10 border-white/30 text-white placeholder:text-neutral-400 focus:border-brand-primary-from"
+                    />
                   </div>
                   <div>
                     <label htmlFor="contact-date" className="block text-sm font-medium text-white/70 mb-2">
