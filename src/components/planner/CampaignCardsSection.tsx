@@ -55,6 +55,7 @@ export const CampaignCardsSection = () => {
               title={campaign.title}
               subtitle={campaign.subtitle}
               imageUrl={campaign.imageUrl}
+              videoUrl={campaign.videoUrl}
               actionText="View Campaign"
               href={campaign.href}
               onActionClick={() => navigate(campaign.href)}

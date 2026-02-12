@@ -5,10 +5,13 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const isVideoUrl = (url: string) => /\.(mp4|webm)(\?.*)?$/i.test(url);
+
 export interface InteractiveTravelCardProps {
   title: string;
   subtitle: string;
   imageUrl: string;
+  videoUrl?: string | null;
   actionText: string;
   href: string;
   onActionClick: () => void;
@@ -20,11 +23,15 @@ export const InteractiveTravelCard = React.forwardRef<
   InteractiveTravelCardProps
 >(
   (
-    { title, subtitle, imageUrl, actionText, href, onActionClick, className },
+    { title, subtitle, imageUrl, videoUrl, actionText, href, onActionClick, className },
     ref
   ) => {
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [videoFailed, setVideoFailed] = React.useState(false);
+
+    const hasVideo = !!videoUrl && isVideoUrl(videoUrl) && !videoFailed;
 
     const springConfig = { damping: 15, stiffness: 150 };
     const springX = useSpring(mouseX, springConfig);
@@ -61,11 +68,26 @@ export const InteractiveTravelCard = React.forwardRef<
           style={{ rotateX, rotateY }}
           className="relative h-80 w-full overflow-hidden rounded-2xl border border-border bg-card shadow-lg transition-shadow duration-300 hover:shadow-xl"
         >
-          {/* Background Image */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${imageUrl})` }}
-          />
+          {/* Background Media */}
+          {hasVideo ? (
+            <video
+              ref={videoRef}
+              src={videoUrl!}
+              poster={imageUrl}
+              muted
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+              onError={() => setVideoFailed(true)}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${imageUrl})` }}
+            />
+          )}
           
           {/* Darkening overlay for better text contrast */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
