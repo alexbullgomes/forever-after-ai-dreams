@@ -7,6 +7,7 @@ export interface ActiveCampaign {
   title: string;
   subtitle: string;
   imageUrl: string;
+  videoUrl: string | null;
   href: string;
 }
 
@@ -23,7 +24,7 @@ export const useActiveCampaigns = () => {
 
         const { data, error: fetchError } = await supabase
           .from('promotional_campaigns')
-          .select('id, slug, title, banner_tagline, banner_poster_url')
+          .select('id, slug, title, banner_tagline, banner_poster_url, banner_video_url')
           .eq('is_active', true)
           .order('created_at', { ascending: false });
 
@@ -37,6 +38,7 @@ export const useActiveCampaigns = () => {
           title: campaign.title,
           subtitle: campaign.banner_tagline || 'Limited-time offer',
           imageUrl: campaign.banner_poster_url || '',
+          videoUrl: campaign.banner_video_url || null,
           href: `/promo/${campaign.slug}`,
         }));
 
