@@ -112,14 +112,14 @@ const PhoneNumberField: React.FC<PhoneNumberFieldProps> = ({
     <div className={`flex ${className}`}>
       <Select value={dialCode} onValueChange={onDialCodeChange} disabled={disabled}>
         <SelectTrigger
-          className="w-[85px] rounded-r-none border-r-0 shrink-0 focus:z-10"
+          className={`w-[85px] rounded-r-none border-r-0 shrink-0 focus:z-10 ${inputClassName}`}
           aria-label="Country dial code"
         >
           <SelectValue>
             {selectedCountry ? `${selectedCountry.flag} ${displayCode}` : displayCode}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[280px]">
+        <SelectContent className="max-h-[280px] bg-popover/95 backdrop-blur-md border-white/20 shadow-xl">
           {COUNTRIES.map((c) => (
             <SelectItem key={c.code} value={c.code}>
               {c.flag} {c.label} {getDialCode(c.code)}
