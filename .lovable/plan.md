@@ -1,142 +1,70 @@
 
 
-## Country Dial Code Selector for All Phone Inputs
+## Fix FOUC (Flash of Unstyled Content) - Yellow Theme Flash
 
-### Overview
+### Root Cause
 
-Add a reusable `PhoneNumberField` component with a country dial code selector (defaulting to US +1) to all 6 phone input locations across the app, without changing existing UI layout, styling, or business logic.
+The inline script in `index.html` (lines 41-70) has **default color values in RGB format** (e.g., `244 63 94`), but the entire CSS variable system uses **HSL format** (e.g., `351 95% 71%`). Tailwind renders colors as `hsl(var(--brand-primary-from))`, so when the default `244 63 94` is interpolated as HSL, it produces a bright yellow instead of the intended pink gradient.
 
----
+The CSS defaults in `index.css` are correct (HSL), but the inline script runs after and **overwrites** them with wrong-format values, causing the yellow flash on every fresh load or cleared cache.
 
-### New Component: `src/components/ui/phone-number-field.tsx`
+### Fix (Single File Change)
 
-A reusable component that renders `[Dial Code Select] + [Phone Input]` in a single visual row matching existing input height and styling.
+**File: `index.html`** (lines 41-70)
 
-**Structure:**
-- Uses a shadcn `Select` for dial code (compact, ~70px wide showing "+1")
-- Uses the existing `Input` for the national number
-- Wrapped in a `div` with `flex` layout and shared border styling to look like a single input
-- Country list: ~20 most common countries (US, CA, MX, BR, UK, etc.) with dial codes
-- Default: US (+1)
-- Keyboard accessible, proper tab order, aria-labels
+Replace all default color values in the inline script with the correct HSL values that match `index.css`:
 
-**Props interface:**
-```typescript
-interface PhoneNumberFieldProps {
-  value: string;              // national number (formatted)
-  onChange: (value: string) => void;
-  dialCode: string;           // e.g. "+1"
-  onDialCodeChange: (code: string) => void;
-  id?: string;
-  placeholder?: string;
-  required?: boolean;
-  className?: string;         // applied to wrapper
-  inputClassName?: string;    // applied to inner input
-  disabled?: boolean;
-}
-```
+| Variable | Current (RGB - WRONG) | Corrected (HSL) |
+|----------|----------------------|-----------------|
+| `primary_from` | `244 63 94` | `351 95% 71%` |
+| `primary_to` | `236 72 153` | `328 86% 70%` |
+| `primary_hover_from` | `225 29 72` | `350 89% 60%` |
+| `primary_hover_to` | `219 39 119` | `328 86% 60%` |
+| `icon_bg_primary` | `244 63 94` | `351 95% 71%` |
+| `icon_bg_secondary` | `168 85 247` | `271 91% 65%` |
+| `icon_bg_accent` | `236 72 153` | `328 86% 70%` |
+| `text_accent` | `244 63 94` | `351 95% 71%` |
+| `badge_text` | `225 29 72` | `350 89% 50%` |
+| `stats_text` | `244 63 94` | `351 95% 71%` |
+| `badge_bg` | `254 242 242` | `350 100% 97%` |
+| `feature_dot` | `251 113 133` | `351 95% 75%` |
+| `hero_overlay_color` | `0 0 0` | `0 0% 0%` |
+| `hero_badge_bg_color` | `0 0 100` | `0 0% 100%` |
+| `hero_badge_icon` | `351 95 71` | `351 95% 71%` |
+| `hero_gradient_from` | `351 95 71` | `351 95% 71%` |
+| `hero_gradient_via` | `328 86 70` | `328 86% 70%` |
+| `hero_gradient_to` | `261 90 76` | `261 90% 76%` |
+| `hero_text_primary` | `0 0 100` | `0 0% 100%` |
+| `hero_text_muted` | `0 0 100` | `0 0% 100%` |
+| `hero_trust_text` | `0 0 100` | `0 0% 100%` |
+| `hero_glow_1_from` | `351 95 71` | `351 95% 71%` |
+| `hero_glow_1_to` | `328 86 70` | `328 86% 70%` |
+| `hero_glow_2_from` | `261 90 76` | `261 90% 76%` |
+| `hero_glow_2_to` | `328 86 70` | `328 86% 70%` |
+| `service_icon_gradient_from` | `351 95 71` | `351 95% 71%` |
+| `service_icon_gradient_to` | `328 86 70` | `328 86% 70%` |
+| `contact_bg_gradient_from` | `222 47 11` | `222 47% 11%` |
+| `contact_bg_gradient_to` | `350 89 60` | `350 89% 60%` |
 
-**Output helpers** (exported utility functions in same file):
-```typescript
-export function buildPhoneE164(dialCode: string, national: string): string
-export function buildPhonePayload(dialCode: string, national: string): {
-  phone_e164: string;
-  phone_country_dial_code: string;
-  phone_national: string;
-}
-```
+Also add the missing `cta_icon_color` default: `351 95% 71%`.
 
----
+### What This Does NOT Change
 
-### Files to Update (6 forms)
+- No layout, component, or animation changes
+- No changes to the theme customization system (`useSiteSettings`)
+- No changes to `index.css` (already correct)
+- No changes to any component files
+- Booking, auth, chat, campaigns all untouched
+- localStorage caching logic remains identical
+- When cached colors exist, they are used (as before)
 
-#### 1. `src/components/PromotionalPopup.tsx`
-- Add `dialCode` state (default "+1")
-- Replace `<Input type="tel">` with `<PhoneNumberField>`
-- On submit, keep sending `cellphone: phoneNumber` (legacy) AND add `phone_e164`, `phone_country_dial_code`, `phone_national` to webhook payload
-- Update `isValidPhone` to work with selected country (for US: 10 digits, for others: 7-15 digits)
-- Keep `formatPhoneNumber` for US format; skip formatting for non-US dial codes
+### Why This Fully Fixes the Issue
 
-#### 2. `src/components/Contact.tsx`
-- Add `dialCode` state (default "+1")
-- Replace phone `<Input>` with `<PhoneNumberField>`
-- Webhook payload: keep `phone` (legacy, now E.164) and add new fields
-- Keep `formatPhoneNumber` conditional on US dial code
+The inline script already runs synchronously before React mounts. The only problem was the **wrong color format** in its hardcoded defaults. Once the defaults match the HSL format used everywhere else, the first paint will show the correct pink gradient immediately -- zero flash, zero loader needed.
 
-#### 3. `src/components/ConsultationForm.tsx` (root)
-- Add `dialCode` state (default "+1")
-- Replace phone `<Input>` with `<PhoneNumberField>`
-- Webhook payload: keep `phone` (legacy) and add E.164 fields
+### Verification
 
-#### 4. `src/components/PersonalizedConsultationForm.tsx`
-- Add `dialCode` state (default "+1")
-- Replace phone `<Input>` with `<PhoneNumberField>`
-- Webhook payload: keep `phone` (legacy) and add E.164 fields
-
-#### 5. `src/components/ui/gallery/GalleryConsultationForm.tsx`
-- Add `dialCode` state (default "+1")
-- Replace phone `<Input>` with `<PhoneNumberField>`
-- Webhook payload: keep `phone_number` (legacy) and add E.164 fields
-- `profiles.user_number` update: send E.164 format
-
-#### 6. `src/components/quiz/ConsultationFormFields.tsx`
-- Extend props to include `dialCode` and `onDialCodeChange`
-- Replace `<Input>` with `<PhoneNumberField>`
-- Parent (`quiz/ConsultationForm.tsx`) needs `dialCode` state
-- `formValidation.ts`: update `submitConsultationRequest` to accept and send E.164 fields alongside legacy `cellphone`
-
----
-
-### Backward Compatibility Strategy
-
-Every webhook payload will continue to send the **exact same legacy key** (`phone`, `cellphone`, or `phone_number`) with the national format value, PLUS three new fields:
-
-| New Field | Example | Purpose |
-|-----------|---------|---------|
-| `phone_e164` | `+14155552671` | International standard |
-| `phone_country_dial_code` | `+1` | Selected country code |
-| `phone_national` | `(415) 555-2671` | Formatted national number |
-
-No existing webhook consumer (n8n, edge functions) will break because legacy keys remain unchanged.
-
----
-
-### Formatting Logic
-
-- When dial code is `+1` (US/CA): apply `(XXX) XXX-XXXX` formatting (existing behavior preserved)
-- When dial code is anything else: allow raw digit input with no formatting mask, placeholder changes to "Phone number"
-- Validation: US requires 10 digits; other countries require 7-15 digits
-
----
-
-### Country List (minimal, ~15 entries)
-
-US +1, CA +1, MX +52, BR +55, GB +44, FR +33, DE +49, ES +34, IT +39, AU +61, IN +91, JP +81, KR +82, CO +57, AR +54, CL +56
-
-The select shows flag emoji + dial code (e.g. "🇺🇸 +1"). Compact width.
-
----
-
-### Admin Dashboard (UserProfileModal)
-
-The `UserProfileModal.tsx` only **displays** phone numbers (read-only `<p>` tags). No phone inputs to modify there. No changes needed.
-
----
-
-### Testing Checklist
-
-For each of the 6 forms:
-1. Default +1 selected, US number formatting works, submit succeeds
-2. Switch to +52, enter Mexican number, payload has correct E.164
-3. Invalid number shows existing error behavior
-4. Webhook payload includes both legacy key and new E.164 fields
-5. Tab order: dial code select is tabbable, then phone input
-
-Pages to verify:
-- Homepage Contact section
-- Promotional popup (triggered by active popup config)
-- Portfolio card consultation modal
-- Wedding packages consultation modal
-- Gallery like consultation modal
-- Wedding quiz consultation popup
-
+1. Clear localStorage (`everafter_brand_colors` key) and hard-refresh
+2. First paint should show pink gradient (not yellow)
+3. Change brand colors in Project Settings -- should still update in real-time
+4. Refresh again -- cached colors should load instantly from localStorage
