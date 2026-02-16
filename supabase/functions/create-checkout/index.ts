@@ -60,14 +60,22 @@ serve(async (req) => {
     let lineItems;
     
     if (paymentType === "deposit") {
-      // Use the pre-created deposit product
+      // Dynamic deposit amount — $500 default, parsed from packagePrice if available
+      const depositAmount = 50000; // $500 in cents
       lineItems = [
         {
-          price: "price_1SiMTg1C2vcrogbss2oCgztO", // $500 deposit
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `${packageName || "Wedding Package"} - Deposit`,
+              description: `Deposit to secure your ${packageName || "Wedding Package"} booking`,
+            },
+            unit_amount: depositAmount,
+          },
           quantity: 1,
         },
       ];
-      logStep("Using deposit product");
+      logStep("Using dynamic deposit price_data", { amount: depositAmount });
     } else {
       // Full payment - create a price on the fly based on the package
       // Parse the price from the package (e.g., "$800–$1,200" -> use minimum)
