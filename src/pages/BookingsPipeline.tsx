@@ -173,7 +173,8 @@ export default function BookingsPipeline() {
       // Compute global availability for ALL bookings (products and campaign packages)
       if (booking.selected_time) {
         const [hours, minutes] = booking.selected_time.split(':').map(Number);
-        const slotStart = new Date(booking.event_date);
+        const [sy, sm, sd] = booking.event_date.split('-').map(Number);
+        const slotStart = new Date(sy, sm - 1, sd);
         slotStart.setHours(hours, minutes, 0, 0);
         const slotEnd = new Date(slotStart);
         slotEnd.setHours(slotEnd.getHours() + 1);
@@ -584,7 +585,7 @@ export default function BookingsPipeline() {
         <AvailabilityOverrideModal
           isOpen={!!overrideModalBooking}
           onClose={() => setOverrideModalBooking(null)}
-          date={new Date(overrideModalBooking.event_date)}
+          date={(() => { const [y, m, d] = overrideModalBooking.event_date.split('-').map(Number); return new Date(y, m - 1, d); })()}
           onSaved={() => {
             computeAvailabilities(bookings);
           }}
