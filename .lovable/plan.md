@@ -1,70 +1,45 @@
 
 
-## Fix FOUC (Flash of Unstyled Content) - Yellow Theme Flash
+## Date Shift Fix: Booking Pipeline to Override Modal
 
-### Root Cause
+### Problem
+When clicking the Availability badge for a booking with `event_date = "2026-02-26"`, the Override modal shows **Feb 25, 2026** instead of Feb 26.
 
-The inline script in `index.html` (lines 41-70) has **default color values in RGB format** (e.g., `244 63 94`), but the entire CSS variable system uses **HSL format** (e.g., `351 95% 71%`). Tailwind renders colors as `hsl(var(--brand-primary-from))`, so when the default `244 63 94` is interpolated as HSL, it produces a bright yellow instead of the intended pink gradient.
+**Root cause**: `new Date("2026-02-26")` interprets the YYYY-MM-DD string as **UTC midnight**. In America/Los_Angeles (PST/PDT, UTC-8/7), that becomes the **previous day** (Feb 25 at 4:00 PM).
 
-The CSS defaults in `index.css` are correct (HSL), but the inline script runs after and **overwrites** them with wrong-format values, causing the yellow flash on every fresh load or cleared cache.
+### Locations to Fix
 
-### Fix (Single File Change)
+There are **2 instances** of this bug in `src/pages/BookingsPipeline.tsx`:
 
-**File: `index.html`** (lines 41-70)
+1. **Line 587** -- Date passed to Override modal:
+   ```
+   date={new Date(overrideModalBooking.event_date)}
+   ```
+   Fix: Parse as local date using split-based constructor.
 
-Replace all default color values in the inline script with the correct HSL values that match `index.css`:
+2. **Line 176** -- Slot availability computation:
+   ```
+   const slotStart = new Date(booking.event_date);
+   ```
+   Fix: Same local date parsing.
 
-| Variable | Current (RGB - WRONG) | Corrected (HSL) |
-|----------|----------------------|-----------------|
-| `primary_from` | `244 63 94` | `351 95% 71%` |
-| `primary_to` | `236 72 153` | `328 86% 70%` |
-| `primary_hover_from` | `225 29 72` | `350 89% 60%` |
-| `primary_hover_to` | `219 39 119` | `328 86% 60%` |
-| `icon_bg_primary` | `244 63 94` | `351 95% 71%` |
-| `icon_bg_secondary` | `168 85 247` | `271 91% 65%` |
-| `icon_bg_accent` | `236 72 153` | `328 86% 70%` |
-| `text_accent` | `244 63 94` | `351 95% 71%` |
-| `badge_text` | `225 29 72` | `350 89% 50%` |
-| `stats_text` | `244 63 94` | `351 95% 71%` |
-| `badge_bg` | `254 242 242` | `350 100% 97%` |
-| `feature_dot` | `251 113 133` | `351 95% 75%` |
-| `hero_overlay_color` | `0 0 0` | `0 0% 0%` |
-| `hero_badge_bg_color` | `0 0 100` | `0 0% 100%` |
-| `hero_badge_icon` | `351 95 71` | `351 95% 71%` |
-| `hero_gradient_from` | `351 95 71` | `351 95% 71%` |
-| `hero_gradient_via` | `328 86 70` | `328 86% 70%` |
-| `hero_gradient_to` | `261 90 76` | `261 90% 76%` |
-| `hero_text_primary` | `0 0 100` | `0 0% 100%` |
-| `hero_text_muted` | `0 0 100` | `0 0% 100%` |
-| `hero_trust_text` | `0 0 100` | `0 0% 100%` |
-| `hero_glow_1_from` | `351 95 71` | `351 95% 71%` |
-| `hero_glow_1_to` | `328 86 70` | `328 86% 70%` |
-| `hero_glow_2_from` | `261 90 76` | `261 90% 76%` |
-| `hero_glow_2_to` | `328 86 70` | `328 86% 70%` |
-| `service_icon_gradient_from` | `351 95 71` | `351 95% 71%` |
-| `service_icon_gradient_to` | `328 86 70` | `328 86% 70%` |
-| `contact_bg_gradient_from` | `222 47 11` | `222 47% 11%` |
-| `contact_bg_gradient_to` | `350 89 60` | `350 89% 60%` |
+### Fix Approach
 
-Also add the missing `cta_icon_color` default: `351 95% 71%`.
+Replace `new Date(dateString)` with local date parsing:
+```typescript
+const [y, m, d] = booking.event_date.split('-').map(Number);
+new Date(y, m - 1, d)
+```
 
-### What This Does NOT Change
+This is the **exact same pattern** already used correctly on lines 371 and 483 of the same file for displaying the event date in the table and detail modal.
 
-- No layout, component, or animation changes
-- No changes to the theme customization system (`useSiteSettings`)
-- No changes to `index.css` (already correct)
-- No changes to any component files
-- Booking, auth, chat, campaigns all untouched
-- localStorage caching logic remains identical
-- When cached colors exist, they are used (as before)
+### Files Changed
+- `src/pages/BookingsPipeline.tsx` (2 edits, lines 176 and 587)
 
-### Why This Fully Fixes the Issue
-
-The inline script already runs synchronously before React mounts. The only problem was the **wrong color format** in its hardcoded defaults. Once the defaults match the HSL format used everywhere else, the first paint will show the correct pink gradient immediately -- zero flash, zero loader needed.
+### No Changes To
+- Database schema, availability logic, booking logic, RLS, edge functions
+- UI components, layout, or any other files
 
 ### Verification
+After fix, clicking the Availability badge for a Feb 26 booking will open the Override modal showing "Feb 26, 2026" consistently.
 
-1. Clear localStorage (`everafter_brand_colors` key) and hard-refresh
-2. First paint should show pink gradient (not yellow)
-3. Change brand colors in Project Settings -- should still update in real-time
-4. Refresh again -- cached colors should load instantly from localStorage
