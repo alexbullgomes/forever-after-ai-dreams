@@ -231,6 +231,7 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       customer_email: customerEmail,
+      phone_number_collection: { enabled: true },
       line_items: [
         {
           price_data: {
