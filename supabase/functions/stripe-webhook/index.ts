@@ -10,7 +10,6 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 serve(async (req) => {
   logStep('Webhook received', { method: req.method });
 
-  // Only accept POST requests
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
   }
@@ -37,14 +36,10 @@ serve(async (req) => {
   }
 
   try {
-    // Read raw body for signature verification
     const body = await req.text();
-    
-    // CRITICAL: Verify webhook signature to ensure request is from Stripe
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     logStep('Event verified', { type: event.type, id: event.id });
 
-    // Handle checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       await handleCheckoutComplete(session);
@@ -69,7 +64,6 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     paymentStatus: session.payment_status 
   });
 
-  // Only process successful payments
   if (session.payment_status !== 'paid') {
     logStep('Payment not completed, skipping', { status: session.payment_status });
     return;
@@ -94,15 +88,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   } = metadata;
 
   logStep('Session metadata', { 
-    booking_request_id, 
-    hold_id, 
-    event_date, 
-    selected_time,
-    campaign_mode,
-    package_id,
+    booking_request_id, hold_id, event_date, selected_time, campaign_mode, package_id,
   });
 
-  // Process booking-based payments (campaign deposits or product bookings)
   if (booking_request_id && event_date && selected_time) {
     await processBookingPayment({
       supabase,
@@ -134,36 +122,25 @@ async function processBookingPayment(params: {
   package_id?: string | null;
 }) {
   const { 
-    supabase, 
-    session, 
-    booking_request_id, 
-    product_id, 
-    event_date, 
-    selected_time, 
-    hold_id, 
-    user_id,
-    campaign_id,
-    package_id,
+    supabase, session, booking_request_id, product_id, event_date, 
+    selected_time, hold_id, user_id, campaign_id, package_id,
   } = params;
 
   logStep('Processing booking payment', { booking_request_id, product_id, package_id });
 
   // Calculate end_time based on slot duration
-  let slotDuration = 60; // default 60 minutes
-  
+  let slotDuration = 60;
   if (product_id) {
     const { data: rules } = await supabase
       .from('product_booking_rules')
       .select('slot_duration_minutes')
       .eq('product_id', product_id)
       .maybeSingle();
-    
     if (rules?.slot_duration_minutes) {
       slotDuration = rules.slot_duration_minutes;
     }
   }
 
-  // Parse selected_time and calculate end_time
   const timeParts = selected_time.split(':');
   const hours = parseInt(timeParts[0], 10);
   const minutes = parseInt(timeParts[1], 10);
@@ -174,33 +151,23 @@ async function processBookingPayment(params: {
 
   logStep('Calculated booking times', { start: selected_time, end: end_time, duration: slotDuration });
 
-  // Create confirmed booking
-  // CRITICAL: product_id is now nullable for campaign bookings
-  const bookingInsert: any = {
+  // Build booking insert with new fields
+  const bookingInsert: Record<string, unknown> = {
     booking_request_id,
     event_date,
     start_time: selected_time,
     end_time,
     status: 'confirmed',
     stripe_payment_intent: session.payment_intent as string,
+    stripe_checkout_session_id: session.id,
+    amount_paid: session.amount_total,
     customer_name: session.customer_details?.name || null,
     customer_email: session.customer_details?.email || null,
   };
 
-  // Only set product_id if it exists (null for campaign bookings)
-  if (product_id) {
-    bookingInsert.product_id = product_id;
-  }
-
-  // Set package_id for campaign bookings
-  if (package_id) {
-    bookingInsert.package_id = package_id;
-  }
-
-  // Set user_id if available
-  if (user_id) {
-    bookingInsert.user_id = user_id;
-  }
+  if (product_id) bookingInsert.product_id = product_id;
+  if (package_id) bookingInsert.package_id = package_id;
+  if (user_id) bookingInsert.user_id = user_id;
 
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
@@ -215,13 +182,12 @@ async function processBookingPayment(params: {
 
   logStep('Booking created successfully', { bookingId: booking.id });
 
-  // Convert slot hold to 'converted' status
+  // Convert slot hold
   if (hold_id) {
     const { error: holdError } = await supabase
       .from('booking_slot_holds')
       .update({ status: 'converted' })
       .eq('id', hold_id);
-
     if (holdError) {
       logStep('WARNING: Failed to update slot hold', { error: holdError.message });
     } else {
@@ -229,21 +195,73 @@ async function processBookingPayment(params: {
     }
   }
 
-  // Update booking request to 'paid' stage
+  // Update booking request to 'paid'
   const { error: requestError } = await supabase
     .from('booking_requests')
-    .update({
-      stage: 'paid',
-      stripe_checkout_session_id: session.id,
-    })
+    .update({ stage: 'paid', stripe_checkout_session_id: session.id })
     .eq('id', booking_request_id);
-
   if (requestError) {
     logStep('WARNING: Failed to update booking request', { error: requestError.message });
   } else {
     logStep('Booking request updated to paid', { requestId: booking_request_id });
   }
 
+  // Activate user dashboard + pipeline
+  if (user_id) {
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        user_dashboard: true,
+        pipeline_profile: 'Enable',
+        pipeline_status: 'New Lead & Negotiation',
+      })
+      .eq('id', user_id)
+      .or('pipeline_profile.is.null,pipeline_profile.neq.Enable');
+
+    if (profileError) {
+      logStep('WARNING: Failed to activate profile', { error: profileError.message });
+    } else {
+      logStep('Profile activated for pipeline', { userId: user_id });
+    }
+  }
+
+  // Resolve product/package title for n8n
+  let product_title: string | null = null;
+  if (product_id) {
+    const { data: prod } = await supabase.from('products').select('title').eq('id', product_id).maybeSingle();
+    product_title = prod?.title || null;
+  } else if (package_id) {
+    const { data: pkg } = await supabase.from('campaign_packages').select('title').eq('id', package_id).maybeSingle();
+    product_title = pkg?.title || null;
+  }
+
+  // Fire n8n webhook (fire-and-forget)
+  try {
+    const n8nPayload = {
+      booking_id: booking.id,
+      user_id: user_id || null,
+      full_name: session.customer_details?.name || null,
+      email: session.customer_details?.email || null,
+      phone: session.customer_details?.phone || null,
+      product_id: product_id || null,
+      product_title,
+      campaign_id: campaign_id || null,
+      package_id: package_id || null,
+      event_date,
+      amount_paid: session.amount_total,
+      stripe_payment_intent: session.payment_intent,
+      stripe_checkout_session_id: session.id,
+    };
+
+    logStep('Sending n8n webhook', { booking_id: booking.id });
+    fetch('https://agcreationmkt.cloud/webhook/stripe-checkout-n8n', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(n8nPayload),
+    }).catch((e) => logStep('WARNING: n8n webhook failed', { error: String(e) }));
+  } catch (e) {
+    logStep('WARNING: n8n webhook error', { error: String(e) });
+  }
+
   logStep('Booking payment processed successfully');
 }
-
