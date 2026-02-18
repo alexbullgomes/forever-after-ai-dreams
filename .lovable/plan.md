@@ -1,105 +1,134 @@
 
 
-## Deprecate Legacy Wedding Packages System
+## Post-Checkout Flow: Structural Update
 
-This plan removes the old `/wedding-packages` flow, its dedicated `create-checkout` edge function, and the legacy wedding payment processing in the Stripe webhook. The centralized booking system (`create-booking-checkout` + `processBookingPayment`) remains fully intact.
-
----
-
-### Files to Delete
-
-| File | Reason |
-|------|--------|
-| `src/pages/WeddingPackages.tsx` | Legacy page |
-| `src/components/wedding/WeddingPackagesHeader.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/PackageCard.tsx` | Only used by PackageSection (WeddingPackages) |
-| `src/components/wedding/PackageSection.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/CustomPackageCard.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/CTASection.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/LoadingState.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/PackagesNavigation.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/PageHeader.tsx` | Only used by WeddingPackages page |
-| `src/components/wedding/PaymentButton.tsx` | Legacy checkout -- calls `create-checkout` |
-| `src/data/weddingPackages.ts` | Static package data for legacy page |
-| `supabase/functions/create-checkout/index.ts` | Legacy edge function |
-
-**NOT deleted** (used by chat system): `src/components/wedding/components/AudioPlayer.tsx`, `ChatHistory.tsx`, `ChatMessage.tsx`, `utils/*`, `AIAssistantSection.tsx`
+This plan connects the full lifecycle: Stripe payment -> Supabase data -> Pipeline activation -> User Dashboard -> n8n notification.
 
 ---
 
-### Files to Modify
+### Database Migration (Required First)
 
-**1. `src/App.tsx`**
-- Remove `WeddingPackages` lazy import
-- Remove `/wedding-packages` route
+Add two missing columns to the `bookings` table:
 
-**2. `src/contexts/AuthContext.tsx`**
-- Remove `PENDING_PAYMENT_KEY`, `PendingPayment` interface, `PAYMENT_EXPIRY_MS`
-- Remove `processPendingPayment` function and its `create-checkout` invocation
-- Remove the call to `processPendingPayment` from the auth state change handler
+```text
+ALTER TABLE bookings ADD COLUMN stripe_checkout_session_id text;
+ALTER TABLE bookings ADD COLUMN amount_paid integer;
+```
 
-**3. `src/components/dashboard/DashboardNavigation.tsx`**
-- Remove `usePageVisibility` import and `showWeddingPackages` usage
-- Remove the conditional Wedding Packages nav link
+- `stripe_checkout_session_id`: Links booking back to Stripe session for PaymentSuccess page lookup
+- `amount_paid`: Amount in cents for display in Service Tracking
 
-**4. `src/components/planner/ExploreServicesSection.tsx`**
-- Remove the entire component (it only renders a link to `/wedding-packages`)
-- OR remove the wedding packages card/link and keep the component if it has other content
-
-**5. `src/components/quiz/QuizResult.tsx`**
-- Change `navigate('/wedding-packages')` to `navigate('/services')` (redirect to services instead)
-
-**6. `src/pages/PaymentSuccess.tsx`**
-- Change "View Your Booking" button from `/wedding-packages` to `/services`
-
-**7. `src/components/admin/settings/ContentSection.tsx`**
-- Remove the "Show Wedding Packages page" toggle and all related `usePageVisibility` usage
-
-**8. `src/hooks/usePageVisibility.ts`**
-- Delete this hook entirely (only purpose was wedding packages visibility toggle)
-
-**9. `src/components/auth/GoogleAuthButton.tsx`**
-- Remove legacy `pendingPayment` localStorage check (lines 27-28, 36-37)
-
-**10. `supabase/config.toml`**
-- Remove `[functions.create-checkout]` section
-
-**11. `supabase/functions/stripe-webhook/index.ts`**
-- Remove `processWeddingPackagePayment` function entirely
-- Remove the `else if (payment_type === 'deposit' || payment_type === 'full')` conditional block in `handleCheckoutComplete`
-- Remove `payment_type` and `package_name` from metadata destructuring (only used by legacy flow)
-- Keep `processBookingPayment` fully intact
-
-**12. `public/robots.txt`**
-- Remove `Disallow: /wedding-packages` from all user-agent blocks
-
-**13. `public/sitemap.xml`**
-- No changes needed (wedding-packages was never in the sitemap)
+No RLS changes needed -- existing policies ("Users can view their own bookings" via `auth.uid() = user_id` and service_role INSERT) are sufficient.
 
 ---
 
-### Database Considerations
+### Part 1: Stripe Webhook Update
 
-- **`profiles.package_consultation`**: Currently set by `processWeddingPackagePayment` which is being removed. This column may still be useful for admin notes. No schema change -- just note it is no longer auto-populated by the legacy flow.
-- **`profiles.pipeline_status`**: The value `'Closed Deal & Pre-Production'` was set by the legacy flow, but this column is still used by the pipeline system generally. No change needed.
-- **No tables are dropped.** `bookings`, `products`, `campaign_packages`, `booking_requests`, `booking_slot_holds` all remain untouched.
+**File: `supabase/functions/stripe-webhook/index.ts`**
+
+Update `processBookingPayment` to perform three additional operations after booking creation:
+
+**A) Store new fields on booking insert:**
+- `stripe_checkout_session_id: session.id`
+- `amount_paid: session.amount_total` (integer, cents)
+
+**B) Update user profile (activate dashboard + pipeline):**
+```
+UPDATE profiles SET
+  user_dashboard = true,
+  pipeline_profile = 'Enable',
+  pipeline_status = 'New Lead & Negotiation'
+WHERE id = user_id
+  AND (pipeline_profile IS NULL OR pipeline_profile != 'Enable')
+```
+Only update `pipeline_status` if not already enabled (avoid overwriting admin-set statuses).
+
+**C) Fetch product/package title for n8n payload:**
+- If `product_id` exists, query `products` for title
+- If `package_id` exists, query `campaign_packages` for title
 
 ---
 
-### What Remains Intact
+### Part 2: N8N Webhook (Server-Side)
 
-- `create-booking-checkout` edge function (centralized booking)
-- `processBookingPayment` in `stripe-webhook` (centralized payment processing)
-- All booking funnel components (`BookingFunnelModal`, etc.)
-- Chat system components in `src/components/wedding/components/` and `utils/`
-- `AIAssistantSection` component (used by AIAssistant page)
-- Wedding gallery pages and data
-- All RLS policies unchanged
+**File: `supabase/functions/stripe-webhook/index.ts`** (continued)
+
+After all DB operations, fire a POST to:
+`https://agcreationmkt.cloud/webhook/stripe-checkout-n8n`
+
+Payload:
+```text
+{
+  booking_id, user_id, full_name, email, phone,
+  product_id, product_title,
+  campaign_id, package_id, event_date,
+  amount_paid, stripe_payment_intent,
+  stripe_checkout_session_id
+}
+```
+
+- `full_name`, `email`, `phone` come from `session.customer_details`
+- Fire-and-forget (logged but non-blocking, errors caught gracefully)
+- Entirely server-side; no frontend exposure
 
 ---
 
-### Edge Function Deployment
+### Part 3: Payment Success Page
 
-- Deploy updated `stripe-webhook` after removing `processWeddingPackagePayment`
-- Delete deployed `create-checkout` function from Supabase
+**File: `src/pages/PaymentSuccess.tsx`**
+
+Currently shows static "Wedding Package" text and routes to `/services`.
+
+Changes:
+- Read `session_id` from URL search params (already passed by `create-booking-checkout` success_url)
+- Query `bookings` table by `stripe_checkout_session_id` to get the booking record
+- Join with `products` (via product_id) or `campaign_packages` (via package_id) to get the name
+- Display real product/package name, event date, and formatted amount
+- Update button destinations:
+  - "Chat with Our Planner" -> `/user-dashboard/ai-assistant`
+  - "View Your Booking" -> `/user-dashboard/service-tracking`
+- Graceful fallback to "Your Package" if booking not found yet (webhook may be processing)
+
+---
+
+### Part 4: Service Tracking Page
+
+**File: `src/pages/ServiceTracking.tsx`**
+
+Add a "Your Booked Service" card above the pipeline progress tracker:
+- Query `bookings` table for the logged-in user's most recent confirmed booking
+- Left-join with `products` and `campaign_packages` to resolve the name
+- Display card with: Product/Package Name, Event Date, Amount Paid (formatted as USD), Booking ID (truncated), Payment Status badge, Stripe Payment Intent ID
+- If no bookings found, skip the card gracefully (show nothing, not an error)
+- Uses existing Card/CardContent components -- no new UI components needed
+
+---
+
+### Part 5: Files Changed Summary
+
+| File | Change Type |
+|------|------------|
+| Migration SQL | Add `stripe_checkout_session_id` and `amount_paid` to `bookings` |
+| `supabase/functions/stripe-webhook/index.ts` | Store new columns, activate profile, send n8n webhook |
+| `src/pages/PaymentSuccess.tsx` | Dynamic booking lookup, updated button routes |
+| `src/pages/ServiceTracking.tsx` | Add booking details card above pipeline tracker |
+
+### What Will NOT Change
+- Database schema for other tables
+- RLS policies (existing are sufficient)
+- Edge functions other than `stripe-webhook`
+- UI styling/design
+- Availability logic, booking creation logic
+- Authentication flow
+- `create-booking-checkout` edge function
+
+### Validation Checklist
+- Booking created with `stripe_checkout_session_id` and `amount_paid` populated
+- Profile flags `user_dashboard` and `pipeline_profile` auto-activated
+- User appears in admin Pipeline Process
+- n8n webhook triggered server-side with full payload
+- Service Tracking shows booking details card
+- Payment Success displays correct product/package name
+- Buttons route to `/user-dashboard/ai-assistant` and `/user-dashboard/service-tracking`
+- No RLS conflicts (service_role bypasses for webhook, user SELECT for own bookings)
 
