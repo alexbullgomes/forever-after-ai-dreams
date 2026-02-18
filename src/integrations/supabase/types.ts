@@ -547,6 +547,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          amount_paid: number | null
           booking_request_id: string | null
           created_at: string
           customer_email: string | null
@@ -558,11 +559,13 @@ export type Database = {
           product_id: string | null
           start_time: string
           status: string
+          stripe_checkout_session_id: string | null
           stripe_payment_intent: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          amount_paid?: number | null
           booking_request_id?: string | null
           created_at?: string
           customer_email?: string | null
@@ -574,11 +577,13 @@ export type Database = {
           product_id?: string | null
           start_time: string
           status?: string
+          stripe_checkout_session_id?: string | null
           stripe_payment_intent?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          amount_paid?: number | null
           booking_request_id?: string | null
           created_at?: string
           customer_email?: string | null
@@ -590,6 +595,7 @@ export type Database = {
           product_id?: string | null
           start_time?: string
           status?: string
+          stripe_checkout_session_id?: string | null
           stripe_payment_intent?: string | null
           updated_at?: string
           user_id?: string | null

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, Circle, Clock } from 'lucide-react';
+import { CheckCircle, Circle, Clock, CreditCard, CalendarDays, Package } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 type PipelineStatus = 
   | 'New Lead & Negotiation'
@@ -31,57 +33,97 @@ const STEPS: Step[] = [
   { id: 5, title: 'Delivered & Finalized', status: 'Delivery & Finalization' },
 ];
 
+interface BookingDetails {
+  id: string;
+  event_date: string;
+  amount_paid: number | null;
+  status: string;
+  stripe_payment_intent: string | null;
+  product_title: string | null;
+  package_title: string | null;
+}
+
 const ServiceTracking = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('pipeline_profile, pipeline_status, updated_at')
-          .eq('id', user.id)
-          .maybeSingle();
 
-        if (error) throw error;
-        setProfile(data);
+        // Fetch profile and latest booking in parallel
+        const [profileRes, bookingRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('pipeline_profile, pipeline_status, updated_at')
+            .eq('id', user.id)
+            .maybeSingle(),
+          supabase
+            .from('bookings')
+            .select('id, event_date, amount_paid, status, stripe_payment_intent, product_id, package_id')
+            .eq('user_id', user.id)
+            .eq('status', 'confirmed')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        if (profileRes.error) throw profileRes.error;
+        setProfile(profileRes.data);
+
+        if (bookingRes.data) {
+          const b = bookingRes.data;
+          let product_title: string | null = null;
+          let package_title: string | null = null;
+
+          if (b.product_id) {
+            const { data: prod } = await supabase.from('products').select('title').eq('id', b.product_id).maybeSingle();
+            product_title = prod?.title || null;
+          }
+          if (b.package_id) {
+            const { data: pkg } = await supabase.from('campaign_packages').select('title').eq('id', b.package_id).maybeSingle();
+            package_title = pkg?.title || null;
+          }
+
+          setBookingDetails({
+            id: b.id,
+            event_date: b.event_date,
+            amount_paid: b.amount_paid as number | null,
+            status: b.status,
+            stripe_payment_intent: b.stripe_payment_intent,
+            product_title,
+            package_title,
+          });
+        }
       } catch (err) {
-        console.error('Error fetching profile:', err);
+        console.error('Error fetching data:', err);
         setError('Failed to load tracking data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetchData();
 
-    // Subscribe to real-time updates
+    // Subscribe to real-time profile updates
     const channel = supabase
       .channel('profile-changes')
       .on(
         'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${user.id}`,
-        },
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
         (payload) => {
-          console.log('Profile updated:', payload);
           setProfile(payload.new as ProfileData);
         }
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   const getCurrentStepIndex = (): number => {
@@ -139,6 +181,14 @@ const ServiceTracking = () => {
     );
   }
 
+  const serviceName = bookingDetails?.product_title || bookingDetails?.package_title || null;
+  const formattedDate = bookingDetails?.event_date
+    ? new Date(bookingDetails.event_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : null;
+  const formattedAmount = bookingDetails?.amount_paid != null
+    ? `$${(bookingDetails.amount_paid / 100).toFixed(2)}`
+    : null;
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
@@ -147,6 +197,58 @@ const ServiceTracking = () => {
         </h1>
         <p className="text-muted-foreground">Track your project progress in real-time</p>
       </div>
+
+      {/* Booked Service Card */}
+      {bookingDetails && (
+        <Card className="mb-6 border-border">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Package className="h-5 w-5 text-brand-primary-from" />
+              <h2 className="text-lg font-semibold text-foreground">Your Booked Service</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {serviceName && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Service</p>
+                  <p className="font-medium text-foreground">{serviceName}</p>
+                </div>
+              )}
+              {formattedDate && (
+                <div className="flex items-start gap-2">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Event Date</p>
+                    <p className="font-medium text-foreground">{formattedDate}</p>
+                  </div>
+                </div>
+              )}
+              {formattedAmount && (
+                <div className="flex items-start gap-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Amount Paid</p>
+                    <p className="font-medium text-foreground">{formattedAmount}</p>
+                  </div>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground">Status</p>
+                <Badge variant="outline" className="mt-0.5 capitalize">{bookingDetails.status}</Badge>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Booking ID</p>
+                <p className="font-mono text-xs text-muted-foreground">{bookingDetails.id.slice(0, 8)}...</p>
+              </div>
+              {bookingDetails.stripe_payment_intent && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Payment Reference</p>
+                  <p className="font-mono text-xs text-muted-foreground">{bookingDetails.stripe_payment_intent}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="bg-card rounded-lg border border-border p-8">
         {/* Progress Bar */}
