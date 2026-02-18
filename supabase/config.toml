@@ -20,6 +20,3 @@ verify_jwt = false
 
 [functions.chat-webhook-callback]
 verify_jwt = false
-
-[functions.simulate-booking]
-verify_jwt = false
