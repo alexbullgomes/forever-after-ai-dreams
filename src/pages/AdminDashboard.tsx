@@ -5,6 +5,8 @@ import { useRole } from '@/hooks/useRole';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 // Eager load main dashboard content
 import DashboardContent from "@/components/dashboard/DashboardContent";
@@ -35,6 +37,37 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [redirectChecked, setRedirectChecked] = useState(false);
+  const [testBookingLoading, setTestBookingLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleTestBooking = async () => {
+    setTestBookingLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const res = await supabase.functions.invoke('simulate-booking', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (res.error) throw new Error(res.error.message || 'Function error');
+      const body = res.data;
+      if (!body.success) throw new Error(body.error || 'Unknown error');
+
+      toast({
+        title: 'Test Booking Created',
+        description: `Booking ${body.booking_id?.slice(0, 8)}… for "${body.product_title}" on ${body.event_date}`,
+      });
+    } catch (err: unknown) {
+      toast({
+        title: 'Test Booking Failed',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      });
+    } finally {
+      setTestBookingLoading(false);
+    }
+  };
 
   useEffect(() => {
     console.log('🚦 AdminDashboard redirect check:', {
