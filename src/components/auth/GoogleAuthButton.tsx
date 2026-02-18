@@ -23,19 +23,12 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
       const pendingBookingFlow = hasPendingBooking();
       const bookingReturnUrl = getBookingReturnUrl();
       
-      // Also check legacy keys for backwards compatibility
-      const pendingPayment = localStorage.getItem('pendingPayment');
-      const postLoginReturnTo = localStorage.getItem('postLoginReturnTo');
-      
       // Determine redirect URL
       let redirectUrl = `${window.location.origin}/dashboard`;
       
       if (pendingBookingFlow && bookingReturnUrl) {
         // Use the full origin + path for booking return
         redirectUrl = `${window.location.origin}${bookingReturnUrl}`;
-      } else if (pendingPayment || postLoginReturnTo) {
-        // Legacy: return to current page
-        redirectUrl = window.location.href;
       }
       
       console.log('Google OAuth redirect URL:', redirectUrl);

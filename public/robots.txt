@@ -3,7 +3,6 @@ Allow: /
 Disallow: /dashboard/
 Disallow: /user-dashboard/
 Disallow: /services
-Disallow: /wedding-packages
 Disallow: /affiliate
 Disallow: /payment-success
 
@@ -12,7 +11,6 @@ Allow: /
 Disallow: /dashboard/
 Disallow: /user-dashboard/
 Disallow: /services
-Disallow: /wedding-packages
 Disallow: /affiliate
 Disallow: /payment-success
 
@@ -27,7 +25,6 @@ Allow: /
 Disallow: /dashboard/
 Disallow: /user-dashboard/
 Disallow: /services
-Disallow: /wedding-packages
 Disallow: /affiliate
 Disallow: /payment-success
 

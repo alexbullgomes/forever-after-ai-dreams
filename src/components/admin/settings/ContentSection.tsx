@@ -3,8 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Loader2, Eye, LayoutGrid, Save } from 'lucide-react';
-import { usePageVisibility } from '@/hooks/usePageVisibility';
+import { Loader2, LayoutGrid, Save } from 'lucide-react';
 import { useLandingPageCardsAdmin, LandingCard } from '@/hooks/useLandingPageCards';
 import { LandingCardEditor } from './LandingCardEditor';
 import { useToast } from '@/hooks/use-toast';
@@ -16,13 +15,11 @@ import {
 } from '@/components/ui/accordion';
 
 export const ContentSection = () => {
-  const { showWeddingPackages, updateVisibility, loading: visibilityLoading } = usePageVisibility();
   const { config, loading: cardsLoading, updateConfig } = useLandingPageCardsAdmin();
   const [tempCards, setTempCards] = useState<LandingCard[]>([]);
   const [showCardsSection, setShowCardsSection] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [savingVisibility, setSavingVisibility] = useState(false);
   const { toast } = useToast();
 
   // Initialize temp state when config loads
@@ -31,25 +28,6 @@ export const ContentSection = () => {
     setShowCardsSection(config.show_cards_section);
     setInitialized(true);
   }
-
-  const handleWeddingPackagesToggle = async (checked: boolean) => {
-    setSavingVisibility(true);
-    try {
-      await updateVisibility({ show_wedding_packages: checked });
-      toast({
-        title: "Settings updated",
-        description: `Wedding Packages page is now ${checked ? 'visible' : 'hidden'}`
-      });
-    } catch (error) {
-      toast({
-        title: "Error updating settings",
-        description: "Please try again",
-        variant: "destructive"
-      });
-    } finally {
-      setSavingVisibility(false);
-    }
-  };
 
   const handleShowCardsSectionToggle = async (checked: boolean) => {
     setShowCardsSection(checked);
@@ -88,7 +66,7 @@ export const ContentSection = () => {
     JSON.stringify(tempCards) !== JSON.stringify(config.cards)
   );
 
-  if (cardsLoading || visibilityLoading) {
+  if (cardsLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -98,38 +76,6 @@ export const ContentSection = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Visibility Section */}
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-primary" />
-            Page Visibility
-          </CardTitle>
-          <CardDescription>
-            Control which pages are visible to users
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="wedding-packages-toggle" className="text-base font-medium">
-                Show Wedding Packages page
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                When disabled, the page will be hidden from navigation and inaccessible
-              </p>
-            </div>
-            <Switch
-              id="wedding-packages-toggle"
-              checked={showWeddingPackages}
-              onCheckedChange={handleWeddingPackagesToggle}
-              disabled={savingVisibility}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Landing Page Cards Section */}
       <Card>
         <CardHeader>

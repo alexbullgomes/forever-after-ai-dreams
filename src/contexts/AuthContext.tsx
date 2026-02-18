@@ -12,16 +12,6 @@ import {
   isValidBookingReturnUrl 
 } from '@/utils/bookingRedirect';
 
-const PENDING_PAYMENT_KEY = 'pendingPayment';
-const PAYMENT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-
-interface PendingPayment {
-  packageName: string;
-  packagePrice: string;
-  paymentType: 'deposit' | 'full';
-  timestamp: number;
-}
-
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -43,71 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const processingPaymentRef = useRef(false);
   const redirectHandledRef = useRef(false);
-
-  // Process pending payment after successful authentication
-  const processPendingPayment = async (userSession: Session) => {
-    // Double-click protection
-    if (processingPaymentRef.current) {
-      console.log('Already processing pending payment, skipping...');
-      return;
-    }
-
-    const pendingPaymentStr = localStorage.getItem(PENDING_PAYMENT_KEY);
-    if (!pendingPaymentStr) return;
-
-    try {
-      const pendingPayment: PendingPayment = JSON.parse(pendingPaymentStr);
-      
-      // Check if payment is expired
-      if (Date.now() - pendingPayment.timestamp > PAYMENT_EXPIRY_MS) {
-        console.log('Pending payment expired, clearing...');
-        localStorage.removeItem(PENDING_PAYMENT_KEY);
-        return;
-      }
-
-      processingPaymentRef.current = true;
-      
-      // Clear pending payment immediately to prevent duplicate processing
-      localStorage.removeItem(PENDING_PAYMENT_KEY);
-
-      console.log('Processing pending payment:', pendingPayment);
-      
-      toast.info("Resuming your booking...", {
-        description: "Redirecting to checkout...",
-      });
-
-      // Calculate amount based on payment type
-      const priceNumber = parseFloat(pendingPayment.packagePrice.replace(/[^0-9.]/g, ''));
-      const amount = pendingPayment.paymentType === 'deposit' 
-        ? Math.round(priceNumber * 0.3 * 100) // 30% deposit in cents
-        : Math.round(priceNumber * 100); // Full amount in cents
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          packageName: pendingPayment.packageName,
-          amount: amount,
-          paymentType: pendingPayment.paymentType,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        console.log('Redirecting to Stripe checkout:', data.url);
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (error) {
-      console.error('Error processing pending payment:', error);
-      processingPaymentRef.current = false;
-      toast.error("Checkout Error", {
-        description: "Failed to resume checkout. Please try again.",
-      });
-    }
-  };
 
   // Handle booking redirect after authentication
   const handleBookingRedirect = (): boolean => {
@@ -187,23 +113,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }, session.user.id);
             }
             
-            // Process pending payment if exists (for OAuth redirects)
-            await processPendingPayment(session);
+            // Check for booking redirect first (new unified approach)
+            const handledBookingRedirect = handleBookingRedirect();
+            if (handledBookingRedirect) {
+              return;
+            }
             
-            // Handle booking redirect (only if no pending payment was processed)
-            if (!processingPaymentRef.current) {
-              // Check for booking redirect first (new unified approach)
-              const handledBookingRedirect = handleBookingRedirect();
-              if (handledBookingRedirect) {
-                return;
-              }
-              
-              // Fall back to legacy intendedRoute
-              const intendedRoute = localStorage.getItem('intendedRoute');
-              if (intendedRoute) {
-                localStorage.removeItem('intendedRoute');
-                window.location.href = intendedRoute;
-              }
+            // Fall back to legacy intendedRoute
+            const intendedRoute = localStorage.getItem('intendedRoute');
+            if (intendedRoute) {
+              localStorage.removeItem('intendedRoute');
+              window.location.href = intendedRoute;
             }
           }, 0);
         }

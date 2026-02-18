@@ -90,9 +90,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     user_id,
     campaign_mode,
     campaign_id,
-    // NEW: Package fields
     package_id,
-    payment_type,
   } = metadata;
 
   logStep('Session metadata', { 
@@ -102,10 +100,9 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     selected_time,
     campaign_mode,
     package_id,
-    payment_type
   });
 
-  // For booking-based payments (campaign deposits or product bookings)
+  // Process booking-based payments (campaign deposits or product bookings)
   if (booking_request_id && event_date && selected_time) {
     await processBookingPayment({
       supabase,
@@ -118,15 +115,6 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       user_id,
       campaign_id: campaign_mode === 'true' ? campaign_id : null,
       package_id: campaign_mode === 'true' ? package_id : null,
-    });
-  } 
-  // For wedding package payments (deposit or full)
-  else if (payment_type === 'deposit' || payment_type === 'full') {
-    await processWeddingPackagePayment({
-      supabase,
-      session,
-      user_id,
-      payment_type,
     });
   } else {
     logStep('Unknown payment type, storing for manual review', { metadata });
@@ -259,39 +247,3 @@ async function processBookingPayment(params: {
   logStep('Booking payment processed successfully');
 }
 
-async function processWeddingPackagePayment(params: {
-  supabase: ReturnType<typeof createClient>;
-  session: Stripe.Checkout.Session;
-  user_id?: string;
-  payment_type: string;
-}) {
-  const { supabase, session, user_id, payment_type } = params;
-
-  logStep('Processing wedding package payment', { 
-    payment_type, 
-    user_id,
-    amount: session.amount_total 
-  });
-
-  // Update user's profile with package consultation info
-  if (user_id) {
-    const packageName = session.metadata?.package_name || 'Wedding Package';
-    
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        package_consultation: `${payment_type === 'deposit' ? 'Deposit' : 'Full'} payment for ${packageName}`,
-        pipeline_status: 'Closed Deal & Pre-Production',
-        pipeline_profile: 'Enable',
-      })
-      .eq('id', user_id);
-
-    if (profileError) {
-      logStep('WARNING: Failed to update profile', { error: profileError.message });
-    } else {
-      logStep('Profile updated with package info', { userId: user_id });
-    }
-  }
-
-  logStep('Wedding package payment processed successfully');
-}

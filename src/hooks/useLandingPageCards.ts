@@ -40,7 +40,7 @@ const DEFAULT_CONFIG: LandingPageCardsConfig = {
       description: "Your love story feels like a movie — we'll film the moment that matters most.",
       features: ["Photos + Video Packages", "Artistic & Emotional Photography", "Cinematic Wedding Films", "Personalized & Fast Delivery"],
       button_label: "More Details",
-      button_link: "/wedding-packages"
+      button_link: "/services"
     }
   ]
 };
