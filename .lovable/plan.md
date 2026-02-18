@@ -1,45 +1,105 @@
 
 
-## Date Shift Fix: Booking Pipeline to Override Modal
+## Deprecate Legacy Wedding Packages System
 
-### Problem
-When clicking the Availability badge for a booking with `event_date = "2026-02-26"`, the Override modal shows **Feb 25, 2026** instead of Feb 26.
+This plan removes the old `/wedding-packages` flow, its dedicated `create-checkout` edge function, and the legacy wedding payment processing in the Stripe webhook. The centralized booking system (`create-booking-checkout` + `processBookingPayment`) remains fully intact.
 
-**Root cause**: `new Date("2026-02-26")` interprets the YYYY-MM-DD string as **UTC midnight**. In America/Los_Angeles (PST/PDT, UTC-8/7), that becomes the **previous day** (Feb 25 at 4:00 PM).
+---
 
-### Locations to Fix
+### Files to Delete
 
-There are **2 instances** of this bug in `src/pages/BookingsPipeline.tsx`:
+| File | Reason |
+|------|--------|
+| `src/pages/WeddingPackages.tsx` | Legacy page |
+| `src/components/wedding/WeddingPackagesHeader.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/PackageCard.tsx` | Only used by PackageSection (WeddingPackages) |
+| `src/components/wedding/PackageSection.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/CustomPackageCard.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/CTASection.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/LoadingState.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/PackagesNavigation.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/PageHeader.tsx` | Only used by WeddingPackages page |
+| `src/components/wedding/PaymentButton.tsx` | Legacy checkout -- calls `create-checkout` |
+| `src/data/weddingPackages.ts` | Static package data for legacy page |
+| `supabase/functions/create-checkout/index.ts` | Legacy edge function |
 
-1. **Line 587** -- Date passed to Override modal:
-   ```
-   date={new Date(overrideModalBooking.event_date)}
-   ```
-   Fix: Parse as local date using split-based constructor.
+**NOT deleted** (used by chat system): `src/components/wedding/components/AudioPlayer.tsx`, `ChatHistory.tsx`, `ChatMessage.tsx`, `utils/*`, `AIAssistantSection.tsx`
 
-2. **Line 176** -- Slot availability computation:
-   ```
-   const slotStart = new Date(booking.event_date);
-   ```
-   Fix: Same local date parsing.
+---
 
-### Fix Approach
+### Files to Modify
 
-Replace `new Date(dateString)` with local date parsing:
-```typescript
-const [y, m, d] = booking.event_date.split('-').map(Number);
-new Date(y, m - 1, d)
-```
+**1. `src/App.tsx`**
+- Remove `WeddingPackages` lazy import
+- Remove `/wedding-packages` route
 
-This is the **exact same pattern** already used correctly on lines 371 and 483 of the same file for displaying the event date in the table and detail modal.
+**2. `src/contexts/AuthContext.tsx`**
+- Remove `PENDING_PAYMENT_KEY`, `PendingPayment` interface, `PAYMENT_EXPIRY_MS`
+- Remove `processPendingPayment` function and its `create-checkout` invocation
+- Remove the call to `processPendingPayment` from the auth state change handler
 
-### Files Changed
-- `src/pages/BookingsPipeline.tsx` (2 edits, lines 176 and 587)
+**3. `src/components/dashboard/DashboardNavigation.tsx`**
+- Remove `usePageVisibility` import and `showWeddingPackages` usage
+- Remove the conditional Wedding Packages nav link
 
-### No Changes To
-- Database schema, availability logic, booking logic, RLS, edge functions
-- UI components, layout, or any other files
+**4. `src/components/planner/ExploreServicesSection.tsx`**
+- Remove the entire component (it only renders a link to `/wedding-packages`)
+- OR remove the wedding packages card/link and keep the component if it has other content
 
-### Verification
-After fix, clicking the Availability badge for a Feb 26 booking will open the Override modal showing "Feb 26, 2026" consistently.
+**5. `src/components/quiz/QuizResult.tsx`**
+- Change `navigate('/wedding-packages')` to `navigate('/services')` (redirect to services instead)
+
+**6. `src/pages/PaymentSuccess.tsx`**
+- Change "View Your Booking" button from `/wedding-packages` to `/services`
+
+**7. `src/components/admin/settings/ContentSection.tsx`**
+- Remove the "Show Wedding Packages page" toggle and all related `usePageVisibility` usage
+
+**8. `src/hooks/usePageVisibility.ts`**
+- Delete this hook entirely (only purpose was wedding packages visibility toggle)
+
+**9. `src/components/auth/GoogleAuthButton.tsx`**
+- Remove legacy `pendingPayment` localStorage check (lines 27-28, 36-37)
+
+**10. `supabase/config.toml`**
+- Remove `[functions.create-checkout]` section
+
+**11. `supabase/functions/stripe-webhook/index.ts`**
+- Remove `processWeddingPackagePayment` function entirely
+- Remove the `else if (payment_type === 'deposit' || payment_type === 'full')` conditional block in `handleCheckoutComplete`
+- Remove `payment_type` and `package_name` from metadata destructuring (only used by legacy flow)
+- Keep `processBookingPayment` fully intact
+
+**12. `public/robots.txt`**
+- Remove `Disallow: /wedding-packages` from all user-agent blocks
+
+**13. `public/sitemap.xml`**
+- No changes needed (wedding-packages was never in the sitemap)
+
+---
+
+### Database Considerations
+
+- **`profiles.package_consultation`**: Currently set by `processWeddingPackagePayment` which is being removed. This column may still be useful for admin notes. No schema change -- just note it is no longer auto-populated by the legacy flow.
+- **`profiles.pipeline_status`**: The value `'Closed Deal & Pre-Production'` was set by the legacy flow, but this column is still used by the pipeline system generally. No change needed.
+- **No tables are dropped.** `bookings`, `products`, `campaign_packages`, `booking_requests`, `booking_slot_holds` all remain untouched.
+
+---
+
+### What Remains Intact
+
+- `create-booking-checkout` edge function (centralized booking)
+- `processBookingPayment` in `stripe-webhook` (centralized payment processing)
+- All booking funnel components (`BookingFunnelModal`, etc.)
+- Chat system components in `src/components/wedding/components/` and `utils/`
+- `AIAssistantSection` component (used by AIAssistant page)
+- Wedding gallery pages and data
+- All RLS policies unchanged
+
+---
+
+### Edge Function Deployment
+
+- Deploy updated `stripe-webhook` after removing `processWeddingPackagePayment`
+- Delete deployed `create-checkout` function from Supabase
 
