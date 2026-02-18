@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Heart } from "lucide-react";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
-import { ExploreServicesSection } from "@/components/planner/ExploreServicesSection";
 import { CampaignCardsSection } from "@/components/planner/CampaignCardsSection";
 import { ProductsSection } from "@/components/planner/ProductsSection";
 import EverAfterGallery from "@/components/galleries/EverAfterGallery";
@@ -71,9 +70,6 @@ const Planner = () => {
         <div id="everafter-gallery" className="my-16">
           <EverAfterGallery />
         </div>
-        
-        {/* Explore Services Section */}
-        <ExploreServicesSection />
       </div>
       
       {/* Expandable Chat Assistant - Additional Entry Point */}

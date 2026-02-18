@@ -52,7 +52,7 @@ const QuizResult = ({
   }, []);
 
   const handleViewPackages = () => {
-    navigate('/wedding-packages');
+    navigate('/services');
   };
 
   const handleBookConsultation = () => {

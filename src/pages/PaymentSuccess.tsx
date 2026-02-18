@@ -99,7 +99,7 @@ const PaymentSuccess = () => {
               </Button>
               
               <Button
-                onClick={() => navigate("/wedding-packages")}
+                onClick={() => navigate("/services")}
                 variant="outline"
                 className="w-full h-12"
               >

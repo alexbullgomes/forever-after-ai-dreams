@@ -14,7 +14,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 // Lazy load non-critical routes
-const WeddingPackages = lazy(() => import("./pages/WeddingPackages"));
 const WeddingQuiz = lazy(() => import("./pages/WeddingQuiz"));
 const Planner = lazy(() => import("./pages/Planner"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -53,7 +52,6 @@ const AppContent = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/services" element={<Planner />} />
-              <Route path="/wedding-packages" element={<WeddingPackages />} />
               <Route path="/weddingquiz" element={<WeddingQuiz />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/promo/:slug" element={<PromotionalLanding />} />
