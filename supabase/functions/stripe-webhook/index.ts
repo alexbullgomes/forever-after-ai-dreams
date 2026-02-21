@@ -37,7 +37,7 @@ serve(async (req) => {
 
   try {
     const body = await req.text();
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     logStep('Event verified', { type: event.type, id: event.id });
 
     if (event.type === 'checkout.session.completed') {
