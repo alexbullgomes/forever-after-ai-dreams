@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { VideoThumbnail } from "@/components/ui/gallery/VideoThumbnail";
 import GalleryLeadForm, { GalleryLeadFormRef } from "@/components/ui/gallery/GalleryLeadForm";
+import type { PortfolioHeaderContent } from "@/hooks/useHomepageContent";
 
 interface PortfolioItem {
   id: string;
@@ -22,7 +23,6 @@ interface PortfolioItem {
   thumbWebm?: string;
   thumbMp4?: string;
   thumbImage?: string;
-  // Redirect fields
   destinationType?: string;
   campaignSlug?: string;
   customUrl?: string;
@@ -30,17 +30,27 @@ interface PortfolioItem {
 
 interface PortfolioProps {
   onBookingClick?: () => void;
+  content?: PortfolioHeaderContent;
 }
 
-const Portfolio = ({
-  onBookingClick
-}: PortfolioProps = {}) => {
+const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef<GalleryLeadFormRef>(null);
+
+  const badgeText = content?.badge_text ?? "Our Portfolio";
+  const titleLine1 = content?.title_line1 ?? "Recent";
+  const titleLine2 = content?.title_line2 ?? "Stories";
+  const subtitle = content?.subtitle ?? "All stories are unique. Here are some of our recent celebrations captured across California.";
+  const ctaText = content?.cta_text ?? "View Complete Portfolio";
+  const filters = content?.filters ?? [
+    { id: "all", label: "Highlights" },
+    { id: "photo-videos", label: "Photo & Videos" },
+    { id: "weddings", label: "Weddings" }
+  ];
 
   const handleViewPortfolioClick = () => {
     if (user) {
@@ -51,24 +61,18 @@ const Portfolio = ({
   };
 
   const handleCardClick = (item: PortfolioItem) => {
-    // Priority 1: Campaign page
     if (item.destinationType === 'campaign' && item.campaignSlug) {
       navigate(`/promo/${item.campaignSlug}`);
       return;
     }
-    
-    // Priority 2: Custom URL
     if (item.destinationType === 'url' && item.customUrl) {
       if (item.customUrl.startsWith('http://') || item.customUrl.startsWith('https://')) {
         window.location.href = item.customUrl;
       } else {
-        // Try adding https if missing
         window.location.href = `https://${item.customUrl}`;
       }
       return;
     }
-    
-    // Priority 3: Fallback - show the lead capture form
     formRef.current?.openWithCard({
       id: item.id,
       title: item.title,
@@ -78,7 +82,6 @@ const Portfolio = ({
     });
   };
 
-  // Fetch portfolio data from Supabase with campaign join
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
@@ -107,7 +110,6 @@ const Portfolio = ({
           thumbWebm: card.thumb_webm_url,
           thumbMp4: card.thumb_mp4_url,
           thumbImage: card.thumb_image_url,
-          // Redirect fields
           destinationType: card.destination_type || 'none',
           campaignSlug: card.promotional_campaigns?.slug || null,
           customUrl: card.custom_url || null
@@ -132,17 +134,6 @@ const Portfolio = ({
         if (activeFilter === "weddings") return item.category === "Weddings";
         return false;
       });
-  
-  const filters = [{
-    id: "all",
-    label: "Highlights"
-  }, {
-    id: "photo-videos",
-    label: "Photo & Videos"
-  }, {
-    id: "weddings",
-    label: "Weddings"
-  }];
 
   if (loading) {
     return (
@@ -152,12 +143,12 @@ const Portfolio = ({
             <div className="flex justify-center mb-4">
               <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
                 <Heart className="w-5 h-5 text-brand-text-accent" />
-                <span className="text-brand-badge-text text-sm font-medium">Our Portfolio</span>
+                <span className="text-brand-badge-text text-sm font-medium">{badgeText}</span>
               </div>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Recent
-              <span className="block bg-brand-gradient bg-clip-text text-transparent">Stories</span>
+              {titleLine1}
+              <span className="block bg-brand-gradient bg-clip-text text-transparent">{titleLine2}</span>
             </h2>
           </div>
           <div className="flex justify-center">
@@ -175,14 +166,14 @@ const Portfolio = ({
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
               <Heart className="w-5 h-5 text-brand-text-accent" />
-              <span className="text-brand-badge-text text-sm font-medium">Our Portfolio</span>
+              <span className="text-brand-badge-text text-sm font-medium">{badgeText}</span>
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Recent
-            <span className="block bg-brand-gradient bg-clip-text text-transparent">Stories</span>
+            {titleLine1}
+            <span className="block bg-brand-gradient bg-clip-text text-transparent">{titleLine2}</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">All stories are unique. Here are some of our recent celebrations captured across California.</p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">{subtitle}</p>
 
           {/* Filter buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
@@ -226,7 +217,6 @@ const Portfolio = ({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
-                {/* Play button for videos */}
                 {item.category === "video" && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer">
@@ -235,7 +225,6 @@ const Portfolio = ({
                   </div>
                 )}
 
-                {/* Category badge */}
                 <div className="absolute top-4 left-4">
                   <span className="bg-brand-gradient text-white px-3 py-1 rounded-full text-sm font-medium">
                     {item.type}
@@ -261,12 +250,11 @@ const Portfolio = ({
 
         <div className="text-center mt-12">
           <Button onClick={handleViewPortfolioClick} size="lg" className="bg-brand-gradient hover:bg-brand-gradient-hover text-white px-8 py-4 text-lg font-semibold rounded-full shadow-lg transition-all duration-300">
-            View Complete Portfolio
+            {ctaText}
           </Button>
         </div>
       </div>
 
-      {/* Lead capture form for cards without destination */}
       <GalleryLeadForm ref={formRef} />
     </section>
   );
