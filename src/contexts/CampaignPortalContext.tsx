@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useLayoutEffect, useState } from 'react';
 
 const CampaignPortalContext = createContext<HTMLElement | null>(null);
 
@@ -8,8 +8,14 @@ interface CampaignPortalProviderProps {
 }
 
 export function CampaignPortalProvider({ container, children }: CampaignPortalProviderProps) {
+  const [element, setElement] = useState<HTMLElement | null>(null);
+
+  useLayoutEffect(() => {
+    setElement(container.current);
+  }, [container]);
+
   return (
-    <CampaignPortalContext.Provider value={container.current}>
+    <CampaignPortalContext.Provider value={element}>
       {children}
     </CampaignPortalContext.Provider>
   );

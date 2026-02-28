@@ -1,9 +1,9 @@
 import { useParams } from "react-router-dom";
 import { usePromotionalCampaign, TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useState, useCallback, useMemo, useRef } from "react";
 import Header from "@/components/Header";
-import { buildCampaignColorStyle } from "@/utils/campaignColors";
+import { buildCampaignColorStyle, applyCampaignColorsToRoot, removeCampaignColorsFromRoot } from "@/utils/campaignColors";
 import { useHomepageContent } from "@/hooks/useHomepageContent";
 import PromoHero from "@/components/promo/PromoHero";
 import PromoPricing from "@/components/promo/PromoPricing";
@@ -91,6 +91,14 @@ const PromotionalLanding = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { showPopup, popupConfig, closePopup } = usePromotionalPopup();
   const campaignContainerRef = useRef<HTMLDivElement>(null);
+
+  // Synchronously apply campaign colors to document root before paint
+  useLayoutEffect(() => {
+    if (campaign?.brand_colors) {
+      applyCampaignColorsToRoot(campaign.brand_colors as any);
+      return () => removeCampaignColorsFromRoot(campaign.brand_colors as any);
+    }
+  }, [campaign?.brand_colors]);
 
   // Handle opening chat with a pre-filled message from booking modal
   const handleOpenChatWithMessage = useCallback((message: string) => {

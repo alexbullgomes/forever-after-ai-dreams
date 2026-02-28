@@ -74,3 +74,50 @@ export function buildCampaignColorStyle(
 
   return style as CSSProperties;
 }
+
+/**
+ * Synchronously applies campaign brand color CSS variables to document.documentElement.
+ * Should be called inside useLayoutEffect to prevent FOUC.
+ */
+export function applyCampaignColorsToRoot(
+  brandColors: Partial<BrandColors> | null | undefined
+): void {
+  if (!brandColors || typeof brandColors !== 'object') return;
+
+  const root = document.documentElement;
+
+  for (const [key, cssVar] of Object.entries(COLOR_KEY_TO_CSS_VAR)) {
+    const value = (brandColors as Record<string, string | undefined>)[key];
+    if (value !== undefined && value !== null && value !== '') {
+      root.style.setProperty(cssVar, value);
+    }
+  }
+
+  if (brandColors.primary_from) {
+    root.style.setProperty('--primary', brandColors.primary_from);
+    root.style.setProperty('--ring', brandColors.primary_from);
+    root.style.setProperty('--ring-brand', brandColors.primary_from);
+    root.style.setProperty('--border-brand', brandColors.primary_from);
+  }
+}
+
+/**
+ * Removes campaign brand color CSS variables from document.documentElement.
+ * Called on campaign page unmount to restore global theme.
+ */
+export function removeCampaignColorsFromRoot(
+  brandColors: Partial<BrandColors> | null | undefined
+): void {
+  if (!brandColors || typeof brandColors !== 'object') return;
+
+  const root = document.documentElement;
+
+  for (const [, cssVar] of Object.entries(COLOR_KEY_TO_CSS_VAR)) {
+    root.style.removeProperty(cssVar);
+  }
+
+  root.style.removeProperty('--primary');
+  root.style.removeProperty('--ring');
+  root.style.removeProperty('--ring-brand');
+  root.style.removeProperty('--border-brand');
+}
