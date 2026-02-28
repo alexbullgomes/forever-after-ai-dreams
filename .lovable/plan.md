@@ -1,27 +1,44 @@
 
 
-# Campaign Contact Section -- Two Issues & Fix Plan
+# Campaign Theme -- Form Component Integration
 
-## Issue 1: Contact Background Not Reflecting Campaign Theme
+## Root Cause
 
-**Root cause**: The system is actually correctly wired. `buildCampaignColorStyle` maps `contact_bg_gradient_from/to` to the CSS variables, and the Contact component uses `bg-contact-bg-gradient` which reads those variables. The scoped wrapper in `PromotionalLanding.tsx` (line 210) applies these as inline styles.
+`buildCampaignColorStyle()` in `src/utils/campaignColors.ts` only sets 3 semantic aliases:
+- `--primary` (from `primary_from`)
+- `--ring-brand` (from `primary_from`)
+- `--border-brand` (from `primary_from`)
 
-**However**, if the campaign's `brand_colors` in the database was saved before the recent THEME_PRESETS expansion, it won't have `contact_bg_gradient_from/to` fields. The fix is: **the admin must re-clone a preset and save** for existing campaigns. No code change needed for this.
+It does NOT set these shadcn/ui semantic variables that form components rely on:
+- `--ring` (focus rings on Input, Textarea, Select, Button)
+- `--accent` (hover states on dropdown items, checkboxes)
+- `--accent-foreground`
 
-**Verification**: I'll confirm there are no CSS specificity overrides blocking inheritance.
+The Contact component's own form inputs use explicit `focus:border-brand-primary-from` which DOES work, but any shadcn/ui component using the default `focus-visible:ring-ring` class will still show the global theme's ring color.
 
-## Issue 2: Social Media Links Missing on Campaign Pages
+## Fix
 
-**Root cause found**: On the homepage, Contact receives `content={content.homepage_contact}` which includes the admin-configured social links from `site_settings`. On campaign pages (line 247 of `PromotionalLanding.tsx`), `<Contact />` is called **without any props**, so it falls back to the hardcoded default array (only Instagram, TikTok, WhatsApp with fixed URLs).
+### File: `src/utils/campaignColors.ts`
 
-**Fix**: In `PromotionalLanding.tsx`, import `useHomepageContent` and pass `content.homepage_contact` to the `<Contact />` component, ensuring campaign pages show the same social links, contact info, and quick response text as the homepage.
+Extend the alias block (lines 67-72) to also derive and set:
 
-## Changes
+```ts
+if (brandColors.primary_from) {
+  style['--primary'] = brandColors.primary_from;
+  style['--ring'] = brandColors.primary_from;
+  style['--ring-brand'] = brandColors.primary_from;
+  style['--border-brand'] = brandColors.primary_from;
+}
+```
 
-### File: `src/pages/PromotionalLanding.tsx`
-1. Import `useHomepageContent` hook
-2. Call `const { content } = useHomepageContent();` inside the component
-3. Change `<Contact />` to `<Contact content={content.homepage_contact} />`
+This is the minimal, safe change. The `--ring` variable controls all `focus-visible:ring-ring` states across every shadcn/ui form component (Input, Textarea, Select, Button, Checkbox, etc.).
 
-This is a single-file, 3-line change. The Contact component already accepts the `content` prop and handles all fields. Campaign brand color overrides will continue to work via the scoped wrapper div.
+### Why NOT set `--accent`, `--border`, `--input`, `--background`, etc.
+
+These variables control structural appearance (background colors, border lightness, surface contrast). They are mode-dependent (light vs dark) and should NOT be derived from a brand hue alone -- doing so would break readability. The campaign pages use a dark contact section with explicit `bg-white/10 border-white/30 text-white` overrides that already look correct regardless of theme. Only the focus ring color leaks through as the wrong hue.
+
+### Impact
+- Single file change, single line addition
+- Zero risk to global theme, layout, or campaign override system
+- All shadcn/ui focus rings inside campaign wrapper will match the campaign's primary color
 
