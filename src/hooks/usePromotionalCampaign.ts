@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPackage } from './useCampaignPackages';
+import type { BrandColors } from './useSiteSettings';
 
 export interface TrackingScript {
   id: string;
@@ -56,6 +57,8 @@ interface PromotionalCampaign {
   vendors_section_description: string | null;
   // NEW: Packages from campaign_packages table
   packages: CampaignPackage[];
+  // Campaign-scoped brand colors (null = use global theme)
+  brand_colors: Partial<BrandColors> | null;
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -110,6 +113,11 @@ export const usePromotionalCampaign = (slug: string) => {
         }));
 
         // Parse tracking_scripts from JSONB
+        // Parse brand_colors from JSONB
+        const brandColors = data.brand_colors && typeof data.brand_colors === 'object' && !Array.isArray(data.brand_colors)
+          ? (data.brand_colors as Partial<BrandColors>)
+          : null;
+
         const parsedData = {
           ...data,
           tracking_scripts: (data.tracking_scripts as any) || [],
@@ -119,6 +127,7 @@ export const usePromotionalCampaign = (slug: string) => {
           vendors_section_headline: data.vendors_section_headline ?? 'Our Partners',
           vendors_section_description: data.vendors_section_description ?? null,
           packages,
+          brand_colors: brandColors,
         };
         setCampaign(parsedData as PromotionalCampaign);
 

@@ -1,8 +1,9 @@
 import { useParams } from "react-router-dom";
 import { usePromotionalCampaign, TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Header from "@/components/Header";
+import { buildCampaignColorStyle } from "@/utils/campaignColors";
 import PromoHero from "@/components/promo/PromoHero";
 import PromoPricing from "@/components/promo/PromoPricing";
 import Contact from "@/components/Contact";
@@ -206,7 +207,7 @@ const PromotionalLanding = () => {
         })}
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" style={buildCampaignColorStyle(campaign.brand_colors)}>
         <Header onLoginClick={() => setIsAuthModalOpen(true)} />
         
         <PromoHero
