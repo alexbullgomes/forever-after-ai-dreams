@@ -67,6 +67,7 @@ export function buildCampaignColorStyle(
   // Mirror the extra aliases that applyCSSVariables sets
   if (brandColors.primary_from) {
     style['--primary'] = brandColors.primary_from;
+    style['--ring'] = brandColors.primary_from;
     style['--ring-brand'] = brandColors.primary_from;
     style['--border-brand'] = brandColors.primary_from;
   }
