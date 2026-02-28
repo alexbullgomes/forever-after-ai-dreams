@@ -6,34 +6,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLandingPageCards, LandingCard } from "@/hooks/useLandingPageCards";
 import { useState } from "react";
 import ConsultationForm from "@/components/ConsultationForm";
+import type { ServicesHeaderContent } from "@/hooks/useHomepageContent";
 
 // Icon mapping for dynamic rendering
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Heart,
-  Camera,
-  Sparkles,
-  Video,
-  Film,
-  Star,
-  Award,
-  Gift,
-  Music,
-  Palette,
-  Image,
-  Users,
-  Calendar,
-  Clock,
-  MapPin,
-  Zap,
-  Shield,
-  Trophy,
+  Heart, Camera, Sparkles, Video, Film, Star, Award, Gift, Music, Palette, Image, Users, Calendar, Clock, MapPin, Zap, Shield, Trophy,
 };
 
 interface ServicesProps {
   onBookingClick: () => void;
+  content?: ServicesHeaderContent;
 }
 
-const Services = ({ onBookingClick }: ServicesProps) => {
+const Services = ({ onBookingClick, content }: ServicesProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { cards, showCardsSection, loading } = useLandingPageCards();
@@ -43,24 +28,30 @@ const Services = ({ onBookingClick }: ServicesProps) => {
 
   const handleServiceClick = (card: LandingCard) => {
     if (user) {
-      // User is logged in - navigate to link or default /services
       const targetRoute = card.button_link || '/services';
       navigate(targetRoute);
       setTimeout(() => window.scrollTo(0, 0), 100);
     } else {
-      // Not logged in - open consultation form with custom redirect
       setSelectedService(card.title);
       setCustomRedirectLink(card.button_link || '/services');
       setIsConsultationFormOpen(true);
     }
   };
 
-  // Don't render if section is hidden or loading
   if (!showCardsSection || loading) {
     return null;
   }
 
-  // Icon background colors cycle
+  const badgeText = content?.badge_text ?? "Our Services";
+  const titleLine1 = content?.title_line1 ?? "Capturing";
+  const titleLine2 = content?.title_line2 ?? "Every Frame";
+  const subtitle = content?.subtitle ?? "Professional videography and photography services designed to tell your unique story.";
+  const additionalFeatures = content?.additional_features ?? [
+    { icon: "Clock", title: "Quick Turnaround", description: "Receive your highlights within 48 hours" },
+    { icon: "Award", title: "Award Winning", description: "Recognized for excellence in wedding cinematography" },
+    { icon: "Heart", title: "Personal Touch", description: "Tailored approach to your unique love story" }
+  ];
+
   const iconBgClasses = [
     "bg-brand-icon-bg-primary",
     "bg-brand-icon-bg-secondary",
@@ -80,17 +71,17 @@ const Services = ({ onBookingClick }: ServicesProps) => {
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2 rounded-full px-4 py-2" style={{ backgroundColor: `hsl(var(--brand-badge-bg))` }}>
               <Heart className="w-5 h-5 text-brand-text-accent" />
-              <span className="text-brand-badge-text text-sm font-medium">Our Services</span>
+              <span className="text-brand-badge-text text-sm font-medium">{badgeText}</span>
             </div>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Capturing
+            {titleLine1}
             <span className="block bg-brand-gradient bg-clip-text text-transparent">
-              Every Frame
+              {titleLine2}
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Professional videography and photography services designed to tell your unique story.
+            {subtitle}
           </p>
         </div>
 
@@ -133,29 +124,18 @@ const Services = ({ onBookingClick }: ServicesProps) => {
 
         {/* Additional features */}
         <div className="grid md:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
-              <Clock className="w-6 h-6 text-white" />
-            </div>
-            <h4 className="text-lg font-semibold text-foreground mb-2">Quick Turnaround</h4>
-            <p className="text-muted-foreground">Receive your highlights within 48 hours</p>
-          </div>
-          
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
-              <Award className="w-6 h-6 text-white" />
-            </div>
-            <h4 className="text-lg font-semibold text-foreground mb-2">Award Winning</h4>
-            <p className="text-muted-foreground">Recognized for excellence in wedding cinematography</p>
-          </div>
-          
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
-            <h4 className="text-lg font-semibold text-foreground mb-2">Personal Touch</h4>
-            <p className="text-muted-foreground">Tailored approach to your unique love story</p>
-          </div>
+          {additionalFeatures.map((feature, index) => {
+            const FeatureIcon = ICON_MAP[feature.icon] || Heart;
+            return (
+              <div key={index} className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-service-icon-gradient">
+                  <FeatureIcon className="w-6 h-6 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h4>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 

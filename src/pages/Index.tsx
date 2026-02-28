@@ -1,5 +1,5 @@
-import Hero from "@/components/Hero";
 import Header from "@/components/Header";
+import Hero from "@/components/Hero";
 import Services from "@/components/Services";
 import Portfolio from "@/components/Portfolio";
 import Testimonials from "@/components/Testimonials";
@@ -14,50 +14,51 @@ import BlogSection from "@/components/blog/BlogSection";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
-
-const localBusinessSchema = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Everafter Studio",
-  "description": "Premium visual storytelling studio in California specializing in cinematic wedding videography and professional photography",
-  "url": "https://everafter-studio.lovable.app",
-  "telephone": "(442) 224-4820",
-  "email": "contact@everafterca.com",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "California",
-    "addressCountry": "US"
-  },
-  "priceRange": "$$",
-  "image": "https://everafter-studio.lovable.app/og-image.jpg",
-  "sameAs": [
-    "https://www.instagram.com/everafterca",
-    "https://www.tiktok.com/@everafter.ca"
-  ]
-};
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 
 const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { user } = useAuth();
   const { showPopup, popupConfig, closePopup } = usePromotionalPopup();
+  const { content } = useHomepageContent();
+
+  const seo = content.homepage_seo;
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": seo.business_name,
+    "description": seo.seo_description,
+    "url": "https://everafter-studio.lovable.app",
+    "telephone": seo.phone,
+    "email": seo.email,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": seo.address_locality,
+      "addressCountry": "US"
+    },
+    "priceRange": "$$",
+    "image": "https://everafter-studio.lovable.app/og-image.jpg",
+    "sameAs": seo.social_urls
+  };
 
   return (
     <div className="min-h-screen bg-white">
       <main id="main-content">
       <SEO 
-        title="Wedding Videography & Photography California"
-        description="California's premier wedding videography & photography studio. Award-winning cinematic films and professional photos for weddings, families, and businesses."
+        title={seo.seo_title}
+        description={seo.seo_description}
         canonical="/"
         schema={localBusinessSchema}
       />
       <Header onLoginClick={() => setIsAuthModalOpen(true)} />
-      <Hero onBookingClick={() => setIsAuthModalOpen(true)} />
-      <Services onBookingClick={() => setIsAuthModalOpen(true)} />
-      <Portfolio onBookingClick={() => setIsAuthModalOpen(true)} />
-      <Testimonials />
-      <BlogSection />
-      <Contact />
+      <Hero onBookingClick={() => setIsAuthModalOpen(true)} content={content.homepage_hero} />
+      <Services onBookingClick={() => setIsAuthModalOpen(true)} content={content.homepage_services_header} />
+      <Portfolio onBookingClick={() => setIsAuthModalOpen(true)} content={content.homepage_portfolio_header} />
+      <Testimonials content={content.homepage_testimonials} />
+      <BlogSection content={content.homepage_blog_header} />
+      <Contact content={content.homepage_contact} />
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 

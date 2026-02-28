@@ -4,12 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import BlogCard from "./BlogCard";
 import { useBlogPosts } from "@/hooks/useBlogPosts";
+import type { BlogHeaderContent } from "@/hooks/useHomepageContent";
 
-const BlogSection = () => {
+interface BlogSectionProps {
+  content?: BlogHeaderContent;
+}
+
+const BlogSection = ({ content }: BlogSectionProps) => {
   const { data, isLoading } = useBlogPosts({ limit: 4 });
   const posts = data?.posts || [];
 
-  // Don't render section if no posts
+  const badgeText = content?.badge_text ?? "Latest Stories";
+  const title = content?.title ?? "Insights & Inspiration";
+  const subtitle = content?.subtitle ?? "Tips, behind-the-scenes stories, and inspiration from our team at EverAfter Studio.";
+
   if (!isLoading && posts.length === 0) {
     return null;
   }
@@ -24,13 +32,13 @@ const BlogSection = () => {
             className="mb-4 px-4 py-1.5 text-sm font-medium border-brand-primary-from/30 text-brand-primary-from"
           >
             <BookOpen className="h-4 w-4 mr-2" />
-            Latest Stories
+            {badgeText}
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Insights & Inspiration
+            {title}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Tips, behind-the-scenes stories, and inspiration from our team at EverAfter Studio.
+            {subtitle}
           </p>
         </div>
 
