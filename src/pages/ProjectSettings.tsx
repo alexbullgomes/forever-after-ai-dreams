@@ -5,13 +5,20 @@ import { Loader2 } from 'lucide-react';
 import { SettingsSidebar, SettingsTabs, SettingsSection } from '@/components/admin/settings/SettingsSidebar';
 import { BrandColorsSection } from '@/components/admin/settings/BrandColorsSection';
 import { ContentSection } from '@/components/admin/settings/ContentSection';
+import { HeroContentEditor } from '@/components/admin/settings/HeroContentEditor';
+import { SectionsContentEditor } from '@/components/admin/settings/SectionsContentEditor';
+import { TestimonialsEditor } from '@/components/admin/settings/TestimonialsEditor';
+import { ContactContentEditor } from '@/components/admin/settings/ContactContentEditor';
+import { SeoContentEditor } from '@/components/admin/settings/SeoContentEditor';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useHomepageContentAdmin } from '@/hooks/useHomepageContentAdmin';
 
 const ProjectSettings = () => {
   const [activeSection, setActiveSection] = useState<SettingsSection>('brand-colors');
   const { hasRole, loading: roleLoading } = useRole('admin');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { content, loading: contentLoading, updateSection } = useHomepageContentAdmin();
 
   // Redirect non-admins
   useEffect(() => {
@@ -31,6 +38,34 @@ const ProjectSettings = () => {
   if (!hasRole) {
     return null;
   }
+
+  const renderContent = () => {
+    if (contentLoading && activeSection !== 'brand-colors' && activeSection !== 'content') {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    switch (activeSection) {
+      case 'brand-colors': return <BrandColorsSection />;
+      case 'content': return <ContentSection />;
+      case 'hero': return <HeroContentEditor content={content.homepage_hero} updateSection={updateSection} />;
+      case 'sections': return (
+        <SectionsContentEditor
+          servicesContent={content.homepage_services_header}
+          portfolioContent={content.homepage_portfolio_header}
+          blogContent={content.homepage_blog_header}
+          updateSection={updateSection}
+        />
+      );
+      case 'testimonials': return <TestimonialsEditor content={content.homepage_testimonials} updateSection={updateSection} />;
+      case 'contact': return <ContactContentEditor content={content.homepage_contact} updateSection={updateSection} />;
+      case 'seo': return <SeoContentEditor content={content.homepage_seo} updateSection={updateSection} />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,8 +100,7 @@ const ProjectSettings = () => {
 
           {/* Main Content */}
           <div className="flex-1 min-w-0">
-            {activeSection === 'brand-colors' && <BrandColorsSection />}
-            {activeSection === 'content' && <ContentSection />}
+            {renderContent()}
           </div>
         </div>
       </div>
