@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { EmailAuthForm } from "@/components/auth/EmailAuthForm";
+import { useCampaignPortal } from "@/contexts/CampaignPortalContext";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -15,6 +16,7 @@ const AuthModal = ({
 }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [googleAvailable, setGoogleAvailable] = useState(true);
+  const campaignPortal = useCampaignPortal();
 
   // Handle Google OAuth webhooks and redirects
   useGoogleAuth({
@@ -27,7 +29,7 @@ const AuthModal = ({
     setIsLogin(!isLogin);
   };
   return <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" container={campaignPortal}>
         <div className="bg-brand-gradient p-6 text-primary-foreground">
           <DialogHeader>
             <div className="flex items-center justify-center mb-2">

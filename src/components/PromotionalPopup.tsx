@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useCampaignPortal } from "@/contexts/CampaignPortalContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Gift, Star, Zap, Sparkles, Tag } from "lucide-react";
@@ -15,7 +16,6 @@ interface PromotionalPopupProps {
   isOpen: boolean;
   onClose: () => void;
   config: PromotionalPopupConfig;
-  portalContainer?: HTMLElement | null;
 }
 
 const iconMap: Record<string, any> = {
@@ -27,7 +27,8 @@ const iconMap: Record<string, any> = {
   tag: Tag,
 };
 
-const PromotionalPopup = ({ isOpen, onClose, config, portalContainer }: PromotionalPopupProps) => {
+const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) => {
+  const campaignPortal = useCampaignPortal();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dialCode, setDialCode] = useState("+1");
   const [loading, setLoading] = useState(false);
@@ -177,7 +178,7 @@ const PromotionalPopup = ({ isOpen, onClose, config, portalContainer }: Promotio
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" container={portalContainer}>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" container={campaignPortal}>
         <div className={`bg-gradient-to-br ${config.bg_gradient} p-6 text-white`}>
           <DialogHeader>
             <div className="flex items-center justify-center mb-2">
