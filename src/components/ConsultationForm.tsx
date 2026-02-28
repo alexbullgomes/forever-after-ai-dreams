@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
 import AuthModal from '@/components/AuthModal';
+import { useCampaignPortal } from '@/contexts/CampaignPortalContext';
 
 interface PortfolioItem {
   id: number;
@@ -33,6 +34,7 @@ interface ConsultationFormProps {
 
 const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customRedirectLink }: ConsultationFormProps) => {
   const { user } = useAuth();
+  const campaignPortal = useCampaignPortal();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -143,7 +145,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" container={campaignPortal}>
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center">
