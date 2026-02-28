@@ -147,7 +147,7 @@ const PromotionalLanding = () => {
           </p>
           <a
             href="/"
-            className="inline-block px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-semibold rounded-lg hover:from-rose-600 hover:to-pink-600 transition-all"
+            className="inline-block px-6 py-3 bg-brand-gradient text-white font-semibold rounded-lg hover:bg-brand-gradient-hover transition-all"
           >
             Return Home
           </a>
