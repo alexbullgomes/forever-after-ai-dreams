@@ -1,87 +1,94 @@
 
 
-# Phase 3: Admin UI for Homepage Content Management
+# Campaign-Scoped Brand Colors -- Implementation Plan
 
-## Architecture
+## Current System
 
-Expand the Project Settings sidebar with new sections. Each section gets its own component file under `src/components/admin/settings/`. All editors follow the existing pattern: local temp state, `hasChanges` detection, single Save button, toast feedback.
+Brand colors are stored in `site_settings` (key: `brand_colors`) and applied as CSS custom properties on `document.documentElement` (`:root`) via `useSiteSettings`. All components reference these variables through Tailwind utilities (`bg-brand-gradient`, etc.) and direct `hsl(var(--brand-primary-from))` references in `index.css`. Theme presets are predefined sets of these same color values.
 
-### Data flow
-- New `useHomepageContentAdmin` hook wraps `useHomepageContent` + adds `updateSection(key, value)` method (upserts to `site_settings`)
-- Each editor component calls `updateSection('homepage_hero', updatedData)` on save
+CSS custom properties inherit naturally through the DOM tree. A child element with the same variable name overrides the inherited value for all its descendants without affecting siblings or parents.
 
-## Files to Create
+## Strategy: Scoped CSS Variables on Wrapper Container
 
-### 1. `src/hooks/useHomepageContentAdmin.ts`
-- Imports `useHomepageContent` for reading
-- Exposes `updateSection(key: HomepageContentKey, value: any): Promise<boolean>` that does `supabase.from('site_settings').update({ value }).eq('key', key)`
-- Returns `{ content, loading, updateSection }`
+The safest approach: set CSS variables on a wrapper `<div>` inside `PromotionalLanding.tsx`. No `:root` modification, no cleanup needed, no global side effects. When the component unmounts (navigation away), the scoped variables disappear automatically.
 
-### 2. `src/components/admin/settings/HeroContentEditor.tsx`
-- Card with fields: badge_text, headline_line1, headline_line2, description, cta_text
-- Video URLs section: video_webm_url, video_mp4_url, poster_url (text inputs)
-- Trust indicators: editable list (emoji + text) with add/remove
+```text
+:root  ← global brand colors (unchanged)
+  └─ <div style="--brand-primary-from: ...">  ← campaign wrapper
+       └─ PromoHero, PromoPricing, Contact, etc.  ← inherit campaign colors
+```
 
-### 3. `src/components/admin/settings/SectionsContentEditor.tsx`
-- Accordion with 3 groups: Services Header, Portfolio Header, Blog Header
-- **Services**: badge, title_line1/2, subtitle, additional_features list (icon select + title + description) with add/remove
-- **Portfolio**: badge, title_line1/2, subtitle, cta_text, filters list (id + label) with add/remove
-- **Blog**: badge, title, subtitle
+## Database Change
 
-### 4. `src/components/admin/settings/TestimonialsEditor.tsx`
-- Stats section: editable list of {value, label} pairs with add/remove
-- Testimonials section: accordion of testimonial cards, each with name, location, rating (1-5 select), text (textarea), image_url
-- Add/remove testimonials buttons
+Add `brand_colors` JSONB column to `promotional_campaigns`:
 
-### 5. `src/components/admin/settings/ContactContentEditor.tsx`
-- Badge, title_line1/2, subtitle, form_title
-- Contact info: email, phone, whatsapp_url, address
-- Social links: editable list (platform select + url) with add/remove
-- Quick response: title + text (textarea)
+```sql
+ALTER TABLE promotional_campaigns
+ADD COLUMN brand_colors jsonb DEFAULT NULL;
+```
 
-### 6. `src/components/admin/settings/SeoContentEditor.tsx`
-- business_name, seo_title, seo_description (textarea)
-- phone, email, address_locality
-- social_urls: editable string list with add/remove
+- `NULL` = use global theme (no override)
+- JSON structure: same partial `BrandColors` interface (only override what you want)
 
-## Files to Modify
+## Frontend Implementation
 
-### 7. `src/components/admin/settings/SettingsSidebar.tsx`
-- Add new sections to the `sections` array:
-  - `'hero'` (Monitor icon)
-  - `'sections'` (Layers icon)  
-  - `'testimonials'` (MessageSquareQuote icon)
-  - `'contact'` (Mail icon)
-  - `'seo'` (Search icon)
-- Update `SettingsSection` type union
+### 1. Update `usePromotionalCampaign` hook
+- Include `brand_colors` in the fetched data
+- Parse as `Partial<BrandColors> | null`
 
-### 8. `src/pages/ProjectSettings.tsx`
-- Import and render new editor components based on `activeSection`
+### 2. Create utility: `buildCampaignColorStyle()`
+- Accepts `Partial<BrandColors> | null`
+- Returns `React.CSSProperties` with only the defined variables
+- Maps each key to its CSS variable name (same mapping as `applyCSSVariables` in `useSiteSettings`)
+- If null/empty, returns empty object (no override)
 
-### 9. `src/components/admin/settings/ContentSection.tsx`
-- No changes (stays as landing page cards editor)
+### 3. Update `PromotionalLanding.tsx`
+- Wrap the page content `<div>` with the computed style:
+```tsx
+const colorStyle = buildCampaignColorStyle(campaign.brand_colors);
+return <div style={colorStyle}>...</div>;
+```
+- No `useEffect`, no cleanup, no `:root` mutation
 
-## UI Pattern (consistent across all editors)
+### 4. Admin UI: Campaign Brand Colors Tab
+- Add a "Brand Colors" tab to `PromotionalCampaignForm.tsx`
+- Toggle: "Use custom brand colors for this campaign"
+- When enabled: show color pickers for the partial `BrandColors` fields
+- Option to "Copy from preset" dropdown (Light, Dark, Ocean, etc.)
+- Saves to `brand_colors` column as JSONB
 
-Each editor component follows this pattern:
-1. Receives `content` and `updateSection` as props (from parent ProjectSettings)
-2. Initializes local `temp` state from `content`
-3. Tracks `hasChanges` via JSON comparison
-4. Single "Save" button at bottom, disabled when no changes
-5. Toast on success/error
-6. Amber "unsaved changes" indicator
+## Edge Cases
 
-## Implementation Order
+| Scenario | Behavior |
+|----------|----------|
+| `brand_colors` is `null` | No style applied, global theme inherited |
+| `brand_colors` has partial fields | Only those variables overridden, rest inherited from global |
+| User navigates away | React unmounts component, scoped styles gone instantly |
+| Chat widget overlays | Chat components are children of the wrapper, so they inherit campaign colors (consistent UX) |
+| Campaign uses dark preset colors on light global theme | Works — only color variables change, layout/spacing unaffected |
 
-Split into 2-3 prompts:
-- **Prompt 1**: Create `useHomepageContentAdmin` hook, update sidebar/settings page, create HeroContentEditor + ContactContentEditor + SeoContentEditor
-- **Prompt 2**: Create SectionsContentEditor + TestimonialsEditor (more complex with lists/accordions)
+## Files to Create/Modify
 
-## Risk Assessment
+| File | Action |
+|------|--------|
+| `promotional_campaigns` table | Add `brand_colors` JSONB column (migration) |
+| `src/hooks/usePromotionalCampaign.ts` | Include `brand_colors` in type + fetch |
+| `src/utils/campaignColors.ts` | New: `buildCampaignColorStyle()` utility |
+| `src/pages/PromotionalLanding.tsx` | Apply scoped style to wrapper div |
+| `src/components/admin/PromotionalCampaignForm.tsx` | Add Brand Colors tab |
 
-| Risk | Mitigation |
-|------|------------|
-| Saving partial JSON overwrites other fields | Each editor saves its complete section object (not partial) |
-| Empty required fields | Non-empty validation on save for critical fields (headline, business_name) |
-| No changes to public-facing components | Editors only write to site_settings; real-time subscription updates homepage |
+## What Is NOT Changed
+
+- `useSiteSettings.ts` — untouched
+- `:root` CSS variables — never mutated by campaigns
+- `index.css` — untouched
+- `tailwind.config.ts` — untouched
+- Any non-campaign page — unaffected
+- Theme preset logic — unaffected
+- Global `localStorage` color cache — unaffected
+
+## Estimated Effort
+
+- Migration + utility + hook update + PromotionalLanding wrapper: 1 prompt
+- Admin UI (brand colors tab in campaign form): 1 prompt
 
