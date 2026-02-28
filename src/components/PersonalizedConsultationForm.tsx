@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
 import { isDateInPast } from '@/utils/dateValidation';
+import { useCampaignPortal } from '@/contexts/CampaignPortalContext';
 
 interface PersonalizedConsultationFormProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ const PersonalizedConsultationForm = ({
   packagePrice 
 }: PersonalizedConsultationFormProps) => {
   const { user } = useAuth();
+  const campaignPortal = useCampaignPortal();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     phone: '',
@@ -127,7 +129,7 @@ const PersonalizedConsultationForm = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" container={campaignPortal}>
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-brand-gradient rounded-full flex items-center justify-center">
@@ -190,7 +192,7 @@ const PersonalizedConsultationForm = ({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0" align="start" container={campaignPortal}>
                 <Calendar
                   mode="single"
                   selected={formData.weddingDate}

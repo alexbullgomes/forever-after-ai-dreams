@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useCampaignPortal } from '@/contexts/CampaignPortalContext';
 import { BookingStepDate } from './BookingStepDate';
 import { BookingStepChecking } from './BookingStepChecking';
 import { BookingStepSlots } from './BookingStepSlots';
@@ -67,6 +68,7 @@ export function BookingFunnelModal({
   const [eventDate, setEventDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const campaignPortal = useCampaignPortal();
   
   const { toast } = useToast();
   const { user } = useAuth();
@@ -326,7 +328,7 @@ export function BookingFunnelModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" container={campaignPortal}>
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
         </DialogHeader>

@@ -17,6 +17,7 @@ import { CampaignVendorSection } from "@/components/promo/CampaignVendorSection"
 import AuthModal from "@/components/AuthModal";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 import PromotionalPopup from "@/components/PromotionalPopup";
+import { CampaignPortalProvider } from "@/contexts/CampaignPortalContext";
 
 // Allowed tracking script domains for validation
 const ALLOWED_SCRIPT_DOMAINS = [
@@ -214,64 +215,65 @@ const PromotionalLanding = () => {
       </Helmet>
 
       <div ref={campaignContainerRef} className="min-h-screen bg-background relative" style={buildCampaignColorStyle(campaign.brand_colors)}>
-        <Header onLoginClick={() => setIsAuthModalOpen(true)} />
-        
-        <PromoHero
-          videoUrl={campaign.banner_video_url}
-          posterUrl={campaign.banner_poster_url}
-          headline={campaign.banner_headline}
-          subheadline={campaign.banner_subheadline}
-          tagline={campaign.banner_tagline}
-        />
-
-        {/* Pricing Section - now uses packages from campaign_packages table */}
-        {campaign.pricing_section_enabled && campaign.packages.length > 0 && (
-          <PromoPricing 
-            packages={campaign.packages} 
-            campaignId={campaign.id} 
-            campaignSlug={campaign.slug} 
+        <CampaignPortalProvider container={campaignContainerRef}>
+          <Header onLoginClick={() => setIsAuthModalOpen(true)} />
+          
+          <PromoHero
+            videoUrl={campaign.banner_video_url}
+            posterUrl={campaign.banner_poster_url}
+            headline={campaign.banner_headline}
+            subheadline={campaign.banner_subheadline}
+            tagline={campaign.banner_tagline}
           />
-        )}
 
-        {/* Campaign Products Section */}
-        {campaign.products_section_enabled && (
-          <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
-        )}
+          {/* Pricing Section - now uses packages from campaign_packages table */}
+          {campaign.pricing_section_enabled && campaign.packages.length > 0 && (
+            <PromoPricing 
+              packages={campaign.packages} 
+              campaignId={campaign.id} 
+              campaignSlug={campaign.slug} 
+            />
+          )}
 
-        {/* Campaign Gallery Section */}
-        <PromotionalCampaignGallery campaignId={campaign.id} />
+          {/* Campaign Products Section */}
+          {campaign.products_section_enabled && (
+            <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
+          )}
 
-        {/* Vendor Section - appears at the end before Contact */}
-        {campaign.vendors_section_enabled && (
-          <CampaignVendorSection
-            campaignId={campaign.id}
-            headline={campaign.vendors_section_headline || 'Our Partners'}
-            description={campaign.vendors_section_description}
+          {/* Campaign Gallery Section */}
+          <PromotionalCampaignGallery campaignId={campaign.id} />
+
+          {/* Vendor Section - appears at the end before Contact */}
+          {campaign.vendors_section_enabled && (
+            <CampaignVendorSection
+              campaignId={campaign.id}
+              headline={campaign.vendors_section_headline || 'Our Partners'}
+              description={campaign.vendors_section_description}
+            />
+          )}
+
+          <Contact content={content.homepage_contact} />
+
+          {user ? (
+            <ExpandableChatAssistant />
+          ) : (
+            <ExpandableChatWebhook />
+          )}
+
+          <AuthModal 
+            isOpen={isAuthModalOpen} 
+            onClose={() => setIsAuthModalOpen(false)} 
           />
-        )}
 
-        <Contact content={content.homepage_contact} />
-
-        {user ? (
-          <ExpandableChatAssistant />
-        ) : (
-          <ExpandableChatWebhook />
-        )}
-
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)} 
-        />
-
-        {/* Campaign-scoped promotional popup */}
-        {popupConfig && (
-          <PromotionalPopup
-            isOpen={showPopup}
-            onClose={closePopup}
-            config={popupConfig}
-            portalContainer={campaignContainerRef.current}
-          />
-        )}
+          {/* Campaign-scoped promotional popup */}
+          {popupConfig && (
+            <PromotionalPopup
+              isOpen={showPopup}
+              onClose={closePopup}
+              config={popupConfig}
+            />
+          )}
+        </CampaignPortalProvider>
       </div>
     </>
   );
