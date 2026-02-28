@@ -1,48 +1,35 @@
 
 
-# Campaign Color Consistency -- Analysis Report & Refactor Plan
+# Footer Theme Awareness -- Analysis & Refactor Plan
 
-## Audit Results
+## Finding
 
-### Components Using Theme Variables Correctly (No Changes Needed)
-- **PromoHero** -- uses `bg-brand-gradient`, `text-brand-primary-from`, `hsl(var(--brand-primary-from))` throughout
-- **CampaignPricingCard** -- uses `bg-brand-gradient`, `text-brand-primary-from`, `ring-[hsl(var(--brand-primary-from))]`, `bg-[hsl(var(--brand-primary-from)/0.1)]`
-- **InteractiveProduct3DCard** -- uses `bg-brand-gradient`, `text-primary`, `border-primary`, semantic tokens only
-- **EstimatedPriceBadge** -- uses `bg-brand-primary-from`
-- **Contact** -- uses `bg-brand-gradient`, `bg-contact-bg-gradient`, `hsl(var(--brand-text-accent))`, all correct
-- **CampaignProductsSection** -- uses semantic `text-foreground`, `text-muted-foreground`, `bg-muted/30`
-- **CampaignVendorSection** -- uses semantic tokens only
-- **PromotionalCampaignGallery** -- delegates to `InteractiveBentoGallery`, no color issues
-- **PromotionalFooter** -- NOT rendered on campaign pages (only on Index.tsx), already uses `bg-brand-gradient`
+The `PromotionalFooter` already uses `bg-brand-gradient` (line 128), which resolves to:
+```css
+background: linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to)));
+```
 
-### Components With Hardcoded Colors (2 Issues Found)
+These CSS variables ARE set on `:root` by `useSiteSettings` when the global theme changes. So **the footer already adapts to global theme preset changes**.
 
-| File | Line | Hardcoded Value | Fix |
-|------|------|----------------|-----|
-| `src/components/promo/PromoPricing.tsx` | 21 | `from-rose-600 to-pink-600` on section heading | Replace with `bg-brand-gradient` (same pattern as PromoHero subheadline) |
-| `src/pages/PromotionalLanding.tsx` | 150 | `from-rose-500 to-pink-500` and `from-rose-600 to-pink-600` on 404 error button | Replace with `bg-brand-gradient hover:bg-brand-gradient-hover` |
+However, there is a **specificity override** in `index.css` (lines 355-371) that forces hardcoded fallback colors on elements matching `button[class*="bg-primary"]` and certain `.bg-brand-gradient` selectors. The footer uses a `<div>` with `role="button"`, not a `<button>`, so this override should not apply -- but it's worth verifying visually.
 
-### GradientHeading (No Change Needed)
-Uses hardcoded neutral gradients (`neutral-700`, `neutral-500`, etc.) intentionally for text readability -- these are structural/typographic, not brand colors.
+## Root Cause of Perceived Issue
 
-## Footer Analysis
+The footer is rendered **only on the homepage** (`Index.tsx`), which is **outside** any campaign-scoped wrapper. Campaign color overrides are applied via scoped CSS variables on `PromotionalLanding.tsx`'s wrapper div. The footer is never a child of that wrapper, so it correctly cannot inherit campaign overrides.
 
-The `PromotionalFooter` is **only rendered on the homepage** (`Index.tsx`). It is **not present** on `/promo/:slug` pages. No footer changes are needed for campaign color scoping.
+The footer **does** adapt to global theme changes because `bg-brand-gradient` reads from `:root` variables. If it appears not to update, the most likely cause is **browser caching of the old gradient** or the admin needing to refresh after saving.
 
-## Refactor Plan
+## What Actually Needs No Change
 
-Only **2 lines** need changing across **2 files**:
+- The footer already uses `bg-brand-gradient` -- no hardcoded colors
+- Global theme changes already propagate to the footer via `:root` CSS variables
+- Campaign overrides correctly don't affect the footer (it's on a different page)
 
-### 1. `src/components/promo/PromoPricing.tsx` (line 21)
-Replace `bg-gradient-to-r from-rose-600 to-pink-600` with `bg-brand-gradient` on the heading.
+## Conclusion
 
-### 2. `src/pages/PromotionalLanding.tsx` (line 150)
-Replace hardcoded rose/pink gradient on the 404 button with `bg-brand-gradient hover:bg-brand-gradient-hover`.
+**The footer is already theme-aware for global presets.** No refactor is needed. The `bg-brand-gradient` utility class correctly reads from `--brand-primary-from` and `--brand-primary-to` CSS variables, which are updated by `useSiteSettings` whenever the global theme changes.
 
-## Impact Assessment
-- Zero risk to global theme system
-- Zero changes to `useSiteSettings`, `index.css`, `tailwind.config.ts`
-- Zero changes to non-campaign pages
-- All animations, transitions, and layouts preserved
-- Scoped wrapper div approach remains unchanged
+For campaign pages: the footer is not rendered on `/promo/:slug` at all (only on `Index.tsx`), so campaign override compatibility is not applicable.
+
+If the user wants the footer to also appear on campaign pages and reflect campaign colors, that would be a new feature (rendering `PromotionalFooter` inside the scoped wrapper in `PromotionalLanding.tsx`).
 
