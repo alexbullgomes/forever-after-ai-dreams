@@ -1,42 +1,48 @@
 
 
-# Admin UI: Campaign Brand Colors Tab
+# Campaign Color Consistency -- Analysis Report & Refactor Plan
 
-## Overview
-Add a "Colors" tab to `PromotionalCampaignForm.tsx` with a toggle to enable custom brand colors, a "Copy from preset" dropdown, and color pickers for all BrandColors fields. The `brand_colors` JSONB field already exists in the database.
+## Audit Results
 
-## New File
+### Components Using Theme Variables Correctly (No Changes Needed)
+- **PromoHero** -- uses `bg-brand-gradient`, `text-brand-primary-from`, `hsl(var(--brand-primary-from))` throughout
+- **CampaignPricingCard** -- uses `bg-brand-gradient`, `text-brand-primary-from`, `ring-[hsl(var(--brand-primary-from))]`, `bg-[hsl(var(--brand-primary-from)/0.1)]`
+- **InteractiveProduct3DCard** -- uses `bg-brand-gradient`, `text-primary`, `border-primary`, semantic tokens only
+- **EstimatedPriceBadge** -- uses `bg-brand-primary-from`
+- **Contact** -- uses `bg-brand-gradient`, `bg-contact-bg-gradient`, `hsl(var(--brand-text-accent))`, all correct
+- **CampaignProductsSection** -- uses semantic `text-foreground`, `text-muted-foreground`, `bg-muted/30`
+- **CampaignVendorSection** -- uses semantic tokens only
+- **PromotionalCampaignGallery** -- delegates to `InteractiveBentoGallery`, no color issues
+- **PromotionalFooter** -- NOT rendered on campaign pages (only on Index.tsx), already uses `bg-brand-gradient`
 
-### `src/components/admin/CampaignBrandColorsTab.tsx`
-- Receives `brandColors: Partial<BrandColors> | null` and `onChange: (colors: Partial<BrandColors> | null) => void` props
-- Toggle switch: "Use custom brand colors for this campaign"
-  - Off: `onChange(null)` -- clears brand_colors, campaign inherits global theme
-  - On: shows color editor UI
-- "Copy from preset" dropdown using existing `THEME_PRESETS` from `useSiteSettings` (Light, Dark, Ocean, Sunset, Forest, Monochrome) -- populates all fields at once
-- Color pickers organized in collapsible sections (Accordion):
-  - **Primary Gradient** (4 fields): primary_from, primary_to, primary_hover_from, primary_hover_to
-  - **Icon Backgrounds** (3): icon_bg_primary, icon_bg_secondary, icon_bg_accent
-  - **Text & Badges** (4): text_accent, badge_text, stats_text, badge_bg
-  - **Decorative** (1): feature_dot
-  - **Hero Section** (13): all hero_* fields
-  - **Services** (2): service_icon_gradient_from/to
-  - **Contact** (2): contact_bg_gradient_from/to
-  - **CTA** (1): cta_icon_color
-- Uses existing `ColorPicker` component from `src/components/admin/ColorPicker.tsx`
-- Live preview swatch strip showing primary gradient
+### Components With Hardcoded Colors (2 Issues Found)
 
-## Modified Files
+| File | Line | Hardcoded Value | Fix |
+|------|------|----------------|-----|
+| `src/components/promo/PromoPricing.tsx` | 21 | `from-rose-600 to-pink-600` on section heading | Replace with `bg-brand-gradient` (same pattern as PromoHero subheadline) |
+| `src/pages/PromotionalLanding.tsx` | 150 | `from-rose-500 to-pink-500` and `from-rose-600 to-pink-600` on 404 error button | Replace with `bg-brand-gradient hover:bg-brand-gradient-hover` |
 
-### `src/components/admin/PromotionalCampaignForm.tsx`
-- Add `brand_colors` to `Campaign` interface as `Partial<BrandColors> | null`
-- Add `brandColors` local state, initialized from `campaign.brand_colors` in the useEffect
-- Add "Colors" tab to TabsList (9 columns now: Basic, Banner, Packages, Gallery, Products, Vendors, Colors, Ads, SEO)
-- Add TabsContent for "colors" rendering `<CampaignBrandColorsTab>`
-- Include `brand_colors: brandColors` in `campaignData` on submit (already handled by spread since it's part of formData, but brand_colors is separate state)
+### GradientHeading (No Change Needed)
+Uses hardcoded neutral gradients (`neutral-700`, `neutral-500`, etc.) intentionally for text readability -- these are structural/typographic, not brand colors.
 
-## Implementation Details
-- Color values use HSL format (`"351 95% 71%"`) matching the existing system
-- Preset copy fills all 30 color fields; admin can then tweak individual ones
-- When toggle is off, `brand_colors` saves as `null` to database
-- No changes to campaignColors.ts, useSiteSettings, or PromotionalLanding -- those are already done
+## Footer Analysis
+
+The `PromotionalFooter` is **only rendered on the homepage** (`Index.tsx`). It is **not present** on `/promo/:slug` pages. No footer changes are needed for campaign color scoping.
+
+## Refactor Plan
+
+Only **2 lines** need changing across **2 files**:
+
+### 1. `src/components/promo/PromoPricing.tsx` (line 21)
+Replace `bg-gradient-to-r from-rose-600 to-pink-600` with `bg-brand-gradient` on the heading.
+
+### 2. `src/pages/PromotionalLanding.tsx` (line 150)
+Replace hardcoded rose/pink gradient on the 404 button with `bg-brand-gradient hover:bg-brand-gradient-hover`.
+
+## Impact Assessment
+- Zero risk to global theme system
+- Zero changes to `useSiteSettings`, `index.css`, `tailwind.config.ts`
+- Zero changes to non-campaign pages
+- All animations, transitions, and layouts preserved
+- Scoped wrapper div approach remains unchanged
 
