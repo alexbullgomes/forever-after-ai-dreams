@@ -18,7 +18,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { CampaignProductsTab } from "@/components/admin/CampaignProductsTab";
 import { CampaignVendorsTab } from "@/components/admin/CampaignVendorsTab";
 import { CampaignGalleryItemCard } from "@/components/admin/CampaignGalleryItemCard";
- import { CampaignPackagesTab } from "@/components/admin/CampaignPackagesTab";
+import { CampaignPackagesTab } from "@/components/admin/CampaignPackagesTab";
+import { CampaignBrandColorsTab } from "@/components/admin/CampaignBrandColorsTab";
+import { BrandColors } from "@/hooks/useSiteSettings";
 import {
   DndContext,
   closestCenter,
@@ -124,6 +126,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
   );
   
   // Tracking scripts state
+  const [brandColors, setBrandColors] = useState<Partial<BrandColors> | null>(null);
   const [trackingScripts, setTrackingScripts] = useState<TrackingScript[]>([]);
   const [isScriptDialogOpen, setIsScriptDialogOpen] = useState(false);
   const [editingScript, setEditingScript] = useState<TrackingScript | null>(null);
@@ -287,6 +290,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
         vendors_section_description: campaign.vendors_section_description ?? '',
       });
       setTrackingScripts(campaign.tracking_scripts || []);
+      setBrandColors((campaign as any).brand_colors ?? null);
     }
   }, [campaign]);
 
@@ -329,6 +333,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
       const campaignData = {
         ...formData,
         tracking_scripts: trackingScripts as any,
+        brand_colors: brandColors as any,
       };
 
       if (campaign?.id) {
@@ -382,13 +387,14 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
 
           <form onSubmit={handleSubmit}>
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-8">
+              <TabsList className="grid w-full grid-cols-9">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="banner">Banner</TabsTrigger>
                 <TabsTrigger value="packages">Packages</TabsTrigger>
                 <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
                 <TabsTrigger value="products" disabled={!campaign}>Products</TabsTrigger>
                 <TabsTrigger value="vendors" disabled={!campaign}>Vendors</TabsTrigger>
+                <TabsTrigger value="colors">Colors</TabsTrigger>
                 <TabsTrigger value="ads">Ads</TabsTrigger>
                 <TabsTrigger value="seo">SEO</TabsTrigger>
               </TabsList>
@@ -633,6 +639,11 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                     setFormData((prev) => ({ ...prev, vendors_section_description: description }))
                   }
                 />
+              </TabsContent>
+
+              {/* Colors Tab */}
+              <TabsContent value="colors" className="space-y-4">
+                <CampaignBrandColorsTab brandColors={brandColors} onChange={setBrandColors} />
               </TabsContent>
 
               {/* Ads Tab */}
