@@ -1,44 +1,40 @@
 
 
-# Campaign Theme -- Form Component Integration
+# Campaign-Scoped Promotional Popup
 
-## Root Cause
+## Current State
+- `PromotionalPopup` is only rendered on the homepage (`Index.tsx`), not on campaign pages
+- The Dialog portals to `document.body` by default (Radix), escaping campaign CSS variables
+- Campaign pages already have a scoped wrapper div with campaign CSS variables (line 212 of `PromotionalLanding.tsx`)
 
-`buildCampaignColorStyle()` in `src/utils/campaignColors.ts` only sets 3 semantic aliases:
-- `--primary` (from `primary_from`)
-- `--ring-brand` (from `primary_from`)
-- `--border-brand` (from `primary_from`)
+## Plan
 
-It does NOT set these shadcn/ui semantic variables that form components rely on:
-- `--ring` (focus rings on Input, Textarea, Select, Button)
-- `--accent` (hover states on dropdown items, checkboxes)
-- `--accent-foreground`
+### 1. Add portal container to campaign wrapper (`src/pages/PromotionalLanding.tsx`)
+- Add a `ref` to the campaign wrapper div (line 212)
+- Add `usePromotionalPopup` hook call
+- Render `PromotionalPopup` inside the campaign wrapper, passing the container ref as a new `portalContainer` prop
 
-The Contact component's own form inputs use explicit `focus:border-brand-primary-from` which DOES work, but any shadcn/ui component using the default `focus-visible:ring-ring` class will still show the global theme's ring color.
+### 2. Update `PromotionalPopup` to accept optional portal container (`src/components/PromotionalPopup.tsx`)
+- Add optional `portalContainer` prop to interface
+- Pass it through to Dialog's inner `DialogPortal` — but since `DialogContent` wraps `DialogPortal` internally, we need a different approach
 
-## Fix
+### 3. Update `DialogContent` to support custom container (`src/components/ui/dialog.tsx`)
+- Add optional `container` prop to `DialogContent`
+- Pass it to `DialogPortal` as the `container` prop (Radix supports this natively)
 
-### File: `src/utils/campaignColors.ts`
+### 4. Wire it all together
+- `PromotionalPopup` passes `portalContainer` to `DialogContent` via the `container` prop
+- On homepage: no container passed → default body portal (unchanged)
+- On campaign pages: container ref passed → portals into campaign-scoped div → inherits CSS variables
 
-Extend the alias block (lines 67-72) to also derive and set:
+## Files Changed
+1. **`src/components/ui/dialog.tsx`** — Add `container` prop forwarding to `DialogPortal`
+2. **`src/components/PromotionalPopup.tsx`** — Accept optional `portalContainer` prop, pass to `DialogContent`
+3. **`src/pages/PromotionalLanding.tsx`** — Add ref, hook, and render popup with container ref
 
-```ts
-if (brandColors.primary_from) {
-  style['--primary'] = brandColors.primary_from;
-  style['--ring'] = brandColors.primary_from;
-  style['--ring-brand'] = brandColors.primary_from;
-  style['--border-brand'] = brandColors.primary_from;
-}
-```
-
-This is the minimal, safe change. The `--ring` variable controls all `focus-visible:ring-ring` states across every shadcn/ui form component (Input, Textarea, Select, Button, Checkbox, etc.).
-
-### Why NOT set `--accent`, `--border`, `--input`, `--background`, etc.
-
-These variables control structural appearance (background colors, border lightness, surface contrast). They are mode-dependent (light vs dark) and should NOT be derived from a brand hue alone -- doing so would break readability. The campaign pages use a dark contact section with explicit `bg-white/10 border-white/30 text-white` overrides that already look correct regardless of theme. Only the focus ring color leaks through as the wrong hue.
-
-### Impact
-- Single file change, single line addition
-- Zero risk to global theme, layout, or campaign override system
-- All shadcn/ui focus rings inside campaign wrapper will match the campaign's primary color
+## No Changes To
+- Homepage popup behavior
+- Global CSS variables
+- Popup logic/hook
+- Any other components
 
