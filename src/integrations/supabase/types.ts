@@ -1443,6 +1443,7 @@ export type Database = {
           banner_subheadline: string | null
           banner_tagline: string | null
           banner_video_url: string | null
+          brand_colors: Json | null
           created_at: string | null
           id: string
           is_active: boolean | null
@@ -1488,6 +1489,7 @@ export type Database = {
           banner_subheadline?: string | null
           banner_tagline?: string | null
           banner_video_url?: string | null
+          brand_colors?: Json | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
@@ -1533,6 +1535,7 @@ export type Database = {
           banner_subheadline?: string | null
           banner_tagline?: string | null
           banner_video_url?: string | null
+          brand_colors?: Json | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null

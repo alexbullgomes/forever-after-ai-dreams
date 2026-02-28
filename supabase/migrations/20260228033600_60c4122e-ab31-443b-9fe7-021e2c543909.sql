@@ -1,0 +1,1 @@
+ALTER TABLE public.promotional_campaigns ADD COLUMN brand_colors jsonb DEFAULT NULL;
