@@ -18,7 +18,7 @@ const PromoPricing = ({ packages, campaignId, campaignSlug }: PromoPricingProps)
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/20">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-brand-gradient bg-clip-text text-transparent">
             Special Promotional Packages
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
