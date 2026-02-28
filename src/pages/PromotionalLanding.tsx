@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Header from "@/components/Header";
 import { buildCampaignColorStyle } from "@/utils/campaignColors";
+import { useHomepageContent } from "@/hooks/useHomepageContent";
 import PromoHero from "@/components/promo/PromoHero";
 import PromoPricing from "@/components/promo/PromoPricing";
 import Contact from "@/components/Contact";
@@ -83,6 +84,7 @@ const PromotionalLanding = () => {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const { campaign, loading, error } = usePromotionalCampaign(slug || '');
+  const { content } = useHomepageContent();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Handle opening chat with a pre-filled message from booking modal
@@ -244,7 +246,7 @@ const PromotionalLanding = () => {
           />
         )}
 
-        <Contact />
+        <Contact content={content.homepage_contact} />
 
         {user ? (
           <ExpandableChatAssistant />
