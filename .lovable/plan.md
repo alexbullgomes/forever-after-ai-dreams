@@ -1,40 +1,72 @@
 
 
-# Campaign-Scoped Promotional Popup
+# Campaign-Scoped Modal Theme Inheritance
 
-## Current State
-- `PromotionalPopup` is only rendered on the homepage (`Index.tsx`), not on campaign pages
-- The Dialog portals to `document.body` by default (Radix), escaping campaign CSS variables
-- Campaign pages already have a scoped wrapper div with campaign CSS variables (line 212 of `PromotionalLanding.tsx`)
+## Problem
+Four modal types render via Radix portal to `document.body`, escaping campaign CSS variables:
+1. **BookingFunnelModal** (from `CampaignPricingCard` and `CampaignProductsSection`)
+2. **PersonalizedConsultationForm** (from `CampaignPricingCard`)
+3. **AuthModal** (from `CampaignPricingCard`, `CampaignProductsSection`, and `PromotionalLanding`)
+4. **ConsultationPopup** (from quiz flow, not used on campaign pages -- no change needed)
 
-## Plan
+## Approach: React Context for Portal Container
 
-### 1. Add portal container to campaign wrapper (`src/pages/PromotionalLanding.tsx`)
-- Add a `ref` to the campaign wrapper div (line 212)
-- Add `usePromotionalPopup` hook call
-- Render `PromotionalPopup` inside the campaign wrapper, passing the container ref as a new `portalContainer` prop
+Instead of prop-drilling `portalContainer` through every component, create a lightweight context that provides the campaign container ref. Any modal can consume it to portal into the themed scope.
 
-### 2. Update `PromotionalPopup` to accept optional portal container (`src/components/PromotionalPopup.tsx`)
-- Add optional `portalContainer` prop to interface
-- Pass it through to Dialog's inner `DialogPortal` — but since `DialogContent` wraps `DialogPortal` internally, we need a different approach
+## Files to Create
 
-### 3. Update `DialogContent` to support custom container (`src/components/ui/dialog.tsx`)
-- Add optional `container` prop to `DialogContent`
-- Pass it to `DialogPortal` as the `container` prop (Radix supports this natively)
+### `src/contexts/CampaignPortalContext.tsx`
+- Simple context providing `HTMLElement | null`
+- `CampaignPortalProvider` component wrapping children
+- `useCampaignPortal()` hook returning the container element
 
-### 4. Wire it all together
-- `PromotionalPopup` passes `portalContainer` to `DialogContent` via the `container` prop
-- On homepage: no container passed → default body portal (unchanged)
-- On campaign pages: container ref passed → portals into campaign-scoped div → inherits CSS variables
+## Files to Modify
 
-## Files Changed
-1. **`src/components/ui/dialog.tsx`** — Add `container` prop forwarding to `DialogPortal`
-2. **`src/components/PromotionalPopup.tsx`** — Accept optional `portalContainer` prop, pass to `DialogContent`
-3. **`src/pages/PromotionalLanding.tsx`** — Add ref, hook, and render popup with container ref
+### `src/pages/PromotionalLanding.tsx`
+- Wrap the campaign container div's children with `CampaignPortalProvider` using `campaignContainerRef`
+- Remove direct `portalContainer` prop from `PromotionalPopup` (it will use context instead)
+- Remove direct `portalContainer` prop passing -- all modals auto-inherit via context
 
-## No Changes To
-- Homepage popup behavior
-- Global CSS variables
-- Popup logic/hook
-- Any other components
+### `src/components/booking/BookingFunnelModal.tsx`
+- Import `useCampaignPortal`
+- Pass container to `DialogContent` via the `container` prop
+
+### `src/components/AuthModal.tsx`
+- Import `useCampaignPortal`
+- Pass container to `DialogContent`
+
+### `src/components/PersonalizedConsultationForm.tsx`
+- Import `useCampaignPortal`
+- Pass container to `DialogContent`
+- Also pass container to `PopoverContent` (the date picker calendar also portals)
+
+### `src/components/PromotionalPopup.tsx`
+- Replace explicit `portalContainer` prop with `useCampaignPortal()` hook
+- Falls back to `undefined` (body portal) when not inside a campaign page -- backward compatible
+
+## How It Works
+
+```text
+PromotionalLanding
+  └─ <div ref={campaignContainerRef} style={campaignCSS}>
+       └─ <CampaignPortalProvider container={campaignContainerRef}>
+            ├─ PromoPricing
+            │    └─ CampaignPricingCard
+            │         ├─ BookingFunnelModal  → useCampaignPortal() → portals into themed div
+            │         ├─ PersonalizedConsultationForm → same
+            │         └─ AuthModal → same
+            ├─ CampaignProductsSection
+            │    ├─ BookingFunnelModal → same
+            │    └─ AuthModal → same
+            ├─ AuthModal (page-level) → same
+            └─ PromotionalPopup → same
+```
+
+On non-campaign pages (homepage, services), the context returns `null` → modals portal to `document.body` as before.
+
+## Backward Compatibility
+- Non-campaign pages: no context provider → `useCampaignPortal()` returns `null` → default Radix portal behavior
+- No global CSS changes
+- No booking/Stripe/availability logic changes
+- `PromotionalPopup.portalContainer` prop becomes optional/deprecated (context takes priority)
 
