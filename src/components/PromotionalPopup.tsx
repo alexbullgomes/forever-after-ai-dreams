@@ -15,6 +15,7 @@ interface PromotionalPopupProps {
   isOpen: boolean;
   onClose: () => void;
   config: PromotionalPopupConfig;
+  portalContainer?: HTMLElement | null;
 }
 
 const iconMap: Record<string, any> = {
@@ -26,7 +27,7 @@ const iconMap: Record<string, any> = {
   tag: Tag,
 };
 
-const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) => {
+const PromotionalPopup = ({ isOpen, onClose, config, portalContainer }: PromotionalPopupProps) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dialCode, setDialCode] = useState("+1");
   const [loading, setLoading] = useState(false);
@@ -176,7 +177,7 @@ const PromotionalPopup = ({ isOpen, onClose, config }: PromotionalPopupProps) =>
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" container={portalContainer}>
         <div className={`bg-gradient-to-br ${config.bg_gradient} p-6 text-white`}>
           <DialogHeader>
             <div className="flex items-center justify-center mb-2">

@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { usePromotionalCampaign, TrackingScript } from "@/hooks/usePromotionalCampaign";
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Header from "@/components/Header";
 import { buildCampaignColorStyle } from "@/utils/campaignColors";
 import { useHomepageContent } from "@/hooks/useHomepageContent";
@@ -15,6 +15,8 @@ import { PromotionalCampaignGallery } from "@/components/galleries/PromotionalCa
 import { CampaignProductsSection } from "@/components/promo/CampaignProductsSection";
 import { CampaignVendorSection } from "@/components/promo/CampaignVendorSection";
 import AuthModal from "@/components/AuthModal";
+import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
+import PromotionalPopup from "@/components/PromotionalPopup";
 
 // Allowed tracking script domains for validation
 const ALLOWED_SCRIPT_DOMAINS = [
@@ -86,6 +88,8 @@ const PromotionalLanding = () => {
   const { campaign, loading, error } = usePromotionalCampaign(slug || '');
   const { content } = useHomepageContent();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { showPopup, popupConfig, closePopup } = usePromotionalPopup();
+  const campaignContainerRef = useRef<HTMLDivElement>(null);
 
   // Handle opening chat with a pre-filled message from booking modal
   const handleOpenChatWithMessage = useCallback((message: string) => {
@@ -209,7 +213,7 @@ const PromotionalLanding = () => {
         })}
       </Helmet>
 
-      <div className="min-h-screen bg-background" style={buildCampaignColorStyle(campaign.brand_colors)}>
+      <div ref={campaignContainerRef} className="min-h-screen bg-background relative" style={buildCampaignColorStyle(campaign.brand_colors)}>
         <Header onLoginClick={() => setIsAuthModalOpen(true)} />
         
         <PromoHero
@@ -258,6 +262,16 @@ const PromotionalLanding = () => {
           isOpen={isAuthModalOpen} 
           onClose={() => setIsAuthModalOpen(false)} 
         />
+
+        {/* Campaign-scoped promotional popup */}
+        {popupConfig && (
+          <PromotionalPopup
+            isOpen={showPopup}
+            onClose={closePopup}
+            config={popupConfig}
+            portalContainer={campaignContainerRef.current}
+          />
+        )}
       </div>
     </>
   );
