@@ -1474,6 +1474,18 @@ export type Database = {
           pricing_section_enabled: boolean
           products_section_enabled: boolean
           promotional_footer_enabled: boolean | null
+          showcase_cta_primary_link: string | null
+          showcase_cta_primary_text: string | null
+          showcase_cta_secondary_link: string | null
+          showcase_cta_secondary_text: string | null
+          showcase_default_tab: string | null
+          showcase_description: string | null
+          showcase_eyebrow: string | null
+          showcase_section_enabled: boolean
+          showcase_stats: Json
+          showcase_steps: Json
+          showcase_tabs: Json
+          showcase_title: string | null
           slug: string
           title: string
           tracking_scripts: Json | null
@@ -1520,6 +1532,18 @@ export type Database = {
           pricing_section_enabled?: boolean
           products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
+          showcase_cta_primary_link?: string | null
+          showcase_cta_primary_text?: string | null
+          showcase_cta_secondary_link?: string | null
+          showcase_cta_secondary_text?: string | null
+          showcase_default_tab?: string | null
+          showcase_description?: string | null
+          showcase_eyebrow?: string | null
+          showcase_section_enabled?: boolean
+          showcase_stats?: Json
+          showcase_steps?: Json
+          showcase_tabs?: Json
+          showcase_title?: string | null
           slug: string
           title: string
           tracking_scripts?: Json | null
@@ -1566,6 +1590,18 @@ export type Database = {
           pricing_section_enabled?: boolean
           products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
+          showcase_cta_primary_link?: string | null
+          showcase_cta_primary_text?: string | null
+          showcase_cta_secondary_link?: string | null
+          showcase_cta_secondary_text?: string | null
+          showcase_default_tab?: string | null
+          showcase_description?: string | null
+          showcase_eyebrow?: string | null
+          showcase_section_enabled?: boolean
+          showcase_stats?: Json
+          showcase_steps?: Json
+          showcase_tabs?: Json
+          showcase_title?: string | null
           slug?: string
           title?: string
           tracking_scripts?: Json | null

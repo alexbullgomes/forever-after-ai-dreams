@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CampaignPackage } from './useCampaignPackages';
 import type { BrandColors } from './useSiteSettings';
+import type { ShowcaseStep, TabMedia } from '@/components/ui/feature-showcase';
 
 export interface TrackingScript {
   id: string;
@@ -59,6 +60,19 @@ interface PromotionalCampaign {
   packages: CampaignPackage[];
   // Campaign-scoped brand colors (null = use global theme)
   brand_colors: Partial<BrandColors> | null;
+  // Feature Showcase section
+  showcase_section_enabled: boolean;
+  showcase_eyebrow: string | null;
+  showcase_title: string | null;
+  showcase_description: string | null;
+  showcase_stats: string[];
+  showcase_steps: ShowcaseStep[];
+  showcase_tabs: TabMedia[];
+  showcase_default_tab: string | null;
+  showcase_cta_primary_text: string | null;
+  showcase_cta_primary_link: string | null;
+  showcase_cta_secondary_text: string | null;
+  showcase_cta_secondary_link: string | null;
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -128,6 +142,19 @@ export const usePromotionalCampaign = (slug: string) => {
           vendors_section_description: data.vendors_section_description ?? null,
           packages,
           brand_colors: brandColors,
+          // Feature Showcase
+          showcase_section_enabled: (data as any).showcase_section_enabled ?? false,
+          showcase_eyebrow: (data as any).showcase_eyebrow ?? null,
+          showcase_title: (data as any).showcase_title ?? null,
+          showcase_description: (data as any).showcase_description ?? null,
+          showcase_stats: Array.isArray((data as any).showcase_stats) ? (data as any).showcase_stats : [],
+          showcase_steps: Array.isArray((data as any).showcase_steps) ? (data as any).showcase_steps : [],
+          showcase_tabs: Array.isArray((data as any).showcase_tabs) ? (data as any).showcase_tabs : [],
+          showcase_default_tab: (data as any).showcase_default_tab ?? null,
+          showcase_cta_primary_text: (data as any).showcase_cta_primary_text ?? null,
+          showcase_cta_primary_link: (data as any).showcase_cta_primary_link ?? null,
+          showcase_cta_secondary_text: (data as any).showcase_cta_secondary_text ?? null,
+          showcase_cta_secondary_link: (data as any).showcase_cta_secondary_link ?? null,
         };
         setCampaign(parsedData as PromotionalCampaign);
 

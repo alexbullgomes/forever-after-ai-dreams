@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import { buildCampaignColorStyle, applyCampaignColorsToRoot, removeCampaignColorsFromRoot } from "@/utils/campaignColors";
 import { useHomepageContent } from "@/hooks/useHomepageContent";
 import PromoHero from "@/components/promo/PromoHero";
+import { CampaignShowcaseSection } from "@/components/promo/CampaignShowcaseSection";
 import PromoPricing from "@/components/promo/PromoPricing";
 import Contact from "@/components/Contact";
 import ExpandableChatWebhook from "@/components/ui/expandable-chat-webhook";
@@ -233,6 +234,11 @@ const PromotionalLanding = () => {
             subheadline={campaign.banner_subheadline}
             tagline={campaign.banner_tagline}
           />
+
+          {/* Feature Showcase Section */}
+          {campaign.showcase_section_enabled && (
+            <CampaignShowcaseSection campaign={campaign} />
+          )}
 
           {/* Pricing Section - now uses packages from campaign_packages table */}
           {campaign.pricing_section_enabled && campaign.packages.length > 0 && (
