@@ -20,7 +20,9 @@ import { CampaignVendorsTab } from "@/components/admin/CampaignVendorsTab";
 import { CampaignGalleryItemCard } from "@/components/admin/CampaignGalleryItemCard";
 import { CampaignPackagesTab } from "@/components/admin/CampaignPackagesTab";
 import { CampaignBrandColorsTab } from "@/components/admin/CampaignBrandColorsTab";
-import { BrandColors } from "@/hooks/useSiteSettings";
+import { CampaignShowcaseTab } from "@/components/admin/CampaignShowcaseTab";
+import type { BrandColors } from "@/hooks/useSiteSettings";
+import type { ShowcaseStep, TabMedia } from "@/components/ui/feature-showcase";
 import {
   DndContext,
   closestCenter,
@@ -78,6 +80,19 @@ interface Campaign {
   vendors_section_enabled: boolean;
   vendors_section_headline: string;
   vendors_section_description: string;
+  // Showcase fields (optional — existing campaigns won't have them)
+  showcase_section_enabled?: boolean;
+  showcase_eyebrow?: string;
+  showcase_title?: string;
+  showcase_description?: string;
+  showcase_stats?: string[];
+  showcase_steps?: ShowcaseStep[];
+  showcase_tabs?: TabMedia[];
+  showcase_default_tab?: string;
+  showcase_cta_primary_text?: string;
+  showcase_cta_primary_link?: string;
+  showcase_cta_secondary_text?: string;
+  showcase_cta_secondary_link?: string;
 }
 
 interface PromotionalCampaignFormProps {
@@ -181,6 +196,18 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     vendors_section_enabled: false,
     vendors_section_headline: 'Our Partners',
     vendors_section_description: '',
+    showcase_section_enabled: false,
+    showcase_eyebrow: '',
+    showcase_title: '',
+    showcase_description: '',
+    showcase_stats: [],
+    showcase_steps: [],
+    showcase_tabs: [],
+    showcase_default_tab: '',
+    showcase_cta_primary_text: '',
+    showcase_cta_primary_link: '',
+    showcase_cta_secondary_text: '',
+    showcase_cta_secondary_link: '',
   });
 
   // Tracking script handlers
@@ -288,6 +315,18 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
         vendors_section_enabled: campaign.vendors_section_enabled ?? false,
         vendors_section_headline: campaign.vendors_section_headline ?? 'Our Partners',
         vendors_section_description: campaign.vendors_section_description ?? '',
+        showcase_section_enabled: (campaign as any).showcase_section_enabled ?? false,
+        showcase_eyebrow: (campaign as any).showcase_eyebrow ?? '',
+        showcase_title: (campaign as any).showcase_title ?? '',
+        showcase_description: (campaign as any).showcase_description ?? '',
+        showcase_stats: Array.isArray((campaign as any).showcase_stats) ? (campaign as any).showcase_stats : [],
+        showcase_steps: Array.isArray((campaign as any).showcase_steps) ? (campaign as any).showcase_steps : [],
+        showcase_tabs: Array.isArray((campaign as any).showcase_tabs) ? (campaign as any).showcase_tabs : [],
+        showcase_default_tab: (campaign as any).showcase_default_tab ?? '',
+        showcase_cta_primary_text: (campaign as any).showcase_cta_primary_text ?? '',
+        showcase_cta_primary_link: (campaign as any).showcase_cta_primary_link ?? '',
+        showcase_cta_secondary_text: (campaign as any).showcase_cta_secondary_text ?? '',
+        showcase_cta_secondary_link: (campaign as any).showcase_cta_secondary_link ?? '',
       });
       setTrackingScripts(campaign.tracking_scripts || []);
       setBrandColors((campaign as any).brand_colors ?? null);
@@ -387,9 +426,10 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
 
           <form onSubmit={handleSubmit}>
             <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-9">
+              <TabsList className="grid w-full grid-cols-10">
                 <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="banner">Banner</TabsTrigger>
+                <TabsTrigger value="showcase">Showcase</TabsTrigger>
                 <TabsTrigger value="packages">Packages</TabsTrigger>
                 <TabsTrigger value="gallery" disabled={!campaign}>Gallery</TabsTrigger>
                 <TabsTrigger value="products" disabled={!campaign}>Products</TabsTrigger>
@@ -638,6 +678,36 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                   onDescriptionChange={(description) =>
                     setFormData((prev) => ({ ...prev, vendors_section_description: description }))
                   }
+                />
+              </TabsContent>
+
+              {/* Showcase Tab */}
+              <TabsContent value="showcase" className="space-y-4">
+                <CampaignShowcaseTab
+                  enabled={formData.showcase_section_enabled ?? false}
+                  onEnabledChange={(v) => setFormData(p => ({ ...p, showcase_section_enabled: v }))}
+                  eyebrow={formData.showcase_eyebrow ?? ''}
+                  onEyebrowChange={(v) => setFormData(p => ({ ...p, showcase_eyebrow: v }))}
+                  title={formData.showcase_title ?? ''}
+                  onTitleChange={(v) => setFormData(p => ({ ...p, showcase_title: v }))}
+                  description={formData.showcase_description ?? ''}
+                  onDescriptionChange={(v) => setFormData(p => ({ ...p, showcase_description: v }))}
+                  stats={formData.showcase_stats ?? []}
+                  onStatsChange={(v) => setFormData(p => ({ ...p, showcase_stats: v }))}
+                  steps={formData.showcase_steps ?? []}
+                  onStepsChange={(v) => setFormData(p => ({ ...p, showcase_steps: v }))}
+                  tabs={formData.showcase_tabs ?? []}
+                  onTabsChange={(v) => setFormData(p => ({ ...p, showcase_tabs: v }))}
+                  defaultTab={formData.showcase_default_tab ?? ''}
+                  onDefaultTabChange={(v) => setFormData(p => ({ ...p, showcase_default_tab: v }))}
+                  ctaPrimaryText={formData.showcase_cta_primary_text ?? ''}
+                  onCtaPrimaryTextChange={(v) => setFormData(p => ({ ...p, showcase_cta_primary_text: v }))}
+                  ctaPrimaryLink={formData.showcase_cta_primary_link ?? ''}
+                  onCtaPrimaryLinkChange={(v) => setFormData(p => ({ ...p, showcase_cta_primary_link: v }))}
+                  ctaSecondaryText={formData.showcase_cta_secondary_text ?? ''}
+                  onCtaSecondaryTextChange={(v) => setFormData(p => ({ ...p, showcase_cta_secondary_text: v }))}
+                  ctaSecondaryLink={formData.showcase_cta_secondary_link ?? ''}
+                  onCtaSecondaryLinkChange={(v) => setFormData(p => ({ ...p, showcase_cta_secondary_link: v }))}
                 />
               </TabsContent>
 
