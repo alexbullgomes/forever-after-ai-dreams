@@ -1,43 +1,72 @@
 
 
-# Fix: Campaign Theme Race Condition on First Paint
+# Add Feature Showcase Section to Campaign Pages
 
-## Root Cause
+## Overview
+Add a new toggleable "Feature Showcase" section to promotional campaign pages, rendered immediately after the Banner. Includes a full admin tab for content management. All data stored as JSONB columns on the existing `promotional_campaigns` table.
 
-Two issues cause the production-only flicker:
+## 1. Database Migration
 
-1. **Ref timing**: `CampaignPortalProvider` reads `container.current` during render. On first render the ref is `null` (not yet attached to DOM), so all modals fall back to `document.body` portal and inherit global `:root` colors instead of campaign colors.
+Add columns to `promotional_campaigns`:
+- `showcase_section_enabled` (boolean, default false) — master toggle
+- `showcase_eyebrow` (text, nullable) — small label above title
+- `showcase_title` (text, nullable) — main heading
+- `showcase_description` (text, nullable) — paragraph text
+- `showcase_stats` (jsonb, default '[]') — array of stat chip strings
+- `showcase_steps` (jsonb, default '[]') — array of `{id, title, text}` accordion items
+- `showcase_tabs` (jsonb, default '[]') — array of `{value, label, src, alt}` tab media items
+- `showcase_default_tab` (text, nullable) — which tab is initially active
+- `showcase_cta_primary_text` (text, nullable) — primary button label
+- `showcase_cta_primary_link` (text, nullable) — primary button URL
+- `showcase_cta_secondary_text` (text, nullable) — secondary button label
+- `showcase_cta_secondary_link` (text, nullable) — secondary button URL
 
-2. **Inline styles don't cascade to body-portaled content**: Even if the portal eventually works, there's a window where modals could open before the ref resolves. Inline CSS variables on a wrapper div only apply to DOM descendants inside that div — not to elements portaled elsewhere.
+No new tables, no RLS changes needed (existing policies cover the campaign row).
 
-## Solution
+## 2. New Component: `src/components/ui/feature-showcase.tsx`
 
-### 1. Apply campaign colors to `document.documentElement` via `useLayoutEffect` (`src/pages/PromotionalLanding.tsx`)
+Adapt the provided component for React/Vite:
+- Remove `"use client"`, `next/link`, `next/image`
+- Use standard `<img>` tags and `<a>` links
+- Use existing project shadcn components (Tabs, Card, Badge, Accordion, Button)
+- Accept CTA text/link props instead of hardcoded buttons
+- Use semantic design tokens for colors
 
-- When `campaign.brand_colors` is available, use `useLayoutEffect` to synchronously apply all campaign CSS variables directly to `document.documentElement.style` (same variables that `buildCampaignColorStyle` generates).
-- This runs before browser paint, eliminating the flash.
-- On unmount, remove those properties and let `useSiteSettings` re-apply global colors from localStorage cache (already handled by the inline script in `index.html` + the hook's `fetchColors`).
-- Keep the existing inline `style` on the wrapper div as a belt-and-suspenders fallback.
+## 3. New Component: `src/components/promo/CampaignShowcaseSection.tsx`
 
-### 2. Fix `CampaignPortalProvider` ref timing (`src/contexts/CampaignPortalContext.tsx`)
+Thin wrapper that receives campaign showcase data and renders `FeatureShowcase`. Handles the conditional rendering and data mapping.
 
-- Replace reading `container.current` during render with internal state + `useLayoutEffect` that updates state after DOM attachment.
-- This ensures the context value is the actual DOM element, not `null`, for all children.
+## 4. New Admin Tab: `src/components/admin/CampaignShowcaseTab.tsx`
 
-### 3. Create `applyCampaignColorsToRoot` / `removeCampaignColorsFromRoot` utilities (`src/utils/campaignColors.ts`)
+Inside the campaign edit modal, a new "Showcase" tab with:
+- Master toggle (enable/disable section)
+- Text fields: eyebrow, title, description
+- Stats chips editor (add/remove string items)
+- Steps editor (add/remove/reorder accordion items with title + text)
+- Tabs editor (add/remove media tabs with value, label, image URL, alt text)
+- Default tab selector
+- CTA button text/link fields
 
-- Extract the logic to apply/remove campaign CSS variables on `document.documentElement` into reusable functions alongside the existing `buildCampaignColorStyle`.
+## 5. Files Modified
 
-## Files Changed
+### `src/hooks/usePromotionalCampaign.ts`
+- Add showcase fields to the `PromotionalCampaign` interface
+- Parse JSONB fields (stats, steps, tabs) in the fetch logic
 
-1. **`src/utils/campaignColors.ts`** — Add `applyCampaignColorsToRoot()` and `removeCampaignColorsFromRoot()` functions
-2. **`src/contexts/CampaignPortalContext.tsx`** — Fix ref timing with `useLayoutEffect` + state
-3. **`src/pages/PromotionalLanding.tsx`** — Add `useLayoutEffect` to apply campaign colors to document root; cleanup on unmount
+### `src/components/admin/PromotionalCampaignForm.tsx`
+- Add `showcase_*` fields to `Campaign` interface and `formData` state defaults
+- Add new "Showcase" tab trigger (grid-cols-9 → grid-cols-10)
+- Render `CampaignShowcaseTab` in the new tab content
+- Include showcase fields in the `campaignData` submitted to Supabase
 
-## No Changes To
-- Global `useSiteSettings` hook or `site_settings` table
-- `index.html` inline brand script
-- Booking, Stripe, or availability logic
-- Admin dashboard
-- Any modal component internals (they already consume `useCampaignPortal`)
+### `src/pages/PromotionalLanding.tsx`
+- Import and render `CampaignShowcaseSection` immediately after `PromoHero`
+- Conditionally render based on `campaign.showcase_section_enabled`
+
+## 6. No Changes To
+- Booking, availability, Stripe logic
+- Chat system, affiliate tracking
+- SEO, auth, or global theme system
+- Existing campaign sections (pricing, products, gallery, vendors)
+- Any edge functions
 
