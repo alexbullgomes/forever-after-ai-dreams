@@ -1,4 +1,5 @@
 import * as React from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type TabMedia = {
   value: string;
@@ -40,6 +42,75 @@ export type FeatureShowcaseProps = {
   className?: string;
 };
 
+function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }) {
+  const isMobile = useIsMobile();
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 15, stiffness: 150 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
+
+  const rotateX = useTransform(springY, [-0.5, 0.5], ["10.5deg", "-10.5deg"]);
+  const rotateY = useTransform(springX, [-0.5, 0.5], ["-10.5deg", "10.5deg"]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isMobile) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  return (
+    <div style={{ perspective: "1000px" }}>
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={isMobile ? {} : { rotateX, rotateY }}
+        className="transition-shadow duration-300"
+      >
+        <Card className="overflow-hidden rounded-2xl border-border/50 ring-1 ring-primary/10 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
+          {/* Media container – 9:16 portrait */}
+          <div className="relative aspect-[9/16] w-full overflow-hidden">
+            {tabs.map((t) => (
+              <TabsContent
+                key={t.value}
+                value={t.value}
+                className="absolute inset-0 m-0 data-[state=inactive]:hidden"
+              >
+                <img
+                  src={t.src}
+                  alt={t.alt || t.label}
+                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                  loading="lazy"
+                />
+              </TabsContent>
+            ))}
+            {/* Gradient overlay for depth */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
+
+          {/* Tab controls */}
+          <div className="border-t border-border/50 bg-muted/30 p-2">
+            <TabsList className="w-full justify-start bg-transparent">
+              {tabs.map((t) => (
+                <TabsTrigger key={t.value} value={t.value} className="text-xs rounded-lg">
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}
+
 export function FeatureShowcase({
   eyebrow = "Discover",
   title,
@@ -60,9 +131,9 @@ export function FeatureShowcase({
   return (
     <section className={cn("bg-background py-16 md:py-24", className)}>
       <div className="container mx-auto px-4">
-        <Tabs defaultValue={initial} className="flex flex-col gap-10 lg:flex-row lg:gap-16">
+        <Tabs defaultValue={initial} className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
           {/* Left column */}
-          <div className="flex flex-col gap-6 lg:max-w-md lg:flex-shrink-0">
+          <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0">
             <Badge variant="outline" className="w-fit text-xs font-medium tracking-wide uppercase text-muted-foreground">
               {eyebrow}
             </Badge>
@@ -124,36 +195,7 @@ export function FeatureShowcase({
           {/* Right column */}
           <div className="flex-1 min-w-0 flex items-center justify-center">
             <div className="w-full max-w-sm">
-              <Card className="overflow-hidden rounded-2xl border-border/50">
-                {/* Media container – 9:16 portrait */}
-                <div className="relative aspect-[9/16] w-full">
-                  {tabs.map((t) => (
-                    <TabsContent
-                      key={t.value}
-                      value={t.value}
-                      className="absolute inset-0 m-0 data-[state=inactive]:hidden"
-                    >
-                      <img
-                        src={t.src}
-                        alt={t.alt || t.label}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </TabsContent>
-                  ))}
-                </div>
-
-                {/* Tab controls */}
-                <div className="border-t border-border/50 bg-muted/30 p-2">
-                  <TabsList className="w-full justify-start bg-transparent">
-                    {tabs.map((t) => (
-                      <TabsTrigger key={t.value} value={t.value} className="text-xs">
-                        {t.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-              </Card>
+              <Showcase3DCard tabs={tabs} initial={initial} />
             </div>
           </div>
         </Tabs>
