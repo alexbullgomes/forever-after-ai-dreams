@@ -1,72 +1,41 @@
 
 
-# Add Feature Showcase Section to Campaign Pages
+# Enhance Feature Showcase with 3D Card Effect & Premium Polish
 
-## Overview
-Add a new toggleable "Feature Showcase" section to promotional campaign pages, rendered immediately after the Banner. Includes a full admin tab for content management. All data stored as JSONB columns on the existing `promotional_campaigns` table.
+## What Changes
+Upgrade the right-column image card in `feature-showcase.tsx` to use a **framer-motion 3D tilt effect** (same spring-based approach as the existing `3d-product-card.tsx` and `3d-card.tsx`), plus visual polish to match EverAfter's premium aesthetic.
 
-## 1. Database Migration
+## Specific Improvements
 
-Add columns to `promotional_campaigns`:
-- `showcase_section_enabled` (boolean, default false) — master toggle
-- `showcase_eyebrow` (text, nullable) — small label above title
-- `showcase_title` (text, nullable) — main heading
-- `showcase_description` (text, nullable) — paragraph text
-- `showcase_stats` (jsonb, default '[]') — array of stat chip strings
-- `showcase_steps` (jsonb, default '[]') — array of `{id, title, text}` accordion items
-- `showcase_tabs` (jsonb, default '[]') — array of `{value, label, src, alt}` tab media items
-- `showcase_default_tab` (text, nullable) — which tab is initially active
-- `showcase_cta_primary_text` (text, nullable) — primary button label
-- `showcase_cta_primary_link` (text, nullable) — primary button URL
-- `showcase_cta_secondary_text` (text, nullable) — secondary button label
-- `showcase_cta_secondary_link` (text, nullable) — secondary button URL
+### 1. 3D Tilt on Image Card
+- Wrap the `Card` in a `motion.div` with `useMotionValue` / `useSpring` / `useTransform` for `rotateX` and `rotateY` — identical spring config (`damping: 15, stiffness: 150`) as existing 3D cards
+- Add `perspective: 1000px` on the outer wrapper
+- Mouse-move tracks position, mouse-leave resets to 0
+- Disable tilt on touch devices (no hover) for clean mobile UX
 
-No new tables, no RLS changes needed (existing policies cover the campaign row).
+### 2. Visual Enhancements
+- Add a subtle **gradient overlay** on the bottom of the image (transparent → black/20%) for depth
+- Add a soft **glow/shadow** on hover (`shadow-xl` + a `shadow-primary/10` brand-tinted shadow)
+- Smooth **scale transition** on the image inside the card on hover (`hover:scale-105`, 300ms)
+- Add a subtle **border glow** using `ring-1 ring-primary/10` to tie into the campaign theme
+- Tab triggers get a slightly more polished treatment with `rounded-lg` pills
 
-## 2. New Component: `src/components/ui/feature-showcase.tsx`
+### 3. Layout Balance
+- Keep `max-w-sm` and `aspect-[9/16]` — no layout structure changes
+- Add `items-center` vertically on the left column so content aligns with the card center on desktop
+- Ensure the section is well-centered with proper `items-center` on the flex row
 
-Adapt the provided component for React/Vite:
-- Remove `"use client"`, `next/link`, `next/image`
-- Use standard `<img>` tags and `<a>` links
-- Use existing project shadcn components (Tabs, Card, Badge, Accordion, Button)
-- Accept CTA text/link props instead of hardcoded buttons
-- Use semantic design tokens for colors
+### 4. Responsive Behavior
+- 3D tilt only active on `lg:` and above (desktop hover); on mobile/tablet the card renders flat
+- Stack order maintained: left column (text) then right column (card) on mobile
+- All spacing scales down properly with existing `gap-10 lg:gap-16`
 
-## 3. New Component: `src/components/promo/CampaignShowcaseSection.tsx`
+## File Changed
+**`src/components/ui/feature-showcase.tsx`** — only the right-column card rendering and adding framer-motion imports. No props, types, or data flow changes.
 
-Thin wrapper that receives campaign showcase data and renders `FeatureShowcase`. Handles the conditional rendering and data mapping.
-
-## 4. New Admin Tab: `src/components/admin/CampaignShowcaseTab.tsx`
-
-Inside the campaign edit modal, a new "Showcase" tab with:
-- Master toggle (enable/disable section)
-- Text fields: eyebrow, title, description
-- Stats chips editor (add/remove string items)
-- Steps editor (add/remove/reorder accordion items with title + text)
-- Tabs editor (add/remove media tabs with value, label, image URL, alt text)
-- Default tab selector
-- CTA button text/link fields
-
-## 5. Files Modified
-
-### `src/hooks/usePromotionalCampaign.ts`
-- Add showcase fields to the `PromotionalCampaign` interface
-- Parse JSONB fields (stats, steps, tabs) in the fetch logic
-
-### `src/components/admin/PromotionalCampaignForm.tsx`
-- Add `showcase_*` fields to `Campaign` interface and `formData` state defaults
-- Add new "Showcase" tab trigger (grid-cols-9 → grid-cols-10)
-- Render `CampaignShowcaseTab` in the new tab content
-- Include showcase fields in the `campaignData` submitted to Supabase
-
-### `src/pages/PromotionalLanding.tsx`
-- Import and render `CampaignShowcaseSection` immediately after `PromoHero`
-- Conditionally render based on `campaign.showcase_section_enabled`
-
-## 6. No Changes To
-- Booking, availability, Stripe logic
-- Chat system, affiliate tracking
-- SEO, auth, or global theme system
-- Existing campaign sections (pricing, products, gallery, vendors)
-- Any edge functions
+## No Changes To
+- Props interface (`FeatureShowcaseProps`, `TabMedia`, `ShowcaseStep`)
+- Left column content (Badge, title, description, stats, accordion, CTAs)
+- `CampaignShowcaseSection`, `CampaignShowcaseTab`, admin logic
+- Database schema, hooks, or any other file
 
