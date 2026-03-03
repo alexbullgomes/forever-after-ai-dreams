@@ -122,40 +122,39 @@ export function FeatureShowcase({
           </div>
 
           {/* Right column */}
-          <div className="flex-1 min-w-0">
-            <Card className="overflow-hidden border-border/50">
-              {/* Media container */}
-              <div
-                className="relative w-full"
-                style={{ minHeight: `${panelMinHeight}px` }}
-              >
-                {tabs.map((t) => (
-                  <TabsContent
-                    key={t.value}
-                    value={t.value}
-                    className="absolute inset-0 m-0 data-[state=inactive]:hidden"
-                  >
-                    <img
-                      src={t.src}
-                      alt={t.alt || t.label}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  </TabsContent>
-                ))}
-              </div>
-
-              {/* Tab controls */}
-              <div className="border-t border-border/50 bg-muted/30 p-2">
-                <TabsList className="w-full justify-start bg-transparent">
+          <div className="flex-1 min-w-0 flex items-center justify-center">
+            <div className="w-full max-w-sm">
+              <Card className="overflow-hidden rounded-2xl border-border/50">
+                {/* Media container – 9:16 portrait */}
+                <div className="relative aspect-[9/16] w-full">
                   {tabs.map((t) => (
-                    <TabsTrigger key={t.value} value={t.value} className="text-xs">
-                      {t.label}
-                    </TabsTrigger>
+                    <TabsContent
+                      key={t.value}
+                      value={t.value}
+                      className="absolute inset-0 m-0 data-[state=inactive]:hidden"
+                    >
+                      <img
+                        src={t.src}
+                        alt={t.alt || t.label}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </TabsContent>
                   ))}
-                </TabsList>
-              </div>
-            </Card>
+                </div>
+
+                {/* Tab controls */}
+                <div className="border-t border-border/50 bg-muted/30 p-2">
+                  <TabsList className="w-full justify-start bg-transparent">
+                    {tabs.map((t) => (
+                      <TabsTrigger key={t.value} value={t.value} className="text-xs">
+                        {t.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              </Card>
+            </div>
           </div>
         </Tabs>
       </div>
