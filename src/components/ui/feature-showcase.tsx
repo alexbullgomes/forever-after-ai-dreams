@@ -13,11 +13,14 @@ import {
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+const isVideoUrl = (url: string) => /\.(mp4|webm)(\?.*)?$/i.test(url);
+
 export type TabMedia = {
   value: string;
   label: string;
   src: string;
   alt?: string;
+  posterUrl?: string;
 };
 
 export type ShowcaseStep = {
@@ -77,20 +80,36 @@ function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }
         <Card className="overflow-hidden rounded-2xl border-border/50 ring-1 ring-primary/10 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
           {/* Media container – 9:16 portrait */}
           <div className="relative aspect-[9/16] w-full overflow-hidden">
-            {tabs.map((t) => (
-              <TabsContent
-                key={t.value}
-                value={t.value}
-                className="absolute inset-0 m-0 data-[state=inactive]:hidden"
-              >
-                <img
-                  src={t.src}
-                  alt={t.alt || t.label}
-                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                  loading="lazy"
-                />
-              </TabsContent>
-            ))}
+            {tabs.map((t) => {
+              const isVideo = isVideoUrl(t.src);
+              return (
+                <TabsContent
+                  key={t.value}
+                  value={t.value}
+                  className="absolute inset-0 m-0 data-[state=inactive]:hidden"
+                >
+                  {isVideo ? (
+                    <video
+                      src={t.src}
+                      poster={t.posterUrl || undefined}
+                      muted
+                      autoPlay
+                      loop
+                      playsInline
+                      preload="metadata"
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  ) : (
+                    <img
+                      src={t.src}
+                      alt={t.alt || t.label}
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      loading="lazy"
+                    />
+                  )}
+                </TabsContent>
+              );
+            })}
             {/* Gradient overlay for depth */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
           </div>

@@ -139,7 +139,7 @@ export function CampaignShowcaseTab({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Media Tabs</CardTitle>
-                <Button type="button" variant="outline" size="sm" onClick={() => onTabsChange([...tabs, { value: `tab-${Date.now()}`, label: "", src: "", alt: "" }])}>
+                <Button type="button" variant="outline" size="sm" onClick={() => onTabsChange([...tabs, { value: `tab-${Date.now()}`, label: "", src: "", alt: "", posterUrl: "" }])}>
                   <Plus className="h-4 w-4 mr-1" /> Add Tab
                 </Button>
               </div>
@@ -157,7 +157,8 @@ export function CampaignShowcaseTab({
                     <Input value={tab.label} onChange={e => { const n = [...tabs]; n[i] = { ...n[i], label: e.target.value }; onTabsChange(n); }} placeholder="Label" />
                     <Input value={tab.value} onChange={e => { const n = [...tabs]; n[i] = { ...n[i], value: e.target.value }; onTabsChange(n); }} placeholder="Value (unique)" />
                   </div>
-                  <Input value={tab.src} onChange={e => { const n = [...tabs]; n[i] = { ...n[i], src: e.target.value }; onTabsChange(n); }} placeholder="Image URL" />
+                  <Input value={tab.src} onChange={e => { const n = [...tabs]; n[i] = { ...n[i], src: e.target.value }; onTabsChange(n); }} placeholder="Media URL (image or .mp4/.webm video)" />
+                  <Input value={tab.posterUrl || ""} onChange={e => { const n = [...tabs]; n[i] = { ...n[i], posterUrl: e.target.value }; onTabsChange(n); }} placeholder="Poster image URL (optional, for videos)" />
                   <Input value={tab.alt || ""} onChange={e => { const n = [...tabs]; n[i] = { ...n[i], alt: e.target.value }; onTabsChange(n); }} placeholder="Alt text" />
                 </div>
               ))}
