@@ -152,7 +152,7 @@ export function FeatureShowcase({
       <div className="container mx-auto px-4">
         <Tabs defaultValue={initial} className="flex-col gap-10 lg:items-center lg:gap-12 mx-0 flex lg:flex-row">
           {/* Left column */}
-          <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0 mx-[119px]">
+          <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0">
             <Badge variant="outline" className="w-fit text-xs font-medium tracking-wide uppercase text-muted-foreground">
               {eyebrow}
             </Badge>
@@ -212,7 +212,7 @@ export function FeatureShowcase({
           </div>
 
           {/* Right column */}
-          <div className="flex-1 min-w-0 flex-row flex items-start justify-start mr-[240px]">
+          <div className="flex-1 min-w-0 flex items-center justify-center">
             <div className="w-full max-w-xs mx-auto">
               <Showcase3DCard tabs={tabs} initial={initial} />
             </div>
