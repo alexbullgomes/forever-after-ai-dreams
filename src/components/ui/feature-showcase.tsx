@@ -78,8 +78,8 @@ function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }
         className="transition-shadow duration-300"
       >
         <Card className="overflow-hidden rounded-2xl border-border/50 ring-1 ring-primary/10 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
-          {/* Media container – 9:16 portrait */}
-          <div className="relative aspect-[9/16] w-full overflow-hidden">
+          {/* Media container – 4:5 portrait (Instagram vertical) */}
+          <div className="relative aspect-[4/5] w-full overflow-hidden">
             {tabs.map((t) => {
               const isVideo = isVideoUrl(t.src);
               return (
@@ -150,7 +150,7 @@ export function FeatureShowcase({
   return (
     <section className={cn("bg-background py-16 md:py-24", className)}>
       <div className="container mx-auto px-4">
-        <Tabs defaultValue={initial} className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
+        <Tabs defaultValue={initial} className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-12">
           {/* Left column */}
           <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0">
             <Badge variant="outline" className="w-fit text-xs font-medium tracking-wide uppercase text-muted-foreground">
@@ -179,7 +179,7 @@ export function FeatureShowcase({
             {/* Steps (Accordion) */}
             <div className="flex flex-col gap-6">
               {steps.length > 0 && (
-                <Accordion type="single" collapsible defaultValue={steps[0]?.id}>
+                <Accordion type="single" collapsible>
                   {steps.map((step) => (
                     <AccordionItem key={step.id} value={step.id}>
                       <AccordionTrigger className="text-sm font-semibold text-foreground">
@@ -213,7 +213,7 @@ export function FeatureShowcase({
 
           {/* Right column */}
           <div className="flex-1 min-w-0 flex items-center justify-center">
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-xs mx-auto">
               <Showcase3DCard tabs={tabs} initial={initial} />
             </div>
           </div>
