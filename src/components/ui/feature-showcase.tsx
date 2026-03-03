@@ -8,8 +8,8 @@ import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
+  AccordionContent } from
+"@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -45,7 +45,7 @@ export type FeatureShowcaseProps = {
   className?: string;
 };
 
-function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }) {
+function Showcase3DCard({ tabs, initial }: {tabs: TabMedia[];initial: string;}) {
   const isMobile = useIsMobile();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -75,8 +75,8 @@ function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={isMobile ? {} : { rotateX, rotateY }}
-        className="transition-shadow duration-300"
-      >
+        className="transition-shadow duration-300">
+        
         <Card className="overflow-hidden rounded-2xl border-border/50 ring-1 ring-primary/10 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
           {/* Media container – 4:5 portrait (Instagram vertical) */}
           <div className="relative aspect-[4/5] w-full overflow-hidden">
@@ -86,29 +86,29 @@ function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }
                 <TabsContent
                   key={t.value}
                   value={t.value}
-                  className="absolute inset-0 m-0 data-[state=inactive]:hidden"
-                >
-                  {isVideo ? (
-                    <video
-                      src={t.src}
-                      poster={t.posterUrl || undefined}
-                      muted
-                      autoPlay
-                      loop
-                      playsInline
-                      preload="metadata"
-                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  ) : (
-                    <img
-                      src={t.src}
-                      alt={t.alt || t.label}
-                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                      loading="lazy"
-                    />
-                  )}
-                </TabsContent>
-              );
+                  className="absolute inset-0 m-0 data-[state=inactive]:hidden">
+                  
+                  {isVideo ?
+                  <video
+                    src={t.src}
+                    poster={t.posterUrl || undefined}
+                    muted
+                    autoPlay
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" /> :
+
+
+                  <img
+                    src={t.src}
+                    alt={t.alt || t.label}
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    loading="lazy" />
+
+                  }
+                </TabsContent>);
+
             })}
             {/* Gradient overlay for depth */}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
@@ -117,17 +117,17 @@ function Showcase3DCard({ tabs, initial }: { tabs: TabMedia[]; initial: string }
           {/* Tab controls */}
           <div className="border-t border-border/50 bg-muted/30 p-2">
             <TabsList className="w-full justify-start bg-transparent">
-              {tabs.map((t) => (
-                <TabsTrigger key={t.value} value={t.value} className="text-xs rounded-lg">
+              {tabs.map((t) =>
+              <TabsTrigger key={t.value} value={t.value} className="text-xs rounded-lg">
                   {t.label}
                 </TabsTrigger>
-              ))}
+              )}
             </TabsList>
           </div>
         </Card>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 }
 
 export function FeatureShowcase({
@@ -143,16 +143,16 @@ export function FeatureShowcase({
   ctaPrimaryLink,
   ctaSecondaryText,
   ctaSecondaryLink,
-  className,
+  className
 }: FeatureShowcaseProps) {
-  const initial = defaultTab ?? (tabs[0]?.value ?? "tab-0");
+  const initial = defaultTab ?? tabs[0]?.value ?? "tab-0";
 
   return (
     <section className={cn("bg-background py-16 md:py-24", className)}>
       <div className="container mx-auto px-4">
         <Tabs defaultValue={initial} className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-12">
           {/* Left column */}
-          <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0">
+          <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0 mx-[100px]">
             <Badge variant="outline" className="w-fit text-xs font-medium tracking-wide uppercase text-muted-foreground">
               {eyebrow}
             </Badge>
@@ -161,27 +161,27 @@ export function FeatureShowcase({
               {title}
             </h2>
 
-            {description && (
-              <p className="text-base leading-relaxed text-muted-foreground">{description}</p>
-            )}
+            {description &&
+            <p className="text-base leading-relaxed text-muted-foreground">{description}</p>
+            }
 
             {/* Stats chips */}
-            {stats.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {stats.map((s, i) => (
-                  <Badge key={i} variant="secondary" className="text-xs">
+            {stats.length > 0 &&
+            <div className="flex flex-wrap gap-2">
+                {stats.map((s, i) =>
+              <Badge key={i} variant="secondary" className="text-xs">
                     {s}
                   </Badge>
-                ))}
+              )}
               </div>
-            )}
+            }
 
             {/* Steps (Accordion) */}
             <div className="flex flex-col gap-6">
-              {steps.length > 0 && (
-                <Accordion type="single" collapsible>
-                  {steps.map((step) => (
-                    <AccordionItem key={step.id} value={step.id}>
+              {steps.length > 0 &&
+              <Accordion type="single" collapsible>
+                  {steps.map((step) =>
+                <AccordionItem key={step.id} value={step.id}>
                       <AccordionTrigger className="text-sm font-semibold text-foreground">
                         {step.title}
                       </AccordionTrigger>
@@ -189,25 +189,25 @@ export function FeatureShowcase({
                         {step.text}
                       </AccordionContent>
                     </AccordionItem>
-                  ))}
+                )}
                 </Accordion>
-              )}
+              }
 
               {/* CTAs */}
-              {(ctaPrimaryText || ctaSecondaryText) && (
-                <div className="flex flex-wrap gap-3">
-                  {ctaPrimaryText && (
-                    <a href={ctaPrimaryLink || "#"}>
+              {(ctaPrimaryText || ctaSecondaryText) &&
+              <div className="flex flex-wrap gap-3">
+                  {ctaPrimaryText &&
+                <a href={ctaPrimaryLink || "#"}>
                       <Button size="lg">{ctaPrimaryText}</Button>
                     </a>
-                  )}
-                  {ctaSecondaryText && (
-                    <a href={ctaSecondaryLink || "#"}>
+                }
+                  {ctaSecondaryText &&
+                <a href={ctaSecondaryLink || "#"}>
                       <Button variant="outline" size="lg">{ctaSecondaryText}</Button>
                     </a>
-                  )}
+                }
                 </div>
-              )}
+              }
             </div>
           </div>
 
@@ -219,6 +219,6 @@ export function FeatureShowcase({
           </div>
         </Tabs>
       </div>
-    </section>
-  );
+    </section>);
+
 }
