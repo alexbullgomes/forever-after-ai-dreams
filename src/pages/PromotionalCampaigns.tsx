@@ -28,6 +28,7 @@ import {
 interface Campaign {
   id: string;
   slug: string;
+  visibility_mode: string;
   title: string;
   is_active: boolean;
   views_count: number;
@@ -163,25 +164,27 @@ const PromotionalCampaigns = () => {
     }
   };
 
-  const handleToggleActive = async (campaign: Campaign) => {
+  const handleCycleVisibility = async (campaign: Campaign) => {
+    const nextMode = campaign.visibility_mode === 'public' ? 'unlisted'
+      : campaign.visibility_mode === 'unlisted' ? 'inactive' : 'public';
     try {
       const { error } = await supabase
         .from('promotional_campaigns')
-        .update({ is_active: !campaign.is_active })
+        .update({ visibility_mode: nextMode } as any)
         .eq('id', campaign.id);
 
       if (error) throw error;
 
       toast({
-        title: campaign.is_active ? "Campaign deactivated" : "Campaign activated",
-        description: `Campaign is now ${!campaign.is_active ? 'active' : 'inactive'}.`,
+        title: `Visibility: ${nextMode}`,
+        description: `Campaign is now "${nextMode}".`,
       });
       fetchCampaigns();
     } catch (error: any) {
-      console.error('Error toggling campaign status:', error);
+      console.error('Error updating visibility:', error);
       toast({
         title: "Error",
-        description: "Failed to update campaign status",
+        description: "Failed to update campaign visibility",
         variant: "destructive",
       });
     }
@@ -262,10 +265,16 @@ const PromotionalCampaigns = () => {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={campaign.is_active ? "default" : "secondary"}
-                      className={campaign.is_active ? "bg-green-500 hover:bg-green-600" : ""}
+                      variant={campaign.visibility_mode === 'inactive' ? 'secondary' : 'default'}
+                      className={
+                        campaign.visibility_mode === 'public'
+                          ? 'bg-green-500 hover:bg-green-600'
+                          : campaign.visibility_mode === 'unlisted'
+                          ? 'bg-amber-500 hover:bg-amber-600'
+                          : ''
+                      }
                     >
-                      {campaign.is_active ? "Active" : "Inactive"}
+                      {campaign.visibility_mode === 'public' ? 'Public' : campaign.visibility_mode === 'unlisted' ? 'Unlisted' : 'Inactive'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">{campaign.views_count}</TableCell>
@@ -310,9 +319,9 @@ const PromotionalCampaigns = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleToggleActive(campaign)}
+                        onClick={() => handleCycleVisibility(campaign)}
                       >
-                        {campaign.is_active ? "Deactivate" : "Activate"}
+                        {campaign.visibility_mode === 'public' ? 'Set Unlisted' : campaign.visibility_mode === 'unlisted' ? 'Deactivate' : 'Set Public'}
                       </Button>
                     </div>
                   </TableCell>

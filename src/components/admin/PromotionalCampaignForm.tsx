@@ -73,6 +73,7 @@ interface Campaign {
   meta_description?: string;
   meta_image_url?: string;
   is_active: boolean;
+  visibility_mode?: string;
   promotional_footer_enabled: boolean;
   tracking_scripts?: TrackingScript[];
   products_section_enabled: boolean;
@@ -310,6 +311,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     if (campaign) {
       setFormData({
         ...campaign,
+        visibility_mode: (campaign as any).visibility_mode || (campaign.is_active ? 'public' : 'inactive'),
         products_section_enabled: campaign.products_section_enabled ?? false,
         pricing_section_enabled: campaign.pricing_section_enabled ?? true,
         vendors_section_enabled: campaign.vendors_section_enabled ?? false,
@@ -461,13 +463,28 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                     URL: /promo/{formData.slug}
                   </p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: checked }))}
-                  />
-                  <Label htmlFor="is_active">Active Campaign</Label>
+                <div>
+                  <Label htmlFor="visibility_mode">Campaign Visibility</Label>
+                  <Select
+                    value={(formData as any).visibility_mode || 'public'}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, visibility_mode: value, is_active: value !== 'inactive' } as any))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Public — visible on Services page</SelectItem>
+                      <SelectItem value="unlisted">Unlisted — accessible only via link</SelectItem>
+                      <SelectItem value="inactive">Inactive — disabled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {(formData as any).visibility_mode === 'unlisted'
+                      ? 'Campaign is live but only accessible via direct link.'
+                      : (formData as any).visibility_mode === 'inactive'
+                      ? 'Campaign is disabled and cannot be accessed.'
+                      : 'Campaign appears in the Active Campaigns section.'}
+                  </p>
                 </div>
 
                 <div className="space-y-2">

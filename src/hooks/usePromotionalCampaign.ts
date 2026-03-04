@@ -102,7 +102,9 @@ export const usePromotionalCampaign = (slug: string) => {
           return;
         }
 
-        if (!data.is_active) {
+        // Allow both 'public' and 'unlisted' campaigns; block 'inactive'
+        const visibilityMode = (data as any).visibility_mode || (data.is_active ? 'public' : 'inactive');
+        if (visibilityMode === 'inactive') {
           setError('Campaign is not active');
           setCampaign(null);
           return;
