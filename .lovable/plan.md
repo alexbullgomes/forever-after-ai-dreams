@@ -1,93 +1,35 @@
 
 
-# Campaign Visibility Mode — Implementation Plan
+# Chat Admin Campaign Selector — Support Public + Unlisted Campaigns
 
-## Current Architecture
-
-The campaign system uses a single `is_active` boolean to control visibility. Three consumers query campaigns:
-
-| Consumer | File | Filter |
-|----------|------|--------|
-| Active Campaigns (Services page) | `useActiveCampaigns.ts` | `is_active = true` |
-| Promotional Footer (Homepage) | `PromotionalFooter.tsx` | `is_active = true` AND `promotional_footer_enabled = true` |
-| Campaign Landing Page | `usePromotionalCampaign.ts` | `slug = :slug`, then checks `is_active` in code (line 105) |
-
-The admin form (`PromotionalCampaignForm.tsx`) and admin list (`PromotionalCampaigns.tsx`) toggle `is_active` directly.
+## Problem
+The `EntityPickerModal` uses `useActiveCampaigns()` which filters by `visibility_mode = 'public'`. Unlisted campaigns are excluded, preventing admins from sending them via chat.
 
 ## Plan
 
-### 1. Database Migration
+### 1. Create a dedicated hook for admin campaign fetching
+Rather than modifying `useActiveCampaigns` (which correctly filters public-only for the Services page), create a small dedicated query inside `EntityPickerModal` or a new hook `useAdminCampaigns` that fetches campaigns where `visibility_mode IN ('public', 'unlisted')`.
 
-Add a `visibility_mode` text column to `promotional_campaigns`:
+**Simplest approach**: Add an optional `includeUnlisted` param to `useActiveCampaigns`, or just inline a separate query in the modal. I'll go with adding an `options` parameter to `useActiveCampaigns` to keep it DRY — `useActiveCampaigns({ includeUnlisted: true })`.
 
-```sql
-ALTER TABLE promotional_campaigns
-  ADD COLUMN visibility_mode text NOT NULL DEFAULT 'public';
+**Changes to `src/hooks/useActiveCampaigns.ts`:**
+- Add optional `options?: { includeUnlisted?: boolean }` parameter
+- When `includeUnlisted` is true, use `.in('visibility_mode', ['public', 'unlisted'])` instead of `.eq('visibility_mode', 'public')`
+- Add `visibility_mode` to the select and to the `ActiveCampaign` interface
 
--- Backfill: active campaigns → 'public', inactive → 'inactive'
-UPDATE promotional_campaigns
-  SET visibility_mode = CASE WHEN is_active = true THEN 'public' ELSE 'inactive' END;
-```
+### 2. Update `EntityPickerModal` to use `includeUnlisted: true`
+- Call `useActiveCampaigns({ includeUnlisted: true })`
 
-No new table, no enum (text is simpler to extend). The existing `is_active` column is kept for backward compatibility but will be derived from `visibility_mode` going forward.
+### 3. Add visibility badge to `CampaignListItem`
+- Accept `visibilityMode` from the campaign data
+- Show a small badge: "Listed" (green) for public, "Unlisted" (amber) for unlisted
+- Add a tooltip on the unlisted badge: "Hidden from Services page. Accessible via direct link."
 
-### 2. Keep `is_active` in Sync
-
-To avoid breaking any edge functions or RLS policies that reference `is_active`, add a trigger that syncs it:
-
-```sql
-CREATE OR REPLACE FUNCTION sync_campaign_is_active()
-RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-  NEW.is_active := (NEW.visibility_mode IN ('public', 'unlisted'));
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER trg_sync_campaign_is_active
-  BEFORE INSERT OR UPDATE ON promotional_campaigns
-  FOR EACH ROW EXECUTE FUNCTION sync_campaign_is_active();
-```
-
-This means `is_active = true` for both `public` and `unlisted` (they're both "live" campaigns). Only `inactive` sets `is_active = false`.
-
-### 3. Update Queries (3 files)
-
-**`useActiveCampaigns.ts`** — Services page listing:
-- Add `.eq('visibility_mode', 'public')` to only show public campaigns.
-
-**`PromotionalFooter.tsx`** — Homepage footer:
-- Add `.eq('visibility_mode', 'public')` so unlisted campaigns don't rotate in the footer.
-
-**`usePromotionalCampaign.ts`** — Landing page by slug:
-- Change the `is_active` check (line 105) to check `visibility_mode !== 'inactive'` instead. This allows both `public` and `unlisted` campaigns to render via direct URL, while `inactive` shows "Campaign not found".
-
-### 4. Admin UI (2 files)
-
-**`PromotionalCampaignForm.tsx`**:
-- Add a "Campaign Visibility" dropdown in the Banner/General tab with three options: Public, Unlisted, Inactive.
-- Remove or hide the standalone `is_active` toggle (the trigger handles it).
-- Add `visibility_mode` to the form state and save payload.
-
-**`PromotionalCampaigns.tsx`** (admin list):
-- Update the Status badge to show "Public" (green), "Unlisted" (yellow/amber), or "Inactive" (gray).
-- Replace the "Activate/Deactivate" button with a quick visibility toggle dropdown or cycle button.
-
-### 5. Files Changed
-
+### Files Changed
 | File | Change |
 |------|--------|
-| Migration SQL | Add column + backfill + sync trigger |
-| `src/hooks/useActiveCampaigns.ts` | Add `.eq('visibility_mode', 'public')` |
-| `src/components/PromotionalFooter.tsx` | Add `.eq('visibility_mode', 'public')` |
-| `src/hooks/usePromotionalCampaign.ts` | Replace `is_active` check with `visibility_mode` check |
-| `src/components/admin/PromotionalCampaignForm.tsx` | Add visibility dropdown, include in save |
-| `src/pages/PromotionalCampaigns.tsx` | Update status badge + action button |
+| `src/hooks/useActiveCampaigns.ts` | Add `includeUnlisted` option, add `visibilityMode` to interface & select |
+| `src/components/chat/EntityPickerModal.tsx` | Pass `{ includeUnlisted: true }`, add badge to `CampaignListItem` |
 
-### 6. Safety
-
-- Existing campaigns default to `public` (active) or `inactive` via backfill — no visibility change.
-- `is_active` stays synced via trigger — edge functions and RLS are unaffected.
-- No routing changes, no layout changes, no new tables.
-- Fully backward compatible.
+No changes to Services page, PromotionalFooter, routing, or campaign logic.
 
