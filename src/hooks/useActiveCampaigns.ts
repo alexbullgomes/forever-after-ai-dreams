@@ -9,9 +9,14 @@ export interface ActiveCampaign {
   imageUrl: string;
   videoUrl: string | null;
   href: string;
+  visibilityMode?: string;
 }
 
-export const useActiveCampaigns = () => {
+interface UseActiveCampaignsOptions {
+  includeUnlisted?: boolean;
+}
+
+export const useActiveCampaigns = (options?: UseActiveCampaignsOptions) => {
   const [campaigns, setCampaigns] = useState<ActiveCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,12 +27,18 @@ export const useActiveCampaigns = () => {
         setLoading(true);
         setError(null);
 
-        const { data, error: fetchError } = await supabase
+        let query = supabase
           .from('promotional_campaigns')
-          .select('id, slug, title, banner_tagline, banner_poster_url, banner_video_url')
-          .eq('is_active', true)
-          .eq('visibility_mode', 'public')
-          .order('created_at', { ascending: false });
+          .select('id, slug, title, banner_tagline, banner_poster_url, banner_video_url, visibility_mode')
+          .eq('is_active', true);
+
+        if (options?.includeUnlisted) {
+          query = query.in('visibility_mode', ['public', 'unlisted']);
+        } else {
+          query = query.eq('visibility_mode', 'public');
+        }
+
+        const { data, error: fetchError } = await query.order('created_at', { ascending: false });
 
         if (fetchError) {
           throw fetchError;
@@ -41,6 +52,7 @@ export const useActiveCampaigns = () => {
           imageUrl: campaign.banner_poster_url || '',
           videoUrl: campaign.banner_video_url || null,
           href: `/promo/${campaign.slug}`,
+          visibilityMode: campaign.visibility_mode,
         }));
 
         setCampaigns(mappedCampaigns);

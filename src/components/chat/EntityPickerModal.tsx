@@ -4,6 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Package, Megaphone, Check } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { useActiveCampaigns, ActiveCampaign } from "@/hooks/useActiveCampaigns";
@@ -24,7 +26,7 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
   const [selectedCampaign, setSelectedCampaign] = useState<ActiveCampaign | null>(null);
   
   const { products, loading: productsLoading } = useProducts({ adminMode: true });
-  const { campaigns, loading: campaignsLoading } = useActiveCampaigns();
+  const { campaigns, loading: campaignsLoading } = useActiveCampaigns({ includeUnlisted: true });
   
   const filteredProducts = useMemo(() => {
     return products.filter(p => 
@@ -256,6 +258,8 @@ interface CampaignListItemProps {
 }
 
 const CampaignListItem = ({ campaign, selected, onSelect }: CampaignListItemProps) => {
+  const isUnlisted = campaign.visibilityMode === 'unlisted';
+  
   return (
     <div
       onClick={onSelect}
@@ -277,7 +281,27 @@ const CampaignListItem = ({ campaign, selected, onSelect }: CampaignListItemProp
       </div>
       
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate">{campaign.title}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="font-medium text-sm truncate">{campaign.title}</p>
+          {isUnlisted ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="shrink-0 bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 text-[10px] px-1.5 py-0">
+                    Unlisted
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Hidden from Services page. Accessible via direct link.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <Badge className="shrink-0 bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-[10px] px-1.5 py-0">
+              Listed
+            </Badge>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground truncate">{campaign.subtitle}</p>
       </div>
       
