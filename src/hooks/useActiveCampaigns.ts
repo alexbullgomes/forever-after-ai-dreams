@@ -26,6 +26,7 @@ export const useActiveCampaigns = () => {
           .from('promotional_campaigns')
           .select('id, slug, title, banner_tagline, banner_poster_url, banner_video_url')
           .eq('is_active', true)
+          .eq('visibility_mode', 'public')
           .order('created_at', { ascending: false });
 
         if (fetchError) {

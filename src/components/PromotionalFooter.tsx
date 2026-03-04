@@ -44,6 +44,7 @@ const PromotionalFooter = ({ isChatOpen = false }: PromotionalFooterProps) => {
         pricing_card_3_enabled
       `)
       .eq('is_active', true)
+      .eq('visibility_mode', 'public')
       .eq('promotional_footer_enabled', true)
       .order('updated_at', { ascending: false });
 

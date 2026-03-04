@@ -1494,6 +1494,7 @@ export type Database = {
           vendors_section_enabled: boolean
           vendors_section_headline: string | null
           views_count: number | null
+          visibility_mode: string
         }
         Insert: {
           banner_headline?: string | null
@@ -1552,6 +1553,7 @@ export type Database = {
           vendors_section_enabled?: boolean
           vendors_section_headline?: string | null
           views_count?: number | null
+          visibility_mode?: string
         }
         Update: {
           banner_headline?: string | null
@@ -1610,6 +1612,7 @@ export type Database = {
           vendors_section_enabled?: boolean
           vendors_section_headline?: string | null
           views_count?: number | null
+          visibility_mode?: string
         }
         Relationships: []
       }
