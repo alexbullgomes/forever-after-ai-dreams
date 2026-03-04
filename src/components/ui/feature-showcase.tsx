@@ -104,7 +104,7 @@ function Showcase3DCard({ tabs, initial }: {tabs: TabMedia[];initial: string;}) 
                     src={t.src}
                     alt={t.alt || t.label}
                     className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                    loading="lazy" />
+                    loading="eager" />
 
                   }
                 </TabsContent>);
@@ -149,10 +149,10 @@ export function FeatureShowcase({
 
   return (
     <section className={cn("bg-background py-16 md:py-24", className)}>
-      <div className="container mx-auto px-4">
-        <Tabs defaultValue={initial} className="flex-col gap-10 lg:items-center lg:gap-12 mx-0 flex lg:flex-row">
+      <div className="max-w-5xl mx-auto px-4">
+        <Tabs defaultValue={initial} className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-12">
           {/* Left column */}
-          <div className="flex flex-col justify-center gap-6 lg:max-w-md lg:flex-shrink-0">
+          <div className="flex flex-col justify-center gap-6 flex-1 min-w-0">
             <Badge variant="outline" className="w-fit text-xs font-medium tracking-wide uppercase text-muted-foreground">
               {eyebrow}
             </Badge>
@@ -212,10 +212,8 @@ export function FeatureShowcase({
           </div>
 
           {/* Right column */}
-          <div className="flex-1 min-w-0 flex items-center justify-center">
-            <div className="w-full max-w-xs mx-auto">
-              <Showcase3DCard tabs={tabs} initial={initial} />
-            </div>
+          <div className="w-full max-w-xs mx-auto lg:w-[340px] lg:max-w-none lg:flex-shrink-0">
+            <Showcase3DCard tabs={tabs} initial={initial} />
           </div>
         </Tabs>
       </div>
