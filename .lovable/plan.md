@@ -1,55 +1,93 @@
 
 
-# Analysis: Feature Showcase Card — Current State & Improvement Plan
+# Campaign Visibility Mode — Implementation Plan
 
-## Current Implementation
+## Current Architecture
 
-The `Showcase3DCard` component (lines 48–131) renders a `Card` with two distinct sections stacked vertically:
-1. **Media container** (line 82): `aspect-[4/5]` div with absolutely-positioned `TabsContent` items
-2. **Tab controls** (lines 117–126): A separate `div` below the media with `border-t`, `bg-muted/30`, containing the `TabsList`
+The campaign system uses a single `is_active` boolean to control visibility. Three consumers query campaigns:
 
-The card sits inside a Radix `Tabs` context. The `defaultValue={initial}` on line 153 sets `initial = defaultTab ?? tabs[0]?.value ?? "tab-0"`.
+| Consumer | File | Filter |
+|----------|------|--------|
+| Active Campaigns (Services page) | `useActiveCampaigns.ts` | `is_active = true` |
+| Promotional Footer (Homepage) | `PromotionalFooter.tsx` | `is_active = true` AND `promotional_footer_enabled = true` |
+| Campaign Landing Page | `usePromotionalCampaign.ts` | `slug = :slug`, then checks `is_active` in code (line 105) |
 
-## Root Cause Analysis
+The admin form (`PromotionalCampaignForm.tsx`) and admin list (`PromotionalCampaigns.tsx`) toggle `is_active` directly.
 
-### Why media doesn't load automatically
-The screenshot shows an empty white card. The `defaultValue` logic looks correct — the Radix `TabsContent` with `data-[state=active]` should render the first tab. The likely issue is that the **media URL itself is empty or invalid** in the database for the first tab, OR the `TabsContent` uses `data-[state=inactive]:hidden` (line 89) which relies on Radix state. Since `defaultValue` is set, this should work. However, if the `value` stored in the database doesn't match `tabs[0]?.value`, the content won't show. The fix is to add a `forceMount` approach or ensure the active content is always visible regardless of Radix state timing.
+## Plan
 
-**Safest fix**: Remove the Radix `TabsContent` wrapper for media rendering entirely. Instead, use controlled state (`useState`) to track the active tab index, and conditionally render the matching media directly. This eliminates any Radix hydration/timing issues while keeping `TabsTrigger` for the tab buttons.
+### 1. Database Migration
 
-### Why media doesn't fill the card
-The media container (`aspect-[4/5]`, line 82) fills the card correctly with `object-cover`. But the tab controls section (lines 117–126) sits **below** the media as a separate block, creating the visual separation seen in the screenshot. The media only fills the top portion, not the entire card.
+Add a `visibility_mode` text column to `promotional_campaigns`:
 
-### Why tabs are outside the media
-The `TabsList` is in a separate `div` after the media container, not overlaid on top of it.
+```sql
+ALTER TABLE promotional_campaigns
+  ADD COLUMN visibility_mode text NOT NULL DEFAULT 'public';
 
-## Implementation Plan
+-- Backfill: active campaigns → 'public', inactive → 'inactive'
+UPDATE promotional_campaigns
+  SET visibility_mode = CASE WHEN is_active = true THEN 'public' ELSE 'inactive' END;
+```
 
-### 1. Use controlled state for reliable first-item rendering
-- Add `const [activeTab, setActiveTab] = useState(initial)` inside `Showcase3DCard`
-- Pass `value={activeTab}` and `onValueChange={setActiveTab}` to the parent `Tabs`
-- Render media conditionally based on `activeTab` instead of relying on `TabsContent` — just show/hide with a simple comparison
-- This guarantees the first item renders on mount with zero dependency on Radix timing
+No new table, no enum (text is simpler to extend). The existing `is_active` column is kept for backward compatibility but will be derived from `visibility_mode` going forward.
 
-### 2. Media fills entire card
-- Remove the separate tab controls `div` (lines 117–126) from below the media
-- Make the `Card` itself the `aspect-[4/5]` container with `relative` positioning
-- Media renders as `absolute inset-0 object-cover` filling the entire card
-- No empty space below — the card IS the media
+### 2. Keep `is_active` in Sync
 
-### 3. Tabs overlay the media (glass style)
-- Move the `TabsList` inside the media container, positioned at the bottom
-- Use `absolute bottom-3 left-3 right-3` (or centered) positioning
-- Apply glass-morphism: `bg-black/30 backdrop-blur-md rounded-xl border border-white/10`
-- Tab triggers get `text-white/80 data-[state=active]:text-white data-[state=active]:bg-white/20` styling
-- The gradient overlay (line 114) remains for readability
+To avoid breaking any edge functions or RLS policies that reference `is_active`, add a trigger that syncs it:
 
-### 4. No changes to
-- 3D tilt animation (mouseX/mouseY/spring logic)
-- Props, types, data flow
-- Accordion, CTAs, layout columns
-- Campaign/theme logic
+```sql
+CREATE OR REPLACE FUNCTION sync_campaign_is_active()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.is_active := (NEW.visibility_mode IN ('public', 'unlisted'));
+  RETURN NEW;
+END;
+$$;
 
-## File Changed
-`src/components/ui/feature-showcase.tsx` — only the `Showcase3DCard` internal rendering
+CREATE TRIGGER trg_sync_campaign_is_active
+  BEFORE INSERT OR UPDATE ON promotional_campaigns
+  FOR EACH ROW EXECUTE FUNCTION sync_campaign_is_active();
+```
+
+This means `is_active = true` for both `public` and `unlisted` (they're both "live" campaigns). Only `inactive` sets `is_active = false`.
+
+### 3. Update Queries (3 files)
+
+**`useActiveCampaigns.ts`** — Services page listing:
+- Add `.eq('visibility_mode', 'public')` to only show public campaigns.
+
+**`PromotionalFooter.tsx`** — Homepage footer:
+- Add `.eq('visibility_mode', 'public')` so unlisted campaigns don't rotate in the footer.
+
+**`usePromotionalCampaign.ts`** — Landing page by slug:
+- Change the `is_active` check (line 105) to check `visibility_mode !== 'inactive'` instead. This allows both `public` and `unlisted` campaigns to render via direct URL, while `inactive` shows "Campaign not found".
+
+### 4. Admin UI (2 files)
+
+**`PromotionalCampaignForm.tsx`**:
+- Add a "Campaign Visibility" dropdown in the Banner/General tab with three options: Public, Unlisted, Inactive.
+- Remove or hide the standalone `is_active` toggle (the trigger handles it).
+- Add `visibility_mode` to the form state and save payload.
+
+**`PromotionalCampaigns.tsx`** (admin list):
+- Update the Status badge to show "Public" (green), "Unlisted" (yellow/amber), or "Inactive" (gray).
+- Replace the "Activate/Deactivate" button with a quick visibility toggle dropdown or cycle button.
+
+### 5. Files Changed
+
+| File | Change |
+|------|--------|
+| Migration SQL | Add column + backfill + sync trigger |
+| `src/hooks/useActiveCampaigns.ts` | Add `.eq('visibility_mode', 'public')` |
+| `src/components/PromotionalFooter.tsx` | Add `.eq('visibility_mode', 'public')` |
+| `src/hooks/usePromotionalCampaign.ts` | Replace `is_active` check with `visibility_mode` check |
+| `src/components/admin/PromotionalCampaignForm.tsx` | Add visibility dropdown, include in save |
+| `src/pages/PromotionalCampaigns.tsx` | Update status badge + action button |
+
+### 6. Safety
+
+- Existing campaigns default to `public` (active) or `inactive` via backfill — no visibility change.
+- `is_active` stays synced via trigger — edge functions and RLS are unaffected.
+- No routing changes, no layout changes, no new tables.
+- Fully backward compatible.
 
