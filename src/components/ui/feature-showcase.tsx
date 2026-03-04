@@ -47,6 +47,7 @@ export type FeatureShowcaseProps = {
 
 function Showcase3DCard({ tabs, initial }: {tabs: TabMedia[];initial: string;}) {
   const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = React.useState(initial);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -69,6 +70,8 @@ function Showcase3DCard({ tabs, initial }: {tabs: TabMedia[];initial: string;}) 
     mouseY.set(0);
   };
 
+  const activeMedia = tabs.find((t) => t.value === activeTab) || tabs[0];
+
   return (
     <div style={{ perspective: "1000px" }}>
       <motion.div
@@ -77,53 +80,49 @@ function Showcase3DCard({ tabs, initial }: {tabs: TabMedia[];initial: string;}) 
         style={isMobile ? {} : { rotateX, rotateY }}
         className="transition-shadow duration-300">
         
-        <Card className="overflow-hidden rounded-2xl border-border/50 ring-1 ring-primary/10 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300">
-          {/* Media container – 4:5 portrait (Instagram vertical) */}
-          <div className="relative aspect-[4/5] w-full overflow-hidden">
-            {tabs.map((t) => {
-              const isVideo = isVideoUrl(t.src);
-              return (
-                <TabsContent
-                  key={t.value}
-                  value={t.value}
-                  className="absolute inset-0 m-0 data-[state=inactive]:hidden">
-                  
-                  {isVideo ?
-                  <video
-                    src={t.src}
-                    poster={t.posterUrl || undefined}
-                    muted
-                    autoPlay
-                    loop
-                    playsInline
-                    preload="metadata"
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" /> :
+        <Card className="relative overflow-hidden rounded-2xl border-border/50 ring-1 ring-primary/10 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-shadow duration-300 aspect-[4/5]">
+          {/* Media – fills entire card */}
+          {activeMedia && (
+            isVideoUrl(activeMedia.src) ? (
+              <video
+                key={activeMedia.value}
+                src={activeMedia.src}
+                poster={activeMedia.posterUrl || undefined}
+                muted
+                autoPlay
+                loop
+                playsInline
+                preload="metadata"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+            ) : (
+              <img
+                key={activeMedia.value}
+                src={activeMedia.src}
+                alt={activeMedia.alt || activeMedia.label}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                loading="eager" />
+            )
+          )}
 
+          {/* Gradient overlay for depth */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />
 
-                  <img
-                    src={t.src}
-                    alt={t.alt || t.label}
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                    loading="eager" />
-
-                  }
-                </TabsContent>);
-
-            })}
-            {/* Gradient overlay for depth */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/20 to-transparent" />
-          </div>
-
-          {/* Tab controls */}
-          <div className="border-t border-border/50 bg-muted/30 p-2">
-            <TabsList className="w-full justify-start bg-transparent">
-              {tabs.map((t) =>
-              <TabsTrigger key={t.value} value={t.value} className="text-xs rounded-lg">
-                  {t.label}
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </div>
+          {/* Tab controls – glass overlay */}
+          {tabs.length > 1 && (
+            <div className="absolute bottom-3 left-3 right-3 z-10">
+              <TabsList className="w-full justify-start bg-black/30 backdrop-blur-md rounded-xl border border-white/10">
+                {tabs.map((t) =>
+                  <TabsTrigger
+                    key={t.value}
+                    value={t.value}
+                    onClick={() => setActiveTab(t.value)}
+                    className="text-xs rounded-lg text-white/70 data-[state=active]:text-white data-[state=active]:bg-white/20 data-[state=active]:shadow-none">
+                    {t.label}
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </div>
+          )}
         </Card>
       </motion.div>
     </div>);
