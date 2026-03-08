@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Package, Megaphone, Check } from "lucide-react";
+import { Search, Package, Megaphone, Check, Phone } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { useActiveCampaigns, ActiveCampaign } from "@/hooks/useActiveCampaigns";
 import { CardMessageData } from "@/types/chat";
 import { ChatCardMessage } from "./ChatCardMessage";
+import { PhoneCaptureCard } from "./PhoneCaptureCard";
 import { cn } from "@/lib/utils";
 
 interface EntityPickerModalProps {
