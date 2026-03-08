@@ -15,6 +15,7 @@ import { UserProfileModal } from './UserProfileModal';
 import { QuickActionsButton } from '@/components/chat/QuickActionsButton';
 import { EntityPickerModal } from '@/components/chat/EntityPickerModal';
 import { ChatCardMessage } from '@/components/chat/ChatCardMessage';
+import { PhoneCaptureCard } from '@/components/chat/PhoneCaptureCard';
 import { CardMessageData } from '@/types/chat';
 import { BookingFunnelModal } from '@/components/booking/BookingFunnelModal';
 import { AudioPlayer } from '@/components/wedding/components/AudioPlayer';
@@ -721,7 +722,12 @@ const ChatAdmin = () => {
                                 : 'bg-gray-100 text-gray-900'
                             }`}
                           >
-                            {message.type === 'card' && cardData ? (
+                            {message.type === 'card' && cardData?.entityType === 'phone_capture' ? (
+                              <PhoneCaptureCard
+                                data={cardData}
+                                variant={message.role === 'user' ? 'sent' : 'received'}
+                              />
+                            ) : message.type === 'card' && cardData ? (
                               <ChatCardMessage 
                                 data={cardData} 
                                 variant={message.role === 'user' ? 'sent' : 'received'}

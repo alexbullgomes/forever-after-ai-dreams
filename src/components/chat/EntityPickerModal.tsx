@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Package, Megaphone, Check } from "lucide-react";
+import { Search, Package, Megaphone, Check, Phone } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { useActiveCampaigns, ActiveCampaign } from "@/hooks/useActiveCampaigns";
 import { CardMessageData } from "@/types/chat";
 import { ChatCardMessage } from "./ChatCardMessage";
+import { PhoneCaptureCard } from "./PhoneCaptureCard";
 import { cn } from "@/lib/utils";
 
 interface EntityPickerModalProps {
@@ -20,7 +21,7 @@ interface EntityPickerModalProps {
 }
 
 export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPickerModalProps) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'campaigns'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'campaigns' | 'actions'>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<ActiveCampaign | null>(null);
@@ -42,7 +43,18 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
     );
   }, [campaigns, searchQuery]);
 
-  const selectedItem = activeTab === 'products' ? selectedProduct : selectedCampaign;
+  const selectedItem = activeTab === 'products' ? selectedProduct : activeTab === 'campaigns' ? selectedCampaign : 'phone_capture';
+  
+  const phoneCaptureCardData: CardMessageData = useMemo(() => ({
+    entityType: 'phone_capture',
+    entityId: `phone-capture-${Date.now()}`,
+    title: 'Phone Number Required',
+    description: 'Please provide your phone number so we can reach you.',
+    priceLabel: null,
+    imageUrl: null,
+    ctaLabel: 'Submit',
+    ctaUrl: ''
+  }), []);
   
   const previewCardData: CardMessageData | null = useMemo(() => {
     if (activeTab === 'products' && selectedProduct) {
@@ -73,15 +85,25 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
       };
     }
     
+    if (activeTab === 'actions') {
+      return phoneCaptureCardData;
+    }
+    
     return null;
-  }, [activeTab, selectedProduct, selectedCampaign]);
+  }, [activeTab, selectedProduct, selectedCampaign, phoneCaptureCardData]);
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value as 'products' | 'campaigns');
+    setActiveTab(value as 'products' | 'campaigns' | 'actions');
     setSearchQuery('');
   };
 
   const handleSend = () => {
+    if (activeTab === 'actions') {
+      // Generate a fresh entityId on each send
+      onSendCard({ ...phoneCaptureCardData, entityId: `phone-capture-${Date.now()}` });
+      handleClose();
+      return;
+    }
     if (!previewCardData) return;
     onSendCard(previewCardData);
     handleClose();
@@ -106,26 +128,32 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="products" className="flex items-center gap-1.5 text-xs">
+              <Package className="h-3.5 w-3.5" />
               Products
             </TabsTrigger>
-            <TabsTrigger value="campaigns" className="flex items-center gap-2">
-              <Megaphone className="h-4 w-4" />
+            <TabsTrigger value="campaigns" className="flex items-center gap-1.5 text-xs">
+              <Megaphone className="h-3.5 w-3.5" />
               Campaigns
+            </TabsTrigger>
+            <TabsTrigger value="actions" className="flex items-center gap-1.5 text-xs">
+              <Phone className="h-3.5 w-3.5" />
+              Actions
             </TabsTrigger>
           </TabsList>
           
-          <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder={`Search ${activeTab}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+          {activeTab !== 'actions' && (
+            <div className="relative mt-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder={`Search ${activeTab}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          )}
           
           <TabsContent value="products" className="flex-1 mt-4 min-h-0">
             <ScrollArea className="h-[180px] pr-3">
@@ -176,13 +204,35 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
               )}
             </ScrollArea>
           </TabsContent>
+          <TabsContent value="actions" className="flex-1 mt-4 min-h-0">
+            <div className="space-y-3">
+              <div
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg cursor-default border",
+                  "bg-primary/5 border-primary/20 ring-1 ring-primary/20"
+                )}
+              >
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
+                  <Phone className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">Request Phone Number</p>
+                  <p className="text-xs text-muted-foreground">Ask the user to provide their phone number</p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
         
         {/* Preview */}
         {previewCardData && (
           <div className="border rounded-lg p-3 bg-muted/30 mt-4">
             <p className="text-xs text-muted-foreground mb-2 font-medium">Preview:</p>
-            <ChatCardMessage data={previewCardData} variant="received" />
+            {previewCardData.entityType === 'phone_capture' ? (
+              <PhoneCaptureCard data={previewCardData} variant="received" />
+            ) : (
+              <ChatCardMessage data={previewCardData} variant="received" />
+            )}
           </div>
         )}
         
