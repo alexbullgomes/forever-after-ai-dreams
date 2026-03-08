@@ -1,5 +1,5 @@
 export interface CardMessageData {
-  entityType: 'product' | 'campaign';
+  entityType: 'product' | 'campaign' | 'phone_capture';
   entityId: string;
   title: string;
   description: string | null;
@@ -10,6 +10,11 @@ export interface CardMessageData {
   // Additional fields for product booking
   price?: number;
   currency?: string;
+  // Phone capture metadata
+  phoneCaptureMeta?: {
+    status?: 'pending' | 'submitted';
+    submittedNumber?: string;
+  };
 }
 
 export type MessageType = 'text' | 'audio' | 'card';

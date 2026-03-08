@@ -721,7 +721,12 @@ const ChatAdmin = () => {
                                 : 'bg-gray-100 text-gray-900'
                             }`}
                           >
-                            {message.type === 'card' && cardData ? (
+                            {message.type === 'card' && cardData?.entityType === 'phone_capture' ? (
+                              <PhoneCaptureCard
+                                data={cardData}
+                                variant={message.role === 'user' ? 'sent' : 'received'}
+                              />
+                            ) : message.type === 'card' && cardData ? (
                               <ChatCardMessage 
                                 data={cardData} 
                                 variant={message.role === 'user' ? 'sent' : 'received'}

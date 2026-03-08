@@ -1,6 +1,7 @@
 
 import { AudioPlayer } from "./AudioPlayer";
 import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { PhoneCaptureCard } from "@/components/chat/PhoneCaptureCard";
 import { CardMessageData } from "@/types/chat";
 
 export interface ChatMessage {
@@ -37,7 +38,12 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay, onBookPr
         }`}
       >
         {/* Render card message if type is 'card' */}
-        {chat.type === 'card' && chat.cardData ? (
+        {chat.type === 'card' && chat.cardData?.entityType === 'phone_capture' ? (
+          <PhoneCaptureCard
+            data={chat.cardData}
+            variant={chat.isUser ? 'sent' : 'received'}
+          />
+        ) : chat.type === 'card' && chat.cardData ? (
           <ChatCardMessage 
             data={chat.cardData} 
             variant={chat.isUser ? 'sent' : 'received'}

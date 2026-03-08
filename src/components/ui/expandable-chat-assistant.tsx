@@ -640,7 +640,12 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
               >
                 <div className="space-y-2">
                 {/* Render card message if type is 'card' */}
-                  {message.type === 'card' && message.cardData ? (
+                  {message.type === 'card' && message.cardData?.entityType === 'phone_capture' ? (
+                    <PhoneCaptureCard
+                      data={message.cardData}
+                      variant={message.sender === 'user' ? 'sent' : 'received'}
+                    />
+                  ) : message.type === 'card' && message.cardData ? (
                     <ChatCardMessage 
                       data={message.cardData} 
                       variant={message.sender === 'user' ? 'sent' : 'received'}

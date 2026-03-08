@@ -28,7 +28,7 @@ export const QuickActionsButton = ({ onClick, disabled }: QuickActionsButtonProp
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Send product or campaign card</p>
+          <p>Send product, campaign, or action card</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
