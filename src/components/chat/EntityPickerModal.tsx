@@ -98,6 +98,12 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
   };
 
   const handleSend = () => {
+    if (activeTab === 'actions') {
+      // Generate a fresh entityId on each send
+      onSendCard({ ...phoneCaptureCardData, entityId: `phone-capture-${Date.now()}` });
+      handleClose();
+      return;
+    }
     if (!previewCardData) return;
     onSendCard(previewCardData);
     handleClose();
