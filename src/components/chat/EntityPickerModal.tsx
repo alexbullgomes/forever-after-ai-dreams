@@ -21,7 +21,7 @@ interface EntityPickerModalProps {
 }
 
 export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPickerModalProps) => {
-  const [activeTab, setActiveTab] = useState<'products' | 'campaigns'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'campaigns' | 'actions'>('products');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<ActiveCampaign | null>(null);
@@ -43,7 +43,18 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
     );
   }, [campaigns, searchQuery]);
 
-  const selectedItem = activeTab === 'products' ? selectedProduct : selectedCampaign;
+  const selectedItem = activeTab === 'products' ? selectedProduct : activeTab === 'campaigns' ? selectedCampaign : 'phone_capture';
+  
+  const phoneCaptureCardData: CardMessageData = useMemo(() => ({
+    entityType: 'phone_capture',
+    entityId: `phone-capture-${Date.now()}`,
+    title: 'Phone Number Required',
+    description: 'Please provide your phone number so we can reach you.',
+    priceLabel: null,
+    imageUrl: null,
+    ctaLabel: 'Submit',
+    ctaUrl: ''
+  }), []);
   
   const previewCardData: CardMessageData | null = useMemo(() => {
     if (activeTab === 'products' && selectedProduct) {
@@ -74,11 +85,15 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
       };
     }
     
+    if (activeTab === 'actions') {
+      return phoneCaptureCardData;
+    }
+    
     return null;
-  }, [activeTab, selectedProduct, selectedCampaign]);
+  }, [activeTab, selectedProduct, selectedCampaign, phoneCaptureCardData]);
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value as 'products' | 'campaigns');
+    setActiveTab(value as 'products' | 'campaigns' | 'actions');
     setSearchQuery('');
   };
 
