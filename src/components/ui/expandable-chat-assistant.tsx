@@ -23,6 +23,7 @@ import { VoiceInput } from "@/components/ui/voice-input";
 import { toast } from "sonner";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
 import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { PhoneCaptureCard } from "@/components/chat/PhoneCaptureCard";
 import { CardMessageData } from "@/types/chat";
 import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
