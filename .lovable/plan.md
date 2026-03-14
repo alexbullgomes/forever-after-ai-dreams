@@ -1,53 +1,35 @@
 
 
-# Fix: Email Auth Redirect During Campaign Booking Flow
+# Chat Admin Campaign Selector — Support Public + Unlisted Campaigns
 
-## Root Cause
-
-The issue is a **race condition** between `EmailAuthForm` and `AuthContext`.
-
-**Google OAuth** works because `signInWithOAuth` triggers a full page redirect to Google, then back to the `redirectTo` URL (the campaign page). The browser navigates to the campaign page, and the booking state is restored from sessionStorage.
-
-**Email/password** auth works differently — `signInWithPassword` / `signUp` completes in-place (no page reload). Two things then compete:
-
-1. **`EmailAuthForm.tsx` (lines 45-67, 87-109)**: After successful auth, it calls `hasPendingBooking()`. If true, it just closes the modal. If false, it redirects to `/dashboard`.
-
-2. **`AuthContext.tsx` (lines 82-100)**: The `onAuthStateChange` listener fires `SIGNED_IN`, runs `handleBookingRedirect()`, and if there's a pending booking + we're already on the correct page, it sets `redirectHandledRef.current = true` and returns.
-
-The problem: Both run nearly simultaneously. `EmailAuthForm` checks `hasPendingBooking()` synchronously right after the auth call. If the booking state **was** saved, it works. But there's a subtler issue — after `onClose()`, `AuthContext`'s `handleBookingRedirect` also fires. When it detects we're already on the target page, it correctly does nothing. So the flow *should* work when booking state exists.
-
-**The actual bug**: When a user clicks "Reserve" on a standard product card (not campaign-gated), the auth gate happens later. In this case, `saveBookingState` is only called for `campaignMode` or `campaignProductMode`. For standard product flows or when the auth modal is triggered by other means (e.g., clicking "Login" button), `hasPendingBooking()` returns `false`, and `EmailAuthForm` hardcodes `window.location.href = '/dashboard'` — even if the user is on a campaign page.
-
-**The fix**: When there's no pending booking but the user is already on a `/promo/` page, `EmailAuthForm` should stay on the current page instead of redirecting to `/dashboard`.
+## Problem
+The `EntityPickerModal` uses `useActiveCampaigns()` which filters by `visibility_mode = 'public'`. Unlisted campaigns are excluded, preventing admins from sending them via chat.
 
 ## Plan
 
-### File: `src/components/auth/EmailAuthForm.tsx`
+### 1. Create a dedicated hook for admin campaign fetching
+Rather than modifying `useActiveCampaigns` (which correctly filters public-only for the Services page), create a small dedicated query inside `EntityPickerModal` or a new hook `useAdminCampaigns` that fetches campaigns where `visibility_mode IN ('public', 'unlisted')`.
 
-In both the login and signup success branches (lines 57-67 and lines 99-109), change the "no pending booking" fallback:
+**Simplest approach**: Add an optional `includeUnlisted` param to `useActiveCampaigns`, or just inline a separate query in the modal. I'll go with adding an `options` parameter to `useActiveCampaigns` to keep it DRY — `useActiveCampaigns({ includeUnlisted: true })`.
 
-- Before redirecting to `/dashboard`, check if the current URL starts with `/promo/`
-- If yes: just close the modal and stay on the page (the user was browsing a campaign)
-- If no: redirect to `/dashboard` as before
+**Changes to `src/hooks/useActiveCampaigns.ts`:**
+- Add optional `options?: { includeUnlisted?: boolean }` parameter
+- When `includeUnlisted` is true, use `.in('visibility_mode', ['public', 'unlisted'])` instead of `.eq('visibility_mode', 'public')`
+- Add `visibility_mode` to the select and to the `ActiveCampaign` interface
 
-This is a 2-line change in each branch (4 lines total). The logic:
+### 2. Update `EntityPickerModal` to use `includeUnlisted: true`
+- Call `useActiveCampaigns({ includeUnlisted: true })`
 
-```typescript
-const currentPath = window.location.pathname;
-const stayOnPage = currentPath.startsWith('/promo/');
+### 3. Add visibility badge to `CampaignListItem`
+- Accept `visibilityMode` from the campaign data
+- Show a small badge: "Listed" (green) for public, "Unlisted" (amber) for unlisted
+- Add a tooltip on the unlisted badge: "Hidden from Services page. Accessible via direct link."
 
-if (stayOnPage) {
-  onClose();
-} else {
-  onClose();
-  window.location.href = '/dashboard';
-}
-```
+### Files Changed
+| File | Change |
+|------|--------|
+| `src/hooks/useActiveCampaigns.ts` | Add `includeUnlisted` option, add `visibilityMode` to interface & select |
+| `src/components/chat/EntityPickerModal.tsx` | Pass `{ includeUnlisted: true }`, add badge to `CampaignListItem` |
 
-### No other files need changes
-
-- `saveBookingState` / `hasPendingBooking` continue to work for campaign-gated booking flows
-- `AuthContext` redirect logic remains untouched
-- Google OAuth flow remains untouched
-- Campaign routing unchanged
+No changes to Services page, PromotionalFooter, routing, or campaign logic.
 
