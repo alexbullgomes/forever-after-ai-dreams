@@ -102,14 +102,19 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
             onClose();
           }, 300);
         } else {
+          const currentPath = window.location.pathname;
+          const stayOnPage = currentPath.startsWith('/promo/');
+
           toast({
             title: "Account created!",
-            description: "Welcome to Dream Weddings! Redirecting to your packages...",
+            description: stayOnPage ? "Welcome! You're signed in." : "Welcome to Dream Weddings! Redirecting to your packages...",
           });
 
           setTimeout(() => {
             onClose();
-            window.location.href = '/dashboard';
+            if (!stayOnPage) {
+              window.location.href = '/dashboard';
+            }
           }, 1000);
         }
       }
