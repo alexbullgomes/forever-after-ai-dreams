@@ -287,6 +287,24 @@ export function BookingStepSlots({
           </div>
         )}
 
+        {/* Talk to our team — always available */}
+        <Button
+          variant="outline"
+          onClick={() => {
+            const datePart = ` for ${format(eventDate, 'MMMM d, yyyy')}`;
+            const timePart = selectedTime ? ` at ${formatTime(selectedTime)}` : '';
+            const message = `Hi! I'm interested in the ${productTitle} package${datePart}${timePart}. Can someone help me?`;
+            window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
+              detail: { message, followUp: true }
+            }));
+          }}
+          className="w-full"
+          size="lg"
+        >
+          <MessageCircle className="w-4 h-4 mr-2" />
+          Talk to our team about this package
+        </Button>
+
         {isLimitedSlot ? (
           <>
             <Button

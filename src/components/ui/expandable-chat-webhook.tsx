@@ -279,8 +279,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 
   // Listen for custom event to open chat with pre-filled message
   useEffect(() => {
-    const handleChatMessage = async (event: CustomEvent<{ message: string }>) => {
-      const { message } = event.detail;
+    const handleChatMessage = async (event: CustomEvent<{ message: string; followUp?: boolean }>) => {
+      const { message, followUp } = event.detail;
       
       // Set the input with the message
       setUserInput(message);
@@ -303,11 +303,13 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           setUserInput("");
           setIsLoading(true);
 
+          let resolvedConversationId = conversationId;
+
           try {
             trackVisitorEvent('chat_message', 'visitor_chat', {
               message_length: message.length,
               has_conversation: !!conversationId,
-              source: 'limited_slot_inquiry',
+              source: followUp ? 'contact_team_inquiry' : 'limited_slot_inquiry',
             });
             
             const response = await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
@@ -334,9 +336,11 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
               
               if (data.conversation_id && !conversationId) {
                 setConversationId(data.conversation_id);
+                resolvedConversationId = data.conversation_id;
               }
 
-              if (data.ai_response && data.mode !== 'human') {
+              // Skip AI response if followUp — we'll insert our own
+              if (!followUp && data.ai_response && data.mode !== 'human') {
                 const assistantMessage: ChatMessage = {
                   id: data.ai_message_id?.toString() || generateId(),
                   content: data.ai_response,
@@ -349,6 +353,67 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
                   }
                   return [...prev, assistantMessage];
                 });
+              }
+
+              // Follow-up: insert assistant confirmation + phone capture card
+              if (followUp && resolvedConversationId) {
+                const followUpText = 'Great choice! Our team will contact you as soon as possible. Please share your phone number so we can reach you.';
+                const phoneCardPayload = {
+                  entityType: 'phone_capture' as const,
+                  entityId: `phone-capture-${Date.now()}`,
+                  title: 'Phone Number',
+                  description: 'Share your number so our team can reach you directly.',
+                  ctaLabel: 'Submit',
+                  ctaUrl: '',
+                  priceLabel: null,
+                  imageUrl: null,
+                };
+
+                // Insert via visitor-chat edge function to persist
+                await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'send_message',
+                    visitor_id: visitorId,
+                    content: followUpText,
+                    type: 'text',
+                    role: 'ai',
+                    conversation_id: resolvedConversationId,
+                  })
+                });
+
+                await fetch(`${SUPABASE_URL}/functions/v1/visitor-chat`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'send_message',
+                    visitor_id: visitorId,
+                    content: JSON.stringify(phoneCardPayload),
+                    type: 'card',
+                    role: 'ai',
+                    conversation_id: resolvedConversationId,
+                  })
+                });
+
+                // Add to local state
+                setMessages(prev => [
+                  ...prev,
+                  {
+                    id: generateId(),
+                    content: followUpText,
+                    sender: 'assistant' as const,
+                    timestamp: new Date(),
+                  },
+                  {
+                    id: generateId(),
+                    content: JSON.stringify(phoneCardPayload),
+                    sender: 'assistant' as const,
+                    timestamp: new Date(),
+                    type: 'card' as const,
+                    cardData: phoneCardPayload,
+                  },
+                ]);
               }
             }
           } catch (error) {
