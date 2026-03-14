@@ -21,6 +21,7 @@ interface BookingStepSlotsProps {
   isLoading: boolean;
   selectedTime: string | null;
   onChatAvailability?: (date: Date, time: string, productTitle: string, price: number) => void;
+  onClose?: () => void;
 }
 
 export function BookingStepSlots({
@@ -36,6 +37,7 @@ export function BookingStepSlots({
   isLoading,
   selectedTime,
   onChatAvailability,
+  onClose,
 }: BookingStepSlotsProps) {
   const [calendarMonth, setCalendarMonth] = useState(eventDate);
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
@@ -297,12 +299,13 @@ export function BookingStepSlots({
             window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
               detail: { message, followUp: true }
             }));
+            onClose?.();
           }}
           className="w-full"
           size="lg"
         >
           <MessageCircle className="w-4 h-4 mr-2" />
-          Talk to our team about this package
+          Talk to our team
         </Button>}
 
         {isLimitedSlot ? (

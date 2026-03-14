@@ -373,6 +373,7 @@ export function BookingFunnelModal({
             isLoading={isProcessing || loading}
             selectedTime={selectedTime}
             onChatAvailability={handleChatAvailability}
+            onClose={handleClose}
           />
         )}
       </DialogContent>
