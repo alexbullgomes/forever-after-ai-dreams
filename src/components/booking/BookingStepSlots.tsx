@@ -303,7 +303,7 @@ export function BookingStepSlots({
         >
           <MessageCircle className="w-4 h-4 mr-2" />
           Talk to our team about this package
-        </Button>
+        </Button>}
 
         {isLimitedSlot ? (
           <>
