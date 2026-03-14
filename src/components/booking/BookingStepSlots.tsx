@@ -287,8 +287,8 @@ export function BookingStepSlots({
           </div>
         )}
 
-        {/* Talk to our team — always available */}
-        <Button
+        {/* Talk to our team — only when not limited */}
+        {!isLimitedSlot && <Button
           variant="outline"
           onClick={() => {
             const datePart = ` for ${format(eventDate, 'MMMM d, yyyy')}`;
@@ -303,7 +303,7 @@ export function BookingStepSlots({
         >
           <MessageCircle className="w-4 h-4 mr-2" />
           Talk to our team about this package
-        </Button>
+        </Button>}
 
         {isLimitedSlot ? (
           <>

@@ -1,35 +1,35 @@
 
 
-# Fix: Duplicate Chat Messages & Button Visibility
+# Chat Admin Campaign Selector — Support Public + Unlisted Campaigns
 
-## Issue 1 — Duplicate Messages
+## Problem
+The `EntityPickerModal` uses `useActiveCampaigns()` which filters by `visibility_mode = 'public'`. Unlisted campaigns are excluded, preventing admins from sending them via chat.
 
-**Root cause**: Both chat components (authenticated and visitor) insert follow-up messages into the database AND manually add them to local state. The realtime subscription (postgres_changes in assistant, broadcast/polling in webhook) then picks up the same DB-inserted messages and adds them again → duplicates.
+## Plan
 
-**Fix**: Remove the manual `setMessages` calls for follow-up messages in both files. The existing realtime/broadcast mechanisms will deliver them to the UI naturally.
+### 1. Create a dedicated hook for admin campaign fetching
+Rather than modifying `useActiveCampaigns` (which correctly filters public-only for the Services page), create a small dedicated query inside `EntityPickerModal` or a new hook `useAdminCampaigns` that fetches campaigns where `visibility_mode IN ('public', 'unlisted')`.
 
-### `src/components/ui/expandable-chat-assistant.tsx` (lines 613-631)
-- Delete the `setMessages(prev => [...prev, ...])` block that manually adds the follow-up text and phone card after DB insertion
-- The postgres_changes realtime subscription (lines 97-127) already catches all non-user message INSERTs and calls `addMessageToUI`
+**Simplest approach**: Add an optional `includeUnlisted` param to `useActiveCampaigns`, or just inline a separate query in the modal. I'll go with adding an `options` parameter to `useActiveCampaigns` to keep it DRY — `useActiveCampaigns({ includeUnlisted: true })`.
 
-### `src/components/ui/expandable-chat-webhook.tsx` (lines 399-416)
-- Delete the `setMessages(prev => [...prev, ...])` block that manually adds the follow-up text and phone card
-- Broadcast and 7-second polling will deliver these messages
+**Changes to `src/hooks/useActiveCampaigns.ts`:**
+- Add optional `options?: { includeUnlisted?: boolean }` parameter
+- When `includeUnlisted` is true, use `.in('visibility_mode', ['public', 'unlisted'])` instead of `.eq('visibility_mode', 'public')`
+- Add `visibility_mode` to the select and to the `ActiveCampaign` interface
 
-## Issue 2 — Button Visibility
+### 2. Update `EntityPickerModal` to use `includeUnlisted: true`
+- Call `useActiveCampaigns({ includeUnlisted: true })`
 
-**Current**: "Talk to our team" button is always visible (line 290-306), rendered unconditionally above both the limited and available CTA branches.
+### 3. Add visibility badge to `CampaignListItem`
+- Accept `visibilityMode` from the campaign data
+- Show a small badge: "Listed" (green) for public, "Unlisted" (amber) for unlisted
+- Add a tooltip on the unlisted badge: "Hidden from Services page. Accessible via direct link."
 
-**Fix**: Wrap the button in `{!isLimitedSlot && (...)}` so it only shows when the selected slot is available. When limited, only "Check availability with our team" shows.
-
-### `src/components/booking/BookingStepSlots.tsx`
-- Line 290: Change from always-visible to `{!isLimitedSlot && (<Button ...>Talk to our team</Button>)}`
-
-## Files changed
-
+### Files Changed
 | File | Change |
 |------|--------|
-| `src/components/ui/expandable-chat-assistant.tsx` | Remove manual follow-up state additions (lines 613-631) |
-| `src/components/ui/expandable-chat-webhook.tsx` | Remove manual follow-up state additions (lines 399-416) |
-| `src/components/booking/BookingStepSlots.tsx` | Conditionally render "Talk to our team" only when `!isLimitedSlot` |
+| `src/hooks/useActiveCampaigns.ts` | Add `includeUnlisted` option, add `visibilityMode` to interface & select |
+| `src/components/chat/EntityPickerModal.tsx` | Pass `{ includeUnlisted: true }`, add badge to `CampaignListItem` |
+
+No changes to Services page, PromotionalFooter, routing, or campaign logic.
 

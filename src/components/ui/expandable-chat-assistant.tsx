@@ -610,24 +610,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
               content: JSON.stringify(phoneCardPayload),
             });
 
-            // Add to local state
-            setMessages(prev => [
-              ...prev,
-              {
-                id: Date.now() + 1,
-                content: followUpText,
-                sender: 'ai' as const,
-                timestamp: new Date().toISOString(),
-              },
-              {
-                id: Date.now() + 2,
-                content: JSON.stringify(phoneCardPayload),
-                sender: 'ai' as const,
-                timestamp: new Date().toISOString(),
-                type: 'card',
-                cardData: phoneCardPayload,
-              },
-            ]);
+            // Realtime subscription will deliver these to UI automatically
           }
           
           setIsLoading(false);
