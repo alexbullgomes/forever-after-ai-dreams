@@ -538,8 +538,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
 
   // Listen for custom event to open chat with pre-filled message
   useEffect(() => {
-    const handleChatMessage = (event: CustomEvent<{ message: string }>) => {
-      const { message } = event.detail;
+    const handleChatMessage = (event: CustomEvent<{ message: string; followUp?: boolean }>) => {
+      const { message, followUp } = event.detail;
       
       // Set the input with the message
       setInput(message);
@@ -578,6 +578,56 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
           if (insertError) {
             console.error('Error inserting message:', insertError);
             setMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
+          }
+
+          // Follow-up: insert assistant confirmation + phone capture card
+          if (followUp && !insertError) {
+            const followUpText = 'Great choice! Our team will contact you as soon as possible. Please share your phone number so we can reach you.';
+            const phoneCardPayload: CardMessageData = {
+              entityType: 'phone_capture',
+              entityId: `phone-capture-${Date.now()}`,
+              title: 'Phone Number',
+              description: 'Share your number so our team can reach you directly.',
+              ctaLabel: 'Submit',
+              ctaUrl: '',
+              priceLabel: null,
+              imageUrl: null,
+            };
+
+            // Insert follow-up text message
+            await supabase.from('messages').insert({
+              conversation_id: conversationId,
+              role: 'ai',
+              type: 'text',
+              content: followUpText,
+            });
+
+            // Insert phone capture card
+            await supabase.from('messages').insert({
+              conversation_id: conversationId,
+              role: 'ai',
+              type: 'card',
+              content: JSON.stringify(phoneCardPayload),
+            });
+
+            // Add to local state
+            setMessages(prev => [
+              ...prev,
+              {
+                id: Date.now() + 1,
+                content: followUpText,
+                sender: 'ai' as const,
+                timestamp: new Date().toISOString(),
+              },
+              {
+                id: Date.now() + 2,
+                content: JSON.stringify(phoneCardPayload),
+                sender: 'ai' as const,
+                timestamp: new Date().toISOString(),
+                type: 'card',
+                cardData: phoneCardPayload,
+              },
+            ]);
           }
           
           setIsLoading(false);
