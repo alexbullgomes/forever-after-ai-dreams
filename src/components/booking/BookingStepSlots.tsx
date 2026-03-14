@@ -298,12 +298,13 @@ export function BookingStepSlots({
             window.dispatchEvent(new CustomEvent('everafter:open-chat-with-message', {
               detail: { message, followUp: true }
             }));
+            onClose?.();
           }}
           className="w-full"
           size="lg"
         >
           <MessageCircle className="w-4 h-4 mr-2" />
-          Talk to our team about this package
+          Talk to our team
         </Button>}
 
         {isLimitedSlot ? (
