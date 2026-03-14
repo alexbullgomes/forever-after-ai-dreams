@@ -1,34 +1,35 @@
 
 
-# Dynamic Status Message for Booking Time Selection
+# Chat Admin Campaign Selector — Support Public + Unlisted Campaigns
 
 ## Problem
-The green "You're in luck" banner (lines 140-152) is hardcoded and never changes, even when the selected date is limited, full, or blocked.
+The `EntityPickerModal` uses `useActiveCampaigns()` which filters by `visibility_mode = 'public'`. Unlisted campaigns are excluded, preventing admins from sending them via chat.
 
-## Solution
-Replace the static banner with a derived status message based on `currentDayAvailability.status`, which is already computed on line 101 from the `monthAvailability` data.
+## Plan
 
-### Single file change: `src/components/booking/BookingStepSlots.tsx`
+### 1. Create a dedicated hook for admin campaign fetching
+Rather than modifying `useActiveCampaigns` (which correctly filters public-only for the Services page), create a small dedicated query inside `EntityPickerModal` or a new hook `useAdminCampaigns` that fetches campaigns where `visibility_mode IN ('public', 'unlisted')`.
 
-**Derive the selected date's status:**
-```typescript
-const selectedDateStatus = currentDayAvailability?.status ?? 'available';
-```
+**Simplest approach**: Add an optional `includeUnlisted` param to `useActiveCampaigns`, or just inline a separate query in the modal. I'll go with adding an `options` parameter to `useActiveCampaigns` to keep it DRY — `useActiveCampaigns({ includeUnlisted: true })`.
 
-**Replace lines 139-152** with a conditional render:
+**Changes to `src/hooks/useActiveCampaigns.ts`:**
+- Add optional `options?: { includeUnlisted?: boolean }` parameter
+- When `includeUnlisted` is true, use `.in('visibility_mode', ['public', 'unlisted'])` instead of `.eq('visibility_mode', 'public')`
+- Add `visibility_mode` to the select and to the `ActiveCampaign` interface
 
-| Status | Icon | Colors | Title | Subtitle |
-|--------|------|--------|-------|----------|
-| `available` | Sparkles (green) | green-50 bg, green border | "You're in luck — we can fit your date!" | "All time slots are available for your selected date." |
-| `limited` | AlertCircle (amber) | amber-50 bg, amber border | "Limited availability on this date." | "Select a time or contact our team to confirm availability." |
-| `full` / `blocked` | AlertCircle (red) | red-50 bg, red border | "Sorry, we may be fully booked on this date." | "Please contact our team to check possible availability." |
+### 2. Update `EntityPickerModal` to use `includeUnlisted: true`
+- Call `useActiveCampaigns({ includeUnlisted: true })`
 
-The component already has `currentDayAvailability` on line 101 — no new data fetching, hooks, or state needed. The message updates automatically when the user clicks a different date because `eventDate` changes, which updates the derived status.
+### 3. Add visibility badge to `CampaignListItem`
+- Accept `visibilityMode` from the campaign data
+- Show a small badge: "Listed" (green) for public, "Unlisted" (amber) for unlisted
+- Add a tooltip on the unlisted badge: "Hidden from Services page. Accessible via direct link."
 
-### What stays untouched
-- Calendar day coloring logic (modifiers)
-- Time slot selection and rendering
-- Checkout / hold / Stripe flow
-- The separate "offer expired" amber warning (lines 154-162)
-- All availability computation hooks and RPC calls
+### Files Changed
+| File | Change |
+|------|--------|
+| `src/hooks/useActiveCampaigns.ts` | Add `includeUnlisted` option, add `visibilityMode` to interface & select |
+| `src/components/chat/EntityPickerModal.tsx` | Pass `{ includeUnlisted: true }`, add badge to `CampaignListItem` |
+
+No changes to Services page, PromotionalFooter, routing, or campaign logic.
 
