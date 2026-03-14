@@ -396,24 +396,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
                   })
                 });
 
-                // Add to local state
-                setMessages(prev => [
-                  ...prev,
-                  {
-                    id: generateId(),
-                    content: followUpText,
-                    sender: 'assistant' as const,
-                    timestamp: new Date(),
-                  },
-                  {
-                    id: generateId(),
-                    content: JSON.stringify(phoneCardPayload),
-                    sender: 'assistant' as const,
-                    timestamp: new Date(),
-                    type: 'card' as const,
-                    cardData: phoneCardPayload,
-                  },
-                ]);
+                // Broadcast/polling will deliver these to UI automatically
               }
             }
           } catch (error) {

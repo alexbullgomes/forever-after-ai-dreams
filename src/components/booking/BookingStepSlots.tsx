@@ -287,8 +287,8 @@ export function BookingStepSlots({
           </div>
         )}
 
-        {/* Talk to our team — always available */}
-        <Button
+        {/* Talk to our team — only when not limited */}
+        {!isLimitedSlot && <Button
           variant="outline"
           onClick={() => {
             const datePart = ` for ${format(eventDate, 'MMMM d, yyyy')}`;
