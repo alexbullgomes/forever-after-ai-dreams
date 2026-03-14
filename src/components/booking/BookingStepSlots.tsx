@@ -37,6 +37,7 @@ export function BookingStepSlots({
   isLoading,
   selectedTime,
   onChatAvailability,
+  onClose,
 }: BookingStepSlotsProps) {
   const [calendarMonth, setCalendarMonth] = useState(eventDate);
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
