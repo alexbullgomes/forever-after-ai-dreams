@@ -55,14 +55,19 @@ export const EmailAuthForm = ({ isLogin, onToggleMode, onClose }: EmailAuthFormP
             onClose();
           }, 300);
         } else {
+          const currentPath = window.location.pathname;
+          const stayOnPage = currentPath.startsWith('/promo/');
+
           toast({
             title: "Welcome back!",
-            description: "Redirecting to your packages...",
+            description: stayOnPage ? "You're signed in!" : "Redirecting to your packages...",
           });
 
           setTimeout(() => {
             onClose();
-            window.location.href = '/dashboard';
+            if (!stayOnPage) {
+              window.location.href = '/dashboard';
+            }
           }, 1000);
         }
       } else {
