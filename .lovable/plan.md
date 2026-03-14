@@ -1,35 +1,50 @@
 
 
-# Chat Admin Campaign Selector — Support Public + Unlisted Campaigns
+# Implementation Plan: Three UI Updates to Booking Funnel
 
-## Problem
-The `EntityPickerModal` uses `useActiveCampaigns()` which filters by `visibility_mode = 'public'`. Unlisted campaigns are excluded, preventing admins from sending them via chat.
+## 1. Button Label Change
 
-## Plan
+**File**: `src/components/booking/BookingStepSlots.tsx` (line 305)
+- Change `"Talk to our team about this package"` → `"Talk to our team"`
+- Text-only change, no logic affected.
 
-### 1. Create a dedicated hook for admin campaign fetching
-Rather than modifying `useActiveCampaigns` (which correctly filters public-only for the Services page), create a small dedicated query inside `EntityPickerModal` or a new hook `useAdminCampaigns` that fetches campaigns where `visibility_mode IN ('public', 'unlisted')`.
+## 2. Close Modal After "Talk to our team" Click
 
-**Simplest approach**: Add an optional `includeUnlisted` param to `useActiveCampaigns`, or just inline a separate query in the modal. I'll go with adding an `options` parameter to `useActiveCampaigns` to keep it DRY — `useActiveCampaigns({ includeUnlisted: true })`.
+**File**: `src/components/booking/BookingStepSlots.tsx`
 
-**Changes to `src/hooks/useActiveCampaigns.ts`:**
-- Add optional `options?: { includeUnlisted?: boolean }` parameter
-- When `includeUnlisted` is true, use `.in('visibility_mode', ['public', 'unlisted'])` instead of `.eq('visibility_mode', 'public')`
-- Add `visibility_mode` to the select and to the `ActiveCampaign` interface
+The button currently dispatches the chat event but does not close the modal. The `handleChatAvailability` callback (for limited slots) already calls `onClose()` before triggering the chat — we need the same pattern here.
 
-### 2. Update `EntityPickerModal` to use `includeUnlisted: true`
-- Call `useActiveCampaigns({ includeUnlisted: true })`
+**Approach**: Add an `onClose` prop to `BookingStepSlots` and call it inside the button's `onClick` handler, right after dispatching the `everafter:open-chat-with-message` event. The parent `BookingFunnelModal` already passes `handleClose` to reset state and close the dialog.
 
-### 3. Add visibility badge to `CampaignListItem`
-- Accept `visibilityMode` from the campaign data
-- Show a small badge: "Listed" (green) for public, "Unlisted" (amber) for unlisted
-- Add a tooltip on the unlisted badge: "Hidden from Services page. Accessible via direct link."
+- Add `onClose?: () => void` to `BookingStepSlotsProps`
+- Pass `onClose={handleClose}` from `BookingFunnelModal` (line 358)
+- Call `onClose?.()` after the `dispatchEvent` call (line 299)
 
-### Files Changed
+## 3. Calendar Responsiveness
+
+**File**: `src/components/booking/BookingStepSlots.tsx`
+
+Current layout uses `grid md:grid-cols-2 gap-6` (line 175), which already stacks to single column on mobile. The modal is `sm:max-w-[600px]` with `overflow-y-auto`, so vertical scrolling is handled.
+
+After inspecting the code, the responsive layout is already correct:
+- `grid md:grid-cols-2` stacks on mobile, side-by-side on desktop
+- Calendar and time slots both fit within the modal
+- Buttons are full-width (`w-full`)
+- ScrollArea handles time slot overflow
+
+No changes needed for responsiveness — the existing implementation handles mobile correctly.
+
+## Risk Assessment
+
+- **Booking holds**: Untouched — hold creation is in `handleCheckout`
+- **Availability checks**: Untouched — computed via `useAvailabilityComputation`
+- **Checkout/Stripe flow**: Untouched — `onCheckout` callback unchanged
+- **Auth gate**: Untouched — handled in `handleDateSubmit` and `handleCheckout`
+
+## Files Modified
+
 | File | Change |
 |------|--------|
-| `src/hooks/useActiveCampaigns.ts` | Add `includeUnlisted` option, add `visibilityMode` to interface & select |
-| `src/components/chat/EntityPickerModal.tsx` | Pass `{ includeUnlisted: true }`, add badge to `CampaignListItem` |
-
-No changes to Services page, PromotionalFooter, routing, or campaign logic.
+| `src/components/booking/BookingStepSlots.tsx` | Rename button label; add `onClose` prop; call it after chat dispatch |
+| `src/components/booking/BookingFunnelModal.tsx` | Pass `onClose={handleClose}` to `BookingStepSlots` |
 
