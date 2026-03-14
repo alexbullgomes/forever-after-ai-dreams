@@ -134,22 +134,50 @@ export function BookingStepSlots({
 
   const isLimitedSlot = selectedSlotStatus === 'limited';
 
+  const selectedDateStatus = currentDayAvailability?.status ?? 'available';
+
   return (
     <div className="flex flex-col space-y-6">
-      {/* Success Message */}
-      <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-        <Sparkles className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <p className="font-medium text-green-900 dark:text-green-100">
-            You're in luck — we can fit your date!
-          </p>
-          <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-            {availabilityVersion === 'full' 
-              ? 'All time slots are available for your selected date.'
-              : 'Limited slots remaining. Book now to secure your spot!'}
-          </p>
+      {/* Dynamic Status Message */}
+      {selectedDateStatus === 'available' && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+          <Sparkles className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-green-900 dark:text-green-100">
+              You're in luck — we can fit your date!
+            </p>
+            <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+              All time slots are available for your selected date.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+      {selectedDateStatus === 'limited' && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-amber-900 dark:text-amber-100">
+              Limited availability on this date.
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+              Select a time or contact our team to confirm availability.
+            </p>
+          </div>
+        </div>
+      )}
+      {(selectedDateStatus === 'full' || selectedDateStatus === 'blocked') && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
+          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-red-900 dark:text-red-100">
+              Sorry, we may be fully booked on this date.
+            </p>
+            <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+              Please contact our team to check possible availability.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Limited Availability Warning */}
       {availabilityVersion === 'limited' && (
