@@ -21,6 +21,7 @@ interface BookingStepSlotsProps {
   isLoading: boolean;
   selectedTime: string | null;
   onChatAvailability?: (date: Date, time: string, productTitle: string, price: number) => void;
+  onClose?: () => void;
 }
 
 export function BookingStepSlots({
