@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDashboardAccess } from '@/hooks/useUserDashboardAccess';
@@ -8,6 +8,9 @@ import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSideba
 import AffiliatePortal from "@/components/affiliate/AffiliatePortal";
 import ServiceTracking from "./ServiceTracking";
 import AIAssistant from "./AIAssistant";
+import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
+
+const MyServices = lazy(() => import("./MyServices"));
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
