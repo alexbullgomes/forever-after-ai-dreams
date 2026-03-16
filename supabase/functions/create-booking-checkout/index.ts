@@ -218,7 +218,7 @@ serve(async (req) => {
     // Determine cancel URL based on mode
     const cancelUrl = campaign_mode 
       ? `${origin}/promo/${campaign_slug}?booking_cancelled=true`
-      : `${origin}/services?booking_cancelled=true`;
+      : `${origin}/user-dashboard/my-services?booking_cancelled=true`;
 
     // Build product description
     const productDescription = campaign_mode 

@@ -136,12 +136,6 @@ export function UserDashboardSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => navigate('/services')} className="w-full">
-                    <Briefcase className="h-4 w-4" />
-                    {showText && <span>Services</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/')} className="w-full">
                     <Home className="h-4 w-4" />
                     {showText && <span>Back to Site</span>}

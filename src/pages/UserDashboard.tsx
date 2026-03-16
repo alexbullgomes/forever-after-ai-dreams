@@ -92,14 +92,24 @@ const UserDashboard = () => {
 
           {/* Main Content */}
           <main className="flex-1 overflow-auto p-6">
-            <Routes>
-              <Route path="/" element={<AffiliatePortal />} />
-              <Route path="/service-tracking" element={<ServiceTracking />} />
-              <Route path="/ai-assistant" element={<AIAssistant />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary-from"></div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<AffiliatePortal />} />
+                <Route path="/my-services" element={<MyServices />} />
+                <Route path="/service-tracking" element={<ServiceTracking />} />
+                <Route path="/ai-assistant" element={<AIAssistant />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       </div>
+      
+      {/* Expandable Chat Assistant */}
+      <ExpandableChatAssistant autoOpen={!!new URLSearchParams(window.location.search).get('openChat')} />
     </SidebarProvider>
   );
 };
