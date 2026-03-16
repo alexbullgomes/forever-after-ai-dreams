@@ -20,6 +20,11 @@ import {
 
 const navigationItems = [
   {
+    title: "My Services",
+    url: "/user-dashboard/my-services",
+    icon: Briefcase,
+  },
+  {
     title: "AI Assistant",
     url: "/user-dashboard/ai-assistant",
     icon: MessageCircle,
