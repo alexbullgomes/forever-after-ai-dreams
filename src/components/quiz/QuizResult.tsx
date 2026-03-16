@@ -52,7 +52,7 @@ const QuizResult = ({
   }, []);
 
   const handleViewPackages = () => {
-    navigate('/services');
+    navigate('/user-dashboard/my-services');
   };
 
   const handleBookConsultation = () => {

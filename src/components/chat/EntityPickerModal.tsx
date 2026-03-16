@@ -66,7 +66,7 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
         priceLabel: selectedProduct.price ? `$${selectedProduct.price.toLocaleString()}` : null,
         imageUrl: selectedProduct.image_url || null,
         ctaLabel: 'Book Now',
-        ctaUrl: `/services#product-${selectedProduct.id}`,
+        ctaUrl: `/user-dashboard/my-services#product-${selectedProduct.id}`,
         price: selectedProduct.price,
         currency: selectedProduct.currency || 'USD'
       };

@@ -32,7 +32,7 @@ const DashboardNavigation = () => {
   };
 
   const navLinks = [
-    { to: "/services", label: "Services" },
+    { to: "/user-dashboard/my-services", label: "Services" },
   ];
 
   return (

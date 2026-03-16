@@ -127,7 +127,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
         });
         onClose();
         // Redirect to planner page with auto-open chat
-        window.location.href = '/services?openChat=true';
+        window.location.href = '/user-dashboard/my-services?openChat=true';
       } else {
         throw new Error('Failed to submit consultation request');
       }
@@ -219,7 +219,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
               type="button"
               onClick={() => {
                 // Store intended route for post-login redirect
-                const redirectTo = customRedirectLink || '/services';
+                const redirectTo = customRedirectLink || '/user-dashboard/my-services';
                 localStorage.setItem('intendedRoute', redirectTo);
                 setShowAuthModal(true);
               }}

@@ -20,6 +20,11 @@ import {
 
 const navigationItems = [
   {
+    title: "My Services",
+    url: "/user-dashboard/my-services",
+    icon: Briefcase,
+  },
+  {
     title: "AI Assistant",
     url: "/user-dashboard/ai-assistant",
     icon: MessageCircle,
@@ -128,12 +133,6 @@ export function UserDashboardSidebar() {
                   <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
                     <ShieldCheck className="h-4 w-4" />
                     {showText && <span>Admin Dashboard</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => navigate('/services')} className="w-full">
-                    <Briefcase className="h-4 w-4" />
-                    {showText && <span>Services</span>}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDashboardAccess } from '@/hooks/useUserDashboardAccess';
@@ -8,6 +8,9 @@ import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSideba
 import AffiliatePortal from "@/components/affiliate/AffiliatePortal";
 import ServiceTracking from "./ServiceTracking";
 import AIAssistant from "./AIAssistant";
+import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
+
+const MyServices = lazy(() => import("./MyServices"));
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -77,12 +80,6 @@ const UserDashboard = () => {
                     Admin Dashboard
                   </button>
                   <button 
-                    onClick={() => navigate('/services')}
-                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
-                  >
-                    Services
-                  </button>
-                  <button 
                     onClick={() => navigate('/')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
@@ -95,14 +92,24 @@ const UserDashboard = () => {
 
           {/* Main Content */}
           <main className="flex-1 overflow-auto p-6">
-            <Routes>
-              <Route path="/" element={<AffiliatePortal />} />
-              <Route path="/service-tracking" element={<ServiceTracking />} />
-              <Route path="/ai-assistant" element={<AIAssistant />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary-from"></div>
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<AffiliatePortal />} />
+                <Route path="/my-services" element={<MyServices />} />
+                <Route path="/service-tracking" element={<ServiceTracking />} />
+                <Route path="/ai-assistant" element={<AIAssistant />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       </div>
+      
+      {/* Expandable Chat Assistant */}
+      <ExpandableChatAssistant autoOpen={!!new URLSearchParams(window.location.search).get('openChat')} />
     </SidebarProvider>
   );
 };
