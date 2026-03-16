@@ -51,7 +51,7 @@ const AppContent = () => {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/services" element={<Planner />} />
+              <Route path="/services" element={<Navigate to="/user-dashboard/my-services" replace />} />
               <Route path="/weddingquiz" element={<WeddingQuiz />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/promo/:slug" element={<PromotionalLanding />} />

@@ -28,12 +28,12 @@ const Services = ({ onBookingClick, content }: ServicesProps) => {
 
   const handleServiceClick = (card: LandingCard) => {
     if (user) {
-      const targetRoute = card.button_link || '/services';
+      const targetRoute = card.button_link || '/user-dashboard/my-services';
       navigate(targetRoute);
       setTimeout(() => window.scrollTo(0, 0), 100);
     } else {
       setSelectedService(card.title);
-      setCustomRedirectLink(card.button_link || '/services');
+      setCustomRedirectLink(card.button_link || '/user-dashboard/my-services');
       setIsConsultationFormOpen(true);
     }
   };

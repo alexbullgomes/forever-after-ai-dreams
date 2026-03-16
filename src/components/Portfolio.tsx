@@ -54,7 +54,7 @@ const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
 
   const handleViewPortfolioClick = () => {
     if (user) {
-      navigate("/services");
+      navigate("/user-dashboard/my-services");
     } else if (onBookingClick) {
       onBookingClick();
     }

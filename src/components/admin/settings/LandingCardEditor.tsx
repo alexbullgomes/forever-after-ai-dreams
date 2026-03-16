@@ -105,10 +105,10 @@ export const LandingCardEditor = ({ card, index, onChange }: LandingCardEditorPr
           <Input
             value={card.button_link}
             onChange={(e) => handleChange('button_link', e.target.value)}
-            placeholder="/services or leave empty for default"
+            placeholder="/user-dashboard/my-services or leave empty for default"
           />
           <p className="text-xs text-muted-foreground">
-            Leave empty to use default /services redirect after login
+            Leave empty to use default /user-dashboard/my-services redirect after login
           </p>
         </div>
 

@@ -219,7 +219,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
               type="button"
               onClick={() => {
                 // Store intended route for post-login redirect
-                const redirectTo = customRedirectLink || '/services';
+                const redirectTo = customRedirectLink || '/user-dashboard/my-services';
                 localStorage.setItem('intendedRoute', redirectTo);
                 setShowAuthModal(true);
               }}

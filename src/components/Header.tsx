@@ -12,7 +12,7 @@ const Header = ({ onLoginClick }: HeaderProps) => {
   const navigate = useNavigate();
 
   const handleAccountClick = () => {
-    navigate('/services');
+    navigate('/user-dashboard');
   };
 
   return (

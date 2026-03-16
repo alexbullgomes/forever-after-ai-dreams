@@ -104,7 +104,7 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
             Ready to capture your special moments?
           </p>
           <Button asChild size="lg" className="bg-brand-gradient hover:opacity-90">
-            <Link to="/services">Explore Our Services</Link>
+            <Link to="/user-dashboard/my-services">Explore Our Services</Link>
           </Button>
         </div>
       </div>

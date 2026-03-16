@@ -98,7 +98,7 @@ const AdminDashboard = () => {
                     User Dashboard
                   </button>
                   <button 
-                    onClick={() => navigate('/services')}
+                    onClick={() => navigate('/user-dashboard/my-services')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
                     Services
