@@ -12,10 +12,10 @@ import { VisitorTracker } from "@/components/VisitorTracker";
 // Eager load for homepage (LCP critical)
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { Navigate } from "react-router-dom";
 
 // Lazy load non-critical routes
 const WeddingQuiz = lazy(() => import("./pages/WeddingQuiz"));
-const Planner = lazy(() => import("./pages/Planner"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const UserDashboard = lazy(() => import("./pages/UserDashboard"));
 const PromotionalLanding = lazy(() => import("./pages/PromotionalLanding"));
