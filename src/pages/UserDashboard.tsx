@@ -80,12 +80,6 @@ const UserDashboard = () => {
                     Admin Dashboard
                   </button>
                   <button 
-                    onClick={() => navigate('/services')}
-                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
-                  >
-                    Services
-                  </button>
-                  <button 
                     onClick={() => navigate('/')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
