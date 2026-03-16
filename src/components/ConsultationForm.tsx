@@ -127,7 +127,7 @@ const ConsultationForm = ({ isOpen, onClose, portfolioItem, serviceName, customR
         });
         onClose();
         // Redirect to planner page with auto-open chat
-        window.location.href = '/services?openChat=true';
+        window.location.href = '/user-dashboard/my-services?openChat=true';
       } else {
         throw new Error('Failed to submit consultation request');
       }
