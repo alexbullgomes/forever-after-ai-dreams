@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent, useEffect, useRef } from "react";
+import { getChatMetadata } from "@/utils/chatContext";
 import { Send, Bot, Paperclip, Mic, CornerDownLeft, Play, Pause, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
