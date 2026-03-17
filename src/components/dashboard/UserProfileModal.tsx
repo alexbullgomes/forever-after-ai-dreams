@@ -665,9 +665,9 @@ export const UserProfileModal = ({
 
                         setProfile({
                           ...profile,
-                          ...({ can_access_affiliate_conversations: checked } as any),
+                          can_access_affiliate_conversations: checked,
                           updated_at: new Date().toISOString()
-                        } as any);
+                        });
 
                         toast({
                           title: "Access updated",
