@@ -640,7 +640,7 @@ export const UserProfileModal = ({
                     </p>
                   </div>
                   <Switch
-                    checked={(profile as any)?.can_access_affiliate_conversations === true}
+                    checked={profile?.can_access_affiliate_conversations === true}
                     onCheckedChange={async (checked) => {
                       if (!profile) return;
                       
