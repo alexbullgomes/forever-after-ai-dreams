@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { getChatMetadata } from "@/utils/chatContext";
 import { Bot, Send, Mic, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ui/chat-input";
