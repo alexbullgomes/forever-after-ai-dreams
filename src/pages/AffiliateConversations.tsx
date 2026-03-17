@@ -51,7 +51,6 @@ const AffiliateConversations = () => {
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
