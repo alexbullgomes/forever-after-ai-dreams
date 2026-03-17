@@ -242,8 +242,8 @@ const AffiliateConversations = () => {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'user': return <Badge variant="secondary" className="text-xs">User</Badge>;
-      case 'assistant': return <Badge className="text-xs bg-blue-100 text-blue-800">AI</Badge>;
-      case 'human': return <Badge className="text-xs bg-green-100 text-green-800">Human</Badge>;
+      case 'assistant': return <Badge className="text-xs bg-accent text-accent-foreground">AI</Badge>;
+      case 'human': return <Badge className="text-xs bg-primary/10 text-primary">Human</Badge>;
       default: return <Badge variant="outline" className="text-xs">{role}</Badge>;
     }
   };
