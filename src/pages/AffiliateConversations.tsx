@@ -50,7 +50,7 @@ const AffiliateConversations = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
