@@ -47,12 +47,26 @@ export function UserDashboardSidebar() {
   const { state, open } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
   const hasUnreadMessages = useUnreadAssistantMessages();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const showText = isMobile || state !== "collapsed";
+  const [canAccessConversations, setCanAccessConversations] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAccess = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('can_access_affiliate_conversations')
+        .eq('id', user.id)
+        .single();
+      setCanAccessConversations(data?.can_access_affiliate_conversations === true);
+    };
+    fetchAccess();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {

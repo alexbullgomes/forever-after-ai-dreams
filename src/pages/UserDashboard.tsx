@@ -103,6 +103,7 @@ const UserDashboard = () => {
                 <Route path="/my-services" element={<MyServices />} />
                 <Route path="/service-tracking" element={<ServiceTracking />} />
                 <Route path="/ai-assistant" element={<AIAssistant />} />
+                <Route path="/affiliate-conversations" element={<AffiliateConversations />} />
               </Routes>
             </Suspense>
           </main>
