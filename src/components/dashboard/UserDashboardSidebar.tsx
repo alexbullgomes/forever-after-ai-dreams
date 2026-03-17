@@ -1,9 +1,11 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle } from "lucide-react";
+import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle, MessageSquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 import { useUnreadAssistantMessages } from "@/hooks/useUnreadAssistantMessages";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
