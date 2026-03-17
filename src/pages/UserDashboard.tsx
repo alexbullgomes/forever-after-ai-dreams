@@ -11,6 +11,7 @@ import AIAssistant from "./AIAssistant";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 
 const MyServices = lazy(() => import("./MyServices"));
+const AffiliateConversations = lazy(() => import("./AffiliateConversations"));
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
