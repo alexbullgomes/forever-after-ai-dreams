@@ -1,52 +1,72 @@
 
 
-# Services → User Dashboard Migration (COMPLETED)
+# Step 3: Affiliate Conversations — Implementation Plan
 
-## Summary
-Moved the Services page content into the User Dashboard as a "My Services" sidebar section. `/user-dashboard` is now the primary destination for logged-in users. `/services` redirects to `/user-dashboard/my-services`.
+## Overview
 
-## Changes Made
-- Created `src/pages/MyServices.tsx` with CampaignCardsSection, ProductsSection, EverAfterGallery
-- Updated routing: `/services` → redirect to `/user-dashboard/my-services`
-- Added "My Services" to UserDashboardSidebar as first nav item
-- Updated Header "Account" button → `/user-dashboard`
-- Updated all `/services` references across 12+ files
-- Added ExpandableChatAssistant to UserDashboard layout
-- DB migration: `user_dashboard` default set to `true`, existing profiles updated
-- Edge function `cancelUrl` updated for Stripe checkout
+Build the Affiliate Conversations feature: RLS policies for scoped access, a new page at `/user-dashboard/affiliate-conversations`, sidebar entry conditional on `can_access_affiliate_conversations`, and admin toggle in UserProfileModal.
 
----
+## Database Changes (1 migration)
 
-# Chat Payload Enrichment + Affiliate Conversations Prep (COMPLETED)
+### RLS Policies
 
-## Summary
-Enriched chat payloads with page context and attribution data. Prepared database schema for future affiliate conversations feature.
+Three new policies using the existing `can_access_affiliate_conversations` column (already added in previous migration):
 
-## Changes Made
+1. **Conversations SELECT** — Affiliates can view conversations where `conversations.referral_code` matches their `affiliates.referral_code`, gated by `profiles.can_access_affiliate_conversations = true` and `affiliates.is_active = true`.
 
-### Database (Migration)
-- Added `metadata` JSONB column to `messages` table (nullable, default NULL)
-- Added attribution columns to `conversations`: `page_path`, `page_type`, `campaign_slug`, `referral_code` (all nullable)
-- Added `can_access_affiliate_conversations` boolean to `profiles` (default false)
-- Updated `emit_message_webhook` trigger to include `metadata` in webhook payload
+2. **Messages SELECT** — Affiliates can read messages belonging to conversations they can access (same join logic).
 
-### Frontend
-- Created `src/utils/chatContext.ts` — `getChatMetadata()` utility capturing page_url, page_path, page_title, referrer, page_type, campaign_slug, referral_code
-- Updated `expandable-chat-assistant.tsx`: metadata added to both message insert points + attribution on conversation creation
-- Updated `expandable-chat-webhook.tsx`: metadata passed in both visitor-chat API calls
+3. **Messages INSERT** — Affiliates can respond in those conversations. The inserted message role will be `'human'` to match the admin pattern.
 
-### Edge Function
-- Updated `visitor-chat` to accept optional `metadata` field in request body
-- Metadata passed through to message insert
-- Attribution fields populated on conversation creation
+All three use subqueries against `affiliates` and `profiles` — no recursive RLS risk since neither table is the one being queried.
 
-### What's NOT changed
-- n8n webhook URL — unchanged
-- Admin chat (ChatAdmin) — unchanged
-- Booking flow — unchanged
-- Existing payload structure — only additive fields
+## Frontend Changes
 
-### Future (Step 3 — not yet implemented)
-- Affiliate Conversations page at `/user-dashboard/affiliate-conversations`
-- RLS policies for affiliate conversation access
-- Admin toggle in profile editor for `can_access_affiliate_conversations`
+### 1. New page: `src/pages/AffiliateConversations.tsx`
+
+A simplified version of `ChatAdmin.tsx` with these differences:
+- No admin role check — instead checks `can_access_affiliate_conversations` from profile
+- Fetches conversations filtered by `referral_code` matching the user's affiliate referral code
+- Conversation list (left panel) + message view (right panel) — same layout as ChatAdmin
+- Reply input enabled only when conversation `mode = 'human'` (same as admin)
+- No mode toggle (affiliates cannot switch AI/human mode)
+- No card sending, no entity picker, no profile modal
+- Read-only conversation metadata (user name, timestamps)
+
+### 2. Sidebar entry: `UserDashboardSidebar.tsx`
+
+- Add "Conversations" nav item with `MessageSquare` icon
+- Only render when user has `can_access_affiliate_conversations = true` (fetch from profiles on mount)
+- URL: `/user-dashboard/affiliate-conversations`
+
+### 3. Route: `UserDashboard.tsx`
+
+- Add lazy import for `AffiliateConversations`
+- Add route: `<Route path="/affiliate-conversations" element={<AffiliateConversations />} />`
+
+### 4. Admin toggle: `UserProfileModal.tsx`
+
+- Add a new Switch toggle below the existing "User Dashboard Access" toggle
+- Label: "Affiliate Conversations Access"
+- Description: "Enable to allow this affiliate to view and respond to conversations from their referrals"
+- Updates `profiles.can_access_affiliate_conversations` directly (same pattern as existing toggles)
+
+## Files Modified
+
+| File | Change |
+|------|--------|
+| New migration | 3 RLS policies (conversations SELECT, messages SELECT, messages INSERT) |
+| `src/pages/AffiliateConversations.tsx` | New page — conversation list + message view |
+| `src/pages/UserDashboard.tsx` | Add route for affiliate-conversations |
+| `src/components/dashboard/UserDashboardSidebar.tsx` | Conditional "Conversations" nav item |
+| `src/components/dashboard/UserProfileModal.tsx` | Add affiliate conversations toggle |
+| `src/integrations/supabase/types.ts` | Auto-updated by Supabase (no manual edit) |
+
+## Security
+
+- Affiliates can ONLY see conversations with matching `referral_code`
+- Access gated by both `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
+- Admin must explicitly enable the toggle per user
+- Admin chat remains completely unchanged — no policies removed or modified
+- Affiliate cannot change conversation mode (AI/human)
+
