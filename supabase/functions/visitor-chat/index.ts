@@ -252,13 +252,14 @@ serve(async (req) => {
           .from('messages')
           .insert({
             conversation_id: conversationId,
-            visitor_id: visitor_id, // Include visitor_id directly in message for webhook payload
+            visitor_id: visitor_id,
             role: 'user',
             type: type || 'text',
             content: content || null,
             audio_url: finalAudioUrl,
             user_name: 'Visitor',
-            new_msg: 'unread'
+            new_msg: 'unread',
+            metadata: metadata || null
           })
           .select()
           .single();
