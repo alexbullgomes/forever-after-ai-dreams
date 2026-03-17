@@ -124,7 +124,8 @@ export const UserProfileModal = ({
           pipeline_profile: 'Disable',
           pipeline_status: 'New Lead & Negotiation',
           visitor_id: null,
-          user_dashboard: false
+           user_dashboard: false,
+           can_access_affiliate_conversations: false
         });
         setBriefing('');
         setStatus('New Lead');
