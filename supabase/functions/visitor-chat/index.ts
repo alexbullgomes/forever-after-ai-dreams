@@ -120,7 +120,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     const body: VisitorChatRequest = await req.json();
-    const { action, visitor_id, content, type, audio_url, audio_data, visitor_name } = body;
+    const { action, visitor_id, content, type, audio_url, audio_data, visitor_name, metadata } = body;
 
     console.log(`[visitor-chat] Action: ${action}, Visitor: ${visitor_id}, Type: ${type || 'text'}`);
 
