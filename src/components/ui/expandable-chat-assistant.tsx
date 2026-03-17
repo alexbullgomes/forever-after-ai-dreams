@@ -149,6 +149,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
         console.log('Found existing conversation:', conversationId, 'mode:', existingConversation.mode);
       } else {
         // Create new conversation only if none exists
+        const chatMeta = getChatMetadata();
         const { data: newConversation, error: insertError } = await supabase
           .from('conversations')
           .insert({
