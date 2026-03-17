@@ -34,6 +34,7 @@ interface UserProfile {
   pipeline_status: string | null;
   visitor_id: string | null;
   user_dashboard: boolean | null;
+  can_access_affiliate_conversations: boolean | null;
 }
 
 interface UserProfileModalProps {
