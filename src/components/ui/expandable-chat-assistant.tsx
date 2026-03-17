@@ -154,7 +154,11 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
             customer_id: user.id,
             mode: 'ai',
             user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-            user_email: user.email
+            user_email: user.email,
+            page_path: chatMeta.context.page_path,
+            page_type: chatMeta.context.page_type,
+            campaign_slug: chatMeta.context.campaign_slug,
+            referral_code: chatMeta.attribution?.referral_code || null
           })
           .select('id, mode')
           .single();
