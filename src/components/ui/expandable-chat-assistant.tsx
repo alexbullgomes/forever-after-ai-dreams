@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent, useEffect, useRef } from "react";
+import { getChatMetadata } from "@/utils/chatContext";
 import { Send, Bot, Paperclip, Mic, CornerDownLeft, Play, Pause, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -148,13 +149,18 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
         console.log('Found existing conversation:', conversationId, 'mode:', existingConversation.mode);
       } else {
         // Create new conversation only if none exists
+        const chatMeta = getChatMetadata();
         const { data: newConversation, error: insertError } = await supabase
           .from('conversations')
           .insert({
             customer_id: user.id,
             mode: 'ai',
             user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-            user_email: user.email
+            user_email: user.email,
+            page_path: chatMeta.context.page_path,
+            page_type: chatMeta.context.page_type,
+            campaign_slug: chatMeta.context.campaign_slug,
+            referral_code: chatMeta.attribution?.referral_code || null
           })
           .select('id, mode')
           .single();
@@ -336,7 +342,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
           content: input || null,
           audio_url: audioUrl,
           user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-          user_email: user.email
+          user_email: user.email,
+          metadata: getChatMetadata()
         });
 
       if (insertError) {
@@ -572,7 +579,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
               content: message,
               audio_url: null,
               user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-              user_email: user.email
+              user_email: user.email,
+              metadata: getChatMetadata()
             });
 
           if (insertError) {

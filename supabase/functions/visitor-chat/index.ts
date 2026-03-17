@@ -14,6 +14,20 @@ interface VisitorChatRequest {
   audio_url?: string;
   audio_data?: string; // Base64 encoded audio for upload
   visitor_name?: string;
+  metadata?: {
+    context?: {
+      page_url?: string;
+      page_path?: string;
+      page_title?: string;
+      referrer?: string | null;
+      page_type?: string;
+      campaign_slug?: string | null;
+    };
+    attribution?: {
+      referral_code?: string;
+      source_type?: string;
+    } | null;
+  };
 }
 
 interface Message {
@@ -106,7 +120,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     const body: VisitorChatRequest = await req.json();
-    const { action, visitor_id, content, type, audio_url, audio_data, visitor_name } = body;
+    const { action, visitor_id, content, type, audio_url, audio_data, visitor_name, metadata } = body;
 
     console.log(`[visitor-chat] Action: ${action}, Visitor: ${visitor_id}, Type: ${type || 'text'}`);
 
@@ -201,7 +215,11 @@ serve(async (req) => {
               user_name: visitor_name || 'Visitor',
               user_email: null,
               mode: 'ai',
-              new_msg: 'unread'
+              new_msg: 'unread',
+              page_path: metadata?.context?.page_path || null,
+              page_type: metadata?.context?.page_type || null,
+              campaign_slug: metadata?.context?.campaign_slug || null,
+              referral_code: metadata?.attribution?.referral_code || null
             })
             .select()
             .single();
@@ -234,13 +252,14 @@ serve(async (req) => {
           .from('messages')
           .insert({
             conversation_id: conversationId,
-            visitor_id: visitor_id, // Include visitor_id directly in message for webhook payload
+            visitor_id: visitor_id,
             role: 'user',
             type: type || 'text',
             content: content || null,
             audio_url: finalAudioUrl,
             user_name: 'Visitor',
-            new_msg: 'unread'
+            new_msg: 'unread',
+            metadata: metadata || null
           })
           .select()
           .single();

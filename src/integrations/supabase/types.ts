@@ -789,12 +789,16 @@ export type Database = {
       }
       conversations: {
         Row: {
+          campaign_slug: string | null
           created_at: string
           customer_id: string | null
           id: string
           mode: string | null
           new_msg: string | null
+          page_path: string | null
+          page_type: string | null
           public_code: string | null
+          referral_code: string | null
           taken_at: string | null
           taken_by: string | null
           user_email: string | null
@@ -802,12 +806,16 @@ export type Database = {
           visitor_id: string | null
         }
         Insert: {
+          campaign_slug?: string | null
           created_at?: string
           customer_id?: string | null
           id?: string
           mode?: string | null
           new_msg?: string | null
+          page_path?: string | null
+          page_type?: string | null
           public_code?: string | null
+          referral_code?: string | null
           taken_at?: string | null
           taken_by?: string | null
           user_email?: string | null
@@ -815,12 +823,16 @@ export type Database = {
           visitor_id?: string | null
         }
         Update: {
+          campaign_slug?: string | null
           created_at?: string
           customer_id?: string | null
           id?: string
           mode?: string | null
           new_msg?: string | null
+          page_path?: string | null
+          page_type?: string | null
           public_code?: string | null
+          referral_code?: string | null
           taken_at?: string | null
           taken_by?: string | null
           user_email?: string | null
@@ -919,6 +931,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: number
+          metadata: Json | null
           new_msg: string | null
           role: string
           type: string
@@ -933,6 +946,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: number
+          metadata?: Json | null
           new_msg?: string | null
           role: string
           type: string
@@ -947,6 +961,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: number
+          metadata?: Json | null
           new_msg?: string | null
           role?: string
           type?: string
@@ -1241,6 +1256,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           briefing: string | null
+          can_access_affiliate_conversations: boolean
           chat_summarize: string | null
           created_at: string
           email: string | null
@@ -1265,6 +1281,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           briefing?: string | null
+          can_access_affiliate_conversations?: boolean
           chat_summarize?: string | null
           created_at?: string
           email?: string | null
@@ -1289,6 +1306,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           briefing?: string | null
+          can_access_affiliate_conversations?: boolean
           chat_summarize?: string | null
           created_at?: string
           email?: string | null
