@@ -136,6 +136,19 @@ export function UserDashboardSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {canAccessConversations && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/user-dashboard/affiliate-conversations"
+                      className={getNavCls(isActive("/user-dashboard/affiliate-conversations"))}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      {showText && <span>Conversations</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

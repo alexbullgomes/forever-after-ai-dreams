@@ -628,6 +628,61 @@ export const UserProfileModal = ({
                   />
                 </div>
 
+                <div className="flex items-center justify-between py-2 px-1">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Affiliate Conversations Access
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      Enable to allow this affiliate to view and respond to conversations from their referrals
+                    </p>
+                  </div>
+                  <Switch
+                    checked={(profile as any)?.can_access_affiliate_conversations === true}
+                    onCheckedChange={async (checked) => {
+                      if (!profile) return;
+                      
+                      try {
+                        const { error } = await supabase
+                          .from('profiles')
+                          .update({ 
+                            can_access_affiliate_conversations: checked,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('id', customerId);
+
+                        if (error) {
+                          console.error('Error updating affiliate conversations access:', error);
+                          toast({
+                            title: "Error updating access",
+                            description: "Failed to update affiliate conversations access.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        setProfile({
+                          ...profile,
+                          ...({ can_access_affiliate_conversations: checked } as any),
+                          updated_at: new Date().toISOString()
+                        } as any);
+
+                        toast({
+                          title: "Access updated",
+                          description: `Affiliate conversations access ${checked ? 'granted' : 'revoked'} successfully.`,
+                        });
+                      } catch (error) {
+                        console.error('Error updating affiliate conversations access:', error);
+                        toast({
+                          title: "Error updating access",
+                          description: "Failed to update affiliate conversations access.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  />
+                </div>
+
                 <div>
                   <Label htmlFor="briefing" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                     <FileText className="h-3 w-3" />
