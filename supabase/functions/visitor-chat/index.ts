@@ -215,7 +215,11 @@ serve(async (req) => {
               user_name: visitor_name || 'Visitor',
               user_email: null,
               mode: 'ai',
-              new_msg: 'unread'
+              new_msg: 'unread',
+              page_path: metadata?.context?.page_path || null,
+              page_type: metadata?.context?.page_type || null,
+              campaign_slug: metadata?.context?.campaign_slug || null,
+              referral_code: metadata?.attribution?.referral_code || null
             })
             .select()
             .single();
