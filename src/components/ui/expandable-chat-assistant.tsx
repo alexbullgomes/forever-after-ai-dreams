@@ -336,7 +336,8 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
           content: input || null,
           audio_url: audioUrl,
           user_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-          user_email: user.email
+          user_email: user.email,
+          metadata: getChatMetadata()
         });
 
       if (insertError) {
