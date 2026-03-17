@@ -47,6 +47,29 @@ Enriched chat payloads with page context and attribution data. Prepared database
 - Existing payload structure — only additive fields
 
 ### Future (Step 3 — not yet implemented)
-- Affiliate Conversations page at `/user-dashboard/affiliate-conversations`
-- RLS policies for affiliate conversation access
-- Admin toggle in profile editor for `can_access_affiliate_conversations`
+- ~~Affiliate Conversations page at `/user-dashboard/affiliate-conversations`~~ ✅ DONE
+- ~~RLS policies for affiliate conversation access~~ ✅ DONE
+- ~~Admin toggle in profile editor for `can_access_affiliate_conversations`~~ ✅ DONE
+
+---
+
+# Affiliate Conversations Feature (COMPLETED)
+
+## Summary
+Built the Affiliate Conversations feature allowing affiliates to view and respond to conversations tied to their referral code.
+
+## Changes Made
+
+### Database (Migration)
+- Added 3 RLS policies:
+  - `conversations` SELECT for affiliates (scoped to matching `referral_code`)
+  - `messages` SELECT for affiliates (via conversation join)
+  - `messages` INSERT for affiliates (respond in human mode)
+- All policies gated by `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
+
+### Frontend
+- Created `src/pages/AffiliateConversations.tsx` — conversation list + message view, reply in human mode only
+- Added route `/user-dashboard/affiliate-conversations` in `UserDashboard.tsx`
+- Added conditional "Conversations" nav item in `UserDashboardSidebar.tsx` (only when `can_access_affiliate_conversations = true`)
+- Added "Affiliate Conversations Access" toggle in `UserProfileModal.tsx` (admin control)
+- Real-time message subscription for live updates
