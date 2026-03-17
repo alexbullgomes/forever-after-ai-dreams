@@ -453,7 +453,8 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
           action: 'send_message',
           visitor_id: visitorId,
           content: messageContent,
-          type: 'text'
+          type: 'text',
+          metadata: getChatMetadata()
         })
       });
 
