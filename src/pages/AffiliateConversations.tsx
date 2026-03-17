@@ -360,7 +360,7 @@ const AffiliateConversations = () => {
                     return (
                       <div key={msg.id} className="flex justify-start">
                         <div className="max-w-[80%]">
-                          <ChatCardMessage cardData={cardData} onBookProduct={() => {}} />
+                          <ChatCardMessage data={cardData} onBookProduct={() => {}} />
                           <p className="text-xs text-muted-foreground mt-1">
                             {format(new Date(msg.created_at), 'HH:mm')}
                           </p>
