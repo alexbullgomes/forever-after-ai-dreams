@@ -11,6 +11,7 @@ import AIAssistant from "./AIAssistant";
 import { ExpandableChatAssistant } from "@/components/ui/expandable-chat-assistant";
 
 const MyServices = lazy(() => import("./MyServices"));
+const AffiliateConversations = lazy(() => import("./AffiliateConversations"));
 
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -102,6 +103,7 @@ const UserDashboard = () => {
                 <Route path="/my-services" element={<MyServices />} />
                 <Route path="/service-tracking" element={<ServiceTracking />} />
                 <Route path="/ai-assistant" element={<AIAssistant />} />
+                <Route path="/affiliate-conversations" element={<AffiliateConversations />} />
               </Routes>
             </Suspense>
           </main>

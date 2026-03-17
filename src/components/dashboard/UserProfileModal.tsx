@@ -34,6 +34,7 @@ interface UserProfile {
   pipeline_status: string | null;
   visitor_id: string | null;
   user_dashboard: boolean | null;
+  can_access_affiliate_conversations: boolean | null;
 }
 
 interface UserProfileModalProps {
@@ -123,7 +124,8 @@ export const UserProfileModal = ({
           pipeline_profile: 'Disable',
           pipeline_status: 'New Lead & Negotiation',
           visitor_id: null,
-          user_dashboard: false
+           user_dashboard: false,
+           can_access_affiliate_conversations: false
         });
         setBriefing('');
         setStatus('New Lead');
@@ -621,6 +623,61 @@ export const UserProfileModal = ({
                         toast({
                           title: "Error updating access",
                           description: "Failed to update user dashboard access.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between py-2 px-1">
+                  <div className="space-y-1">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Affiliate Conversations Access
+                    </Label>
+                    <p className="text-xs text-gray-500">
+                      Enable to allow this affiliate to view and respond to conversations from their referrals
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile?.can_access_affiliate_conversations === true}
+                    onCheckedChange={async (checked) => {
+                      if (!profile) return;
+                      
+                      try {
+                        const { error } = await supabase
+                          .from('profiles')
+                          .update({ 
+                            can_access_affiliate_conversations: checked,
+                            updated_at: new Date().toISOString()
+                          })
+                          .eq('id', customerId);
+
+                        if (error) {
+                          console.error('Error updating affiliate conversations access:', error);
+                          toast({
+                            title: "Error updating access",
+                            description: "Failed to update affiliate conversations access.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        setProfile({
+                          ...profile,
+                          can_access_affiliate_conversations: checked,
+                          updated_at: new Date().toISOString()
+                        });
+
+                        toast({
+                          title: "Access updated",
+                          description: `Affiliate conversations access ${checked ? 'granted' : 'revoked'} successfully.`,
+                        });
+                      } catch (error) {
+                        console.error('Error updating affiliate conversations access:', error);
+                        toast({
+                          title: "Error updating access",
+                          description: "Failed to update affiliate conversations access.",
                           variant: "destructive",
                         });
                       }

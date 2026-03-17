@@ -1,9 +1,11 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle } from "lucide-react";
+import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle, MessageSquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 import { useUnreadAssistantMessages } from "@/hooks/useUnreadAssistantMessages";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -45,12 +47,26 @@ export function UserDashboardSidebar() {
   const { state, open } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
   const hasUnreadMessages = useUnreadAssistantMessages();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const showText = isMobile || state !== "collapsed";
+  const [canAccessConversations, setCanAccessConversations] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAccess = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('can_access_affiliate_conversations')
+        .eq('id', user.id)
+        .single();
+      setCanAccessConversations(data?.can_access_affiliate_conversations === true);
+    };
+    fetchAccess();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -120,6 +136,19 @@ export function UserDashboardSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {canAccessConversations && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/user-dashboard/affiliate-conversations"
+                      className={getNavCls(isActive("/user-dashboard/affiliate-conversations"))}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      {showText && <span>Conversations</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
