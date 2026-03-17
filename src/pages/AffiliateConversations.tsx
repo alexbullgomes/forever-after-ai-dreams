@@ -10,7 +10,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { AudioPlayer } from '@/components/wedding/components/AudioPlayer';
 import { ChatCardMessage } from '@/components/chat/ChatCardMessage';
 import { CardMessageData } from '@/types/chat';
 
