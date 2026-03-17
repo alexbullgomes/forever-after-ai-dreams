@@ -14,6 +14,20 @@ interface VisitorChatRequest {
   audio_url?: string;
   audio_data?: string; // Base64 encoded audio for upload
   visitor_name?: string;
+  metadata?: {
+    context?: {
+      page_url?: string;
+      page_path?: string;
+      page_title?: string;
+      referrer?: string | null;
+      page_type?: string;
+      campaign_slug?: string | null;
+    };
+    attribution?: {
+      referral_code?: string;
+      source_type?: string;
+    } | null;
+  };
 }
 
 interface Message {
