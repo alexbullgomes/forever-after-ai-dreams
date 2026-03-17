@@ -385,13 +385,11 @@ const AffiliateConversations = () => {
                         </span>
                       </div>
                       {msg.audio_url ? (
-                        <AudioPlayer
-                          audioUrl={msg.audio_url}
-                          isPlaying={playingAudio === msg.audio_url}
-                          onPlayPause={() =>
-                            setPlayingAudio(playingAudio === msg.audio_url ? null : msg.audio_url!)
-                          }
-                        />
+                        <div className="text-sm">
+                          <a href={msg.audio_url} target="_blank" rel="noopener noreferrer" className="underline text-xs">
+                            🎵 Voice message
+                          </a>
+                        </div>
                       ) : (
                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                       )}
