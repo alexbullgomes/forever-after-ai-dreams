@@ -83,13 +83,16 @@ function SortableProductItem({
         <GripVertical className="h-5 w-5 text-muted-foreground" />
       </button>
 
-      {product.image_url && (
-        <img
-          src={product.image_url}
-          alt={product.title}
-          className="h-12 w-12 rounded-lg object-cover"
-        />
-      )}
+      {(() => {
+        const { imageUrl } = getProductThumbnail(product);
+        return imageUrl !== "/placeholder.svg" ? (
+          <img
+            src={imageUrl}
+            alt={product.title}
+            className="h-12 w-12 rounded-lg object-cover"
+          />
+        ) : null;
+      })()}
 
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{product.title}</p>
