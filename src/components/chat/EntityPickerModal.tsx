@@ -65,7 +65,7 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
         title: selectedProduct.title,
         description: selectedProduct.description || null,
         priceLabel: selectedProduct.price ? `$${selectedProduct.price.toLocaleString()}` : null,
-        imageUrl: selectedProduct.image_url || null,
+        imageUrl: getProductThumbnail(selectedProduct).imageUrl !== "/placeholder.svg" ? getProductThumbnail(selectedProduct).imageUrl : null,
         ctaLabel: 'Book Now',
         ctaUrl: `/user-dashboard/my-services#product-${selectedProduct.id}`,
         price: selectedProduct.price,
