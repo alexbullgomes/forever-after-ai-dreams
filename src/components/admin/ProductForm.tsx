@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,6 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { slugify } from "@/utils/slugify";
+import { isSupabaseLocalUrl } from "@/utils/productThumbnail";
+import { AlertTriangle } from "lucide-react";
 import type { Product } from "@/hooks/useProducts";
 
 const productSchema = z.object({
@@ -30,8 +32,9 @@ const productSchema = z.object({
   currency: z.string().default("USD"),
   price_unit: z.string().default("per night"),
   description: z.string().optional(),
-  image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  video_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  thumb_image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  thumb_mp4_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  thumb_webm_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   coverage_text: z.string().optional(),
   deliverable_text: z.string().optional(),
   is_highlighted: z.boolean().default(false),
@@ -52,6 +55,16 @@ interface ProductFormProps {
   onSubmit: (data: Partial<Product>) => Promise<void>;
 }
 
+function UrlWarning({ url }: { url: string }) {
+  if (!url || isSupabaseLocalUrl(url)) return null;
+  return (
+    <p className="flex items-center gap-1 text-xs text-amber-600 mt-1">
+      <AlertTriangle className="h-3 w-3" />
+      URL is not from Supabase Local Storage
+    </p>
+  );
+}
+
 export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFormProps) {
   const isEditing = !!product;
 
@@ -64,8 +77,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       currency: "USD",
       price_unit: "per night",
       description: "",
-      image_url: "",
-      video_url: "",
+      thumb_image_url: "",
+      thumb_mp4_url: "",
+      thumb_webm_url: "",
       coverage_text: "",
       deliverable_text: "",
       is_highlighted: false,
@@ -87,8 +101,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         currency: product.currency,
         price_unit: product.price_unit,
         description: product.description || "",
-        image_url: product.image_url || "",
-        video_url: product.video_url || "",
+        thumb_image_url: product.thumb_image_url || product.image_url || "",
+        thumb_mp4_url: product.thumb_mp4_url || "",
+        thumb_webm_url: product.thumb_webm_url || "",
         coverage_text: product.coverage_text || "",
         deliverable_text: product.deliverable_text || "",
         is_highlighted: product.is_highlighted,
@@ -107,8 +122,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         currency: "USD",
         price_unit: "per night",
         description: "",
-        image_url: "",
-        video_url: "",
+        thumb_image_url: "",
+        thumb_mp4_url: "",
+        thumb_webm_url: "",
         coverage_text: "",
         deliverable_text: "",
         is_highlighted: false,
@@ -122,13 +138,38 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
     }
   }, [product, form]);
 
+  const watchThumbImage = form.watch("thumb_image_url");
+  const watchThumbMp4 = form.watch("thumb_mp4_url");
+  const watchThumbWebm = form.watch("thumb_webm_url");
+
+  // Determine preview media
+  const previewVideoUrl = watchThumbMp4 || watchThumbWebm || undefined;
+  const previewImageUrl = watchThumbImage || "/placeholder.svg";
+  const isVideoUrl = (url: string) => /\.(mp4|webm)$/i.test(url);
+  const showVideoPreview = previewVideoUrl && isVideoUrl(previewVideoUrl);
+
+  // Validation: at least one media URL must be present
+  const hasAnyMedia = !!(watchThumbImage || watchThumbMp4 || watchThumbWebm);
+
   const handleSubmit = async (values: ProductFormValues) => {
     const slug = values.slug || slugify(values.title);
+    
+    // Auto-map thumb fields to legacy fields for backward compatibility
+    const thumbImage = values.thumb_image_url || null;
+    const thumbMp4 = values.thumb_mp4_url || null;
+    const thumbWebm = values.thumb_webm_url || null;
+    
     await onSubmit({
       ...values,
       slug,
-      image_url: values.image_url || null,
-      video_url: values.video_url || null,
+      // New thumb fields
+      thumb_image_url: thumbImage,
+      thumb_mp4_url: thumbMp4,
+      thumb_webm_url: thumbWebm,
+      // Legacy fields mapped from thumb for backward compatibility
+      image_url: thumbImage,
+      video_url: thumbMp4 || thumbWebm || null,
+      media_type: (thumbMp4 || thumbWebm) ? "video" : "image",
       description: values.description || null,
       coverage_text: values.coverage_text || null,
       deliverable_text: values.deliverable_text || null,
@@ -240,36 +281,92 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="image_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Product Media Section */}
+            <div className="rounded-lg border p-4 space-y-4">
+              <h3 className="font-medium text-sm text-foreground">Product Media</h3>
+              <p className="text-xs text-muted-foreground">
+                Provide media URLs from Supabase Local Storage. At least one field is required.
+              </p>
 
-            <FormField
-              control={form.control}
-              name="video_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Video URL (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://...mp4 or .webm" {...field} />
-                  </FormControl>
-                  <p className="text-xs text-muted-foreground">
-                    If provided, video will play instead of image. Supports MP4 and WebM.
-                  </p>
-                  <FormMessage />
-                </FormItem>
+              <FormField
+                control={form.control}
+                name="thumb_webm_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Video WEBM URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/..." {...field} />
+                    </FormControl>
+                    <UrlWarning url={field.value || ""} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="thumb_mp4_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Video MP4 URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/..." {...field} />
+                    </FormControl>
+                    <UrlWarning url={field.value || ""} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="thumb_image_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image URL (Fallback)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/..." {...field} />
+                    </FormControl>
+                    <UrlWarning url={field.value || ""} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {!hasAnyMedia && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  At least one media URL is required
+                </p>
               )}
-            />
+
+              {/* Live Preview */}
+              {(watchThumbImage || watchThumbMp4 || watchThumbWebm) && (
+                <div className="mt-3">
+                  <p className="text-xs text-muted-foreground mb-2 font-medium">Preview:</p>
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted">
+                    {showVideoPreview ? (
+                      <video
+                        key={previewVideoUrl}
+                        src={previewVideoUrl}
+                        poster={watchThumbImage || undefined}
+                        muted
+                        autoPlay
+                        loop
+                        playsInline
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={previewImageUrl}
+                        alt="Product preview"
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <FormField

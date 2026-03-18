@@ -25,6 +25,9 @@ export interface Product {
   is_active: boolean;
   show_in_our_products: boolean;
   sort_order: number;
+  thumb_image_url: string | null;
+  thumb_mp4_url: string | null;
+  thumb_webm_url: string | null;
   created_at: string;
   updated_at: string;
 }
