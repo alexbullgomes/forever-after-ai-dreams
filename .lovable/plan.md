@@ -1,121 +1,75 @@
 
 
-# Product Thumbnail Refactor Plan
+# Services → User Dashboard Migration (COMPLETED)
 
-## Current State
+## Summary
+Moved the Services page content into the User Dashboard as a "My Services" sidebar section. `/user-dashboard` is now the primary destination for logged-in users. `/services` redirects to `/user-dashboard/my-services`.
 
-- **Products table** has `image_url`, `video_url`, `media_type` — no `thumb_*` columns
-- **ProductForm** (`src/components/admin/ProductForm.tsx`) has two URL fields: "Image URL" and "Video URL (optional)"
-- **ProductMediaHero** renders video if `video_url` is a .mp4/.webm, otherwise falls back to `image_url`
-- **6 consumer locations** reference `product.image_url` / `product.video_url`:
-  - `ProductsSection.tsx` (3D cards on services page)
-  - `CampaignProductsSection.tsx` (campaign landing pages)
-  - `ProductsAdmin.tsx` (admin list thumbnail)
-  - `CampaignProductsTab.tsx` (campaign product picker)
-  - `EntityPickerModal.tsx` (chat card product picker)
-  - `useProducts.ts` (Product type definition)
-
-The user's screenshot is from the **GalleryCardForm** (which already has the thumb_image_url / thumb_mp4_url / thumb_webm_url pattern). The goal is to bring this same pattern to **Products**.
+## Changes Made
+- Created `src/pages/MyServices.tsx` with CampaignCardsSection, ProductsSection, EverAfterGallery
+- Updated routing: `/services` → redirect to `/user-dashboard/my-services`
+- Added "My Services" to UserDashboardSidebar as first nav item
+- Updated Header "Account" button → `/user-dashboard`
+- Updated all `/services` references across 12+ files
+- Added ExpandableChatAssistant to UserDashboard layout
+- DB migration: `user_dashboard` default set to `true`, existing profiles updated
+- Edge function `cancelUrl` updated for Stripe checkout
 
 ---
 
-## Implementation Plan
+# Chat Payload Enrichment + Affiliate Conversations Prep (COMPLETED)
 
-### Step 1 — Database Migration
+## Summary
+Enriched chat payloads with page context and attribution data. Prepared database schema for future affiliate conversations feature.
 
-Add three nullable columns to `products`:
+## Changes Made
 
-```sql
-ALTER TABLE products
-  ADD COLUMN thumb_image_url text DEFAULT NULL,
-  ADD COLUMN thumb_mp4_url text DEFAULT NULL,
-  ADD COLUMN thumb_webm_url text DEFAULT NULL;
-```
+### Database (Migration)
+- Added `metadata` JSONB column to `messages` table (nullable, default NULL)
+- Added attribution columns to `conversations`: `page_path`, `page_type`, `campaign_slug`, `referral_code` (all nullable)
+- Added `can_access_affiliate_conversations` boolean to `profiles` (default false)
+- Updated `emit_message_webhook` trigger to include `metadata` in webhook payload
 
-No existing columns removed. Fully backward-compatible.
+### Frontend
+- Created `src/utils/chatContext.ts` — `getChatMetadata()` utility capturing page_url, page_path, page_title, referrer, page_type, campaign_slug, referral_code
+- Updated `expandable-chat-assistant.tsx`: metadata added to both message insert points + attribution on conversation creation
+- Updated `expandable-chat-webhook.tsx`: metadata passed in both visitor-chat API calls
 
-### Step 2 — Create `getProductThumbnail()` utility
+### Edge Function
+- Updated `visitor-chat` to accept optional `metadata` field in request body
+- Metadata passed through to message insert
+- Attribution fields populated on conversation creation
 
-New file: `src/utils/productThumbnail.ts`
+### What's NOT changed
+- n8n webhook URL — unchanged
+- Admin chat (ChatAdmin) — unchanged
+- Booking flow — unchanged
+- Existing payload structure — only additive fields
 
-```typescript
-export function getProductThumbnail(product: {
-  thumb_image_url?: string | null;
-  thumb_mp4_url?: string | null;
-  thumb_webm_url?: string | null;
-  image_url?: string | null;
-  video_url?: string | null;
-}): { imageUrl: string; videoUrl?: string } {
-  // Priority: thumb fields → legacy fields → placeholder
-  const imageUrl = product.thumb_image_url || product.image_url || "/placeholder.svg";
-  // Mobile-first: prefer MP4 over WebM
-  const videoUrl = product.thumb_mp4_url || product.thumb_webm_url || product.video_url || undefined;
-  return { imageUrl, videoUrl };
-}
-
-const SUPABASE_LOCAL_BASE = "https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/";
-export function isSupabaseLocalUrl(url: string): boolean {
-  return url.startsWith(SUPABASE_LOCAL_BASE);
-}
-```
-
-### Step 3 — Update Product type in `useProducts.ts`
-
-Add `thumb_image_url`, `thumb_mp4_url`, `thumb_webm_url` (all `string | null`) to the `Product` interface. Also add them to the `duplicateProduct` method.
-
-### Step 4 — Refactor ProductForm
-
-Replace the current "Image URL" + "Video URL" fields with a unified "Product Media" section matching the gallery card pattern:
-
-- **Video WEBM URL** input (`thumb_webm_url`)
-- **Video MP4 URL** input (`thumb_mp4_url`)
-- **Image URL** input (`thumb_image_url`)
-- **Live preview** (video or image, same as GalleryCardForm lines 443-468)
-- **URL warning** — amber text if URL doesn't start with Supabase Local base URL (non-blocking)
-- Keep `image_url` and `video_url` as hidden/auto-mapped internally (set `image_url = thumb_image_url` and `video_url = thumb_mp4_url || thumb_webm_url` on save for backward compatibility)
-
-Remove the old standalone "Image URL" and "Video URL" form fields.
-
-### Step 5 — Update admin list view thumbnail
-
-In `ProductsAdmin.tsx` `SortableRow`, replace the current `product.image_url` thumbnail with the `getProductThumbnail()` helper, rendering video if available.
-
-### Step 6 — Update all consumer components
-
-Use `getProductThumbnail()` in:
-
-| File | Current | New |
-|------|---------|-----|
-| `ProductsSection.tsx` L89-90 | `product.image_url`, `product.video_url` | `getProductThumbnail(product)` |
-| `CampaignProductsSection.tsx` L225-226 | same | same helper |
-| `CampaignProductsTab.tsx` L85-88, L315-318 | `product.image_url` | `getProductThumbnail(product).imageUrl` |
-| `EntityPickerModal.tsx` L67, L274 | `product.image_url` | `getProductThumbnail(product).imageUrl` |
-
-### Step 7 — Validation
-
-In ProductForm's zod schema, add a custom `.refine()` that checks at least one of `thumb_image_url`, `thumb_mp4_url`, `thumb_webm_url`, or `image_url` is present. Non-blocking warning for missing Supabase Local base URL prefix.
+### Future (Step 3 — not yet implemented)
+- ~~Affiliate Conversations page at `/user-dashboard/affiliate-conversations`~~ ✅ DONE
+- ~~RLS policies for affiliate conversation access~~ ✅ DONE
+- ~~Admin toggle in profile editor for `can_access_affiliate_conversations`~~ ✅ DONE
 
 ---
 
-## Files Modified
+# Affiliate Conversations Feature (COMPLETED)
 
-| Category | Files |
-|----------|-------|
-| Migration | New: add `thumb_*` columns to `products` |
-| New utility | `src/utils/productThumbnail.ts` |
-| Modified | `src/hooks/useProducts.ts` (type + duplicate) |
-| Modified | `src/components/admin/ProductForm.tsx` (form refactor) |
-| Modified | `src/pages/ProductsAdmin.tsx` (list thumbnail) |
-| Modified | `src/components/planner/ProductsSection.tsx` |
-| Modified | `src/components/promo/CampaignProductsSection.tsx` |
-| Modified | `src/components/admin/CampaignProductsTab.tsx` |
-| Modified | `src/components/chat/EntityPickerModal.tsx` |
+## Summary
+Built the Affiliate Conversations feature allowing affiliates to view and respond to conversations tied to their referral code.
 
-## What stays untouched
+## Changes Made
 
-- `image_url` and `video_url` columns remain in DB (backward compat)
-- `ProductMediaHero` component unchanged (still receives imageUrl/videoUrl props)
-- Booking flow, Stripe checkout, campaign pages — no changes
-- Gallery card system — no changes
-- All existing product records continue working (legacy fallback in helper)
+### Database (Migration)
+- Added 3 RLS policies:
+  - `conversations` SELECT for affiliates (scoped to matching `referral_code`)
+  - `messages` SELECT for affiliates (via conversation join)
+  - `messages` INSERT for affiliates (respond in human mode)
+- All policies gated by `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
 
+### Frontend
+- Created `src/pages/AffiliateConversations.tsx` — conversation list + message view, reply in human mode only
+- Added route `/user-dashboard/affiliate-conversations` in `UserDashboard.tsx`
+- Added conditional "Conversations" nav item in `UserDashboardSidebar.tsx` (only when `can_access_affiliate_conversations = true`)
+- Added "Affiliate Conversations Access" toggle in `UserProfileModal.tsx` (admin control)
+- Real-time message subscription for live updates

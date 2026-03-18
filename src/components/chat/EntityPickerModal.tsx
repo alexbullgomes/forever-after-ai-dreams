@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Package, Megaphone, Check, Phone } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
+import { getProductThumbnail } from "@/utils/productThumbnail";
 import { useActiveCampaigns, ActiveCampaign } from "@/hooks/useActiveCampaigns";
 import { CardMessageData } from "@/types/chat";
 import { ChatCardMessage } from "./ChatCardMessage";
@@ -64,7 +65,7 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
         title: selectedProduct.title,
         description: selectedProduct.description || null,
         priceLabel: selectedProduct.price ? `$${selectedProduct.price.toLocaleString()}` : null,
-        imageUrl: selectedProduct.image_url || null,
+        imageUrl: getProductThumbnail(selectedProduct).imageUrl !== "/placeholder.svg" ? getProductThumbnail(selectedProduct).imageUrl : null,
         ctaLabel: 'Book Now',
         ctaUrl: `/user-dashboard/my-services#product-${selectedProduct.id}`,
         price: selectedProduct.price,
@@ -271,13 +272,16 @@ const ProductListItem = ({ product, selected, onSelect }: ProductListItemProps) 
       )}
     >
       <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-        {product.image_url ? (
-          <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-5 h-5 text-muted-foreground" />
-          </div>
-        )}
+        {(() => {
+          const { imageUrl } = getProductThumbnail(product);
+          return imageUrl !== "/placeholder.svg" ? (
+            <img src={imageUrl} alt={product.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Package className="w-5 h-5 text-muted-foreground" />
+            </div>
+          );
+        })()}
       </div>
       
       <div className="flex-1 min-w-0">
