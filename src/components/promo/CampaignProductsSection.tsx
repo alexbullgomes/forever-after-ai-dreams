@@ -4,6 +4,7 @@ import { Product } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 import { supabase } from "@/integrations/supabase/client";
+import { getProductThumbnail } from "@/utils/productThumbnail";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import { 
