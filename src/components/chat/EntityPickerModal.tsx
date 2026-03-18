@@ -272,8 +272,17 @@ const ProductListItem = ({ product, selected, onSelect }: ProductListItemProps) 
       )}
     >
       <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-        {product.image_url ? (
-          <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
+        {(() => {
+          const { imageUrl } = getProductThumbnail(product);
+          return imageUrl !== "/placeholder.svg" ? (
+            <img src={imageUrl} alt={product.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Package className="w-5 h-5 text-muted-foreground" />
+            </div>
+          );
+        })()}
+      </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Package className="w-5 h-5 text-muted-foreground" />

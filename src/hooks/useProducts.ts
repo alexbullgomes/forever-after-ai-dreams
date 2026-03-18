@@ -141,7 +141,7 @@ export function useProducts(options: UseProductsOptions = {}) {
       const newSlug = slugify(newTitle);
 
       const { error: insertError } = await supabase
-        .from("products")
+141:         .from("products")
         .insert({
           title: newTitle,
           slug: newSlug,
@@ -163,6 +163,9 @@ export function useProducts(options: UseProductsOptions = {}) {
           is_active: false,
           show_in_our_products: product.show_in_our_products,
           sort_order: product.sort_order + 1,
+          thumb_image_url: product.thumb_image_url,
+          thumb_mp4_url: product.thumb_mp4_url,
+          thumb_webm_url: product.thumb_webm_url,
         });
 
       if (insertError) throw insertError;

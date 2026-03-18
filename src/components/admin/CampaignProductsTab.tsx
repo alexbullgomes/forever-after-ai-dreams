@@ -316,13 +316,16 @@ export function CampaignProductsTab({
                   key={product.id}
                   className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors"
                 >
-                  {product.image_url && (
-                    <img
-                      src={product.image_url}
-                      alt={product.title}
-                      className="h-10 w-10 rounded-lg object-cover"
-                    />
-                  )}
+                  {(() => {
+                    const { imageUrl } = getProductThumbnail(product);
+                    return imageUrl !== "/placeholder.svg" ? (
+                      <img
+                        src={imageUrl}
+                        alt={product.title}
+                        className="h-10 w-10 rounded-lg object-cover"
+                      />
+                    ) : null;
+                  })()}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{product.title}</p>
                     <p className="text-sm text-muted-foreground">

@@ -79,25 +79,28 @@ export function ProductsSection() {
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-        {visibleProducts.map((product) => (
-          <InteractiveProduct3DCard
-            key={product.id}
-            title={product.title}
-            price={product.price}
-            currency={product.currency}
-            priceUnit={product.price_unit}
-            description={product.description || ""}
-            imageUrl={product.image_url || "/placeholder.svg"}
-            videoUrl={product.video_url || undefined}
-            mediaType={product.media_type}
-            coverageText={product.coverage_text || ""}
-            deliverableText={product.deliverable_text || ""}
-            isHighlighted={product.is_highlighted}
-            highlightLabel={product.highlight_label || "Special Deal"}
-            actionText={product.cta_text}
-            onActionClick={() => handleProductClick(product)}
-          />
-        ))}
+        {visibleProducts.map((product) => {
+          const { imageUrl, videoUrl } = getProductThumbnail(product);
+          return (
+            <InteractiveProduct3DCard
+              key={product.id}
+              title={product.title}
+              price={product.price}
+              currency={product.currency}
+              priceUnit={product.price_unit}
+              description={product.description || ""}
+              imageUrl={imageUrl}
+              videoUrl={videoUrl}
+              mediaType={product.media_type}
+              coverageText={product.coverage_text || ""}
+              deliverableText={product.deliverable_text || ""}
+              isHighlighted={product.is_highlighted}
+              highlightLabel={product.highlight_label || "Special Deal"}
+              actionText={product.cta_text}
+              onActionClick={() => handleProductClick(product)}
+            />
+          );
+        })}
       </div>
 
       {/* Booking Funnel Modal */}

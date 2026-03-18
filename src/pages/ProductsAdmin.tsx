@@ -79,17 +79,27 @@ function SortableRow({
         </button>
       </TableCell>
       <TableCell>
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.title}
-            className="h-12 w-16 rounded-md object-cover"
-          />
-        ) : (
-          <div className="h-12 w-16 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
-            No image
-          </div>
-        )}
+        {(() => {
+          const { imageUrl, videoUrl } = getProductThumbnail(product);
+          const isVideo = videoUrl && /\.(mp4|webm)$/i.test(videoUrl);
+          if (isVideo) {
+            return (
+              <video
+                src={videoUrl}
+                poster={imageUrl !== "/placeholder.svg" ? imageUrl : undefined}
+                muted autoPlay loop playsInline
+                className="h-12 w-16 rounded-md object-cover"
+              />
+            );
+          }
+          return imageUrl !== "/placeholder.svg" ? (
+            <img src={imageUrl} alt={product.title} className="h-12 w-16 rounded-md object-cover" />
+          ) : (
+            <div className="h-12 w-16 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">
+              No image
+            </div>
+          );
+        })()}
       </TableCell>
       <TableCell className="font-medium">
         <div className="flex items-center gap-2">
