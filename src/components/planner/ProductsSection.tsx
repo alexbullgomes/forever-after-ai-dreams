@@ -3,6 +3,7 @@ import { InteractiveProduct3DCard } from "@/components/ui/3d-product-card";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
+import { getProductThumbnail } from "@/utils/productThumbnail";
 
 export function ProductsSection() {
   const { products, loading } = useProducts();
