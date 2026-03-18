@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Search, Package, Megaphone, Check, Phone } from "lucide-react";
 import { useProducts, Product } from "@/hooks/useProducts";
+import { getProductThumbnail } from "@/utils/productThumbnail";
 import { useActiveCampaigns, ActiveCampaign } from "@/hooks/useActiveCampaigns";
 import { CardMessageData } from "@/types/chat";
 import { ChatCardMessage } from "./ChatCardMessage";
