@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Copy, Search, GripVertical, Sparkles } from "lucide-react";
+import { getProductThumbnail } from "@/utils/productThumbnail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
