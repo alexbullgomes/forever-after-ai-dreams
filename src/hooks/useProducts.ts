@@ -141,7 +141,7 @@ export function useProducts(options: UseProductsOptions = {}) {
       const newSlug = slugify(newTitle);
 
       const { error: insertError } = await supabase
-141:         .from("products")
+        .from("products")
         .insert({
           title: newTitle,
           slug: newSlug,

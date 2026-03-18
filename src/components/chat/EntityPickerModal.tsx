@@ -283,12 +283,6 @@ const ProductListItem = ({ product, selected, onSelect }: ProductListItemProps) 
           );
         })()}
       </div>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-5 h-5 text-muted-foreground" />
-          </div>
-        )}
-      </div>
       
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sm truncate">{product.title}</p>
