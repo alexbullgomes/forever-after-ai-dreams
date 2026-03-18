@@ -1196,6 +1196,9 @@ export type Database = {
           show_in_our_products: boolean
           slug: string | null
           sort_order: number
+          thumb_image_url: string | null
+          thumb_mp4_url: string | null
+          thumb_webm_url: string | null
           title: string
           updated_at: string
           video_url: string | null
@@ -1221,6 +1224,9 @@ export type Database = {
           show_in_our_products?: boolean
           slug?: string | null
           sort_order?: number
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
           title: string
           updated_at?: string
           video_url?: string | null
@@ -1246,6 +1252,9 @@ export type Database = {
           show_in_our_products?: boolean
           slug?: string | null
           sort_order?: number
+          thumb_image_url?: string | null
+          thumb_mp4_url?: string | null
+          thumb_webm_url?: string | null
           title?: string
           updated_at?: string
           video_url?: string | null
