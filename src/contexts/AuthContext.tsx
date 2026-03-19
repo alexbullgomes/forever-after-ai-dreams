@@ -313,6 +313,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Clean up auth state first
       cleanupAuthState();
       
+      // Reset webhook dedup guard
+      webhookSentRef.current = false;
+      
       // Clear booking state
       clearBookingState();
       
