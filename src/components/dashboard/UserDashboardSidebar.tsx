@@ -86,7 +86,6 @@ export function UserDashboardSidebar() {
     }
   };
 
-  const isMobile = useIsMobile();
 
   const isActive = (path: string) => {
     if (path === "/user-dashboard/affiliate") {
