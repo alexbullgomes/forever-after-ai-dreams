@@ -4,6 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
 import { linkVisitorToUser, getVisitorId } from '@/utils/visitor';
+import { sendGoogleAuthWebhook } from '@/utils/authWebhook';
 import { toast } from 'sonner';
 import { 
   getBookingReturnUrl, 
@@ -34,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const redirectHandledRef = useRef(false);
-
+  const webhookSentRef = useRef(false);
   // Handle booking redirect after authentication
   const handleBookingRedirect = (): boolean => {
     if (redirectHandledRef.current) {
@@ -113,9 +114,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }, session.user.id);
             }
             
+            // Send Google auth webhook ONCE (deduplicated)
+            const isGoogleAuth = session.user.app_metadata?.provider === 'google';
+            if (isGoogleAuth && !webhookSentRef.current) {
+              webhookSentRef.current = true;
+              const webhookEvent = isNewUser ? 'register' : 'login';
+              const fullName = session.user.user_metadata?.full_name || 
+                             session.user.user_metadata?.name || 
+                             `${session.user.user_metadata?.given_name || ''} ${session.user.user_metadata?.family_name || ''}`.trim() || 
+                             '';
+              await sendGoogleAuthWebhook(webhookEvent, session.user.id, session.user.email || '', fullName);
+            }
+            
             // Check for booking redirect first (new unified approach)
             const handledBookingRedirect = handleBookingRedirect();
             if (handledBookingRedirect) {
+              return;
+            }
+            
+            // Check sessionStorage for campaign return (Google OAuth fallback)
+            const campaignReturn = sessionStorage.getItem('auth_campaign_return');
+            if (campaignReturn && campaignReturn.startsWith('/promo/')) {
+              sessionStorage.removeItem('auth_campaign_return');
+              const currentPath = window.location.pathname;
+              if (!currentPath.startsWith('/promo/')) {
+                window.location.replace(campaignReturn);
+              }
               return;
             }
             
@@ -288,6 +312,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Clean up auth state first
       cleanupAuthState();
+      
+      // Reset webhook dedup guard
+      webhookSentRef.current = false;
       
       // Clear booking state
       clearBookingState();

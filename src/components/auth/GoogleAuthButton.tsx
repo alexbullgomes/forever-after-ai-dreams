@@ -31,6 +31,11 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
         ? `${window.location.origin}${currentPath}`
         : `${window.location.origin}/dashboard`;
       
+      // Save campaign path to sessionStorage as fallback recovery
+      if (isOnCampaignPage) {
+        sessionStorage.setItem('auth_campaign_return', currentPath);
+      }
+      
       if (pendingBookingFlow && bookingReturnUrl) {
         // Use the full origin + path for booking return
         redirectUrl = `${window.location.origin}${bookingReturnUrl}`;

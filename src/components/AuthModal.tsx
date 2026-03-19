@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart } from "lucide-react";
-import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { EmailAuthForm } from "@/components/auth/EmailAuthForm";
 import { useCampaignPortal } from "@/contexts/CampaignPortalContext";
@@ -18,10 +17,6 @@ const AuthModal = ({
   const [googleAvailable, setGoogleAvailable] = useState(true);
   const campaignPortal = useCampaignPortal();
 
-  // Handle Google OAuth webhooks and redirects
-  useGoogleAuth({
-    onClose
-  });
   const handleGoogleUnavailable = () => {
     setGoogleAvailable(false);
   };
