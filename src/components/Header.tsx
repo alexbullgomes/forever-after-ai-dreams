@@ -5,9 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   onLoginClick: () => void;
+  hideAccountButton?: boolean;
 }
 
-const Header = ({ onLoginClick }: HeaderProps) => {
+const Header = ({ onLoginClick, hideAccountButton = false }: HeaderProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
