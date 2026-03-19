@@ -49,7 +49,7 @@ export function UserDashboardSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const isMobile = useIsMobile();
+  const { hasRole: isAdmin } = useRole('admin');
   const hasUnreadMessages = useUnreadAssistantMessages();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
