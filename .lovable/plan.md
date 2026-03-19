@@ -1,75 +1,92 @@
 
 
-# Services → User Dashboard Migration (COMPLETED)
+# Campaign-Specific Account Button Toggle
 
-## Summary
-Moved the Services page content into the User Dashboard as a "My Services" sidebar section. `/user-dashboard` is now the primary destination for logged-in users. `/services` redirects to `/user-dashboard/my-services`.
+## Overview
 
-## Changes Made
-- Created `src/pages/MyServices.tsx` with CampaignCardsSection, ProductsSection, EverAfterGallery
-- Updated routing: `/services` → redirect to `/user-dashboard/my-services`
-- Added "My Services" to UserDashboardSidebar as first nav item
-- Updated Header "Account" button → `/user-dashboard`
-- Updated all `/services` references across 12+ files
-- Added ExpandableChatAssistant to UserDashboard layout
-- DB migration: `user_dashboard` default set to `true`, existing profiles updated
-- Edge function `cancelUrl` updated for Stripe checkout
+Add a `show_account_button` boolean to `promotional_campaigns` that controls whether the Account/Login button appears in the Header on that specific campaign page. No global header logic changes.
 
----
+## Changes
 
-# Chat Payload Enrichment + Affiliate Conversations Prep (COMPLETED)
+### 1. Database Migration
 
-## Summary
-Enriched chat payloads with page context and attribution data. Prepared database schema for future affiliate conversations feature.
+```sql
+ALTER TABLE promotional_campaigns
+  ADD COLUMN show_account_button boolean NOT NULL DEFAULT true;
+```
 
-## Changes Made
+### 2. Header Component (`src/components/Header.tsx`)
 
-### Database (Migration)
-- Added `metadata` JSONB column to `messages` table (nullable, default NULL)
-- Added attribution columns to `conversations`: `page_path`, `page_type`, `campaign_slug`, `referral_code` (all nullable)
-- Added `can_access_affiliate_conversations` boolean to `profiles` (default false)
-- Updated `emit_message_webhook` trigger to include `metadata` in webhook payload
+Add an optional `hideAccountButton` prop (default `false`). When `true`, the right-side `<div>` containing the Account/Login button is not rendered. No layout shift since the header uses `justify-between` — the logo stays left-aligned naturally.
 
-### Frontend
-- Created `src/utils/chatContext.ts` — `getChatMetadata()` utility capturing page_url, page_path, page_title, referrer, page_type, campaign_slug, referral_code
-- Updated `expandable-chat-assistant.tsx`: metadata added to both message insert points + attribution on conversation creation
-- Updated `expandable-chat-webhook.tsx`: metadata passed in both visitor-chat API calls
+```typescript
+interface HeaderProps {
+  onLoginClick: () => void;
+  hideAccountButton?: boolean;
+}
+```
 
-### Edge Function
-- Updated `visitor-chat` to accept optional `metadata` field in request body
-- Metadata passed through to message insert
-- Attribution fields populated on conversation creation
+In the JSX, wrap the button div: `{!hideAccountButton && (<div>...</div>)}`
 
-### What's NOT changed
-- n8n webhook URL — unchanged
-- Admin chat (ChatAdmin) — unchanged
-- Booking flow — unchanged
-- Existing payload structure — only additive fields
+### 3. PromotionalLanding Page (`src/pages/PromotionalLanding.tsx`)
 
-### Future (Step 3 — not yet implemented)
-- ~~Affiliate Conversations page at `/user-dashboard/affiliate-conversations`~~ ✅ DONE
-- ~~RLS policies for affiliate conversation access~~ ✅ DONE
-- ~~Admin toggle in profile editor for `can_access_affiliate_conversations`~~ ✅ DONE
+Pass the toggle to Header:
 
----
+```tsx
+<Header
+  onLoginClick={() => setIsAuthModalOpen(true)}
+  hideAccountButton={campaign.show_account_button === false}
+/>
+```
 
-# Affiliate Conversations Feature (COMPLETED)
+### 4. Campaign Hook (`src/hooks/usePromotionalCampaign.ts`)
 
-## Summary
-Built the Affiliate Conversations feature allowing affiliates to view and respond to conversations tied to their referral code.
+Add `show_account_button: boolean` to the `PromotionalCampaign` interface. Parse it in the fetch logic with default `true`:
 
-## Changes Made
+```typescript
+show_account_button: data.show_account_button ?? true,
+```
 
-### Database (Migration)
-- Added 3 RLS policies:
-  - `conversations` SELECT for affiliates (scoped to matching `referral_code`)
-  - `messages` SELECT for affiliates (via conversation join)
-  - `messages` INSERT for affiliates (respond in human mode)
-- All policies gated by `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
+### 5. Admin Form (`src/components/admin/PromotionalCampaignForm.tsx`)
 
-### Frontend
-- Created `src/pages/AffiliateConversations.tsx` — conversation list + message view, reply in human mode only
-- Added route `/user-dashboard/affiliate-conversations` in `UserDashboard.tsx`
-- Added conditional "Conversations" nav item in `UserDashboardSidebar.tsx` (only when `can_access_affiliate_conversations = true`)
-- Added "Affiliate Conversations Access" toggle in `UserProfileModal.tsx` (admin control)
-- Real-time message subscription for live updates
+- Add `show_account_button: boolean` to the Campaign interface (default `true`)
+- Add to initial state: `show_account_button: true`
+- Add toggle in Basic tab below "Show Footer on Home":
+
+```tsx
+<div className="space-y-2">
+  <div className="flex items-center space-x-2">
+    <Switch
+      id="show_account_button"
+      checked={formData.show_account_button}
+      onCheckedChange={(checked) =>
+        setFormData((prev) => ({ ...prev, show_account_button: checked }))
+      }
+    />
+    <Label htmlFor="show_account_button">Show Account Button</Label>
+  </div>
+  <p className="text-sm text-muted-foreground">
+    Control whether the Account button is visible in this campaign page header.
+  </p>
+</div>
+```
+
+No changes needed to the save logic — `formData` is already spread into `campaignData`.
+
+## Files Modified
+
+| File | Change |
+|------|--------|
+| Migration | Add `show_account_button` column |
+| `src/components/Header.tsx` | Add optional `hideAccountButton` prop |
+| `src/pages/PromotionalLanding.tsx` | Pass prop to Header |
+| `src/hooks/usePromotionalCampaign.ts` | Add field to interface + parsing |
+| `src/components/admin/PromotionalCampaignForm.tsx` | Add toggle to Basic tab |
+
+## Safety
+
+- Non-campaign pages never pass `hideAccountButton` → always visible
+- Default `true` → existing campaigns unaffected
+- Auth flow untouched — only the button visibility changes, not auth state
+- No global header refactor
+
