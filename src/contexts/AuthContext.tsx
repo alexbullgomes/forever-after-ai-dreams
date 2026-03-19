@@ -4,6 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { trackReferralConversion } from '@/utils/affiliateTracking';
 import { linkVisitorToUser, getVisitorId } from '@/utils/visitor';
+import { sendGoogleAuthWebhook } from '@/utils/authWebhook';
 import { toast } from 'sonner';
 import { 
   getBookingReturnUrl, 
