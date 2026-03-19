@@ -225,7 +225,7 @@ const PromotionalLanding = () => {
 
       <div ref={campaignContainerRef} className="min-h-screen bg-background relative" style={buildCampaignColorStyle(campaign.brand_colors)}>
         <CampaignPortalProvider container={campaignContainerRef}>
-          <Header onLoginClick={() => setIsAuthModalOpen(true)} />
+          <Header onLoginClick={() => setIsAuthModalOpen(true)} hideAccountButton={campaign.show_account_button === false} />
           
           <PromoHero
             videoUrl={campaign.banner_video_url}

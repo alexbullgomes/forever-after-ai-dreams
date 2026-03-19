@@ -505,6 +505,22 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                     Display this campaign in the fixed footer on the homepage. Only one campaign can have this enabled at a time.
                   </p>
                 </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="show_account_button"
+                      checked={formData.show_account_button}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({ ...prev, show_account_button: checked }))
+                      }
+                    />
+                    <Label htmlFor="show_account_button">Show Account Button</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Control whether the Account button is visible in this campaign page header.
+                  </p>
+                </div>
               </TabsContent>
 
               <TabsContent value="banner" className="space-y-4">

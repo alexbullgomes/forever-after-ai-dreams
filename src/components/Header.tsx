@@ -28,24 +28,26 @@ const Header = ({ onLoginClick, hideAccountButton = false }: HeaderProps) => {
             <span className="text-white font-bold text-xl">Everafter</span>
           </a>
           
-          <div>
-            {user ? (
-              <Button 
-                onClick={handleAccountClick}
-                className="bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-full shadow-lg transition-all duration-300"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Account
-              </Button>
-            ) : (
-              <Button 
-                onClick={onLoginClick}
-                className="bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-full shadow-lg transition-all duration-300"
-              >
-                Login
-              </Button>
-            )}
-          </div>
+          {!hideAccountButton && (
+            <div>
+              {user ? (
+                <Button 
+                  onClick={handleAccountClick}
+                  className="bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-full shadow-lg transition-all duration-300"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Account
+                </Button>
+              ) : (
+                <Button 
+                  onClick={onLoginClick}
+                  className="bg-brand-gradient hover:bg-brand-gradient-hover text-white font-semibold rounded-full shadow-lg transition-all duration-300"
+                >
+                  Login
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
