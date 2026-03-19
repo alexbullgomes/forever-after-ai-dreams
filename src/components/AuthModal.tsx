@@ -17,7 +17,7 @@ const AuthModal = ({
   const [googleAvailable, setGoogleAvailable] = useState(true);
   const campaignPortal = useCampaignPortal();
 
-
+  const handleGoogleUnavailable = () => {
     setGoogleAvailable(false);
   };
   const handleToggleMode = () => {
