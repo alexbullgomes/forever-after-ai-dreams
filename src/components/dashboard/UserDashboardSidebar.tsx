@@ -161,12 +161,14 @@ export function UserDashboardSidebar() {
             <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
-                    <ShieldCheck className="h-4 w-4" />
-                    {showText && <span>Admin Dashboard</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
+                      <ShieldCheck className="h-4 w-4" />
+                      {showText && <span>Admin Dashboard</span>}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/')} className="w-full">
                     <Home className="h-4 w-4" />

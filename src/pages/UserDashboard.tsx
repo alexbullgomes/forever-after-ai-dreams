@@ -103,7 +103,8 @@ const UserDashboard = () => {
               </div>
             }>
               <Routes>
-                <Route path="/" element={<AffiliatePortal />} />
+                <Route path="/" element={<Navigate to="/user-dashboard/my-services" replace />} />
+                <Route path="/affiliate" element={<AffiliatePortal />} />
                 <Route path="/my-services" element={<MyServices />} />
                 <Route path="/service-tracking" element={<ServiceTracking />} />
                 <Route path="/ai-assistant" element={<AIAssistant />} />
