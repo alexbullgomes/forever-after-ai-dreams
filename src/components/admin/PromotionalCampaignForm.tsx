@@ -192,6 +192,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     pricing_card_3_popular: false,
     is_active: false,
     promotional_footer_enabled: false,
+    show_account_button: true,
     tracking_scripts: [],
     products_section_enabled: false,
     pricing_section_enabled: true,
