@@ -1,7 +1,8 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
+import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDashboardAccess } from '@/hooks/useUserDashboardAccess';
+import { useRole } from '@/hooks/useRole';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSidebar";
