@@ -68,6 +68,7 @@ interface Campaign {
   vendors_section_enabled: boolean;
   vendors_section_headline: string | null;
   vendors_section_description: string | null;
+  show_account_button: boolean;
 }
 
 const PromotionalCampaigns = () => {
