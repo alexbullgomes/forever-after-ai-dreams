@@ -1,0 +1,1 @@
+ALTER TABLE promotional_campaigns ADD COLUMN show_account_button boolean NOT NULL DEFAULT true;

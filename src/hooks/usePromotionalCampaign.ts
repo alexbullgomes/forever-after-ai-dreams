@@ -73,6 +73,7 @@ interface PromotionalCampaign {
   showcase_cta_primary_link: string | null;
   showcase_cta_secondary_text: string | null;
   showcase_cta_secondary_link: string | null;
+  show_account_button: boolean;
 }
 
 export const usePromotionalCampaign = (slug: string) => {
@@ -157,6 +158,7 @@ export const usePromotionalCampaign = (slug: string) => {
           showcase_cta_primary_link: (data as any).showcase_cta_primary_link ?? null,
           showcase_cta_secondary_text: (data as any).showcase_cta_secondary_text ?? null,
           showcase_cta_secondary_link: (data as any).showcase_cta_secondary_link ?? null,
+          show_account_button: data.show_account_button ?? true,
         };
         setCampaign(parsedData as PromotionalCampaign);
 

@@ -75,6 +75,7 @@ interface Campaign {
   is_active: boolean;
   visibility_mode?: string;
   promotional_footer_enabled: boolean;
+  show_account_button: boolean;
   tracking_scripts?: TrackingScript[];
   products_section_enabled: boolean;
   pricing_section_enabled: boolean;
@@ -191,6 +192,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     pricing_card_3_popular: false,
     is_active: false,
     promotional_footer_enabled: false,
+    show_account_button: true,
     tracking_scripts: [],
     products_section_enabled: false,
     pricing_section_enabled: true,
@@ -501,6 +503,22 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Display this campaign in the fixed footer on the homepage. Only one campaign can have this enabled at a time.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="show_account_button"
+                      checked={formData.show_account_button}
+                      onCheckedChange={(checked) =>
+                        setFormData((prev) => ({ ...prev, show_account_button: checked }))
+                      }
+                    />
+                    <Label htmlFor="show_account_button">Show Account Button</Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Control whether the Account button is visible in this campaign page header.
                   </p>
                 </div>
               </TabsContent>

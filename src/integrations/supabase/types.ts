@@ -1501,6 +1501,7 @@ export type Database = {
           pricing_section_enabled: boolean
           products_section_enabled: boolean
           promotional_footer_enabled: boolean | null
+          show_account_button: boolean
           showcase_cta_primary_link: string | null
           showcase_cta_primary_text: string | null
           showcase_cta_secondary_link: string | null
@@ -1560,6 +1561,7 @@ export type Database = {
           pricing_section_enabled?: boolean
           products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
+          show_account_button?: boolean
           showcase_cta_primary_link?: string | null
           showcase_cta_primary_text?: string | null
           showcase_cta_secondary_link?: string | null
@@ -1619,6 +1621,7 @@ export type Database = {
           pricing_section_enabled?: boolean
           products_section_enabled?: boolean
           promotional_footer_enabled?: boolean | null
+          show_account_button?: boolean
           showcase_cta_primary_link?: string | null
           showcase_cta_primary_text?: string | null
           showcase_cta_secondary_link?: string | null
