@@ -85,9 +85,11 @@ export function UserDashboardSidebar() {
     }
   };
 
+  const isMobile = useIsMobile();
+
   const isActive = (path: string) => {
-    if (path === "/user-dashboard") {
-      return currentPath === "/user-dashboard";
+    if (path === "/user-dashboard/affiliate") {
+      return currentPath === "/user-dashboard/affiliate";
     }
     return currentPath.startsWith(path);
   };
