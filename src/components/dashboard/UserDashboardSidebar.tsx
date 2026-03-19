@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle, MessageSquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 import { useUnreadAssistantMessages } from "@/hooks/useUnreadAssistantMessages";
