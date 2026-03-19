@@ -1,7 +1,8 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
+import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserDashboardAccess } from '@/hooks/useUserDashboardAccess';
+import { useRole } from '@/hooks/useRole';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserDashboardSidebar } from "@/components/dashboard/UserDashboardSidebar";
@@ -16,6 +17,7 @@ const AffiliateConversations = lazy(() => import("./AffiliateConversations"));
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { hasAccess, loading: accessLoading } = useUserDashboardAccess();
+  const { hasRole: isAdmin } = useRole('admin');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [redirectChecked, setRedirectChecked] = useState(false);
@@ -60,7 +62,7 @@ const UserDashboard = () => {
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-muted">
         <UserDashboardSidebar />
         
@@ -74,12 +76,14 @@ const UserDashboard = () => {
               </div>
               {!isMobile && (
                 <div className="flex items-center gap-3">
+                {isAdmin && (
                   <button 
                     onClick={() => navigate('/dashboard')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
                     Admin Dashboard
                   </button>
+                )}
                   <button 
                     onClick={() => navigate('/')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
@@ -99,7 +103,8 @@ const UserDashboard = () => {
               </div>
             }>
               <Routes>
-                <Route path="/" element={<AffiliatePortal />} />
+                <Route path="/" element={<Navigate to="/user-dashboard/my-services" replace />} />
+                <Route path="/affiliate" element={<AffiliatePortal />} />
                 <Route path="/my-services" element={<MyServices />} />
                 <Route path="/service-tracking" element={<ServiceTracking />} />
                 <Route path="/ai-assistant" element={<AIAssistant />} />

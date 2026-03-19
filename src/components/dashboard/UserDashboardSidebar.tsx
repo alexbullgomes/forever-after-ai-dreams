@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Users, LogOut, BarChart3, ShieldCheck, Home, Briefcase, MessageCircle, MessageSquare } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/hooks/useRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "@/hooks/use-toast";
 import { useUnreadAssistantMessages } from "@/hooks/useUnreadAssistantMessages";
@@ -38,7 +39,7 @@ const navigationItems = [
   },
   {
     title: "Affiliate",
-    url: "/user-dashboard",
+    url: "/user-dashboard/affiliate",
     icon: Users,
   },
 ];
@@ -48,6 +49,7 @@ export function UserDashboardSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { hasRole: isAdmin } = useRole('admin');
   const isMobile = useIsMobile();
   const hasUnreadMessages = useUnreadAssistantMessages();
   const currentPath = location.pathname;
@@ -84,9 +86,10 @@ export function UserDashboardSidebar() {
     }
   };
 
+
   const isActive = (path: string) => {
-    if (path === "/user-dashboard") {
-      return currentPath === "/user-dashboard";
+    if (path === "/user-dashboard/affiliate") {
+      return currentPath === "/user-dashboard/affiliate";
     }
     return currentPath.startsWith(path);
   };
@@ -158,12 +161,14 @@ export function UserDashboardSidebar() {
             <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
-                    <ShieldCheck className="h-4 w-4" />
-                    {showText && <span>Admin Dashboard</span>}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => navigate('/dashboard')} className="w-full">
+                      <ShieldCheck className="h-4 w-4" />
+                      {showText && <span>Admin Dashboard</span>}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 <SidebarMenuItem>
                   <SidebarMenuButton onClick={() => navigate('/')} className="w-full">
                     <Home className="h-4 w-4" />

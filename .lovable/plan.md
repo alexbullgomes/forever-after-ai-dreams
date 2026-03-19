@@ -1,101 +1,75 @@
 
 
-# Safe Implementation Plan: Dashboard Navigation & Routing Fixes
+# Services → User Dashboard Migration (COMPLETED)
 
-## Summary of Changes
+## Summary
+Moved the Services page content into the User Dashboard as a "My Services" sidebar section. `/user-dashboard` is now the primary destination for logged-in users. `/services` redirects to `/user-dashboard/my-services`.
 
-Four targeted fixes across 3 files. No database changes. No new dependencies.
+## Changes Made
+- Created `src/pages/MyServices.tsx` with CampaignCardsSection, ProductsSection, EverAfterGallery
+- Updated routing: `/services` → redirect to `/user-dashboard/my-services`
+- Added "My Services" to UserDashboardSidebar as first nav item
+- Updated Header "Account" button → `/user-dashboard`
+- Updated all `/services` references across 12+ files
+- Added ExpandableChatAssistant to UserDashboard layout
+- DB migration: `user_dashboard` default set to `true`, existing profiles updated
+- Edge function `cancelUrl` updated for Stripe checkout
 
-## Changes
+---
 
-### 1. Sidebars open by default (both dashboards)
+# Chat Payload Enrichment + Affiliate Conversations Prep (COMPLETED)
 
-**Files**: `src/pages/UserDashboard.tsx`, `src/pages/AdminDashboard.tsx`
+## Summary
+Enriched chat payloads with page context and attribution data. Prepared database schema for future affiliate conversations feature.
 
-Change `<SidebarProvider defaultOpen={false}>` to `<SidebarProvider defaultOpen={true}>` in both files.
+## Changes Made
 
-The SidebarProvider already persists state via cookies (`sidebar:state` cookie with 7-day expiry in `sidebar.tsx`). So:
-- First visit: sidebar opens (new default)
-- User collapses: cookie saves `false`, stays collapsed
-- Mobile: unaffected (sidebar is overlay-based via `collapsible="icon"`)
+### Database (Migration)
+- Added `metadata` JSONB column to `messages` table (nullable, default NULL)
+- Added attribution columns to `conversations`: `page_path`, `page_type`, `campaign_slug`, `referral_code` (all nullable)
+- Added `can_access_affiliate_conversations` boolean to `profiles` (default false)
+- Updated `emit_message_webhook` trigger to include `metadata` in webhook payload
 
-### 2. Admin Dashboard button — admin-only visibility
+### Frontend
+- Created `src/utils/chatContext.ts` — `getChatMetadata()` utility capturing page_url, page_path, page_title, referrer, page_type, campaign_slug, referral_code
+- Updated `expandable-chat-assistant.tsx`: metadata added to both message insert points + attribution on conversation creation
+- Updated `expandable-chat-webhook.tsx`: metadata passed in both visitor-chat API calls
 
-**File**: `src/pages/UserDashboard.tsx`
+### Edge Function
+- Updated `visitor-chat` to accept optional `metadata` field in request body
+- Metadata passed through to message insert
+- Attribution fields populated on conversation creation
 
-The "Admin Dashboard" button at line 77-82 renders for ALL users. Fix: import `useRole` and conditionally render the button.
+### What's NOT changed
+- n8n webhook URL — unchanged
+- Admin chat (ChatAdmin) — unchanged
+- Booking flow — unchanged
+- Existing payload structure — only additive fields
 
-```typescript
-// Add import
-import { useRole } from '@/hooks/useRole';
+### Future (Step 3 — not yet implemented)
+- ~~Affiliate Conversations page at `/user-dashboard/affiliate-conversations`~~ ✅ DONE
+- ~~RLS policies for affiliate conversation access~~ ✅ DONE
+- ~~Admin toggle in profile editor for `can_access_affiliate_conversations`~~ ✅ DONE
 
-// Inside component
-const { hasRole: isAdmin, loading: roleLoading } = useRole('admin');
+---
 
-// In header, wrap the Admin Dashboard button:
-{isAdmin && (
-  <button onClick={() => navigate('/dashboard')} ...>
-    Admin Dashboard
-  </button>
-)}
-```
+# Affiliate Conversations Feature (COMPLETED)
 
-Same fix for the mobile "Quick Links" section in `UserDashboardSidebar.tsx` (line 162) — wrap the Admin Dashboard link with the same role check.
+## Summary
+Built the Affiliate Conversations feature allowing affiliates to view and respond to conversations tied to their referral code.
 
-### 3. Account button → Services page
+## Changes Made
 
-**File**: `src/components/Header.tsx`
+### Database (Migration)
+- Added 3 RLS policies:
+  - `conversations` SELECT for affiliates (scoped to matching `referral_code`)
+  - `messages` SELECT for affiliates (via conversation join)
+  - `messages` INSERT for affiliates (respond in human mode)
+- All policies gated by `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
 
-Change line 15 from:
-```typescript
-navigate('/user-dashboard');
-```
-to:
-```typescript
-navigate('/user-dashboard/my-services');
-```
-
-### 4. Default User Dashboard route → Services
-
-**File**: `src/pages/UserDashboard.tsx`
-
-Change the default route (line 102) from:
-```tsx
-<Route path="/" element={<AffiliatePortal />} />
-```
-to:
-```tsx
-<Route path="/" element={<Navigate to="/user-dashboard/my-services" replace />} />
-```
-
-And add the Affiliate route explicitly:
-```tsx
-<Route path="/affiliate" element={<AffiliatePortal />} />
-```
-
-Update the sidebar navigation in `UserDashboardSidebar.tsx` to point "Affiliate" to `/user-dashboard/affiliate` instead of `/user-dashboard`.
-
-## Files Modified
-
-| File | Changes |
-|------|---------|
-| `src/pages/AdminDashboard.tsx` | `defaultOpen={true}` |
-| `src/pages/UserDashboard.tsx` | `defaultOpen={true}`, admin button gated by role, default route → services, add `/affiliate` route |
-| `src/components/Header.tsx` | Account → `/user-dashboard/my-services` |
-| `src/components/dashboard/UserDashboardSidebar.tsx` | Admin link gated by role, Affiliate URL → `/user-dashboard/affiliate` |
-
-## What stays untouched
-
-- Auth flow (login, logout, Google OAuth)
-- Booking flow and redirect system
-- Affiliate tracking (localStorage `ref` capture)
-- Admin Dashboard routing and access control
-- All database tables and RLS policies
-- Mobile responsiveness (sidebar is overlay on mobile regardless)
-
-## Edge cases
-
-- **No role flicker**: `useRole` returns `loading=true` initially; the button simply doesn't render until the check completes. The header already waits for auth loading.
-- **Cookie override**: Users who previously collapsed the sidebar have a cookie set to `false`. The `defaultOpen` is only used when no cookie exists, so existing users keep their preference.
-- **Backward compat**: `/user-dashboard` now redirects to `/user-dashboard/my-services`. Direct links to `/user-dashboard` still work via the redirect.
-
+### Frontend
+- Created `src/pages/AffiliateConversations.tsx` — conversation list + message view, reply in human mode only
+- Added route `/user-dashboard/affiliate-conversations` in `UserDashboard.tsx`
+- Added conditional "Conversations" nav item in `UserDashboardSidebar.tsx` (only when `can_access_affiliate_conversations = true`)
+- Added "Affiliate Conversations Access" toggle in `UserProfileModal.tsx` (admin control)
+- Real-time message subscription for live updates
