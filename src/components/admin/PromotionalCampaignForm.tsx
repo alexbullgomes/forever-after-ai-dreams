@@ -75,6 +75,7 @@ interface Campaign {
   is_active: boolean;
   visibility_mode?: string;
   promotional_footer_enabled: boolean;
+  show_account_button: boolean;
   tracking_scripts?: TrackingScript[];
   products_section_enabled: boolean;
   pricing_section_enabled: boolean;
