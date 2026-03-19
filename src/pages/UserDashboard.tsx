@@ -76,12 +76,14 @@ const UserDashboard = () => {
               </div>
               {!isMobile && (
                 <div className="flex items-center gap-3">
+                {isAdmin && (
                   <button 
                     onClick={() => navigate('/dashboard')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
                   >
                     Admin Dashboard
                   </button>
+                )}
                   <button 
                     onClick={() => navigate('/')}
                     className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-md hover:bg-muted transition-colors"
