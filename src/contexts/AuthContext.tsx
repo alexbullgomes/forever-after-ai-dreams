@@ -114,9 +114,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }, session.user.id);
             }
             
+            // Send Google auth webhook ONCE (deduplicated)
+            const isGoogleAuth = session.user.app_metadata?.provider === 'google';
+            if (isGoogleAuth && !webhookSentRef.current) {
+              webhookSentRef.current = true;
+              const webhookEvent = isNewUser ? 'register' : 'login';
+              const fullName = session.user.user_metadata?.full_name || 
+                             session.user.user_metadata?.name || 
+                             `${session.user.user_metadata?.given_name || ''} ${session.user.user_metadata?.family_name || ''}`.trim() || 
+                             '';
+              await sendGoogleAuthWebhook(webhookEvent, session.user.id, session.user.email || '', fullName);
+            }
+            
             // Check for booking redirect first (new unified approach)
             const handledBookingRedirect = handleBookingRedirect();
             if (handledBookingRedirect) {
+              return;
+            }
+            
+            // Check sessionStorage for campaign return (Google OAuth fallback)
+            const campaignReturn = sessionStorage.getItem('auth_campaign_return');
+            if (campaignReturn && campaignReturn.startsWith('/promo/')) {
+              sessionStorage.removeItem('auth_campaign_return');
+              const currentPath = window.location.pathname;
+              if (!currentPath.startsWith('/promo/')) {
+                window.location.replace(campaignReturn);
+              }
               return;
             }
             
