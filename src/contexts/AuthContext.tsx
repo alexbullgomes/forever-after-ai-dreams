@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const redirectHandledRef = useRef(false);
-
+  const webhookSentRef = useRef(false);
   // Handle booking redirect after authentication
   const handleBookingRedirect = (): boolean => {
     if (redirectHandledRef.current) {
