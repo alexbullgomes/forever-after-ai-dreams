@@ -17,6 +17,7 @@ const AffiliateConversations = lazy(() => import("./AffiliateConversations"));
 const UserDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { hasAccess, loading: accessLoading } = useUserDashboardAccess();
+  const { hasRole: isAdmin } = useRole('admin');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [redirectChecked, setRedirectChecked] = useState(false);
