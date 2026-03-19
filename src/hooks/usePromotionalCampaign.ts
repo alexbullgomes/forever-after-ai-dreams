@@ -73,6 +73,7 @@ interface PromotionalCampaign {
   showcase_cta_primary_link: string | null;
   showcase_cta_secondary_text: string | null;
   showcase_cta_secondary_link: string | null;
+  show_account_button: boolean;
 }
 
 export const usePromotionalCampaign = (slug: string) => {
