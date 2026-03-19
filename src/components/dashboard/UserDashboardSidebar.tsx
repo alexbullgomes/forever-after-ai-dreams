@@ -50,6 +50,7 @@ export function UserDashboardSidebar() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { hasRole: isAdmin } = useRole('admin');
+  const isMobile = useIsMobile();
   const hasUnreadMessages = useUnreadAssistantMessages();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
