@@ -1,75 +1,75 @@
 
 
-# Context-Aware Campaign Auth Flow
+# Services → User Dashboard Migration (COMPLETED)
 
-## Problem
+## Summary
+Moved the Services page content into the User Dashboard as a "My Services" sidebar section. `/user-dashboard` is now the primary destination for logged-in users. `/services` redirects to `/user-dashboard/my-services`.
 
-When a user logs in via Google OAuth on a campaign page (`/promo/:slug`) without an active booking flow, they get redirected to `/dashboard` instead of staying on the campaign page. Email/password login already handles this correctly.
+## Changes Made
+- Created `src/pages/MyServices.tsx` with CampaignCardsSection, ProductsSection, EverAfterGallery
+- Updated routing: `/services` → redirect to `/user-dashboard/my-services`
+- Added "My Services" to UserDashboardSidebar as first nav item
+- Updated Header "Account" button → `/user-dashboard`
+- Updated all `/services` references across 12+ files
+- Added ExpandableChatAssistant to UserDashboard layout
+- DB migration: `user_dashboard` default set to `true`, existing profiles updated
+- Edge function `cancelUrl` updated for Stripe checkout
 
-## Root Cause
+---
 
-`GoogleAuthButton` (line 27) hardcodes `redirectUrl = /dashboard` and only overrides it for pending booking flows. It doesn't check if the user is currently on a `/promo/` page.
+# Chat Payload Enrichment + Affiliate Conversations Prep (COMPLETED)
 
-## Changes (2 files)
+## Summary
+Enriched chat payloads with page context and attribution data. Prepared database schema for future affiliate conversations feature.
 
-### 1. `src/components/auth/GoogleAuthButton.tsx`
+## Changes Made
 
-Add campaign-page detection to the redirect URL logic:
+### Database (Migration)
+- Added `metadata` JSONB column to `messages` table (nullable, default NULL)
+- Added attribution columns to `conversations`: `page_path`, `page_type`, `campaign_slug`, `referral_code` (all nullable)
+- Added `can_access_affiliate_conversations` boolean to `profiles` (default false)
+- Updated `emit_message_webhook` trigger to include `metadata` in webhook payload
 
-```
-// Current (line 27):
-let redirectUrl = `${window.location.origin}/dashboard`;
+### Frontend
+- Created `src/utils/chatContext.ts` — `getChatMetadata()` utility capturing page_url, page_path, page_title, referrer, page_type, campaign_slug, referral_code
+- Updated `expandable-chat-assistant.tsx`: metadata added to both message insert points + attribution on conversation creation
+- Updated `expandable-chat-webhook.tsx`: metadata passed in both visitor-chat API calls
 
-// New:
-const currentPath = window.location.pathname;
-const isOnCampaignPage = currentPath.startsWith('/promo/');
+### Edge Function
+- Updated `visitor-chat` to accept optional `metadata` field in request body
+- Metadata passed through to message insert
+- Attribution fields populated on conversation creation
 
-let redirectUrl = isOnCampaignPage
-  ? `${window.location.origin}${currentPath}`
-  : `${window.location.origin}/dashboard`;
-```
+### What's NOT changed
+- n8n webhook URL — unchanged
+- Admin chat (ChatAdmin) — unchanged
+- Booking flow — unchanged
+- Existing payload structure — only additive fields
 
-Then the existing booking override (lines 29-32) still takes priority. This ensures Google OAuth returns to the campaign page.
+### Future (Step 3 — not yet implemented)
+- ~~Affiliate Conversations page at `/user-dashboard/affiliate-conversations`~~ ✅ DONE
+- ~~RLS policies for affiliate conversation access~~ ✅ DONE
+- ~~Admin toggle in profile editor for `can_access_affiliate_conversations`~~ ✅ DONE
 
-### 2. `src/contexts/AuthContext.tsx`
+---
 
-In the `onAuthStateChange` handler (around line 122), add a campaign-page check before the `intendedRoute` fallback so it doesn't redirect away:
+# Affiliate Conversations Feature (COMPLETED)
 
-```typescript
-// After booking redirect check (line 120), before intendedRoute:
-const currentPath = window.location.pathname;
-if (currentPath.startsWith('/promo/')) {
-  // Already on campaign page, don't redirect anywhere
-  return;
-}
+## Summary
+Built the Affiliate Conversations feature allowing affiliates to view and respond to conversations tied to their referral code.
 
-// Fall back to legacy intendedRoute
-const intendedRoute = localStorage.getItem('intendedRoute');
-...
-```
+## Changes Made
 
-This prevents the `intendedRoute` mechanism from pulling users off campaign pages after Google OAuth returns them there.
+### Database (Migration)
+- Added 3 RLS policies:
+  - `conversations` SELECT for affiliates (scoped to matching `referral_code`)
+  - `messages` SELECT for affiliates (via conversation join)
+  - `messages` INSERT for affiliates (respond in human mode)
+- All policies gated by `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
 
-## What stays untouched
-
-- `EmailAuthForm` — already has correct `/promo/` logic
-- `useGoogleAuth` hook — just closes modal, no redirect logic
-- `AuthModal` — no changes needed
-- Booking flow — booking redirect check runs first (higher priority)
-- Chat flow — doesn't trigger page redirects
-- All non-campaign pages — default `/dashboard` redirect unchanged
-
-## Files Modified
-
-| File | Change |
-|------|--------|
-| `src/components/auth/GoogleAuthButton.tsx` | Campaign-aware `redirectTo` URL |
-| `src/contexts/AuthContext.tsx` | Skip `intendedRoute` redirect when on `/promo/` |
-
-## Safety
-
-- No new dependencies or storage keys needed
-- Existing `bookingRedirect` system has higher priority and is unaffected
-- No database changes
-- No global auth logic changes — only two surgical additions
-
+### Frontend
+- Created `src/pages/AffiliateConversations.tsx` — conversation list + message view, reply in human mode only
+- Added route `/user-dashboard/affiliate-conversations` in `UserDashboard.tsx`
+- Added conditional "Conversations" nav item in `UserDashboardSidebar.tsx` (only when `can_access_affiliate_conversations = true`)
+- Added "Affiliate Conversations Access" toggle in `UserProfileModal.tsx` (admin control)
+- Real-time message subscription for live updates

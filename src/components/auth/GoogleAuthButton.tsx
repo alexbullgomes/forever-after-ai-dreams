@@ -24,7 +24,12 @@ export const GoogleAuthButton = ({ googleAvailable, onGoogleUnavailable }: Googl
       const bookingReturnUrl = getBookingReturnUrl();
       
       // Determine redirect URL
-      let redirectUrl = `${window.location.origin}/dashboard`;
+      const currentPath = window.location.pathname;
+      const isOnCampaignPage = currentPath.startsWith('/promo/');
+      
+      let redirectUrl = isOnCampaignPage
+        ? `${window.location.origin}${currentPath}`
+        : `${window.location.origin}/dashboard`;
       
       if (pendingBookingFlow && bookingReturnUrl) {
         // Use the full origin + path for booking return

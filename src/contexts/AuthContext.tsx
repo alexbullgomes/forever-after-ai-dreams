@@ -119,6 +119,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               return;
             }
             
+            // If already on a campaign page, stay there
+            const currentPath = window.location.pathname;
+            if (currentPath.startsWith('/promo/')) {
+              return;
+            }
+            
             // Fall back to legacy intendedRoute
             const intendedRoute = localStorage.getItem('intendedRoute');
             if (intendedRoute) {
