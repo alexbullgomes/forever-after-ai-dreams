@@ -17,11 +17,7 @@ const AuthModal = ({
   const [googleAvailable, setGoogleAvailable] = useState(true);
   const campaignPortal = useCampaignPortal();
 
-  // Handle Google OAuth webhooks and redirects
-  useGoogleAuth({
-    onClose
-  });
-  const handleGoogleUnavailable = () => {
+
     setGoogleAvailable(false);
   };
   const handleToggleMode = () => {
