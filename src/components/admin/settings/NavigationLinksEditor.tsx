@@ -98,7 +98,8 @@ export const NavigationLinksEditor = () => {
 
   // Lazy-loaded data for smart picker
   const { campaigns } = useActiveCampaigns({ includeUnlisted: true });
-  const { posts } = useBlogPosts();
+  const blogQuery = useBlogPosts({ limit: 50 });
+  const posts = blogQuery.data?.posts;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
