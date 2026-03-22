@@ -10,6 +10,7 @@ import { SectionsContentEditor } from '@/components/admin/settings/SectionsConte
 import { TestimonialsEditor } from '@/components/admin/settings/TestimonialsEditor';
 import { ContactContentEditor } from '@/components/admin/settings/ContactContentEditor';
 import { SeoContentEditor } from '@/components/admin/settings/SeoContentEditor';
+import { NavigationLinksEditor } from '@/components/admin/settings/NavigationLinksEditor';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useHomepageContentAdmin } from '@/hooks/useHomepageContentAdmin';
 
