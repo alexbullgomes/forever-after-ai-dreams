@@ -1,97 +1,108 @@
 
 
-# Dynamic Admin-Controlled Navbar Links
+# Navbar UX Upgrade + Smart Link Selection
 
 ## Overview
 
-Add a `navigation_links` table and admin UI so admins can manage header nav links. The Header component will fetch and render active links between the logo and the Account button.
+Three improvements: (1) brand-colored hover/active states for nav links, (2) smart link picker in admin for campaigns/blog, (3) polished admin UI.
 
-## Changes
+## Part 1 — Navbar Brand Color Integration
 
-### 1. Database Migration
+### Header.tsx Changes
 
-```sql
-CREATE TABLE navigation_links (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  label text NOT NULL,
-  url text NOT NULL,
-  type text NOT NULL DEFAULT 'internal' CHECK (type IN ('internal', 'external')),
-  open_in_new_tab boolean NOT NULL DEFAULT false,
-  is_active boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
+- Import `useLocation` from react-router-dom to detect active route
+- Replace static `text-white/80 hover:text-white` with brand-aware styling
+- Add animated underline on hover (CSS `after` pseudo-element using brand primary color)
+- Active link (matching current path) gets persistent brand color + underline
 
-ALTER TABLE navigation_links ENABLE ROW LEVEL SECURITY;
+**Styling approach**: Use inline `style` with CSS custom properties already available (`--brand-primary-from`). The underline animation uses a `group` pattern with `after:` pseudo-element via Tailwind + custom CSS class in `index.css`.
 
-CREATE POLICY "Public can view active links" ON navigation_links
-  FOR SELECT USING (is_active = true);
-
-CREATE POLICY "Admins can manage links" ON navigation_links
-  FOR ALL USING (has_role(auth.uid(), 'admin'::text));
+New CSS class in `index.css`:
+```css
+.nav-link-animated {
+  position: relative;
+}
+.nav-link-animated::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to)));
+  transition: width 250ms ease;
+}
+.nav-link-animated:hover::after,
+.nav-link-animated.active::after {
+  width: 100%;
+}
+.nav-link-animated:hover,
+.nav-link-animated.active {
+  color: hsl(var(--brand-primary-from));
+}
 ```
 
-### 2. New Hook: `src/hooks/useNavigationLinks.ts`
+Header `renderLink` updates:
+- Add `nav-link-animated` class to all links
+- Add `active` class when `location.pathname` matches the link URL (for internal links) or starts with the link path
+- Keep `text-white/80` base, `transition-colors duration-250` for text color transition
 
-- Fetch from `navigation_links` where `is_active = true`, ordered by `sort_order`
-- Use React Query with stale time of 5 minutes
-- Return `{ links, loading }`
+### Mobile menu
+Same brand color treatment for active links in mobile dropdown.
 
-### 3. New Admin Hook: `src/hooks/useNavigationLinksAdmin.ts`
+## Part 2 — Smart Link Picker (Admin)
 
-- Full CRUD: fetch all links (active + inactive), create, update, delete, reorder
-- Reorder updates `sort_order` for all items
+### NavigationLinksEditor.tsx Changes
 
-### 4. Header Component Update (`src/components/Header.tsx`)
+Add a "Source" selector when `type === 'internal'`:
 
-- Import `useNavigationLinks` hook
-- Render links as `<nav>` between logo and Account button
-- Internal links: use React Router `<Link>` (no reload)
-- External links: use `<a href>` with optional `target="_blank" rel="noopener noreferrer"`
-- Style: `text-white/80 hover:text-white text-sm font-medium transition-colors`
-- Mobile: collapse into a hamburger menu (Menu icon toggle)
-- If fetch fails or loading: render nothing (Account button still shows)
+**New state**: `sourceType: 'custom' | 'campaign' | 'blog'`
 
-Layout change:
-```
-[Logo] ---- [Nav Links (center/left)] ---- [Account Button (right)]
-```
+**UI flow**:
+1. Type dropdown shows Internal / External (existing)
+2. When Internal is selected, show a new "Source" selector: Campaign / Blog / Custom URL
+3. When Campaign or Blog is selected, show a searchable dropdown (using existing `Select` + `SelectContent` with search)
+4. On selection, auto-fill URL (`/promo/{slug}` or `/blog/{slug}`) and optionally Label
 
-Use flex with `gap-6` for links, hidden on mobile, shown via hamburger.
+**Data fetching** (lazy, React Query):
+- Campaigns: fetch from `promotional_campaigns` (active ones) — reuse pattern from `useActiveCampaigns` or direct query
+- Blog posts: fetch from `blog_posts` where `status = 'published'` — reuse pattern from `useBlogPosts`
 
-### 5. Admin UI: Navigation Editor
+**New hooks** (lightweight, inline in editor or small hook):
+- `useAdminCampaignOptions`: `SELECT id, title, slug FROM promotional_campaigns WHERE is_active = true ORDER BY title`
+- `useAdminBlogOptions`: `SELECT id, title, slug FROM blog_posts WHERE status = 'published' ORDER BY title`
 
-New file: `src/components/admin/settings/NavigationLinksEditor.tsx`
+Both use React Query with `enabled` flag (only fetch when dropdown opens).
 
-- List all links with drag-and-drop reorder (@dnd-kit, already in project)
-- Each row: label, URL, type badge, active toggle, edit/delete buttons
-- Add/Edit form: label, URL, type (internal/external), open in new tab toggle, active toggle
-- Inline editing pattern matching existing admin forms
+**Auto-fill behavior**:
+- Selecting a campaign → URL = full campaign URL (e.g., `https://www.everafterca.com/promo/{slug}`), Label = campaign title (if label is empty)
+- Selecting a blog post → URL = `/blog/{slug}`, Label = post title (if label is empty)
+- Admin can always override both fields after auto-fill
 
-### 6. Integrate into Project Settings
+## Part 3 — Admin UI Polish
 
-- Add `'navigation'` to `SettingsSection` type in `SettingsSidebar.tsx`
-- Add new sidebar item with `Link` icon, label "Navigation"
-- Add case in `ProjectSettings.tsx` `renderContent()` to render `NavigationLinksEditor`
+### SortableRow improvements
+- Add `hover:bg-muted/50 transition-colors` to row container
+- Make drag handle slightly larger with `hover:bg-muted rounded p-1`
+- Better visual hierarchy: label `text-sm font-semibold`, URL `text-xs text-muted-foreground`
 
-## Files Modified/Created
+### Form card
+- Add a subtle header to the form card: "Add Link" or "Edit Link"
+- Better visual separation between form and list
+
+## Files Modified
 
 | File | Change |
 |------|--------|
-| Migration | Create `navigation_links` table + RLS |
-| `src/hooks/useNavigationLinks.ts` | New — public read hook |
-| `src/hooks/useNavigationLinksAdmin.ts` | New — admin CRUD hook |
-| `src/components/Header.tsx` | Add nav links + mobile hamburger |
-| `src/components/admin/settings/NavigationLinksEditor.tsx` | New — admin editor |
-| `src/components/admin/settings/SettingsSidebar.tsx` | Add "Navigation" section |
-| `src/pages/ProjectSettings.tsx` | Add navigation case |
+| `src/components/Header.tsx` | Add `useLocation`, brand-colored hover/active states, `nav-link-animated` class |
+| `src/index.css` | Add `.nav-link-animated` CSS for underline animation |
+| `src/components/admin/settings/NavigationLinksEditor.tsx` | Add smart source picker (campaign/blog/custom), UI polish |
 
 ## Safety
 
-- Header renders links only if fetch succeeds; falls back to current behavior
-- No changes to auth flow, booking, chat, or campaign pages
-- `hideAccountButton` prop continues working independently
-- Campaign pages inherit the same Header with dynamic links
-- No layout shift: links container has fixed min-height of 0
+- No database changes needed
+- Header fallback unchanged — if links fail to load, only logo + Account renders
+- Brand colors already globally available via CSS vars
+- No changes to auth, booking, campaigns, or chat
+- Smart picker is additive — manual URL input always available as fallback
 
