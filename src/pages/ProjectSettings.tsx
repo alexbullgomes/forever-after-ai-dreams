@@ -10,6 +10,7 @@ import { SectionsContentEditor } from '@/components/admin/settings/SectionsConte
 import { TestimonialsEditor } from '@/components/admin/settings/TestimonialsEditor';
 import { ContactContentEditor } from '@/components/admin/settings/ContactContentEditor';
 import { SeoContentEditor } from '@/components/admin/settings/SeoContentEditor';
+import { NavigationLinksEditor } from '@/components/admin/settings/NavigationLinksEditor';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useHomepageContentAdmin } from '@/hooks/useHomepageContentAdmin';
 
@@ -63,6 +64,7 @@ const ProjectSettings = () => {
       case 'testimonials': return <TestimonialsEditor content={content.homepage_testimonials} updateSection={updateSection} />;
       case 'contact': return <ContactContentEditor content={content.homepage_contact} updateSection={updateSection} />;
       case 'seo': return <SeoContentEditor content={content.homepage_seo} updateSection={updateSection} />;
+      case 'navigation': return <NavigationLinksEditor />;
       default: return null;
     }
   };

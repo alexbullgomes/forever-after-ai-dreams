@@ -998,6 +998,42 @@ export type Database = {
         }
         Relationships: []
       }
+      navigation_links: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          open_in_new_tab: boolean
+          sort_order: number
+          type: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          open_in_new_tab?: boolean
+          sort_order?: number
+          type?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          open_in_new_tab?: boolean
+          sort_order?: number
+          type?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       our_portfolio_gallery: {
         Row: {
           category: string
