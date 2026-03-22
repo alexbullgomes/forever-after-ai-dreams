@@ -16,6 +16,7 @@ const sections = [
   { id: 'testimonials' as const, label: 'Testimonials', icon: MessageSquareQuote },
   { id: 'contact' as const, label: 'Contact', icon: Mail },
   { id: 'seo' as const, label: 'SEO', icon: Search },
+  { id: 'navigation' as const, label: 'Navigation', icon: Link },
 ];
 
 export const SettingsSidebar = ({ activeSection, onSectionChange }: SettingsSidebarProps) => {

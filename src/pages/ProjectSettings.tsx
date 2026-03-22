@@ -64,6 +64,7 @@ const ProjectSettings = () => {
       case 'testimonials': return <TestimonialsEditor content={content.homepage_testimonials} updateSection={updateSection} />;
       case 'contact': return <ContactContentEditor content={content.homepage_contact} updateSection={updateSection} />;
       case 'seo': return <SeoContentEditor content={content.homepage_seo} updateSection={updateSection} />;
+      case 'navigation': return <NavigationLinksEditor />;
       default: return null;
     }
   };
