@@ -1,75 +1,97 @@
 
 
-# Services → User Dashboard Migration (COMPLETED)
+# Dynamic Admin-Controlled Navbar Links
 
-## Summary
-Moved the Services page content into the User Dashboard as a "My Services" sidebar section. `/user-dashboard` is now the primary destination for logged-in users. `/services` redirects to `/user-dashboard/my-services`.
+## Overview
 
-## Changes Made
-- Created `src/pages/MyServices.tsx` with CampaignCardsSection, ProductsSection, EverAfterGallery
-- Updated routing: `/services` → redirect to `/user-dashboard/my-services`
-- Added "My Services" to UserDashboardSidebar as first nav item
-- Updated Header "Account" button → `/user-dashboard`
-- Updated all `/services` references across 12+ files
-- Added ExpandableChatAssistant to UserDashboard layout
-- DB migration: `user_dashboard` default set to `true`, existing profiles updated
-- Edge function `cancelUrl` updated for Stripe checkout
+Add a `navigation_links` table and admin UI so admins can manage header nav links. The Header component will fetch and render active links between the logo and the Account button.
 
----
+## Changes
 
-# Chat Payload Enrichment + Affiliate Conversations Prep (COMPLETED)
+### 1. Database Migration
 
-## Summary
-Enriched chat payloads with page context and attribution data. Prepared database schema for future affiliate conversations feature.
+```sql
+CREATE TABLE navigation_links (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  label text NOT NULL,
+  url text NOT NULL,
+  type text NOT NULL DEFAULT 'internal' CHECK (type IN ('internal', 'external')),
+  open_in_new_tab boolean NOT NULL DEFAULT false,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
 
-## Changes Made
+ALTER TABLE navigation_links ENABLE ROW LEVEL SECURITY;
 
-### Database (Migration)
-- Added `metadata` JSONB column to `messages` table (nullable, default NULL)
-- Added attribution columns to `conversations`: `page_path`, `page_type`, `campaign_slug`, `referral_code` (all nullable)
-- Added `can_access_affiliate_conversations` boolean to `profiles` (default false)
-- Updated `emit_message_webhook` trigger to include `metadata` in webhook payload
+CREATE POLICY "Public can view active links" ON navigation_links
+  FOR SELECT USING (is_active = true);
 
-### Frontend
-- Created `src/utils/chatContext.ts` — `getChatMetadata()` utility capturing page_url, page_path, page_title, referrer, page_type, campaign_slug, referral_code
-- Updated `expandable-chat-assistant.tsx`: metadata added to both message insert points + attribution on conversation creation
-- Updated `expandable-chat-webhook.tsx`: metadata passed in both visitor-chat API calls
+CREATE POLICY "Admins can manage links" ON navigation_links
+  FOR ALL USING (has_role(auth.uid(), 'admin'::text));
+```
 
-### Edge Function
-- Updated `visitor-chat` to accept optional `metadata` field in request body
-- Metadata passed through to message insert
-- Attribution fields populated on conversation creation
+### 2. New Hook: `src/hooks/useNavigationLinks.ts`
 
-### What's NOT changed
-- n8n webhook URL — unchanged
-- Admin chat (ChatAdmin) — unchanged
-- Booking flow — unchanged
-- Existing payload structure — only additive fields
+- Fetch from `navigation_links` where `is_active = true`, ordered by `sort_order`
+- Use React Query with stale time of 5 minutes
+- Return `{ links, loading }`
 
-### Future (Step 3 — not yet implemented)
-- ~~Affiliate Conversations page at `/user-dashboard/affiliate-conversations`~~ ✅ DONE
-- ~~RLS policies for affiliate conversation access~~ ✅ DONE
-- ~~Admin toggle in profile editor for `can_access_affiliate_conversations`~~ ✅ DONE
+### 3. New Admin Hook: `src/hooks/useNavigationLinksAdmin.ts`
 
----
+- Full CRUD: fetch all links (active + inactive), create, update, delete, reorder
+- Reorder updates `sort_order` for all items
 
-# Affiliate Conversations Feature (COMPLETED)
+### 4. Header Component Update (`src/components/Header.tsx`)
 
-## Summary
-Built the Affiliate Conversations feature allowing affiliates to view and respond to conversations tied to their referral code.
+- Import `useNavigationLinks` hook
+- Render links as `<nav>` between logo and Account button
+- Internal links: use React Router `<Link>` (no reload)
+- External links: use `<a href>` with optional `target="_blank" rel="noopener noreferrer"`
+- Style: `text-white/80 hover:text-white text-sm font-medium transition-colors`
+- Mobile: collapse into a hamburger menu (Menu icon toggle)
+- If fetch fails or loading: render nothing (Account button still shows)
 
-## Changes Made
+Layout change:
+```
+[Logo] ---- [Nav Links (center/left)] ---- [Account Button (right)]
+```
 
-### Database (Migration)
-- Added 3 RLS policies:
-  - `conversations` SELECT for affiliates (scoped to matching `referral_code`)
-  - `messages` SELECT for affiliates (via conversation join)
-  - `messages` INSERT for affiliates (respond in human mode)
-- All policies gated by `affiliates.is_active` AND `profiles.can_access_affiliate_conversations`
+Use flex with `gap-6` for links, hidden on mobile, shown via hamburger.
 
-### Frontend
-- Created `src/pages/AffiliateConversations.tsx` — conversation list + message view, reply in human mode only
-- Added route `/user-dashboard/affiliate-conversations` in `UserDashboard.tsx`
-- Added conditional "Conversations" nav item in `UserDashboardSidebar.tsx` (only when `can_access_affiliate_conversations = true`)
-- Added "Affiliate Conversations Access" toggle in `UserProfileModal.tsx` (admin control)
-- Real-time message subscription for live updates
+### 5. Admin UI: Navigation Editor
+
+New file: `src/components/admin/settings/NavigationLinksEditor.tsx`
+
+- List all links with drag-and-drop reorder (@dnd-kit, already in project)
+- Each row: label, URL, type badge, active toggle, edit/delete buttons
+- Add/Edit form: label, URL, type (internal/external), open in new tab toggle, active toggle
+- Inline editing pattern matching existing admin forms
+
+### 6. Integrate into Project Settings
+
+- Add `'navigation'` to `SettingsSection` type in `SettingsSidebar.tsx`
+- Add new sidebar item with `Link` icon, label "Navigation"
+- Add case in `ProjectSettings.tsx` `renderContent()` to render `NavigationLinksEditor`
+
+## Files Modified/Created
+
+| File | Change |
+|------|--------|
+| Migration | Create `navigation_links` table + RLS |
+| `src/hooks/useNavigationLinks.ts` | New — public read hook |
+| `src/hooks/useNavigationLinksAdmin.ts` | New — admin CRUD hook |
+| `src/components/Header.tsx` | Add nav links + mobile hamburger |
+| `src/components/admin/settings/NavigationLinksEditor.tsx` | New — admin editor |
+| `src/components/admin/settings/SettingsSidebar.tsx` | Add "Navigation" section |
+| `src/pages/ProjectSettings.tsx` | Add navigation case |
+
+## Safety
+
+- Header renders links only if fetch succeeds; falls back to current behavior
+- No changes to auth flow, booking, chat, or campaign pages
+- `hideAccountButton` prop continues working independently
+- Campaign pages inherit the same Header with dynamic links
+- No layout shift: links container has fixed min-height of 0
+
