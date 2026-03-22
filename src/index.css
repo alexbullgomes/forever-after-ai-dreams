@@ -241,6 +241,29 @@
 }
 
 @layer utilities {
+  /* ===== Navbar Link Animation ===== */
+  .nav-link-animated {
+    position: relative;
+  }
+  .nav-link-animated::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(to right, hsl(var(--brand-primary-from)), hsl(var(--brand-primary-to)));
+    transition: width 250ms ease;
+  }
+  .nav-link-animated:hover::after,
+  .nav-link-animated.active::after {
+    width: 100%;
+  }
+  .nav-link-animated:hover,
+  .nav-link-animated.active {
+    color: hsl(var(--brand-primary-from));
+  }
+
   /* ===== Brand Gradients ===== */
   .bg-brand-gradient {
     background: linear-gradient(

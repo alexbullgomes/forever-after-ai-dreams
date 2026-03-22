@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, User, Menu, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useNavigationLinks } from "@/hooks/useNavigationLinks";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   onLoginClick: () => void;
@@ -13,6 +14,7 @@ interface HeaderProps {
 const Header = ({ onLoginClick, hideAccountButton = false }: HeaderProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { links } = useNavigationLinks();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -20,8 +22,20 @@ const Header = ({ onLoginClick, hideAccountButton = false }: HeaderProps) => {
     navigate('/user-dashboard/my-services');
   };
 
+  const isLinkActive = (link: typeof links[number]) => {
+    if (link.type === 'internal') {
+      return location.pathname === link.url || location.pathname.startsWith(link.url + '/');
+    }
+    return false;
+  };
+
   const renderLink = (link: typeof links[number]) => {
-    const className = "text-white/80 hover:text-white text-sm font-medium transition-colors";
+    const active = isLinkActive(link);
+    const className = cn(
+      "nav-link-animated text-white/80 text-sm font-medium transition-colors duration-250",
+      active && "active"
+    );
+
     if (link.type === 'internal') {
       return (
         <Link
