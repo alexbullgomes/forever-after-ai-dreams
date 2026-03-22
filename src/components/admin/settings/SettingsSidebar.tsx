@@ -1,7 +1,7 @@
-import { Palette, FileText, Monitor, Layers, MessageSquareQuote, Mail, Search } from 'lucide-react';
+import { Palette, FileText, Monitor, Layers, MessageSquareQuote, Mail, Search, Link } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type SettingsSection = 'brand-colors' | 'content' | 'hero' | 'sections' | 'testimonials' | 'contact' | 'seo';
+export type SettingsSection = 'brand-colors' | 'content' | 'hero' | 'sections' | 'testimonials' | 'contact' | 'seo' | 'navigation';
 
 interface SettingsSidebarProps {
   activeSection: SettingsSection;
