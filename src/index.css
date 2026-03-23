@@ -259,7 +259,9 @@
   .nav-link-animated.active::after {
     width: 100%;
   }
-  .nav-link-animated:hover,
+  .nav-link-animated:hover {
+    color: rgba(255, 255, 255, 0.95);
+  }
   .nav-link-animated.active {
     color: hsl(var(--brand-primary-from));
   }
