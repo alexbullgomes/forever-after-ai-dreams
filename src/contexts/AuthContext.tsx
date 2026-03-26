@@ -99,6 +99,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Link any existing visitor conversations to the user
             await linkVisitorConversation(session.user.id);
             
+            // Merge visitor phone into profile if exists
+            const visitorPhone = localStorage.getItem('visitor_phone');
+            if (visitorPhone) {
+              const { data: phoneProfile } = await supabase
+                .from('profiles')
+                .select('user_number')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              if (!phoneProfile?.user_number) {
+                await supabase.from('profiles')
+                  .update({ user_number: visitorPhone })
+                  .eq('id', session.user.id);
+              }
+              localStorage.removeItem('visitor_phone');
+            }
+            
             // Track referral conversion for new registrations
             // Use a more reliable check: user was created within last 10 seconds
             const createdAt = new Date(session.user.created_at);

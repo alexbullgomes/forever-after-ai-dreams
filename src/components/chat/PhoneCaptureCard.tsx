@@ -10,6 +10,7 @@ import PhoneNumberField, {
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { CardMessageData } from "@/types/chat";
+import { getVisitorId } from "@/utils/visitor";
 
 type CardState = "pending" | "submitting" | "success" | "error";
 
@@ -28,30 +29,38 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
   const [savedNumber, setSavedNumber] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // On mount, check auth & existing user_number
+  // On mount, check auth & existing phone (profile or localStorage)
   useEffect(() => {
     const init = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const uid = sessionData?.session?.user?.id ?? null;
       setUserId(uid);
-      if (!uid) return;
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("user_number")
-        .eq("id", uid)
-        .single();
+      if (uid) {
+        // Authenticated: check profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_number")
+          .eq("id", uid)
+          .single();
 
-      if (profile?.user_number) {
-        setSavedNumber(profile.user_number);
-        setState("success");
+        if (profile?.user_number) {
+          setSavedNumber(profile.user_number);
+          setState("success");
+        }
+      } else {
+        // Visitor: check localStorage
+        const visitorPhone = localStorage.getItem("visitor_phone");
+        if (visitorPhone) {
+          setSavedNumber(visitorPhone);
+          setState("success");
+        }
       }
     };
     init();
   }, []);
 
   const handleSubmit = async () => {
-    if (!userId) return;
     if (!isValidPhone(dialCode, phoneValue)) {
       setErrorMsg("Please enter a valid phone number.");
       setState("error");
@@ -63,45 +72,40 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
 
     const e164 = buildPhoneE164(dialCode, phoneValue);
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({ user_number: e164 })
-      .eq("id", userId);
+    if (userId) {
+      // Authenticated path: update profile directly
+      const { error } = await supabase
+        .from("profiles")
+        .update({ user_number: e164 })
+        .eq("id", userId);
 
-    if (error) {
-      setState("error");
-      setErrorMsg("Failed to save. Please try again.");
-      console.error("PhoneCaptureCard update error:", error);
-      return;
+      if (error) {
+        setState("error");
+        setErrorMsg("Failed to save. Please try again.");
+        console.error("PhoneCaptureCard update error:", error);
+        return;
+      }
+    } else {
+      // Visitor path: save to localStorage + visitors table
+      localStorage.setItem("visitor_phone", e164);
+
+      const visitorId = getVisitorId();
+      if (visitorId) {
+        try {
+          await supabase
+            .from("visitors" as any)
+            .update({ phone_number: e164 } as any)
+            .eq("id", visitorId);
+        } catch (err) {
+          console.error("PhoneCaptureCard visitor update error:", err);
+          // Non-blocking — localStorage is the primary store for visitors
+        }
+      }
     }
 
     setSavedNumber(e164);
     setState("success");
   };
-
-  // Not authenticated — show a message
-  if (userId === null && state !== "success") {
-    return (
-      <div
-        className={cn(
-          "flex flex-col gap-2 p-3 rounded-lg min-w-[220px] max-w-[300px]",
-          isSent
-            ? "bg-white/10 border border-white/20"
-            : "bg-muted/70 border border-border"
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <Phone className={cn("w-5 h-5", isSent ? "text-white/60" : "text-muted-foreground")} />
-          <h4 className={cn("font-semibold text-sm", isSent ? "text-white" : "text-foreground")}>
-            {data.title || "Phone Number Required"}
-          </h4>
-        </div>
-        <p className={cn("text-xs", isSent ? "text-white/70" : "text-muted-foreground")}>
-          Please log in to provide your phone number.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div
