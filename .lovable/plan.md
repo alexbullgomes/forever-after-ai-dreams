@@ -1,75 +1,92 @@
 
 
-# Phone Capture Card: Remove Auth Dependency for Visitors
+# Fix Visitor Phone Capture Rendering + Persistence
 
-## Problem
+## Root cause
 
-`PhoneCaptureCard` blocks unauthenticated users entirely (lines 82-104), showing "Please log in" instead of the phone form. Visitors should be able to submit their phone number without logging in.
+I found two concrete issues causing the visitor flow to still fail:
 
-## Approach
+1. **Visitor chat renders the wrong component**
+   - In `src/components/ui/expandable-chat-webhook.tsx`, card messages are always rendered with `ChatCardMessage`.
+   - Unlike the authenticated chat, it does **not** branch to `PhoneCaptureCard` when `entityType === 'phone_capture'`.
+   - Result: visitors see only the generic card shell, not the actual phone form.
 
-No new database table needed. Use localStorage for visitor phone storage and the existing `visitors` table (add a `phone_number` column) for DB persistence. On auth, merge into `profiles.user_number`.
+2. **Visitor DB persistence targets the wrong field / wrong write pattern**
+   - `PhoneCaptureCard` currently uses:
+     - `getVisitorId()` from localStorage
+     - `.from("visitors").update(...).eq("id", visitorId)`
+   - But the local visitor token is the public `visitor_id`, **not** the row primary key `id`.
+   - Also, anonymous visitor writes in this project consistently use **upsert on `visitor_id`**, not raw update, to avoid public update-policy issues.
+   - Result: localStorage may save, but DB persistence for visitors is unreliable or no-op.
 
-## Changes
+## Safe implementation
 
-### 1. Database Migration — Add `phone_number` to `visitors`
+### 1. Fix visitor chat rendering
+Update `src/components/ui/expandable-chat-webhook.tsx` so it matches the authenticated chat behavior:
 
-```sql
-ALTER TABLE visitors ADD COLUMN phone_number text;
-```
+- If `message.type === 'card'` and `message.cardData?.entityType === 'phone_capture'`
+  - render `PhoneCaptureCard`
+- Else if card
+  - render `ChatCardMessage`
 
-No new RLS needed — `visitors` already has public insert/upsert and admin read policies.
+This is a surgical rendering fix only for visitor chat cards.
 
-### 2. PhoneCaptureCard (`src/components/chat/PhoneCaptureCard.tsx`)
+### 2. Fix visitor persistence path in `PhoneCaptureCard`
+Update `src/components/chat/PhoneCaptureCard.tsx` visitor submit logic:
 
-Remove the auth gate (lines 82-104). Change the submit logic:
+- Use `getOrCreateVisitorId()` instead of `getVisitorId()` so the visitor always has an ID
+- Save phone to `localStorage` as already planned
+- Persist with:
+  - `.from("visitors").upsert({ visitor_id, phone_number, last_seen_at, last_url? }, { onConflict: "visitor_id" })`
+- Do **not** use `.eq("id", visitorId)`
 
-- **If authenticated**: update `profiles.user_number` (existing behavior, unchanged)
-- **If unauthenticated**: 
-  - Save phone to `localStorage` key `visitor_phone`
-  - Upsert `visitors` table with `visitor_id` + `phone_number`
-  - Show success state
+This aligns with the project’s existing visitor-tracking pattern and avoids auth-policy regressions.
 
-On mount:
-- Check auth → if authed, check `profiles.user_number` (existing)
-- If not authed, check `localStorage.getItem('visitor_phone')` → if exists, show success state
+### 3. Keep authenticated merge logic as-is
+`src/contexts/AuthContext.tsx` already contains the right merge behavior:
 
-### 3. AuthContext (`src/contexts/AuthContext.tsx`)
+- on sign-in, read `visitor_phone`
+- if profile has no `user_number`, copy it into `profiles.user_number`
+- clear `visitor_phone`
 
-Inside the `SIGNED_IN` handler (after `linkVisitorIdToProfile`), add:
+I would keep that logic unchanged unless I find a small bug while wiring the above fix.
 
-```typescript
-// Merge visitor phone into profile
-const visitorPhone = localStorage.getItem('visitor_phone');
-if (visitorPhone) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('user_number')
-    .eq('id', session.user.id)
-    .maybeSingle();
-  
-  if (!profile?.user_number) {
-    await supabase.from('profiles')
-      .update({ user_number: visitorPhone })
-      .eq('id', session.user.id);
-  }
-  localStorage.removeItem('visitor_phone');
-}
-```
-
-## Files Modified
+## Files to update
 
 | File | Change |
 |------|--------|
-| Migration | Add `phone_number` column to `visitors` |
-| `src/components/chat/PhoneCaptureCard.tsx` | Remove auth gate, add visitor submit path |
-| `src/contexts/AuthContext.tsx` | Merge `visitor_phone` on sign-in |
+| `src/components/ui/expandable-chat-webhook.tsx` | Render `PhoneCaptureCard` for `phone_capture` cards in visitor chat |
+| `src/components/chat/PhoneCaptureCard.tsx` | Replace visitor DB `update(...eq("id", ...))` with visitor-aware `upsert` on `visitor_id` |
 
-## Safety
+## Why this is safe
 
-- Authenticated flow unchanged — still updates `profiles.user_number` directly
-- No changes to chat, booking, or webhook systems
-- Visitor phone persists across page refreshes via localStorage
-- On login, phone merges into profile only if `user_number` is not already set (no overwrite)
-- No UI/UX changes — same form, same success state
+- No UI redesign: visitors will see the same `PhoneCaptureCard` already used elsewhere
+- No booking flow changes
+- No auth redirect changes
+- No webhook payload changes
+- No chat schema changes
+- No new table needed
+- Authenticated users still update `profiles.user_number` exactly as before
+
+## Validation checklist after implementation
+
+1. Visitor receives phone capture card in chat
+   - actual form renders, not generic card
+
+2. Visitor submits phone number
+   - success state appears
+   - `visitor_phone` saved in localStorage
+   - `visitors.phone_number` persisted by `visitor_id`
+
+3. Visitor then logs in
+   - `profiles.user_number` gets populated if empty
+   - `visitor_phone` is removed from localStorage
+
+4. Authenticated chat still works
+   - same phone card behavior
+   - no regression in product/campaign cards
+
+5. Booking flow unchanged
+   - visitor booking still gates at auth step only
+   - no layout or modal regression
 
