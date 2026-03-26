@@ -25,6 +25,7 @@ import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getOrCreateVisitorId, trackVisitorEvent } from "@/utils/visitor";
 import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
+import { PhoneCaptureCard } from "@/components/chat/PhoneCaptureCard";
 import { CardMessageData } from "@/types/chat";
 import { BookingFunnelModal } from "@/components/booking/BookingFunnelModal";
 
