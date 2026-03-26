@@ -89,17 +89,18 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
       // Visitor path: save to localStorage + visitors table
       localStorage.setItem("visitor_phone", e164);
 
-      const visitorId = getVisitorId();
-      if (visitorId) {
-        try {
-          await supabase
-            .from("visitors" as any)
-            .update({ phone_number: e164 } as any)
-            .eq("id", visitorId);
-        } catch (err) {
-          console.error("PhoneCaptureCard visitor update error:", err);
-          // Non-blocking — localStorage is the primary store for visitors
-        }
+      const visitorId = getOrCreateVisitorId();
+      try {
+        await supabase
+          .from("visitors" as any)
+          .upsert({
+            visitor_id: visitorId,
+            phone_number: e164,
+            last_seen_at: new Date().toISOString(),
+          } as any, { onConflict: "visitor_id" });
+      } catch (err) {
+        console.error("PhoneCaptureCard visitor update error:", err);
+        // Non-blocking — localStorage is the primary store for visitors
       }
     }
 

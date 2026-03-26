@@ -737,7 +737,12 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         )}
         <ChatBubbleMessage variant={isUser ? "sent" : "received"}>
           {/* Card message rendering */}
-          {message.type === 'card' && message.cardData ? (
+          {message.type === 'card' && message.cardData?.entityType === 'phone_capture' ? (
+            <PhoneCaptureCard
+              data={message.cardData}
+              variant={isUser ? 'sent' : 'received'}
+            />
+          ) : message.type === 'card' && message.cardData ? (
             <ChatCardMessage 
               data={message.cardData} 
               variant={isUser ? 'sent' : 'received'}
