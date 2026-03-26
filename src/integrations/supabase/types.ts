@@ -1992,6 +1992,7 @@ export type Database = {
           linked_user_id: string | null
           metadata: Json | null
           os: string | null
+          phone_number: string | null
           referrer: string | null
           screen_resolution: string | null
           status: string
@@ -2013,6 +2014,7 @@ export type Database = {
           linked_user_id?: string | null
           metadata?: Json | null
           os?: string | null
+          phone_number?: string | null
           referrer?: string | null
           screen_resolution?: string | null
           status?: string
@@ -2034,6 +2036,7 @@ export type Database = {
           linked_user_id?: string | null
           metadata?: Json | null
           os?: string | null
+          phone_number?: string | null
           referrer?: string | null
           screen_resolution?: string | null
           status?: string
