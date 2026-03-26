@@ -10,7 +10,7 @@ import PhoneNumberField, {
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { CardMessageData } from "@/types/chat";
-import { getVisitorId } from "@/utils/visitor";
+import { getOrCreateVisitorId } from "@/utils/visitor";
 
 type CardState = "pending" | "submitting" | "success" | "error";
 
