@@ -2087,6 +2087,18 @@ export type Database = {
             Returns: Json
           }
         | { Args: { p_slot_end: string; p_slot_start: string }; Returns: Json }
+      get_own_profile_protected_fields: {
+        Args: { _user_id: string }
+        Returns: {
+          can_access_affiliate_conversations: boolean
+          pipeline_profile: string
+          pipeline_status: string
+          role: string
+          sort_order: number
+          user_dashboard: boolean
+          visitor_id: string
+        }[]
+      }
       get_slot_availability: {
         Args: { p_product_id: string; p_slot_end: string; p_slot_start: string }
         Returns: Json
