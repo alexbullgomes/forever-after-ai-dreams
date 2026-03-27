@@ -1,92 +1,56 @@
 
 
-# Fix Visitor Phone Capture Rendering + Persistence
+# Fix: Privilege Escalation via Profile Self-Update
 
-## Root cause
+## Problem
 
-I found two concrete issues causing the visitor flow to still fail:
+The `Users can update their own profiles` RLS policy only restricts `visitor_id` changes. A user can set `role = 'admin'`, `can_access_affiliate_conversations = true`, or modify other admin-controlled fields by calling `supabase.from('profiles').update(...)` directly.
 
-1. **Visitor chat renders the wrong component**
-   - In `src/components/ui/expandable-chat-webhook.tsx`, card messages are always rendered with `ChatCardMessage`.
-   - Unlike the authenticated chat, it does **not** branch to `PhoneCaptureCard` when `entityType === 'phone_capture'`.
-   - Result: visitors see only the generic card shell, not the actual phone form.
+## Solution
 
-2. **Visitor DB persistence targets the wrong field / wrong write pattern**
-   - `PhoneCaptureCard` currently uses:
-     - `getVisitorId()` from localStorage
-     - `.from("visitors").update(...).eq("id", visitorId)`
-   - But the local visitor token is the public `visitor_id`, **not** the row primary key `id`.
-   - Also, anonymous visitor writes in this project consistently use **upsert on `visitor_id`**, not raw update, to avoid public update-policy issues.
-   - Result: localStorage may save, but DB persistence for visitors is unreliable or no-op.
+Replace the WITH CHECK clause to also lock down admin-controlled columns: `role`, `can_access_affiliate_conversations`, `pipeline_profile`, `pipeline_status`, `user_dashboard`, `sort_order`, `chat_summarize`, `briefing`. Each protected field must either remain unchanged or already be NULL→NULL.
 
-## Safe implementation
+## Migration SQL
 
-### 1. Fix visitor chat rendering
-Update `src/components/ui/expandable-chat-webhook.tsx` so it matches the authenticated chat behavior:
+```sql
+DROP POLICY IF EXISTS "Users can update their own profiles" ON public.profiles;
 
-- If `message.type === 'card'` and `message.cardData?.entityType === 'phone_capture'`
-  - render `PhoneCaptureCard`
-- Else if card
-  - render `ChatCardMessage`
+CREATE POLICY "Users can update their own profiles" ON public.profiles
+  FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (
+    auth.uid() = id
+    -- Prevent visitor_id hijacking
+    AND (
+      visitor_id IS NOT DISTINCT FROM (SELECT p.visitor_id FROM public.profiles p WHERE p.id = auth.uid())
+      OR (SELECT p.visitor_id FROM public.profiles p WHERE p.id = auth.uid()) IS NULL
+    )
+    -- Prevent role escalation
+    AND role IS NOT DISTINCT FROM (SELECT p.role FROM public.profiles p WHERE p.id = auth.uid())
+    -- Prevent flipping admin-controlled flags
+    AND can_access_affiliate_conversations IS NOT DISTINCT FROM (SELECT p.can_access_affiliate_conversations FROM public.profiles p WHERE p.id = auth.uid())
+    AND pipeline_profile IS NOT DISTINCT FROM (SELECT p.pipeline_profile FROM public.profiles p WHERE p.id = auth.uid())
+    AND pipeline_status IS NOT DISTINCT FROM (SELECT p.pipeline_status FROM public.profiles p WHERE p.id = auth.uid())
+    AND user_dashboard IS NOT DISTINCT FROM (SELECT p.user_dashboard FROM public.profiles p WHERE p.id = auth.uid())
+    AND sort_order IS NOT DISTINCT FROM (SELECT p.sort_order FROM public.profiles p WHERE p.id = auth.uid())
+  );
+```
 
-This is a surgical rendering fix only for visitor chat cards.
+`IS NOT DISTINCT FROM` ensures the new value equals the old value (handles NULLs correctly). If a user tries to change any protected field, the row fails the WITH CHECK and the update is rejected.
 
-### 2. Fix visitor persistence path in `PhoneCaptureCard`
-Update `src/components/chat/PhoneCaptureCard.tsx` visitor submit logic:
+**Note**: The existing `Admins can update all profiles` policy (USING: `has_role(auth.uid(), 'admin')`) is unaffected — admins can still update any field on any profile.
 
-- Use `getOrCreateVisitorId()` instead of `getVisitorId()` so the visitor always has an ID
-- Save phone to `localStorage` as already planned
-- Persist with:
-  - `.from("visitors").upsert({ visitor_id, phone_number, last_seen_at, last_url? }, { onConflict: "visitor_id" })`
-- Do **not** use `.eq("id", visitorId)`
-
-This aligns with the project’s existing visitor-tracking pattern and avoids auth-policy regressions.
-
-### 3. Keep authenticated merge logic as-is
-`src/contexts/AuthContext.tsx` already contains the right merge behavior:
-
-- on sign-in, read `visitor_phone`
-- if profile has no `user_number`, copy it into `profiles.user_number`
-- clear `visitor_phone`
-
-I would keep that logic unchanged unless I find a small bug while wiring the above fix.
-
-## Files to update
+## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/components/ui/expandable-chat-webhook.tsx` | Render `PhoneCaptureCard` for `phone_capture` cards in visitor chat |
-| `src/components/chat/PhoneCaptureCard.tsx` | Replace visitor DB `update(...eq("id", ...))` with visitor-aware `upsert` on `visitor_id` |
+| New migration | Replace profiles UPDATE policy with field-level protection |
 
-## Why this is safe
+## What remains safe to update by users
+- `name`, `email`, `avatar_url`, `user_number`, `promotional_phone`, `event_date`, `event_city`, `gallery_event`, `package_consultation`, `visitor_id` (first-time link only)
 
-- No UI redesign: visitors will see the same `PhoneCaptureCard` already used elsewhere
-- No booking flow changes
-- No auth redirect changes
-- No webhook payload changes
-- No chat schema changes
-- No new table needed
-- Authenticated users still update `profiles.user_number` exactly as before
-
-## Validation checklist after implementation
-
-1. Visitor receives phone capture card in chat
-   - actual form renders, not generic card
-
-2. Visitor submits phone number
-   - success state appears
-   - `visitor_phone` saved in localStorage
-   - `visitors.phone_number` persisted by `visitor_id`
-
-3. Visitor then logs in
-   - `profiles.user_number` gets populated if empty
-   - `visitor_phone` is removed from localStorage
-
-4. Authenticated chat still works
-   - same phone card behavior
-   - no regression in product/campaign cards
-
-5. Booking flow unchanged
-   - visitor booking still gates at auth step only
-   - no layout or modal regression
+## Safety
+- No code changes needed — all profile updates in the app only touch user-editable fields
+- Admin update policy is separate and unrestricted
+- `handle_new_user()` trigger runs as SECURITY DEFINER, bypasses RLS
 
