@@ -1,56 +1,78 @@
 
 
-# Homepage Gallery: Manual Highlight Curation System
+# Fix: Remove Legacy Categories from Gallery System
 
-## Current State
+## Root Cause
 
-- `gallery_cards` table already has a `featured` boolean column
-- Frontend "Highlights" tab (filter `all`) shows **all published cards** with no filtering — `featured` is ignored
-- Category tabs filter by `category` field (`Photo & Videos`, `Weddings`)
-- Admin form has `featured` toggle but it only shows a badge in the list — no functional impact on homepage
-- Categories available: `Photo & Videos`, `Weddings`, `video` (admin dropdown)
+Three sources of legacy category references:
 
-## What Changes
+1. **`site_settings` database** stores a `filters` array in the portfolio header content with old values ("Photo & Videos"). Since `content?.filters` is not null, it overrides the correct defaults in Portfolio.tsx.
 
-### 1. Frontend Filtering (Portfolio.tsx)
+2. **Portfolio.tsx line 106**: The card badge `type` field still maps non-Wedding categories to `"Photo & Video"` — should map per category.
 
-Update filter logic so:
-- **Highlights tab** → only cards where `featured === true` (already fetched, just filter)
-- **Category tabs** → all published cards matching category (unchanged for existing, add new tabs)
+3. **GalleryCardForm.tsx lines 238, 242**: Admin form still offers "Photo & Videos" and "Video" as category options.
 
-Update the default filter tabs to: Highlights, Photo & Videos, Weddings, Video (or match the user's requested: Highlights, Weddings, Business, Family — will use whatever categories exist in the data)
+## Changes
 
-The `filters` array comes from `content?.filters` (admin-configurable via site_settings). Default fallback will be updated to include the new categories.
+### 1. Portfolio.tsx — Fix type badge + force-sanitize filters
 
-### 2. Admin Form (GalleryCardForm.tsx)
+**Line 106** — Update the `type` mapping:
+```
+type: card.category  // Use the actual category name as the badge
+```
 
-- Rename the existing `featured` toggle label from "Featured" to **"Featured in Highlights"**
-- Add helper text: "When enabled, this card appears in the Highlights tab on the homepage"
-- Add new category options: `Business`, `Family` to the category dropdown (alongside existing `Photo & Videos`, `Weddings`)
+**Lines 49-54** — Add filter sanitization after the fallback to strip any legacy filter that isn't in the allowed set (`all`, `weddings`, `business`, `family`). This handles stale `site_settings` data without requiring a DB update:
+```typescript
+const rawFilters = content?.filters ?? [
+  { id: "all", label: "Highlights" },
+  { id: "weddings", label: "Weddings" },
+  { id: "business", label: "Business" },
+  { id: "family", label: "Family" }
+];
+const allowedFilterIds = new Set(["all", "weddings", "business", "family"]);
+const filters = rawFilters.filter(f => allowedFilterIds.has(f.id));
+// If sanitization removed everything, use defaults
+if (filters.length === 0) {
+  filters.push(
+    { id: "all", label: "Highlights" },
+    { id: "weddings", label: "Weddings" },
+    { id: "business", label: "Business" },
+    { id: "family", label: "Family" }
+  );
+}
+```
 
-### 3. Admin List (GalleryCardsAdmin.tsx)
+**Add legacy category mapping in filtering** — Cards with old categories ("Photo & Videos", "Video") get mapped during data fetch:
+```typescript
+// In the map callback, normalize category:
+const rawCategory = card.category;
+const category = rawCategory === "Photo & Videos" ? "Business" 
+               : rawCategory === "video" ? "Family" 
+               : rawCategory;
+```
 
-- Update the "Featured" badge/toggle label to "Highlights" for clarity
-- No structural changes needed — toggle already works
+### 2. GalleryCardForm.tsx — Remove legacy category options
 
-### 4. No Database Migration Needed
+**Lines 238, 242** — Remove "Photo & Videos" and "Video" options, keep only:
+- Weddings
+- Business  
+- Family
 
-The `featured` boolean column already exists with `DEFAULT false`. No schema change required.
+### 3. No backend changes needed
+
+The `site_settings` stale data is handled by frontend sanitization. No migration required.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/components/Portfolio.tsx` | Highlights tab filters by `featured === true`; update default filter tabs |
-| `src/components/admin/GalleryCardForm.tsx` | Rename featured label, add Business/Family categories |
-| `src/pages/GalleryCardsAdmin.tsx` | Update "Featured" label to "Featured in Highlights" |
+| `src/components/Portfolio.tsx` | Sanitize filters, fix type badge, map legacy categories |
+| `src/components/admin/GalleryCardForm.tsx` | Remove "Photo & Videos" and "Video" from category dropdown |
 
 ## Safety
 
-- No database changes
-- No changes to other gallery tables, booking, chat, or campaigns
-- Media priority logic untouched
-- Published logic unchanged — `is_published` still controls visibility
-- Existing cards with `featured = false` will simply not appear in Highlights tab (admin can toggle them on)
-- Category tabs continue showing all published cards in that category regardless of featured status
+- No DB schema changes
+- No changes to other galleries, booking, chat, or campaigns
+- Legacy cards with old categories gracefully mapped
+- Admin can re-categorize old cards at their own pace
 
