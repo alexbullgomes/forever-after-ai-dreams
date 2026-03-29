@@ -90,8 +90,8 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
               <h3 className="text-sm font-medium text-foreground truncate">
                 {card.title}
               </h3>
-              {card.featured && selectedGallery === 'homepage' && (
-                <Badge variant="secondary" className="text-xs">Featured</Badge>
+            {card.featured && selectedGallery === 'homepage' && (
+                <Badge variant="secondary" className="text-xs">Highlights</Badge>
               )}
             </div>
             <div className="flex items-center space-x-2 text-xs text-muted-foreground">
