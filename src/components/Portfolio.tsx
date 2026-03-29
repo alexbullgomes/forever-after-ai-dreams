@@ -46,12 +46,15 @@ const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
   const titleLine2 = content?.title_line2 ?? "Stories";
   const subtitle = content?.subtitle ?? "All stories are unique. Here are some of our recent celebrations captured across California.";
   const ctaText = content?.cta_text ?? "View Complete Portfolio";
-  const filters = content?.filters ?? [
+  const defaultFilters = [
     { id: "all", label: "Highlights" },
     { id: "weddings", label: "Weddings" },
     { id: "business", label: "Business" },
     { id: "family", label: "Family" }
   ];
+  const allowedFilterIds = new Set(["all", "weddings", "business", "family"]);
+  const sanitizedFilters = (content?.filters ?? defaultFilters).filter(f => allowedFilterIds.has(f.id));
+  const filters = sanitizedFilters.length > 0 ? sanitizedFilters : defaultFilters;
 
   const handleViewPortfolioClick = () => {
     if (user) {
