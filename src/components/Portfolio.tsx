@@ -102,11 +102,15 @@ const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
 
         const formattedItems: PortfolioItem[] = (data || []).map(card => ({
           id: card.id,
-          category: card.category,
+          category: card.category === "Photo & Videos" ? "Business"
+                   : card.category === "video" ? "Family"
+                   : card.category,
           title: card.title,
           location: card.location_city || '',
           date: card.event_season_or_date || '',
-          type: card.category === 'Weddings' ? 'Wedding' : 'Photo & Video',
+          type: card.category === "Photo & Videos" ? "Business"
+               : card.category === "video" ? "Family"
+               : card.category,
           featured: card.featured || false,
           video: card.video_url,
           videoMp4: card.video_mp4_url,

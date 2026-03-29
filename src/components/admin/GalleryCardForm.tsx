@@ -235,11 +235,9 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Photo & Videos">Photo & Videos</SelectItem>
                   <SelectItem value="Weddings">Weddings</SelectItem>
                   <SelectItem value="Business">Business</SelectItem>
                   <SelectItem value="Family">Family</SelectItem>
-                  {galleryType === 'homepage' && <SelectItem value="video">Video</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
