@@ -418,8 +418,10 @@ export default function GalleryCardsAdmin() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Stories</SelectItem>
-              <SelectItem value="photo">Photo & Videos</SelectItem>
-              <SelectItem value="weddings">Weddings</SelectItem>
+              <SelectItem value="Photo & Videos">Photo & Videos</SelectItem>
+              <SelectItem value="Weddings">Weddings</SelectItem>
+              <SelectItem value="Business">Business</SelectItem>
+              <SelectItem value="Family">Family</SelectItem>
               <SelectItem value="video">Video</SelectItem>
             </SelectContent>
           </Select>
