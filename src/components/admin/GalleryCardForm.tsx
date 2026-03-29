@@ -505,13 +505,16 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
           <div className="flex items-center justify-between pt-4">
             <div className="flex items-center space-x-6">
               {galleryType === 'homepage' && (
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="featured"
-                    checked={formData.featured}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
-                  />
-                  <Label htmlFor="featured">Featured</Label>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="featured"
+                      checked={formData.featured}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, featured: checked }))}
+                    />
+                    <Label htmlFor="featured">Featured in Highlights</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground ml-10">When enabled, this card appears in the Highlights tab on the homepage</p>
                 </div>
               )}
 
