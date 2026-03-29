@@ -48,7 +48,6 @@ const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
   const ctaText = content?.cta_text ?? "View Complete Portfolio";
   const filters = content?.filters ?? [
     { id: "all", label: "Highlights" },
-    { id: "photo-videos", label: "Photo & Videos" },
     { id: "weddings", label: "Weddings" },
     { id: "business", label: "Business" },
     { id: "family", label: "Family" }
