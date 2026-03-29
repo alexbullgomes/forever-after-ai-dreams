@@ -49,7 +49,9 @@ const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
   const filters = content?.filters ?? [
     { id: "all", label: "Highlights" },
     { id: "photo-videos", label: "Photo & Videos" },
-    { id: "weddings", label: "Weddings" }
+    { id: "weddings", label: "Weddings" },
+    { id: "business", label: "Business" },
+    { id: "family", label: "Family" }
   ];
 
   const handleViewPortfolioClick = () => {
@@ -128,10 +130,12 @@ const Portfolio = ({ onBookingClick, content }: PortfolioProps) => {
   }, []);
 
   const filteredItems = activeFilter === "all" 
-    ? portfolioItems
+    ? portfolioItems.filter(item => item.featured)
     : portfolioItems.filter(item => {
         if (activeFilter === "photo-videos") return item.category === "Photo & Videos";
         if (activeFilter === "weddings") return item.category === "Weddings";
+        if (activeFilter === "business") return item.category === "Business";
+        if (activeFilter === "family") return item.category === "Family";
         return false;
       });
 

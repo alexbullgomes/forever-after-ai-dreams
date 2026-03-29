@@ -90,8 +90,8 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
               <h3 className="text-sm font-medium text-foreground truncate">
                 {card.title}
               </h3>
-              {card.featured && selectedGallery === 'homepage' && (
-                <Badge variant="secondary" className="text-xs">Featured</Badge>
+            {card.featured && selectedGallery === 'homepage' && (
+                <Badge variant="secondary" className="text-xs">Highlights</Badge>
               )}
             </div>
             <div className="flex items-center space-x-2 text-xs text-muted-foreground">
@@ -122,7 +122,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
                   checked={card.featured}
                   onCheckedChange={(checked) => onToggleFeatured(card.id, checked)}
                 />
-                <span className="text-xs text-muted-foreground">Featured</span>
+                <span className="text-xs text-muted-foreground">Featured in Highlights</span>
               </div>
             )}
 
@@ -418,8 +418,10 @@ export default function GalleryCardsAdmin() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Stories</SelectItem>
-              <SelectItem value="photo">Photo & Videos</SelectItem>
-              <SelectItem value="weddings">Weddings</SelectItem>
+              <SelectItem value="Photo & Videos">Photo & Videos</SelectItem>
+              <SelectItem value="Weddings">Weddings</SelectItem>
+              <SelectItem value="Business">Business</SelectItem>
+              <SelectItem value="Family">Family</SelectItem>
               <SelectItem value="video">Video</SelectItem>
             </SelectContent>
           </Select>
