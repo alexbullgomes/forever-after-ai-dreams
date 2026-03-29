@@ -122,7 +122,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
                   checked={card.featured}
                   onCheckedChange={(checked) => onToggleFeatured(card.id, checked)}
                 />
-                <span className="text-xs text-muted-foreground">Featured</span>
+                <span className="text-xs text-muted-foreground">Featured in Highlights</span>
               </div>
             )}
 
