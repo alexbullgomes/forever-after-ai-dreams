@@ -1,78 +1,45 @@
 
 
-# Fix: Remove Legacy Categories from Gallery System
+# Change Chat Auto-Open Delay to 60 Seconds
 
 ## Root Cause
 
-Three sources of legacy category references:
-
-1. **`site_settings` database** stores a `filters` array in the portfolio header content with old values ("Photo & Videos"). Since `content?.filters` is not null, it overrides the correct defaults in Portfolio.tsx.
-
-2. **Portfolio.tsx line 106**: The card badge `type` field still maps non-Wedding categories to `"Photo & Video"` — should map per category.
-
-3. **GalleryCardForm.tsx lines 238, 242**: Admin form still offers "Photo & Videos" and "Video" as category options.
+The auto-open delay is hardcoded in `src/hooks/useAutoOpenChat.ts` with a default of **10,000ms (10 seconds)**. Neither `ExpandableChatWebhook` nor `ExpandableChatAssistant` passes a custom `delay` prop — both use the default.
 
 ## Changes
 
-### 1. Portfolio.tsx — Fix type badge + force-sanitize filters
+### 1. `src/hooks/useAutoOpenChat.ts` — Change default delay
 
-**Line 106** — Update the `type` mapping:
-```
-type: card.category  // Use the actual category name as the badge
-```
+Change line 11 from `delay = 10000` to `delay = 60000` (60 seconds).
 
-**Lines 49-54** — Add filter sanitization after the fallback to strip any legacy filter that isn't in the allowed set (`all`, `weddings`, `business`, `family`). This handles stale `site_settings` data without requiring a DB update:
-```typescript
-const rawFilters = content?.filters ?? [
-  { id: "all", label: "Highlights" },
-  { id: "weddings", label: "Weddings" },
-  { id: "business", label: "Business" },
-  { id: "family", label: "Family" }
-];
-const allowedFilterIds = new Set(["all", "weddings", "business", "family"]);
-const filters = rawFilters.filter(f => allowedFilterIds.has(f.id));
-// If sanitization removed everything, use defaults
-if (filters.length === 0) {
-  filters.push(
-    { id: "all", label: "Highlights" },
-    { id: "weddings", label: "Weddings" },
-    { id: "business", label: "Business" },
-    { id: "family", label: "Family" }
-  );
-}
-```
+### 2. (Bonus) Make delay configurable via `site_settings`
 
-**Add legacy category mapping in filtering** — Cards with old categories ("Photo & Videos", "Video") get mapped during data fetch:
-```typescript
-// In the map callback, normalize category:
-const rawCategory = card.category;
-const category = rawCategory === "Photo & Videos" ? "Business" 
-               : rawCategory === "video" ? "Family" 
-               : rawCategory;
-```
+Add a new key (e.g., `chat_auto_open_delay`) to the site settings system. Both chat components would read this value via `useHomepageContent` or `useSiteSettings` and pass it as the `delay` prop. Fallback: 60000ms.
 
-### 2. GalleryCardForm.tsx — Remove legacy category options
+**Files involved:**
+- `src/hooks/useAutoOpenChat.ts` — already accepts `delay` prop, just change default
+- `src/components/ui/expandable-chat-webhook.tsx` — pass `delay` from settings
+- `src/components/ui/expandable-chat-assistant.tsx` — pass `delay` from settings
+- `src/components/admin/settings/ContentSection.tsx` or new settings section — add number input for delay
 
-**Lines 238, 242** — Remove "Photo & Videos" and "Video" options, keep only:
-- Weddings
-- Business  
-- Family
+### Recommended approach
 
-### 3. No backend changes needed
+**Minimal (just change timing):** Edit one line in `useAutoOpenChat.ts`. Done.
 
-The `site_settings` stale data is handled by frontend sanitization. No migration required.
+**Configurable:** Add `delay` prop from site settings in both chat components. This is low-risk since the hook already supports the `delay` parameter.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/components/Portfolio.tsx` | Sanitize filters, fix type badge, map legacy categories |
-| `src/components/admin/GalleryCardForm.tsx` | Remove "Photo & Videos" and "Video" from category dropdown |
+| `src/hooks/useAutoOpenChat.ts` | Default delay: 10000 → 60000 |
+| *(Optional)* Both chat components | Pass configurable delay from site_settings |
 
 ## Safety
 
-- No DB schema changes
-- No changes to other galleries, booking, chat, or campaigns
-- Legacy cards with old categories gracefully mapped
-- Admin can re-categorize old cards at their own pace
+- No UI/UX changes — only timing
+- Session-based "already opened" flag unchanged
+- Manual open/close unaffected
+- No webhook or conversation flow changes
+- No performance impact (single setTimeout)
 
