@@ -8,7 +8,7 @@ interface UseAutoOpenChatOptions {
 
 export const useAutoOpenChat = ({ 
   sessionKey, 
-  delay = 10000, 
+  delay = 60000, 
   enabled = true 
 }: UseAutoOpenChatOptions) => {
   const [shouldAutoOpen, setShouldAutoOpen] = useState(false);
