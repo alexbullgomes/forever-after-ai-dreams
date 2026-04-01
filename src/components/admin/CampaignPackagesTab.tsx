@@ -341,30 +341,69 @@ const defaultPackageData: PackageFormData = {
            />
          </div>
  
-         <div className="flex items-center gap-4">
-           <div className="flex items-center gap-2">
-             <Switch
-               checked={data.is_popular}
-               onCheckedChange={(checked) => updateField('is_popular', checked)}
-             />
-             <Label className="flex items-center gap-1">
-               <Star className="h-4 w-4" />
-               Mark as Popular
-             </Label>
-           </div>
-           <div className="flex items-center gap-2">
-             <Switch
-               checked={data.is_enabled}
-               onCheckedChange={(checked) => updateField('is_enabled', checked)}
-             />
-             <Label className="flex items-center gap-1">
-               {data.is_enabled ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-               {data.is_enabled ? 'Enabled' : 'Disabled'}
-             </Label>
-           </div>
-         </div>
- 
-         <div className="flex justify-between pt-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={data.is_popular}
+                onCheckedChange={(checked) => updateField('is_popular', checked)}
+              />
+              <Label className="flex items-center gap-1">
+                <Star className="h-4 w-4" />
+                Mark as Popular
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={data.is_enabled}
+                onCheckedChange={(checked) => updateField('is_enabled', checked)}
+              />
+              <Label className="flex items-center gap-1">
+                {data.is_enabled ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {data.is_enabled ? 'Enabled' : 'Disabled'}
+              </Label>
+            </div>
+          </div>
+
+          {/* CTA Settings */}
+          <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+            <Label className="text-sm font-semibold">CTA Button Settings</Label>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Primary Button (Booking)</Label>
+                <Switch
+                  checked={data.primary_cta_enabled}
+                  onCheckedChange={(checked) => updateField('primary_cta_enabled', checked)}
+                />
+              </div>
+              {data.primary_cta_enabled && (
+                <Input
+                  value={data.primary_cta_text}
+                  onChange={(e) => updateField('primary_cta_text', e.target.value)}
+                  placeholder="Secure Your Booking"
+                />
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Secondary Button (Consultation)</Label>
+                <Switch
+                  checked={data.secondary_cta_enabled}
+                  onCheckedChange={(checked) => updateField('secondary_cta_enabled', checked)}
+                />
+              </div>
+              {data.secondary_cta_enabled && (
+                <Input
+                  value={data.secondary_cta_text}
+                  onChange={(e) => updateField('secondary_cta_text', e.target.value)}
+                  placeholder="Free Consultation First"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-between pt-2">
            <Button type="button" variant="ghost" onClick={onCancel}>
              Cancel
            </Button>

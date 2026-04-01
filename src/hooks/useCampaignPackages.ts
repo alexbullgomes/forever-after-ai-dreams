@@ -50,6 +50,10 @@ export interface UpdatePackageData {
   is_enabled?: boolean;
   minimum_deposit_cents?: number;
   sort_order?: number;
+  primary_cta_text?: string | null;
+  primary_cta_enabled?: boolean;
+  secondary_cta_text?: string | null;
+  secondary_cta_enabled?: boolean;
 }
 
 export function useCampaignPackages(campaignId: string | undefined) {

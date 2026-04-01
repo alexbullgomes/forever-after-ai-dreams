@@ -699,6 +699,10 @@ export type Database = {
           is_popular: boolean | null
           minimum_deposit_cents: number
           price_display: string
+          primary_cta_enabled: boolean
+          primary_cta_text: string | null
+          secondary_cta_enabled: boolean
+          secondary_cta_text: string | null
           sort_order: number | null
           title: string
           updated_at: string | null
@@ -714,6 +718,10 @@ export type Database = {
           is_popular?: boolean | null
           minimum_deposit_cents?: number
           price_display: string
+          primary_cta_enabled?: boolean
+          primary_cta_text?: string | null
+          secondary_cta_enabled?: boolean
+          secondary_cta_text?: string | null
           sort_order?: number | null
           title: string
           updated_at?: string | null
@@ -729,6 +737,10 @@ export type Database = {
           is_popular?: boolean | null
           minimum_deposit_cents?: number
           price_display?: string
+          primary_cta_enabled?: boolean
+          primary_cta_text?: string | null
+          secondary_cta_enabled?: boolean
+          secondary_cta_text?: string | null
           sort_order?: number | null
           title?: string
           updated_at?: string | null

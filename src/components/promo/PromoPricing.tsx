@@ -44,6 +44,10 @@ const PromoPricing = ({ packages, campaignId, campaignSlug }: PromoPricingProps)
               campaignSlug={campaignSlug}
               packageId={pkg.id}
               minimumDepositCents={pkg.minimum_deposit_cents}
+              primaryCtaText={pkg.primary_cta_text}
+              primaryCtaEnabled={pkg.primary_cta_enabled}
+              secondaryCtaText={pkg.secondary_cta_text}
+              secondaryCtaEnabled={pkg.secondary_cta_enabled}
             />
           ))}
         </div>
