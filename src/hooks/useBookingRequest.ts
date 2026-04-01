@@ -81,15 +81,20 @@ export function useBookingRequest(
       }
 
       if (existing) {
-        // Update last_seen_at
-        const { data: updated, error: updateError } = await supabase
-          .from('booking_requests')
-          .update({ last_seen_at: new Date().toISOString() })
-          .eq('id', existing.id)
-          .select()
-          .single();
+        // Try to update last_seen_at (may fail for anonymous users due to RLS)
+        let latestData = existing;
+        if (user?.id) {
+          const { data: updated, error: updateError } = await supabase
+            .from('booking_requests')
+            .update({ last_seen_at: new Date().toISOString() })
+            .eq('id', existing.id)
+            .select()
+            .single();
 
-        if (updateError) throw updateError;
+          if (!updateError && updated) {
+            latestData = updated;
+          }
+        }
 
         // Determine availability version based on offer expiry
         const offerExpired = new Date(existing.offer_expires_at) < new Date();
@@ -97,7 +102,7 @@ export function useBookingRequest(
         const availabilityVersion = (!offerExpired || isPaid) ? 'full' : 'limited';
 
         const request = {
-          ...updated,
+          ...latestData,
           availability_version: availabilityVersion,
         } as BookingRequest;
         
