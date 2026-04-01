@@ -17,27 +17,35 @@
    onPricingSectionToggle: (enabled: boolean) => void;
  }
  
- interface PackageFormData {
-   title: string;
-   price_display: string;
-   description: string;
-   features: string[];
-   ideal_for: string;
-   is_popular: boolean;
-   is_enabled: boolean;
-   minimum_deposit_cents: number;
- }
- 
- const defaultPackageData: PackageFormData = {
-   title: '',
-   price_display: '',
-   description: '',
-   features: [''],
-   ideal_for: '',
-   is_popular: false,
-   is_enabled: true,
-   minimum_deposit_cents: 15000, // $150 default
- };
+interface PackageFormData {
+  title: string;
+  price_display: string;
+  description: string;
+  features: string[];
+  ideal_for: string;
+  is_popular: boolean;
+  is_enabled: boolean;
+  minimum_deposit_cents: number;
+  primary_cta_text: string;
+  primary_cta_enabled: boolean;
+  secondary_cta_text: string;
+  secondary_cta_enabled: boolean;
+}
+
+const defaultPackageData: PackageFormData = {
+  title: '',
+  price_display: '',
+  description: '',
+  features: [''],
+  ideal_for: '',
+  is_popular: false,
+  is_enabled: true,
+  minimum_deposit_cents: 15000,
+  primary_cta_text: '',
+  primary_cta_enabled: true,
+  secondary_cta_text: '',
+  secondary_cta_enabled: true,
+};
  
  export function CampaignPackagesTab({ 
    campaignId, 
