@@ -1,45 +1,76 @@
 
 
-# Change Chat Auto-Open Delay to 60 Seconds
+# Campaign Package CTA Button Customization
 
-## Root Cause
+## Overview
 
-The auto-open delay is hardcoded in `src/hooks/useAutoOpenChat.ts` with a default of **10,000ms (10 seconds)**. Neither `ExpandableChatWebhook` nor `ExpandableChatAssistant` passes a custom `delay` prop — both use the default.
+Add admin-controlled visibility and label customization for both CTA buttons on campaign pricing cards, with full backward compatibility.
 
 ## Changes
 
-### 1. `src/hooks/useAutoOpenChat.ts` — Change default delay
+### 1. Database Migration
 
-Change line 11 from `delay = 10000` to `delay = 60000` (60 seconds).
+Add 4 nullable columns to `campaign_packages`:
 
-### 2. (Bonus) Make delay configurable via `site_settings`
+```sql
+ALTER TABLE campaign_packages
+  ADD COLUMN primary_cta_text text,
+  ADD COLUMN primary_cta_enabled boolean NOT NULL DEFAULT true,
+  ADD COLUMN secondary_cta_text text,
+  ADD COLUMN secondary_cta_enabled boolean NOT NULL DEFAULT true;
+```
 
-Add a new key (e.g., `chat_auto_open_delay`) to the site settings system. Both chat components would read this value via `useHomepageContent` or `useSiteSettings` and pass it as the `delay` prop. Fallback: 60000ms.
+Existing rows get `true` for both enabled fields (default), `null` for text fields (triggers frontend fallback to current labels).
 
-**Files involved:**
-- `src/hooks/useAutoOpenChat.ts` — already accepts `delay` prop, just change default
-- `src/components/ui/expandable-chat-webhook.tsx` — pass `delay` from settings
-- `src/components/ui/expandable-chat-assistant.tsx` — pass `delay` from settings
-- `src/components/admin/settings/ContentSection.tsx` or new settings section — add number input for delay
+### 2. Hook Update (`src/hooks/useCampaignPackages.ts`)
 
-### Recommended approach
+Add the 4 new fields to `CampaignPackage`, `CreatePackageData`, and `UpdatePackageData` interfaces. No query changes needed since we `select('*')`.
 
-**Minimal (just change timing):** Edit one line in `useAutoOpenChat.ts`. Done.
+### 3. Campaign Hook (`src/hooks/usePromotionalCampaign.ts`)
 
-**Configurable:** Add `delay` prop from site settings in both chat components. This is low-risk since the hook already supports the `delay` parameter.
+Add the 4 fields to the package mapping (they come through automatically via `select('*')`, just need type coverage).
+
+### 4. Admin Form (`src/components/admin/CampaignPackagesTab.tsx`)
+
+Add to `PackageFormData` interface and `defaultPackageData`:
+- `primary_cta_text: ''`, `primary_cta_enabled: true`
+- `secondary_cta_text: ''`, `secondary_cta_enabled: true`
+
+Add a "CTA Settings" section at the bottom of `renderPackageForm` (before the Save/Cancel buttons):
+- **Primary Button**: Toggle (enabled/disabled) + text input (placeholder: "Secure Your Booking")
+- **Secondary Button**: Toggle (enabled/disabled) + text input (placeholder: "Free Consultation First")
+
+Update `startEditing` to populate CTA fields from package data. Update `handleCreatePackage` and `handleUpdatePackage` to pass CTA fields.
+
+### 5. Frontend Card (`src/components/promo/CampaignPricingCard.tsx`)
+
+Add 4 optional props: `primaryCtaText`, `primaryCtaEnabled`, `secondaryCtaText`, `secondaryCtaEnabled`.
+
+Conditionally render buttons:
+- Primary: render only if `primaryCtaEnabled !== false`. Label = `primaryCtaText || 'Secure Your Booking'`
+- Secondary: render only if `secondaryCtaEnabled !== false`. Label = `secondaryCtaText || 'Free Consultation First'`
+
+No changes to `onClick` handlers or modal logic.
+
+### 6. Props Pass-through (`src/components/promo/PromoPricing.tsx`)
+
+Pass the 4 new fields from `pkg` to `CampaignPricingCard`.
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `src/hooks/useAutoOpenChat.ts` | Default delay: 10000 → 60000 |
-| *(Optional)* Both chat components | Pass configurable delay from site_settings |
+| Migration | Add 4 columns to `campaign_packages` |
+| `src/hooks/useCampaignPackages.ts` | Add fields to interfaces |
+| `src/hooks/usePromotionalCampaign.ts` | Add fields to type mapping |
+| `src/components/admin/CampaignPackagesTab.tsx` | Add CTA Settings section in form |
+| `src/components/promo/CampaignPricingCard.tsx` | Conditional render + custom labels |
+| `src/components/promo/PromoPricing.tsx` | Pass CTA props |
 
 ## Safety
 
-- No UI/UX changes — only timing
-- Session-based "already opened" flag unchanged
-- Manual open/close unaffected
-- No webhook or conversation flow changes
-- No performance impact (single setTimeout)
+- All new columns have safe defaults — existing packages render identically
+- No changes to booking flow, Stripe, or modal triggers
+- `onClick` handlers untouched — only button visibility and label text affected
+- Null text = use hardcoded default label (backward compatible)
 
