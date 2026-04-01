@@ -127,6 +127,10 @@ export const usePromotionalCampaign = (slug: string) => {
         const packages: CampaignPackage[] = (packagesData || []).map((pkg: any) => ({
           ...pkg,
           features: Array.isArray(pkg.features) ? pkg.features : [],
+          primary_cta_text: pkg.primary_cta_text ?? null,
+          primary_cta_enabled: pkg.primary_cta_enabled ?? true,
+          secondary_cta_text: pkg.secondary_cta_text ?? null,
+          secondary_cta_enabled: pkg.secondary_cta_enabled ?? true,
         }));
 
         // Parse tracking_scripts from JSONB
