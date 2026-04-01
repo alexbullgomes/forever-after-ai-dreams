@@ -14,6 +14,10 @@ export interface CampaignPackage {
   is_enabled: boolean;
   minimum_deposit_cents: number;
   sort_order: number;
+  primary_cta_text: string | null;
+  primary_cta_enabled: boolean;
+  secondary_cta_text: string | null;
+  secondary_cta_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
