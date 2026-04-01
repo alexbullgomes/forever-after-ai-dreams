@@ -153,16 +153,20 @@ const defaultPackageData: PackageFormData = {
    const startEditing = (pkg: CampaignPackage) => {
      setEditFormData(prev => ({
        ...prev,
-       [pkg.id]: {
-         title: pkg.title,
-         price_display: pkg.price_display,
-         description: pkg.description || '',
-         features: pkg.features.length > 0 ? pkg.features : [''],
-         ideal_for: pkg.ideal_for || '',
-         is_popular: pkg.is_popular,
-         is_enabled: pkg.is_enabled,
-         minimum_deposit_cents: pkg.minimum_deposit_cents,
-       },
+      [pkg.id]: {
+          title: pkg.title,
+          price_display: pkg.price_display,
+          description: pkg.description || '',
+          features: pkg.features.length > 0 ? pkg.features : [''],
+          ideal_for: pkg.ideal_for || '',
+          is_popular: pkg.is_popular,
+          is_enabled: pkg.is_enabled,
+          minimum_deposit_cents: pkg.minimum_deposit_cents,
+          primary_cta_text: pkg.primary_cta_text || '',
+          primary_cta_enabled: pkg.primary_cta_enabled ?? true,
+          secondary_cta_text: pkg.secondary_cta_text || '',
+          secondary_cta_enabled: pkg.secondary_cta_enabled ?? true,
+        },
      }));
      setExpandedId(pkg.id);
    };
