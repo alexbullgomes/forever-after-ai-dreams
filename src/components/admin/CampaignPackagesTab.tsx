@@ -114,17 +114,21 @@ const defaultPackageData: PackageFormData = {
        return;
      }
  
-     await updatePackage.mutateAsync({
-       id: pkgId,
-       title: formData.title.trim(),
-       price_display: formData.price_display.trim(),
-       description: formData.description.trim() || null,
-       features: formData.features.filter(f => f.trim()),
-       ideal_for: formData.ideal_for.trim() || null,
-       is_popular: formData.is_popular,
-       is_enabled: formData.is_enabled,
-       minimum_deposit_cents: formData.minimum_deposit_cents,
-     });
+      await updatePackage.mutateAsync({
+        id: pkgId,
+        title: formData.title.trim(),
+        price_display: formData.price_display.trim(),
+        description: formData.description.trim() || null,
+        features: formData.features.filter(f => f.trim()),
+        ideal_for: formData.ideal_for.trim() || null,
+        is_popular: formData.is_popular,
+        is_enabled: formData.is_enabled,
+        minimum_deposit_cents: formData.minimum_deposit_cents,
+        primary_cta_text: formData.primary_cta_text.trim() || null,
+        primary_cta_enabled: formData.primary_cta_enabled,
+        secondary_cta_text: formData.secondary_cta_text.trim() || null,
+        secondary_cta_enabled: formData.secondary_cta_enabled,
+      });
  
      setExpandedId(null);
      setEditFormData(prev => {
