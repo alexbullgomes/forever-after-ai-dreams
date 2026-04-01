@@ -43,6 +43,10 @@ interface CampaignPricingCardProps {
   campaignSlug: string;
   packageId: string;
   minimumDepositCents: number;
+  primaryCtaText?: string | null;
+  primaryCtaEnabled?: boolean;
+  secondaryCtaText?: string | null;
+  secondaryCtaEnabled?: boolean;
 }
 
 export function CampaignPricingCard({
