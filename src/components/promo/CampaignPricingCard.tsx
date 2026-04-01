@@ -60,6 +60,10 @@ export function CampaignPricingCard({
   campaignSlug,
   packageId,
   minimumDepositCents,
+  primaryCtaText,
+  primaryCtaEnabled = true,
+  secondaryCtaText,
+  secondaryCtaEnabled = true,
 }: CampaignPricingCardProps) {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
