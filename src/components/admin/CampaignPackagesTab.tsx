@@ -83,18 +83,22 @@ const defaultPackageData: PackageFormData = {
        return;
      }
  
-     await createPackage.mutateAsync({
-       campaign_id: campaignId,
-       title: newPackageData.title.trim(),
-       price_display: newPackageData.price_display.trim(),
-       description: newPackageData.description.trim() || undefined,
-       features: newPackageData.features.filter(f => f.trim()),
-       ideal_for: newPackageData.ideal_for.trim() || undefined,
-       is_popular: newPackageData.is_popular,
-       is_enabled: newPackageData.is_enabled,
-       minimum_deposit_cents: newPackageData.minimum_deposit_cents,
-       sort_order: packages.length,
-     });
+      await createPackage.mutateAsync({
+        campaign_id: campaignId,
+        title: newPackageData.title.trim(),
+        price_display: newPackageData.price_display.trim(),
+        description: newPackageData.description.trim() || undefined,
+        features: newPackageData.features.filter(f => f.trim()),
+        ideal_for: newPackageData.ideal_for.trim() || undefined,
+        is_popular: newPackageData.is_popular,
+        is_enabled: newPackageData.is_enabled,
+        minimum_deposit_cents: newPackageData.minimum_deposit_cents,
+        sort_order: packages.length,
+        primary_cta_text: newPackageData.primary_cta_text.trim() || undefined,
+        primary_cta_enabled: newPackageData.primary_cta_enabled,
+        secondary_cta_text: newPackageData.secondary_cta_text.trim() || undefined,
+        secondary_cta_enabled: newPackageData.secondary_cta_enabled,
+      });
  
      setNewPackageData(defaultPackageData);
      setIsAddingNew(false);
