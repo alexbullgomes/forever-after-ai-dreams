@@ -43,6 +43,10 @@ interface CampaignPricingCardProps {
   campaignSlug: string;
   packageId: string;
   minimumDepositCents: number;
+  primaryCtaText?: string | null;
+  primaryCtaEnabled?: boolean;
+  secondaryCtaText?: string | null;
+  secondaryCtaEnabled?: boolean;
 }
 
 export function CampaignPricingCard({
@@ -56,6 +60,10 @@ export function CampaignPricingCard({
   campaignSlug,
   packageId,
   minimumDepositCents,
+  primaryCtaText,
+  primaryCtaEnabled = true,
+  secondaryCtaText,
+  secondaryCtaEnabled = true,
 }: CampaignPricingCardProps) {
   const [isConsultationFormOpen, setIsConsultationFormOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -209,22 +217,26 @@ export function CampaignPricingCard({
           </ul>
           
           <div className="space-y-3">
-            <Button
-              onClick={() => setIsBookingOpen(true)}
-              disabled={isResuming}
-              className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
-            >
-              {isResuming ? 'Resuming...' : 'Secure Your Booking'}
-            </Button>
+            {primaryCtaEnabled && (
+              <Button
+                onClick={() => setIsBookingOpen(true)}
+                disabled={isResuming}
+                className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
+              >
+                {isResuming ? 'Resuming...' : (primaryCtaText || 'Secure Your Booking')}
+              </Button>
+            )}
             
-            <Button
-              onClick={() => setIsConsultationFormOpen(true)}
-              variant="outline"
-              className="w-full h-10"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              Free Consultation First
-            </Button>
+            {secondaryCtaEnabled && (
+              <Button
+                onClick={() => setIsConsultationFormOpen(true)}
+                variant="outline"
+                className="w-full h-10"
+              >
+                <Camera className="w-4 h-4 mr-2" />
+                {secondaryCtaText || 'Free Consultation First'}
+              </Button>
+            )}
           </div>
           
           {idealFor && (

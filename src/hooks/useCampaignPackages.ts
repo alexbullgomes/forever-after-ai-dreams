@@ -14,6 +14,10 @@ export interface CampaignPackage {
   is_enabled: boolean;
   minimum_deposit_cents: number;
   sort_order: number;
+  primary_cta_text: string | null;
+  primary_cta_enabled: boolean;
+  secondary_cta_text: string | null;
+  secondary_cta_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +33,10 @@ export interface CreatePackageData {
   is_enabled?: boolean;
   minimum_deposit_cents: number;
   sort_order?: number;
+  primary_cta_text?: string;
+  primary_cta_enabled?: boolean;
+  secondary_cta_text?: string;
+  secondary_cta_enabled?: boolean;
 }
 
 export interface UpdatePackageData {
@@ -42,6 +50,10 @@ export interface UpdatePackageData {
   is_enabled?: boolean;
   minimum_deposit_cents?: number;
   sort_order?: number;
+  primary_cta_text?: string | null;
+  primary_cta_enabled?: boolean;
+  secondary_cta_text?: string | null;
+  secondary_cta_enabled?: boolean;
 }
 
 export function useCampaignPackages(campaignId: string | undefined) {

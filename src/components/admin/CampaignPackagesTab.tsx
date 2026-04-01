@@ -17,27 +17,35 @@
    onPricingSectionToggle: (enabled: boolean) => void;
  }
  
- interface PackageFormData {
-   title: string;
-   price_display: string;
-   description: string;
-   features: string[];
-   ideal_for: string;
-   is_popular: boolean;
-   is_enabled: boolean;
-   minimum_deposit_cents: number;
- }
- 
- const defaultPackageData: PackageFormData = {
-   title: '',
-   price_display: '',
-   description: '',
-   features: [''],
-   ideal_for: '',
-   is_popular: false,
-   is_enabled: true,
-   minimum_deposit_cents: 15000, // $150 default
- };
+interface PackageFormData {
+  title: string;
+  price_display: string;
+  description: string;
+  features: string[];
+  ideal_for: string;
+  is_popular: boolean;
+  is_enabled: boolean;
+  minimum_deposit_cents: number;
+  primary_cta_text: string;
+  primary_cta_enabled: boolean;
+  secondary_cta_text: string;
+  secondary_cta_enabled: boolean;
+}
+
+const defaultPackageData: PackageFormData = {
+  title: '',
+  price_display: '',
+  description: '',
+  features: [''],
+  ideal_for: '',
+  is_popular: false,
+  is_enabled: true,
+  minimum_deposit_cents: 15000,
+  primary_cta_text: '',
+  primary_cta_enabled: true,
+  secondary_cta_text: '',
+  secondary_cta_enabled: true,
+};
  
  export function CampaignPackagesTab({ 
    campaignId, 
@@ -75,18 +83,22 @@
        return;
      }
  
-     await createPackage.mutateAsync({
-       campaign_id: campaignId,
-       title: newPackageData.title.trim(),
-       price_display: newPackageData.price_display.trim(),
-       description: newPackageData.description.trim() || undefined,
-       features: newPackageData.features.filter(f => f.trim()),
-       ideal_for: newPackageData.ideal_for.trim() || undefined,
-       is_popular: newPackageData.is_popular,
-       is_enabled: newPackageData.is_enabled,
-       minimum_deposit_cents: newPackageData.minimum_deposit_cents,
-       sort_order: packages.length,
-     });
+      await createPackage.mutateAsync({
+        campaign_id: campaignId,
+        title: newPackageData.title.trim(),
+        price_display: newPackageData.price_display.trim(),
+        description: newPackageData.description.trim() || undefined,
+        features: newPackageData.features.filter(f => f.trim()),
+        ideal_for: newPackageData.ideal_for.trim() || undefined,
+        is_popular: newPackageData.is_popular,
+        is_enabled: newPackageData.is_enabled,
+        minimum_deposit_cents: newPackageData.minimum_deposit_cents,
+        sort_order: packages.length,
+        primary_cta_text: newPackageData.primary_cta_text.trim() || undefined,
+        primary_cta_enabled: newPackageData.primary_cta_enabled,
+        secondary_cta_text: newPackageData.secondary_cta_text.trim() || undefined,
+        secondary_cta_enabled: newPackageData.secondary_cta_enabled,
+      });
  
      setNewPackageData(defaultPackageData);
      setIsAddingNew(false);
@@ -102,17 +114,21 @@
        return;
      }
  
-     await updatePackage.mutateAsync({
-       id: pkgId,
-       title: formData.title.trim(),
-       price_display: formData.price_display.trim(),
-       description: formData.description.trim() || null,
-       features: formData.features.filter(f => f.trim()),
-       ideal_for: formData.ideal_for.trim() || null,
-       is_popular: formData.is_popular,
-       is_enabled: formData.is_enabled,
-       minimum_deposit_cents: formData.minimum_deposit_cents,
-     });
+      await updatePackage.mutateAsync({
+        id: pkgId,
+        title: formData.title.trim(),
+        price_display: formData.price_display.trim(),
+        description: formData.description.trim() || null,
+        features: formData.features.filter(f => f.trim()),
+        ideal_for: formData.ideal_for.trim() || null,
+        is_popular: formData.is_popular,
+        is_enabled: formData.is_enabled,
+        minimum_deposit_cents: formData.minimum_deposit_cents,
+        primary_cta_text: formData.primary_cta_text.trim() || null,
+        primary_cta_enabled: formData.primary_cta_enabled,
+        secondary_cta_text: formData.secondary_cta_text.trim() || null,
+        secondary_cta_enabled: formData.secondary_cta_enabled,
+      });
  
      setExpandedId(null);
      setEditFormData(prev => {
@@ -137,16 +153,20 @@
    const startEditing = (pkg: CampaignPackage) => {
      setEditFormData(prev => ({
        ...prev,
-       [pkg.id]: {
-         title: pkg.title,
-         price_display: pkg.price_display,
-         description: pkg.description || '',
-         features: pkg.features.length > 0 ? pkg.features : [''],
-         ideal_for: pkg.ideal_for || '',
-         is_popular: pkg.is_popular,
-         is_enabled: pkg.is_enabled,
-         minimum_deposit_cents: pkg.minimum_deposit_cents,
-       },
+      [pkg.id]: {
+          title: pkg.title,
+          price_display: pkg.price_display,
+          description: pkg.description || '',
+          features: pkg.features.length > 0 ? pkg.features : [''],
+          ideal_for: pkg.ideal_for || '',
+          is_popular: pkg.is_popular,
+          is_enabled: pkg.is_enabled,
+          minimum_deposit_cents: pkg.minimum_deposit_cents,
+          primary_cta_text: pkg.primary_cta_text || '',
+          primary_cta_enabled: pkg.primary_cta_enabled ?? true,
+          secondary_cta_text: pkg.secondary_cta_text || '',
+          secondary_cta_enabled: pkg.secondary_cta_enabled ?? true,
+        },
      }));
      setExpandedId(pkg.id);
    };
@@ -321,30 +341,69 @@
            />
          </div>
  
-         <div className="flex items-center gap-4">
-           <div className="flex items-center gap-2">
-             <Switch
-               checked={data.is_popular}
-               onCheckedChange={(checked) => updateField('is_popular', checked)}
-             />
-             <Label className="flex items-center gap-1">
-               <Star className="h-4 w-4" />
-               Mark as Popular
-             </Label>
-           </div>
-           <div className="flex items-center gap-2">
-             <Switch
-               checked={data.is_enabled}
-               onCheckedChange={(checked) => updateField('is_enabled', checked)}
-             />
-             <Label className="flex items-center gap-1">
-               {data.is_enabled ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-               {data.is_enabled ? 'Enabled' : 'Disabled'}
-             </Label>
-           </div>
-         </div>
- 
-         <div className="flex justify-between pt-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={data.is_popular}
+                onCheckedChange={(checked) => updateField('is_popular', checked)}
+              />
+              <Label className="flex items-center gap-1">
+                <Star className="h-4 w-4" />
+                Mark as Popular
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={data.is_enabled}
+                onCheckedChange={(checked) => updateField('is_enabled', checked)}
+              />
+              <Label className="flex items-center gap-1">
+                {data.is_enabled ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                {data.is_enabled ? 'Enabled' : 'Disabled'}
+              </Label>
+            </div>
+          </div>
+
+          {/* CTA Settings */}
+          <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+            <Label className="text-sm font-semibold">CTA Button Settings</Label>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Primary Button (Booking)</Label>
+                <Switch
+                  checked={data.primary_cta_enabled}
+                  onCheckedChange={(checked) => updateField('primary_cta_enabled', checked)}
+                />
+              </div>
+              {data.primary_cta_enabled && (
+                <Input
+                  value={data.primary_cta_text}
+                  onChange={(e) => updateField('primary_cta_text', e.target.value)}
+                  placeholder="Secure Your Booking"
+                />
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Secondary Button (Consultation)</Label>
+                <Switch
+                  checked={data.secondary_cta_enabled}
+                  onCheckedChange={(checked) => updateField('secondary_cta_enabled', checked)}
+                />
+              </div>
+              {data.secondary_cta_enabled && (
+                <Input
+                  value={data.secondary_cta_text}
+                  onChange={(e) => updateField('secondary_cta_text', e.target.value)}
+                  placeholder="Free Consultation First"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-between pt-2">
            <Button type="button" variant="ghost" onClick={onCancel}>
              Cancel
            </Button>
