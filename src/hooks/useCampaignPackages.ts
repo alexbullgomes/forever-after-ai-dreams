@@ -33,6 +33,10 @@ export interface CreatePackageData {
   is_enabled?: boolean;
   minimum_deposit_cents: number;
   sort_order?: number;
+  primary_cta_text?: string;
+  primary_cta_enabled?: boolean;
+  secondary_cta_text?: string;
+  secondary_cta_enabled?: boolean;
 }
 
 export interface UpdatePackageData {
