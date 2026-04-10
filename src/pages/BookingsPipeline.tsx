@@ -20,12 +20,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
-import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User } from 'lucide-react';
+import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User, DollarSign } from 'lucide-react';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import { AvailabilityOverrideModal } from '@/components/availability/AvailabilityOverrideModal';
 import { AvailabilityStatusBadge, AvailabilityStatus } from '@/components/availability/AvailabilityStatusBadge';
