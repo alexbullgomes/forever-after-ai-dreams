@@ -663,6 +663,74 @@ export default function BookingsPipeline() {
           }}
         />
       )}
+
+      {/* Manual Payment Confirmation Dialog */}
+      <AlertDialog open={!!manualPaymentBooking} onOpenChange={(open) => { if (!open) setManualPaymentBooking(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark as Paid (Manual)</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will create a confirmed booking and activate the user's service tracking — the same effect as a Stripe payment.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {manualPaymentBooking && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-md border p-3 text-sm space-y-1">
+                <p><span className="text-muted-foreground">Product:</span> {manualPaymentBooking.products?.title || manualPaymentBooking.campaign_packages?.title || 'Unknown'}</p>
+                <p><span className="text-muted-foreground">Date:</span> {(() => { const [y, m, d] = manualPaymentBooking.event_date.split('-').map(Number); return format(new Date(y, m - 1, d), 'MMM d, yyyy'); })()}</p>
+                <p><span className="text-muted-foreground">Time:</span> {formatTime(manualPaymentBooking.selected_time)}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mp-amount">Amount (USD)</Label>
+                <Input
+                  id="mp-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={manualPaymentAmount}
+                  onChange={(e) => setManualPaymentAmount(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mp-method">Payment Method</Label>
+                <Select value={manualPaymentMethod} onValueChange={setManualPaymentMethod}>
+                  <SelectTrigger id="mp-method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="zelle">Zelle</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mp-notes">Notes (optional)</Label>
+                <Textarea
+                  id="mp-notes"
+                  placeholder="Additional payment details..."
+                  value={manualPaymentNotes}
+                  onChange={(e) => setManualPaymentNotes(e.target.value)}
+                  rows={2}
+                />
+              </div>
+            </div>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={manualPaymentLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleManualPayment} disabled={manualPaymentLoading}>
+              {manualPaymentLoading ? 'Processing...' : 'Confirm Manual Payment'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
