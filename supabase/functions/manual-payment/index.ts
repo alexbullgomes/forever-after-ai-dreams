@@ -56,10 +56,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: isAdmin } = await supabase.rpc('has_role', {
+    const { data: userRole } = await supabase.rpc('check_user_role_only', {
       _user_id: adminUserId,
-      _role: 'admin',
     });
+    const isAdmin = userRole === 'admin';
 
     if (!isAdmin) {
       logStep('ERROR: Not an admin', { adminUserId });
