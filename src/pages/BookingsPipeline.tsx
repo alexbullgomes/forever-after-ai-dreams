@@ -509,6 +509,28 @@ export default function BookingsPipeline() {
                           <XCircle className="h-4 w-4" />
                         </Button>
                       )}
+                      {booking.stage !== 'paid' && booking.user_id && booking.selected_time && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setManualPaymentBooking(booking);
+                                  setManualPaymentAmount('');
+                                  setManualPaymentMethod('cash');
+                                  setManualPaymentNotes('');
+                                }}
+                                className="text-emerald-600 hover:text-emerald-700"
+                              >
+                                <DollarSign className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Mark as Paid (Manual)</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
