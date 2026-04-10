@@ -262,6 +262,39 @@ export default function BookingsPipeline() {
       });
     }
   };
+  const handleManualPayment = async () => {
+    if (!manualPaymentBooking) return;
+    setManualPaymentLoading(true);
+    try {
+      const amountCents = manualPaymentAmount ? Math.round(parseFloat(manualPaymentAmount) * 100) : 0;
+      const { data, error } = await supabase.functions.invoke('manual-payment', {
+        body: {
+          booking_request_id: manualPaymentBooking.id,
+          amount_paid: amountCents,
+          payment_method: manualPaymentMethod,
+          notes: manualPaymentNotes || undefined,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({ title: 'Payment marked as paid', description: `Booking created successfully` });
+      setManualPaymentBooking(null);
+      setManualPaymentAmount('');
+      setManualPaymentMethod('cash');
+      setManualPaymentNotes('');
+      fetchBookings();
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message || 'Failed to mark as paid',
+        variant: 'destructive',
+      });
+    } finally {
+      setManualPaymentLoading(false);
+    }
+  };
 
   const filteredBookings = bookings.filter((b) => {
     if (!searchQuery) return true;
