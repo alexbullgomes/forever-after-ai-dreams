@@ -98,6 +98,11 @@ export default function BookingsPipeline() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, SlotAvailability>>({});
   const [overrideModalBooking, setOverrideModalBooking] = useState<BookingRequest | null>(null);
+  const [manualPaymentBooking, setManualPaymentBooking] = useState<BookingRequest | null>(null);
+  const [manualPaymentAmount, setManualPaymentAmount] = useState('');
+  const [manualPaymentMethod, setManualPaymentMethod] = useState('cash');
+  const [manualPaymentNotes, setManualPaymentNotes] = useState('');
+  const [manualPaymentLoading, setManualPaymentLoading] = useState(false);
   const { toast } = useToast();
   const { getSlotAvailability } = useAvailabilityComputation();
 
