@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search } from 'lucide-react';
@@ -50,6 +51,7 @@ interface Message {
 const ChatAdmin = () => {
   const { user } = useAuth();
   const { hasRole, loading: roleLoading } = useRole('admin');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -63,6 +65,7 @@ const ChatAdmin = () => {
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const autoOpenedRef = useRef(false);
   
   // Booking state for product cards (admin can also test booking flow)
   const [bookingProduct, setBookingProduct] = useState<{
@@ -123,6 +126,18 @@ const ChatAdmin = () => {
       }, 100);
     }
   }, [selectedConversation?.id]);
+
+  // Auto-open conversation from query param
+  useEffect(() => {
+    const targetId = searchParams.get('conversationId');
+    if (!targetId || conversations.length === 0 || autoOpenedRef.current) return;
+    const match = conversations.find(c => c.id === targetId);
+    if (match) {
+      autoOpenedRef.current = true;
+      setSelectedConversation(match);
+      setSearchParams(prev => { prev.delete('conversationId'); return prev; }, { replace: true });
+    }
+  }, [conversations]);
 
   const fetchConversations = async () => {
     try {
