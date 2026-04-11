@@ -247,7 +247,23 @@ export function CampaignProductsTab({
         />
       </div>
 
-      {/* Linked Products */}
+      {/* Hide Product Prices Toggle */}
+      <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+        <div className="space-y-1">
+          <Label htmlFor="hide_product_prices" className="text-base font-medium">
+            Hide product prices in this campaign
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            When enabled, all product prices will be hidden on this campaign page, regardless of product settings.
+          </p>
+        </div>
+        <Switch
+          id="hide_product_prices"
+          checked={hideProductPrices}
+          onCheckedChange={onToggleHideProductPrices}
+        />
+      </div>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-lg">Linked Products</CardTitle>
