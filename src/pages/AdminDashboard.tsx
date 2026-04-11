@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
+import { useNavigate, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -120,6 +120,7 @@ const AdminDashboard = () => {
             <Suspense fallback={<AdminLoader />}>
               <Routes>
                 <Route path="/" element={<DashboardContent />} />
+                <Route path="/chat" element={<ChatRedirect />} />
                 <Route path="/chat-admin" element={<ChatAdmin />} />
                 <Route path="/pipeline-process" element={<PipelineProcess />} />
                 <Route path="/gallery-cards" element={<GalleryCardsAdmin />} />

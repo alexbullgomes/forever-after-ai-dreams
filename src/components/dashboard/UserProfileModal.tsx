@@ -103,7 +103,7 @@ export const UserProfileModal = ({
 
       if (data) {
         onClose();
-        navigate(`/dashboard/chat?conversationId=${data.id}`);
+        navigate(`/dashboard/chat-admin?conversationId=${data.id}`);
       } else {
         toast({
           title: "No conversation found",
