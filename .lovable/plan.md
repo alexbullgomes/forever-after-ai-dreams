@@ -1,40 +1,100 @@
 
-Root cause
-- The shared `UserProfileModal` currently navigates to `/dashboard/chat?conversationId=...`.
-- The real admin chat route in this app is `/dashboard/chat-admin`, so ChatAdmin never mounts and its auto-open logic never runs.
-- There is also a small reliability issue in `ChatAdmin`: it uses a boolean `autoOpenedRef`, which can ignore later deep-links if Chat Admin is already mounted.
 
-Safe fix
+# Booking Reserve Pricing System
 
-1. Update `src/components/dashboard/UserProfileModal.tsx`
-- Change the navigation target to `/dashboard/chat-admin?conversationId=${id}`.
-- Keep the existing lookup logic exactly as-is:
-  - first `customer_id = profile.id`
-  - then fallback to `visitor_id = profile.visitor_id`
-- Keep the existing “No conversation found” toast.
-- This is the safest place to fix it because this modal is reused across Dashboard, Leads, Pipeline, Bookings, and Chat Admin.
+## Summary
+Add three new columns to the `products` table (`booking_reserve_enabled`, `booking_reserve_amount`, `show_full_price`) and update the admin form, booking flow, and product cards to support a per-product deposit/reserve amount for Stripe checkout.
 
-2. Harden `src/components/dashboard/ChatAdmin.tsx`
-- Keep the current direct DB fetch by `conversationId` (good approach).
-- Replace the one-time boolean guard with a “last handled conversationId” ref so each new deep-link opens correctly, even when Chat Admin is already open.
-- Continue clearing the query param after the conversation is selected.
+## Database Migration
 
-3. Add a backward-compatible alias in `src/pages/AdminDashboard.tsx`
-- Add a legacy `/dashboard/chat` redirect to `/dashboard/chat-admin`.
-- Preserve query params during the redirect.
-- This prevents regressions from old links, bookmarks, or any earlier code path still using `/dashboard/chat`.
+Add three columns to `products`:
+```sql
+ALTER TABLE products ADD COLUMN booking_reserve_enabled boolean NOT NULL DEFAULT false;
+ALTER TABLE products ADD COLUMN booking_reserve_amount numeric DEFAULT null;
+ALTER TABLE products ADD COLUMN show_full_price boolean NOT NULL DEFAULT true;
+```
 
-Why this is safe
-- No DB changes.
-- No schema/RLS changes.
-- No chat creation logic changes.
-- No impact on visitor vs authenticated chat flows.
-- Only route targeting and conversation auto-open behavior are being corrected.
+- `booking_reserve_amount` stores the reserve price in the same unit as `price` (dollars, not cents) for consistency with the existing `price` column.
+- All existing products default to `booking_reserve_enabled = false` and `show_full_price = true`, preserving current behavior with zero regression.
 
-Verification
-- Open a user modal from Leads, Dashboard, Pipeline, and Bookings, then click “Open Conversation”:
-  - it should first go to Chat Admin
-  - then auto-open the correct conversation
-- Test a profile with no conversation: toast should still appear.
-- Test while already on Chat Admin: clicking “Open Conversation” for another user should still switch correctly.
-- Test an old `/dashboard/chat?conversationId=...` URL: it should redirect and still open the conversation.
+## File Changes
+
+### 1. `src/integrations/supabase/types.ts`
+Add the three new fields to the `products` Row/Insert/Update types.
+
+### 2. `src/hooks/useProducts.ts`
+Add the three new fields to the `Product` interface.
+
+### 3. `src/components/admin/ProductForm.tsx`
+Add a new "Booking Reserve Settings" section (bordered box, similar to the Highlight section):
+- **Toggle**: `booking_reserve_enabled` -- "Enable booking reserve deposit"
+- **Input** (shown when enabled): `booking_reserve_amount` -- number field labeled "Reserve Amount ($)"
+- **Toggle**: `show_full_price` -- "Show full price on product cards"
+
+Add these to the zod schema and form reset logic.
+
+### 4. `src/components/booking/BookingFunnelModal.tsx`
+Update `productPrice` prop usage:
+- When passing price to `create-booking-checkout`, check if `bookingProduct.booking_reserve_enabled && bookingProduct.booking_reserve_amount`:
+  - If yes: pass `booking_reserve_amount` as `product_price`
+  - If no: pass `price` as before
+
+This requires the callers to pass the full product object or the reserve fields.
+
+### 5. Callers of BookingFunnelModal (4 files)
+Update `ProductsSection`, `CampaignProductsSection`, chat components to pass the effective checkout price:
+```typescript
+productPrice={
+  bookingProduct.booking_reserve_enabled && bookingProduct.booking_reserve_amount
+    ? bookingProduct.booking_reserve_amount
+    : bookingProduct.price
+}
+```
+
+### 6. `src/components/booking/BookingStepSlots.tsx`
+Update the booking summary display:
+- If reserve is enabled, show "Reserve today for $X" instead of just the price
+- Optionally show "Total package: $Y" if `show_full_price` is true
+
+Add two new optional props: `isReserveMode?: boolean` and `fullPrice?: number`.
+
+### 7. `src/components/ui/3d-product-card.tsx` (product card display)
+No structural change needed -- the `price` prop is already flexible. The caller (`ProductsSection`) will conditionally hide the price based on `show_full_price`.
+
+### 8. `src/components/planner/ProductsSection.tsx`
+Conditionally pass price to the 3D card:
+- If `show_full_price` is false, pass an empty string or custom label
+- Pass effective checkout price to BookingFunnelModal
+
+### 9. Edge Function: `create-booking-checkout`
+No changes needed. The frontend already sends `product_price` dynamically. The edge function uses whatever `product_price` it receives. The `amount_paid` in the webhook will correctly reflect the charged amount.
+
+### 10. Stripe Webhook / processBookingPayment
+No changes needed. `amount_paid` is already set from `session.amount_total`, which will be the reserve amount when applicable.
+
+## Data Flow
+
+```text
+Admin sets: price=$800, booking_reserve_enabled=true, booking_reserve_amount=$150
+
+Frontend:
+  Card shows: $800 (if show_full_price=true) or hidden
+  BookingFunnelModal receives: productPrice=$150
+  BookingStepSlots shows: "Reserve today for $150" + "Total package: $800"
+
+Edge Function:
+  Receives product_price=150 → Stripe charges $150
+
+Webhook:
+  amount_paid = 15000 (cents) → stored as-is
+  Original price ($800) remains in products table untouched
+```
+
+## Non-Breaking Guarantees
+- New columns have safe defaults; existing products work unchanged
+- No existing column modifications
+- No webhook/edge function changes
+- No RLS changes
+- `price` field remains the source of truth for total package value
+- Campaign booking flow completely unaffected (uses `minimumDepositCents`)
+
