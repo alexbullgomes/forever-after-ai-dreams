@@ -28,6 +28,9 @@ export interface Product {
   thumb_image_url: string | null;
   thumb_mp4_url: string | null;
   thumb_webm_url: string | null;
+  booking_reserve_enabled: boolean;
+  booking_reserve_amount: number | null;
+  show_full_price: boolean;
   created_at: string;
   updated_at: string;
 }

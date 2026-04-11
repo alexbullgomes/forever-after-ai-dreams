@@ -44,6 +44,9 @@ const productSchema = z.object({
   is_active: z.boolean().default(true),
   show_in_our_products: z.boolean().default(true),
   sort_order: z.coerce.number().default(0),
+  booking_reserve_enabled: z.boolean().default(false),
+  booking_reserve_amount: z.coerce.number().min(0).optional(),
+  show_full_price: z.boolean().default(true),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -89,6 +92,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       is_active: true,
       show_in_our_products: true,
       sort_order: 0,
+      booking_reserve_enabled: false,
+      booking_reserve_amount: undefined,
+      show_full_price: true,
     },
   });
 
@@ -113,6 +119,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         is_active: product.is_active,
         show_in_our_products: product.show_in_our_products,
         sort_order: product.sort_order,
+        booking_reserve_enabled: product.booking_reserve_enabled ?? false,
+        booking_reserve_amount: product.booking_reserve_amount ?? undefined,
+        show_full_price: product.show_full_price ?? true,
       });
     } else {
       form.reset({
@@ -134,6 +143,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         is_active: true,
         show_in_our_products: true,
         sort_order: 0,
+        booking_reserve_enabled: false,
+        booking_reserve_amount: undefined,
+        show_full_price: true,
       });
     }
   }, [product, form]);
