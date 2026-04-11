@@ -27,6 +27,8 @@ interface CampaignProductsTabProps {
   campaignId: string | undefined;
   productsSectionEnabled: boolean;
   onToggleProductsSection: (enabled: boolean) => void;
+  hideProductPrices: boolean;
+  onToggleHideProductPrices: (val: boolean) => void;
 }
 
 interface SortableProductItemProps {
@@ -143,6 +145,8 @@ export function CampaignProductsTab({
   campaignId,
   productsSectionEnabled,
   onToggleProductsSection,
+  hideProductPrices,
+  onToggleHideProductPrices,
 }: CampaignProductsTabProps) {
   const {
     campaignProducts,

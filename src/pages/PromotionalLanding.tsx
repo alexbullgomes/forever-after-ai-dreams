@@ -251,7 +251,7 @@ const PromotionalLanding = () => {
 
           {/* Campaign Products Section */}
           {campaign.products_section_enabled && (
-            <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} />
+            <CampaignProductsSection campaignId={campaign.id} campaignSlug={slug!} hideProductPrices={campaign.hide_product_prices_in_campaign} />
           )}
 
           {/* Campaign Gallery Section */}

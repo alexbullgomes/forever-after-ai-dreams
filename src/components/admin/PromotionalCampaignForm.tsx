@@ -78,6 +78,7 @@ interface Campaign {
   show_account_button: boolean;
   tracking_scripts?: TrackingScript[];
   products_section_enabled: boolean;
+  hide_product_prices_in_campaign: boolean;
   pricing_section_enabled: boolean;
   vendors_section_enabled: boolean;
   vendors_section_headline: string;
@@ -195,6 +196,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
     show_account_button: true,
     tracking_scripts: [],
     products_section_enabled: false,
+    hide_product_prices_in_campaign: false,
     pricing_section_enabled: true,
     vendors_section_enabled: false,
     vendors_section_headline: 'Our Partners',
@@ -315,6 +317,7 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
         ...campaign,
         visibility_mode: (campaign as any).visibility_mode || (campaign.is_active ? 'public' : 'inactive'),
         products_section_enabled: campaign.products_section_enabled ?? false,
+        hide_product_prices_in_campaign: (campaign as any).hide_product_prices_in_campaign ?? false,
         pricing_section_enabled: campaign.pricing_section_enabled ?? true,
         vendors_section_enabled: campaign.vendors_section_enabled ?? false,
         vendors_section_headline: campaign.vendors_section_headline ?? 'Our Partners',
@@ -693,6 +696,10 @@ const PromotionalCampaignForm = ({ isOpen, onClose, campaign, onSuccess }: Promo
                   productsSectionEnabled={formData.products_section_enabled}
                   onToggleProductsSection={(enabled) =>
                     setFormData((prev) => ({ ...prev, products_section_enabled: enabled }))
+                  }
+                  hideProductPrices={formData.hide_product_prices_in_campaign}
+                  onToggleHideProductPrices={(val) =>
+                    setFormData((prev) => ({ ...prev, hide_product_prices_in_campaign: val }))
                   }
                 />
               </TabsContent>
