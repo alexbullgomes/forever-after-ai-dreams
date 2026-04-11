@@ -221,9 +221,9 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
               <InteractiveProduct3DCard
                 key={product.id}
                 title={product.title}
-                price={product.price}
+                price={product.show_full_price ? product.price : undefined}
                 currency={product.currency}
-                priceUnit={product.price_unit}
+                priceUnit={product.show_full_price ? product.price_unit : undefined}
                 description={product.description || ""}
                 imageUrl={imageUrl}
                 videoUrl={videoUrl}
