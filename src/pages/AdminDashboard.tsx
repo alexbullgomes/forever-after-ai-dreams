@@ -23,6 +23,12 @@ const AffiliateAnalytics = lazy(() => import("@/pages/AffiliateAnalytics"));
 const BlogAdmin = lazy(() => import("@/pages/BlogAdmin"));
 const LeadsAdmin = lazy(() => import("@/pages/LeadsAdmin"));
 
+// Redirect /dashboard/chat to /dashboard/chat-admin preserving query params
+const ChatRedirect = () => {
+  const location = useLocation();
+  return <Navigate to={`/dashboard/chat-admin${location.search}`} replace />;
+};
+
 // Minimal loading fallback for admin pages
 const AdminLoader = () => (
   <div className="flex-1 flex items-center justify-center">
