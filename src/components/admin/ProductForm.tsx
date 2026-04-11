@@ -446,7 +446,58 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Booking Reserve Settings */}
+            <div className="rounded-lg border p-4 space-y-4">
+              <h3 className="font-medium text-sm text-foreground">Booking Reserve Settings</h3>
+              <FormField
+                control={form.control}
+                name="booking_reserve_enabled"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between">
+                    <FormLabel className="text-base font-medium">Enable booking reserve deposit</FormLabel>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("booking_reserve_enabled") && (
+                <FormField
+                  control={form.control}
+                  name="booking_reserve_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reserve Amount ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="150" {...field} />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        This amount will be charged at Stripe checkout instead of the full price.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name="show_full_price"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between">
+                    <div>
+                      <FormLabel className="text-base font-medium">Show full price on product cards</FormLabel>
+                      <p className="text-xs text-muted-foreground">When off, hides the full price from public product cards</p>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
               <FormField
                 control={form.control}
                 name="cta_text"
