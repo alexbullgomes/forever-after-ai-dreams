@@ -1224,6 +1224,8 @@ export type Database = {
       }
       products: {
         Row: {
+          booking_reserve_amount: number | null
+          booking_reserve_enabled: boolean
           coverage_text: string | null
           created_at: string
           cta_link: string | null
@@ -1241,6 +1243,7 @@ export type Database = {
           price: number
           price_unit: string | null
           rating: number | null
+          show_full_price: boolean
           show_in_our_products: boolean
           slug: string | null
           sort_order: number
@@ -1252,6 +1255,8 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          booking_reserve_amount?: number | null
+          booking_reserve_enabled?: boolean
           coverage_text?: string | null
           created_at?: string
           cta_link?: string | null
@@ -1269,6 +1274,7 @@ export type Database = {
           price: number
           price_unit?: string | null
           rating?: number | null
+          show_full_price?: boolean
           show_in_our_products?: boolean
           slug?: string | null
           sort_order?: number
@@ -1280,6 +1286,8 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          booking_reserve_amount?: number | null
+          booking_reserve_enabled?: boolean
           coverage_text?: string | null
           created_at?: string
           cta_link?: string | null
@@ -1297,6 +1305,7 @@ export type Database = {
           price?: number
           price_unit?: string | null
           rating?: number | null
+          show_full_price?: boolean
           show_in_our_products?: boolean
           slug?: string | null
           sort_order?: number

@@ -85,9 +85,9 @@ export function ProductsSection() {
             <InteractiveProduct3DCard
               key={product.id}
               title={product.title}
-              price={product.price}
+              price={product.show_full_price ? product.price : undefined}
               currency={product.currency}
-              priceUnit={product.price_unit}
+              priceUnit={product.show_full_price ? product.price_unit : undefined}
               description={product.description || ""}
               imageUrl={imageUrl}
               videoUrl={videoUrl}
@@ -110,9 +110,15 @@ export function ProductsSection() {
           onClose={() => setBookingProduct(null)}
           productId={bookingProduct.id}
           productTitle={bookingProduct.title}
-          productPrice={bookingProduct.price}
+          productPrice={
+            bookingProduct.booking_reserve_enabled && bookingProduct.booking_reserve_amount
+              ? bookingProduct.booking_reserve_amount
+              : bookingProduct.price
+          }
           currency={bookingProduct.currency || 'USD'}
           onOpenChatWithMessage={handleOpenChatWithMessage}
+          isReserveMode={bookingProduct.booking_reserve_enabled && !!bookingProduct.booking_reserve_amount}
+          fullPrice={bookingProduct.booking_reserve_enabled ? bookingProduct.price : undefined}
         />
       )}
     </section>

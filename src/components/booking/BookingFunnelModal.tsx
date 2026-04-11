@@ -45,6 +45,9 @@ interface BookingFunnelModalProps {
   };
   // Chat integration for limited slots
   onOpenChatWithMessage?: (message: string) => void;
+  // Booking reserve mode
+  isReserveMode?: boolean;
+  fullPrice?: number;
 }
 
 export function BookingFunnelModal({
@@ -63,6 +66,8 @@ export function BookingFunnelModal({
   campaignProductMode = false,
   resumeFromDate,
   onOpenChatWithMessage,
+  isReserveMode = false,
+  fullPrice,
 }: BookingFunnelModalProps) {
   const [step, setStep] = useState<BookingStep>('date');
   const [eventDate, setEventDate] = useState<Date | null>(null);
@@ -374,6 +379,8 @@ export function BookingFunnelModal({
             selectedTime={selectedTime}
             onChatAvailability={handleChatAvailability}
             onClose={handleClose}
+            isReserveMode={isReserveMode}
+            fullPrice={fullPrice}
           />
         )}
       </DialogContent>

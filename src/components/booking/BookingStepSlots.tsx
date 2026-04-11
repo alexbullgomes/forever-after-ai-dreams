@@ -22,6 +22,8 @@ interface BookingStepSlotsProps {
   selectedTime: string | null;
   onChatAvailability?: (date: Date, time: string, productTitle: string, price: number) => void;
   onClose?: () => void;
+  isReserveMode?: boolean;
+  fullPrice?: number;
 }
 
 export function BookingStepSlots({
@@ -38,6 +40,8 @@ export function BookingStepSlots({
   selectedTime,
   onChatAvailability,
   onClose,
+  isReserveMode = false,
+  fullPrice,
 }: BookingStepSlotsProps) {
   const [calendarMonth, setCalendarMonth] = useState(eventDate);
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
@@ -284,7 +288,19 @@ export function BookingStepSlots({
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">{productTitle}</p>
-              <p className="font-semibold text-lg">{formatPrice(productPrice)}</p>
+              {isReserveMode ? (
+                <>
+                  <p className="font-semibold text-lg">{formatPrice(productPrice)}</p>
+                  <p className="text-xs text-muted-foreground">Reserve deposit</p>
+                  {fullPrice && (
+                    <p className="text-xs text-muted-foreground">
+                      Total package: {formatPrice(fullPrice)}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="font-semibold text-lg">{formatPrice(productPrice)}</p>
+              )}
             </div>
           </div>
         )}
@@ -331,7 +347,7 @@ export function BookingStepSlots({
               className="w-full bg-brand-gradient hover:opacity-90"
               size="lg"
             >
-              {isLoading ? 'Processing...' : 'Hold my date & pay'}
+              {isLoading ? 'Processing...' : isReserveMode ? `Reserve today for ${formatPrice(productPrice)}` : 'Hold my date & pay'}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">

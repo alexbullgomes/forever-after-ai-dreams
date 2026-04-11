@@ -44,6 +44,9 @@ const productSchema = z.object({
   is_active: z.boolean().default(true),
   show_in_our_products: z.boolean().default(true),
   sort_order: z.coerce.number().default(0),
+  booking_reserve_enabled: z.boolean().default(false),
+  booking_reserve_amount: z.coerce.number().min(0).optional(),
+  show_full_price: z.boolean().default(true),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -89,6 +92,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       is_active: true,
       show_in_our_products: true,
       sort_order: 0,
+      booking_reserve_enabled: false,
+      booking_reserve_amount: undefined,
+      show_full_price: true,
     },
   });
 
@@ -113,6 +119,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         is_active: product.is_active,
         show_in_our_products: product.show_in_our_products,
         sort_order: product.sort_order,
+        booking_reserve_enabled: product.booking_reserve_enabled ?? false,
+        booking_reserve_amount: product.booking_reserve_amount ?? undefined,
+        show_full_price: product.show_full_price ?? true,
       });
     } else {
       form.reset({
@@ -134,6 +143,9 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         is_active: true,
         show_in_our_products: true,
         sort_order: 0,
+        booking_reserve_enabled: false,
+        booking_reserve_amount: undefined,
+        show_full_price: true,
       });
     }
   }, [product, form]);
@@ -175,6 +187,10 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       deliverable_text: values.deliverable_text || null,
       highlight_label: values.highlight_label || null,
       cta_link: values.cta_link || null,
+      // Booking reserve fields
+      booking_reserve_enabled: values.booking_reserve_enabled,
+      booking_reserve_amount: values.booking_reserve_enabled ? (values.booking_reserve_amount ?? null) : null,
+      show_full_price: values.show_full_price,
     });
     onOpenChange(false);
   };
@@ -428,6 +444,58 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
                   )}
                 />
               )}
+            </div>
+
+            {/* Booking Reserve Settings */}
+            <div className="rounded-lg border p-4 space-y-4">
+              <h3 className="font-medium text-sm text-foreground">Booking Reserve Settings</h3>
+              <FormField
+                control={form.control}
+                name="booking_reserve_enabled"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between">
+                    <FormLabel className="text-base font-medium">Enable booking reserve deposit</FormLabel>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("booking_reserve_enabled") && (
+                <FormField
+                  control={form.control}
+                  name="booking_reserve_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reserve Amount ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="150" {...field} />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        This amount will be charged at Stripe checkout instead of the full price.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name="show_full_price"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between">
+                    <div>
+                      <FormLabel className="text-base font-medium">Show full price on product cards</FormLabel>
+                      <p className="text-xs text-muted-foreground">When off, hides the full price from public product cards</p>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -8,7 +8,7 @@ import { ProductMediaHero } from "./product-media-hero";
 
 export interface InteractiveProduct3DCardProps {
   title: string;
-  price: number | string;
+  price?: number | string;
   currency?: string;
   priceUnit?: string;
   description: string;
@@ -125,12 +125,14 @@ export const InteractiveProduct3DCard = React.forwardRef<
             <h3 className="text-xl font-bold text-foreground">{title}</h3>
 
             {/* Price */}
-            <p className="text-lg font-semibold text-foreground">
-              {formatPrice()}{" "}
-              <span className="text-sm font-normal text-muted-foreground">
-                {priceUnit}
-              </span>
-            </p>
+            {price !== undefined && price !== null && (
+              <p className="text-lg font-semibold text-foreground">
+                {formatPrice()}{" "}
+                <span className="text-sm font-normal text-muted-foreground">
+                  {priceUnit}
+                </span>
+              </p>
+            )}
 
             {/* Description */}
             <p className="text-sm text-muted-foreground line-clamp-2">
