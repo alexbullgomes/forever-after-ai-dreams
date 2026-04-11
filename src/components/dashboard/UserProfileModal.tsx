@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Save, User, Mail, Phone, Calendar, FileText, Activity, Bot } from 'lucide-react';
+import { Save, User, Mail, Phone, Calendar, FileText, Activity, Bot, MessageCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -64,6 +66,7 @@ export const UserProfileModal = ({
   userName, 
   userEmail 
 }: UserProfileModalProps) => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -72,6 +75,52 @@ export const UserProfileModal = ({
   const [generatingAISummary, setGeneratingAISummary] = useState(false);
   const [visitorConversationSummary, setVisitorConversationSummary] = useState('');
   const [generatingVisitorAISummary, setGeneratingVisitorAISummary] = useState(false);
+  const [openingConversation, setOpeningConversation] = useState(false);
+
+  const handleOpenConversation = async () => {
+    if (!profile) return;
+    setOpeningConversation(true);
+    try {
+      // Priority 1: by customer_id
+      let { data } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('customer_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Priority 2: fallback by visitor_id
+      if (!data && profile.visitor_id) {
+        ({ data } = await supabase
+          .from('conversations')
+          .select('id')
+          .eq('visitor_id', profile.visitor_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle());
+      }
+
+      if (data) {
+        onClose();
+        navigate(`/dashboard/chat?conversationId=${data.id}`);
+      } else {
+        toast({
+          title: "No conversation found",
+          description: "No conversation found for this user.",
+        });
+      }
+    } catch (error) {
+      console.error('Error finding conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to find conversation.",
+        variant: "destructive",
+      });
+    } finally {
+      setOpeningConversation(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen && customerId) {
@@ -381,7 +430,7 @@ export const UserProfileModal = ({
               {profile?.name?.charAt(0).toUpperCase() || 
                profile?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <div>
+            <div className="flex-1">
               <span className="text-lg font-semibold">User Profile</span>
               {profile?.status && (
                 <Badge className={`ml-2 ${getStatusColor(profile.status)}`}>
@@ -389,6 +438,22 @@ export const UserProfileModal = ({
                 </Badge>
               )}
             </div>
+            {profile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleOpenConversation}
+                    disabled={openingConversation}
+                    className="shrink-0"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Open Conversation</TooltipContent>
+              </Tooltip>
+            )}
           </DialogTitle>
         </DialogHeader>
 
