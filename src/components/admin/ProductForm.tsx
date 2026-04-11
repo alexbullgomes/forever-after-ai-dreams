@@ -187,6 +187,10 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       deliverable_text: values.deliverable_text || null,
       highlight_label: values.highlight_label || null,
       cta_link: values.cta_link || null,
+      // Booking reserve fields
+      booking_reserve_enabled: values.booking_reserve_enabled,
+      booking_reserve_amount: values.booking_reserve_enabled ? (values.booking_reserve_amount ?? null) : null,
+      show_full_price: values.show_full_price,
     });
     onOpenChange(false);
   };
