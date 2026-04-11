@@ -21,6 +21,7 @@ const BookingsPipeline = lazy(() => import("@/pages/BookingsPipeline"));
 const AvailabilityManager = lazy(() => import("@/pages/AvailabilityManager"));
 const AffiliateAnalytics = lazy(() => import("@/pages/AffiliateAnalytics"));
 const BlogAdmin = lazy(() => import("@/pages/BlogAdmin"));
+const LeadsAdmin = lazy(() => import("@/pages/LeadsAdmin"));
 
 // Minimal loading fallback for admin pages
 const AdminLoader = () => (
@@ -130,6 +131,7 @@ const AdminDashboard = () => {
                 <Route path="/promotional-popups" element={<PromotionalPopups />} />
                 <Route path="/project-settings" element={<ProjectSettings />} />
                 <Route path="/blog" element={<BlogAdmin />} />
+                <Route path="/leads" element={<LeadsAdmin />} />
               </Routes>
             </Suspense>
           </main>

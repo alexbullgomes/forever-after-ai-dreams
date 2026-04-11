@@ -161,6 +161,7 @@ const DashboardContent = () => {
           icon={Users}
           description="Registered users"
           color="blue"
+          onClick={() => navigate('/dashboard/leads')}
         />
         <MetricCard
           title="New Leads This Month"
@@ -168,6 +169,7 @@ const DashboardContent = () => {
           icon={UserCheck}
           description="Recent sign-ups"
           color="green"
+          onClick={() => navigate('/dashboard/leads?range=30d')}
         />
         <MetricCard
           title="Users with Phone Numbers"
@@ -175,6 +177,7 @@ const DashboardContent = () => {
           icon={Calendar}
           description="Registered phone contacts"
           color="purple"
+          onClick={() => navigate('/dashboard/leads?hasPhone=true')}
         />
         <MetricCard
           title="Unread Messages"
