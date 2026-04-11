@@ -1529,6 +1529,7 @@ export type Database = {
           banner_video_url: string | null
           brand_colors: Json | null
           created_at: string | null
+          hide_product_prices_in_campaign: boolean
           id: string
           is_active: boolean | null
           meta_description: string | null
@@ -1589,6 +1590,7 @@ export type Database = {
           banner_video_url?: string | null
           brand_colors?: Json | null
           created_at?: string | null
+          hide_product_prices_in_campaign?: boolean
           id?: string
           is_active?: boolean | null
           meta_description?: string | null
@@ -1649,6 +1651,7 @@ export type Database = {
           banner_video_url?: string | null
           brand_colors?: Json | null
           created_at?: string | null
+          hide_product_prices_in_campaign?: boolean
           id?: string
           is_active?: boolean | null
           meta_description?: string | null

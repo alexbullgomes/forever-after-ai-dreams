@@ -16,6 +16,7 @@ import {
 interface CampaignProductsSectionProps {
   campaignId: string;
   campaignSlug: string;
+  hideProductPrices?: boolean;
 }
 
 interface CampaignProductWithDetails {
@@ -33,7 +34,7 @@ interface PendingProductResume {
   timezone: string;
 }
 
-export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignProductsSectionProps) {
+export function CampaignProductsSection({ campaignId, campaignSlug, hideProductPrices }: CampaignProductsSectionProps) {
   const [products, setProducts] = useState<CampaignProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookingProduct, setBookingProduct] = useState<Product | null>(null);
@@ -217,13 +218,14 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
           {products.map(({ product }) => {
             const { imageUrl, videoUrl } = getProductThumbnail(product);
+            const shouldShowPrice = !hideProductPrices && product.show_full_price;
             return (
               <InteractiveProduct3DCard
                 key={product.id}
                 title={product.title}
-                price={product.show_full_price ? product.price : undefined}
+                price={shouldShowPrice ? product.price : undefined}
                 currency={product.currency}
-                priceUnit={product.show_full_price ? product.price_unit : undefined}
+                priceUnit={shouldShowPrice ? product.price_unit : undefined}
                 description={product.description || ""}
                 imageUrl={imageUrl}
                 videoUrl={videoUrl}

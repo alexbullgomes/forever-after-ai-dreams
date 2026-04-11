@@ -52,6 +52,7 @@ interface PromotionalCampaign {
   views_count: number;
   tracking_scripts: TrackingScript[];
   products_section_enabled: boolean;
+  hide_product_prices_in_campaign: boolean;
   pricing_section_enabled: boolean;
   vendors_section_enabled: boolean;
   vendors_section_headline: string | null;

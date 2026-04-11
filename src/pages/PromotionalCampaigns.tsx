@@ -64,6 +64,7 @@ interface Campaign {
   meta_image_url?: string;
   promotional_footer_enabled: boolean;
   products_section_enabled: boolean;
+  hide_product_prices_in_campaign: boolean;
   pricing_section_enabled: boolean;
   vendors_section_enabled: boolean;
   vendors_section_headline: string | null;
