@@ -65,7 +65,7 @@ const ChatAdmin = () => {
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const autoOpenedRef = useRef(false);
+  const lastAutoOpenedIdRef = useRef<string | null>(null);
   
   // Booking state for product cards (admin can also test booking flow)
   const [bookingProduct, setBookingProduct] = useState<{
@@ -130,10 +130,10 @@ const ChatAdmin = () => {
   // Auto-open conversation from query param (fetches directly from DB)
   useEffect(() => {
     const targetId = searchParams.get('conversationId');
-    if (!targetId || autoOpenedRef.current) return;
+    if (!targetId || targetId === lastAutoOpenedIdRef.current) return;
 
     const openTargetConversation = async () => {
-      autoOpenedRef.current = true;
+      lastAutoOpenedIdRef.current = targetId;
 
       const { data } = await supabase
         .from('conversations')
