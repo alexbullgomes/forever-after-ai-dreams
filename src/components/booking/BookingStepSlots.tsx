@@ -347,7 +347,7 @@ export function BookingStepSlots({
               className="w-full bg-brand-gradient hover:opacity-90"
               size="lg"
             >
-              {isLoading ? 'Processing...' : 'Hold my date & pay'}
+              {isLoading ? 'Processing...' : isReserveMode ? `Reserve today for ${formatPrice(productPrice)}` : 'Hold my date & pay'}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">

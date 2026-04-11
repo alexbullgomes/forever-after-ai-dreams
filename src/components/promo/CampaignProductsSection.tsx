@@ -246,7 +246,11 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
             onClose={handleBookingClose}
             productId={bookingProduct.id}
             productTitle={bookingProduct.title}
-            productPrice={bookingProduct.price}
+            productPrice={
+              bookingProduct.booking_reserve_enabled && bookingProduct.booking_reserve_amount
+                ? bookingProduct.booking_reserve_amount
+                : bookingProduct.price
+            }
             currency={bookingProduct.currency || 'USD'}
             // Campaign product mode props
             campaignProductMode={true}
@@ -259,6 +263,8 @@ export function CampaignProductsSection({ campaignId, campaignSlug }: CampaignPr
                 : undefined
             }
             onOpenChatWithMessage={handleOpenChatWithMessage}
+            isReserveMode={bookingProduct.booking_reserve_enabled && !!bookingProduct.booking_reserve_amount}
+            fullPrice={bookingProduct.booking_reserve_enabled ? bookingProduct.price : undefined}
           />
         )}
 

@@ -110,9 +110,15 @@ export function ProductsSection() {
           onClose={() => setBookingProduct(null)}
           productId={bookingProduct.id}
           productTitle={bookingProduct.title}
-          productPrice={bookingProduct.price}
+          productPrice={
+            bookingProduct.booking_reserve_enabled && bookingProduct.booking_reserve_amount
+              ? bookingProduct.booking_reserve_amount
+              : bookingProduct.price
+          }
           currency={bookingProduct.currency || 'USD'}
           onOpenChatWithMessage={handleOpenChatWithMessage}
+          isReserveMode={bookingProduct.booking_reserve_enabled && !!bookingProduct.booking_reserve_amount}
+          fullPrice={bookingProduct.booking_reserve_enabled ? bookingProduct.price : undefined}
         />
       )}
     </section>
