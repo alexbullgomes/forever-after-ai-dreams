@@ -127,6 +127,18 @@ const ChatAdmin = () => {
     }
   }, [selectedConversation?.id]);
 
+  // Auto-open conversation from query param
+  useEffect(() => {
+    const targetId = searchParams.get('conversationId');
+    if (!targetId || conversations.length === 0 || autoOpenedRef.current) return;
+    const match = conversations.find(c => c.id === targetId);
+    if (match) {
+      autoOpenedRef.current = true;
+      setSelectedConversation(match);
+      setSearchParams(prev => { prev.delete('conversationId'); return prev; }, { replace: true });
+    }
+  }, [conversations]);
+
   const fetchConversations = async () => {
     try {
       // Fetch conversations with message count and actual last message timestamp
