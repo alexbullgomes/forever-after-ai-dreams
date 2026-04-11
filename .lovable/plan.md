@@ -1,26 +1,42 @@
 
 
-# Fix: "Show Full Price" Toggle Not Respected
+# Campaign-Level Price Visibility Override
 
-## Root Cause
+## Summary
+Add a `hide_product_prices_in_campaign` boolean column to `promotional_campaigns` and wire it through the admin UI and campaign product cards.
 
-Two issues identified:
+## Database Migration
+```sql
+ALTER TABLE public.promotional_campaigns
+ADD COLUMN hide_product_prices_in_campaign boolean NOT NULL DEFAULT false;
+```
 
-1. **`CampaignProductsSection.tsx`** (campaign landing pages) passes `price={product.price}` directly without checking `show_full_price`. This means products on campaign pages always show the price regardless of the toggle.
+## File Changes
 
-2. **`ProductsSection.tsx`** already has the correct logic (`price={product.show_full_price ? product.price : undefined}`). If the Services page still shows the price, this may be a stale build from before the fix was deployed. After a fresh build, this component should work correctly.
+### 1. `src/integrations/supabase/types.ts`
+Add `hide_product_prices_in_campaign` to the `promotional_campaigns` Row/Insert/Update types.
 
-## Changes
+### 2. `src/components/admin/CampaignProductsTab.tsx`
+- Accept new prop: `hideProductPrices: boolean` and `onToggleHideProductPrices: (val: boolean) => void`
+- Add a second toggle below "Enable Products Section": "Hide product prices in this campaign" with helper text
 
-### File: `src/components/promo/CampaignProductsSection.tsx`
-- Line 224: Change `price={product.price}` to `price={product.show_full_price ? product.price : undefined}`
-- Line 226: Change `priceUnit={product.price_unit}` to `priceUnit={product.show_full_price ? product.price_unit : undefined}`
+### 3. `src/components/admin/PromotionalCampaignForm.tsx`
+- Add `hide_product_prices_in_campaign` to `formData` type, defaults, reset logic, and save payload
+- Pass the new props to `CampaignProductsTab`
 
-This is the only file that still passes the price unconditionally. No other rendering paths exist for the product cards.
+### 4. `src/pages/PromotionalLanding.tsx`
+- Pass `hideProductPrices={campaign.hide_product_prices_in_campaign}` to `CampaignProductsSection`
 
-## No Other Changes
-- Database schema: already correct
-- `ProductsSection.tsx`: already correct
-- `3d-product-card.tsx`: already handles `price={undefined}` correctly (hides the price element entirely with no empty spacing)
-- Booking/Stripe logic: untouched
+### 5. `src/components/promo/CampaignProductsSection.tsx`
+- Accept new prop `hideProductPrices?: boolean`
+- Update price logic:
+  ```typescript
+  const shouldShowPrice = !hideProductPrices && product.show_full_price;
+  price={shouldShowPrice ? product.price : undefined}
+  priceUnit={shouldShowPrice ? product.price_unit : undefined}
+  ```
+
+## Scope
+- Only affects campaign landing page product cards
+- No changes to Services page, booking flow, Stripe, or admin product views
 
