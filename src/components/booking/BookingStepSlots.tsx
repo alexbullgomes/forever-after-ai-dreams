@@ -288,7 +288,19 @@ export function BookingStepSlots({
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">{productTitle}</p>
-              <p className="font-semibold text-lg">{formatPrice(productPrice)}</p>
+              {isReserveMode ? (
+                <>
+                  <p className="font-semibold text-lg">{formatPrice(productPrice)}</p>
+                  <p className="text-xs text-muted-foreground">Reserve deposit</p>
+                  {fullPrice && (
+                    <p className="text-xs text-muted-foreground">
+                      Total package: {formatPrice(fullPrice)}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="font-semibold text-lg">{formatPrice(productPrice)}</p>
+              )}
             </div>
           </div>
         )}
