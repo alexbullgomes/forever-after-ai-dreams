@@ -22,6 +22,8 @@ interface BookingStepSlotsProps {
   selectedTime: string | null;
   onChatAvailability?: (date: Date, time: string, productTitle: string, price: number) => void;
   onClose?: () => void;
+  isReserveMode?: boolean;
+  fullPrice?: number;
 }
 
 export function BookingStepSlots({
@@ -38,6 +40,8 @@ export function BookingStepSlots({
   selectedTime,
   onChatAvailability,
   onClose,
+  isReserveMode = false,
+  fullPrice,
 }: BookingStepSlotsProps) {
   const [calendarMonth, setCalendarMonth] = useState(eventDate);
   const [monthAvailability, setMonthAvailability] = useState<Record<string, DayAvailability>>({});
