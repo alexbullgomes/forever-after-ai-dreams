@@ -498,6 +498,7 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
               />
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="cta_text"
