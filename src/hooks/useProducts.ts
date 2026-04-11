@@ -169,6 +169,9 @@ export function useProducts(options: UseProductsOptions = {}) {
           thumb_image_url: product.thumb_image_url,
           thumb_mp4_url: product.thumb_mp4_url,
           thumb_webm_url: product.thumb_webm_url,
+          booking_reserve_enabled: product.booking_reserve_enabled,
+          booking_reserve_amount: product.booking_reserve_amount,
+          show_full_price: product.show_full_price,
         });
 
       if (insertError) throw insertError;
