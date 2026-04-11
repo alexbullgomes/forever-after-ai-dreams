@@ -127,17 +127,48 @@ const ChatAdmin = () => {
     }
   }, [selectedConversation?.id]);
 
-  // Auto-open conversation from query param
+  // Auto-open conversation from query param (fetches directly from DB)
   useEffect(() => {
     const targetId = searchParams.get('conversationId');
-    if (!targetId || conversations.length === 0 || autoOpenedRef.current) return;
-    const match = conversations.find(c => c.id === targetId);
-    if (match) {
+    if (!targetId || autoOpenedRef.current) return;
+
+    const openTargetConversation = async () => {
       autoOpenedRef.current = true;
-      setSelectedConversation(match);
+
+      const { data } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('id', targetId)
+        .maybeSingle();
+
+      if (data) {
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('conversation_id', data.id);
+
+        const { data: lastMsg } = await supabase
+          .from('messages')
+          .select('created_at')
+          .eq('conversation_id', data.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        setSelectedConversation({
+          ...data,
+          message_count: count || 0,
+          last_message_at: lastMsg?.created_at || data.created_at,
+        });
+      } else {
+        toast({ title: "Conversation not found", description: "No conversation exists with this ID." });
+      }
+
       setSearchParams(prev => { prev.delete('conversationId'); return prev; }, { replace: true });
-    }
-  }, [conversations]);
+    };
+
+    openTargetConversation();
+  }, [searchParams]);
 
   const fetchConversations = async () => {
     try {
