@@ -194,33 +194,35 @@ const BookingInsights = () => {
       ) : (
         <div className="space-y-3">
           {/* Compact Metrics Bar */}
-          <div className="flex flex-wrap items-center gap-1 rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm px-2 py-1.5">
-            {metricItems.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.key} className="flex items-center">
-                  <button
-                    onClick={item.onClick}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-muted/60 transition-all duration-200"
-                  >
-                    <Icon className={`h-3.5 w-3.5 ${item.accent ? 'text-red-500' : 'text-muted-foreground'}`} />
-                    <span className={`text-sm font-bold ${item.accent ? 'text-red-500' : 'text-foreground'}`}>{item.value}</span>
-                    <span className="text-[10px] text-muted-foreground">{item.label}</span>
-                  </button>
-                  {i < metricItems.length - 1 && <div className="w-px h-5 bg-border/50 mx-0.5" />}
-                </div>
-              );
-            })}
+          <div className="rounded-xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm px-2 py-1.5">
+            <div className="grid grid-cols-3 gap-0.5 sm:flex sm:flex-wrap sm:items-center sm:gap-1">
+              {metricItems.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.key} className="flex items-center">
+                    <button
+                      onClick={item.onClick}
+                      className="flex items-center gap-1 px-1.5 py-1 sm:gap-1.5 sm:px-2.5 sm:py-1.5 rounded-lg hover:bg-muted/60 transition-all duration-200 w-full sm:w-auto justify-center sm:justify-start"
+                    >
+                      <Icon className={`h-3.5 w-3.5 ${item.accent ? 'text-red-500' : 'text-muted-foreground'}`} />
+                      <span className={`text-xs sm:text-sm font-bold ${item.accent ? 'text-red-500' : 'text-foreground'}`}>{item.value}</span>
+                      <span className="text-[10px] text-muted-foreground">{item.label}</span>
+                    </button>
+                    {i < metricItems.length - 1 && <div className="hidden sm:block w-px h-5 bg-border/50 mx-0.5" />}
+                  </div>
+                );
+              })}
+            </div>
 
-            {/* Revenue pill with tooltip */}
-            <div className="w-px h-5 bg-border/50 mx-0.5" />
-            <div className="relative group/revenue">
+            {/* Revenue pill — full width on mobile */}
+            <div className="hidden sm:block w-px h-5 bg-border/50 mx-0.5 sm:inline-block" />
+            <div className="relative group/revenue mt-1 sm:mt-0 sm:inline-flex border-t border-border/30 sm:border-0 pt-1 sm:pt-0">
               <button
                 onClick={() => navigateToStage('all')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-muted/60 transition-all duration-200"
+                className="flex items-center gap-1 px-1.5 py-1 sm:gap-1.5 sm:px-2.5 sm:py-1.5 rounded-lg hover:bg-muted/60 transition-all duration-200 w-full sm:w-auto justify-center sm:justify-start"
               >
                 <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                <span className="text-sm font-bold text-foreground">${revenueEstimate.toLocaleString()}</span>
+                <span className="text-xs sm:text-sm font-bold text-foreground">${revenueEstimate.toLocaleString()}</span>
                 <span className="text-[10px] text-muted-foreground">Pipeline</span>
               </button>
               <div className="invisible group-hover/revenue:visible absolute right-0 top-full mt-1 z-10 bg-popover border border-border rounded-lg shadow-lg p-3 min-w-[180px]">
@@ -240,16 +242,16 @@ const BookingInsights = () => {
           </div>
 
           {/* Inline Funnel */}
-          <div className="flex flex-wrap items-center justify-center gap-1 px-2">
+          <div className="flex items-center gap-1 px-2 overflow-x-auto flex-nowrap sm:flex-wrap sm:justify-center">
             {funnelSteps.map((step, i) => {
               const cfg = stageConfig.find(s => s.key === step.stage)!;
               const Icon = cfg.icon;
               return (
-                <div key={step.stage} className="flex items-center gap-1">
-                  <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
+                <div key={step.stage} className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-1.5 rounded-lg bg-muted/50 px-2 py-1 sm:px-2.5 sm:py-1.5">
                     <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                     <div className="text-center">
-                      <p className="text-sm font-bold text-foreground leading-none">{step.count}</p>
+                      <p className="text-xs sm:text-sm font-bold text-foreground leading-none">{step.count}</p>
                       <p className="text-[9px] text-muted-foreground">{cfg.label}</p>
                     </div>
                   </div>
@@ -257,7 +259,7 @@ const BookingInsights = () => {
                     <div className="flex flex-col items-center">
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                       {funnelSteps[i + 1]?.dropOff !== null && (
-                        <span className="text-[8px] text-red-500 font-medium leading-none">
+                        <span className="hidden sm:block text-[8px] text-red-500 font-medium leading-none">
                           -{funnelSteps[i + 1].dropOff}%
                         </span>
                       )}
@@ -290,19 +292,19 @@ const BookingInsights = () => {
             ) : (
               <div className="divide-y divide-border/30">
                 {hotLeads.map(lead => (
-                  <div key={lead.id} className="group flex items-center gap-3 px-3 py-2 hover:bg-muted/20 transition-colors">
-                    <span className="flex-1 truncate font-medium text-xs text-foreground">
-                      {lead.products?.title || lead.campaign_packages?.title || 'Unknown'}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground capitalize whitespace-nowrap">
-                      {lead.stage.replace('_', ' ')}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                      {formatDistanceToNow(new Date(lead.last_seen_at), { addSuffix: true })}
-                    </span>
-                    <UrgencyIcon urgency={lead.urgency} />
-                    <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
-                      <button
+                  <div key={lead.id} className="group flex items-center gap-2 sm:gap-3 px-2 py-1.5 sm:px-3 sm:py-2 hover:bg-muted/20 transition-colors">
+                     <span className="flex-1 truncate font-medium text-xs text-foreground max-w-[120px] sm:max-w-none">
+                       {lead.products?.title || lead.campaign_packages?.title || 'Unknown'}
+                     </span>
+                     <span className="hidden sm:inline text-[10px] text-muted-foreground capitalize whitespace-nowrap">
+                       {lead.stage.replace('_', ' ')}
+                     </span>
+                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                       {formatDistanceToNow(new Date(lead.last_seen_at), { addSuffix: true })}
+                     </span>
+                     <UrgencyIcon urgency={lead.urgency} />
+                     <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity">
+                       <button
                         onClick={() => navigate(`/dashboard/bookings-pipeline?stage=${lead.stage}`)}
                         className="p-1 rounded-md hover:bg-muted transition-colors"
                         title="View booking"
