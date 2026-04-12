@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import {
@@ -14,6 +15,31 @@ import {
 import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useToast } from '@/hooks/use-toast';
+
+type DateFilter = 'all' | 'today' | 'week' | 'month';
+
+const getFilterDate = (filter: DateFilter): Date | null => {
+  if (filter === 'all') return null;
+  const now = new Date();
+  switch (filter) {
+    case 'today':
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case 'week': {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      d.setDate(d.getDate() - d.getDay()); // Sunday
+      return d;
+    }
+    case 'month':
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+};
+
+const filterLabels: { key: DateFilter; label: string }[] = [
+  { key: 'all', label: 'All Leads' },
+  { key: 'today', label: 'Today' },
+  { key: 'week', label: 'This Week' },
+  { key: 'month', label: 'This Month' },
+];
 
 interface Profile {
   id: string;
@@ -38,12 +64,25 @@ const pipelineStatuses = [
 export default function PipelineProcess() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [selectedProfile, setSelectedProfile] = useState<{
     id: string;
     name: string;
     email: string;
   } | null>(null);
   const { toast } = useToast();
+
+  const filteredProfiles = useMemo(() => {
+    const cutoff = getFilterDate(dateFilter);
+    if (!cutoff) return profiles;
+    return profiles.filter(p => new Date(p.created_at) >= cutoff);
+  }, [profiles, dateFilter]);
+
+  const getFilterCount = (filter: DateFilter) => {
+    const cutoff = getFilterDate(filter);
+    if (!cutoff) return profiles.length;
+    return profiles.filter(p => new Date(p.created_at) >= cutoff).length;
+  };
 
   const fetchProfiles = async () => {
     try {
@@ -275,7 +314,7 @@ export default function PipelineProcess() {
   };
 
   const getStatusCount = (statusId: string) => {
-    return profiles.filter(profile => profile.pipeline_status === statusId).length;
+    return filteredProfiles.filter(profile => profile.pipeline_status === statusId).length;
   };
 
   const handleProfileClick = (profile: Profile) => {
@@ -305,6 +344,29 @@ export default function PipelineProcess() {
         </p>
       </div>
 
+      {/* Date Filter Bar */}
+      <div className="flex flex-wrap items-center gap-2">
+        {filterLabels.map(({ key, label }) => (
+          <Button
+            key={key}
+            variant={dateFilter === key ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setDateFilter(key)}
+            className="gap-1.5"
+          >
+            {label}
+            <Badge variant={dateFilter === key ? 'outline' : 'secondary'} className="text-xs ml-1">
+              {getFilterCount(key)}
+            </Badge>
+          </Button>
+        ))}
+        {dateFilter !== 'all' && (
+          <span className="text-sm text-muted-foreground ml-2">
+            Showing {filteredProfiles.length} of {profiles.length} leads
+          </span>
+        )}
+      </div>
+
       <KanbanProvider onDragEnd={handleDragEnd} className="min-h-[600px]">
         {pipelineStatuses.map(status => (
           <KanbanBoard key={status.id} id={status.id}>
@@ -315,13 +377,13 @@ export default function PipelineProcess() {
               </Badge>
             </div>
             <KanbanCards 
-              items={profiles
+              items={filteredProfiles
                 .filter(profile => profile.pipeline_status === status.id)
                 .sort((a, b) => a.sort_order - b.sort_order)
                 .map(profile => profile.id)
               }
             >
-              {profiles
+              {filteredProfiles
                 .filter(profile => profile.pipeline_status === status.id)
                 .sort((a, b) => a.sort_order - b.sort_order)
                 .map((profile, index) => (
