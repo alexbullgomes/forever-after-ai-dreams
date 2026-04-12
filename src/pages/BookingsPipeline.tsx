@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAvailabilityComputation, SlotAvailability } from '@/hooks/useAvailabilityComputation';
@@ -86,9 +87,10 @@ const STAGE_COLORS: Record<string, string> = {
 };
 
 export default function BookingsPipeline() {
+  const [searchParams] = useSearchParams();
   const [bookings, setBookings] = useState<BookingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stageFilter, setStageFilter] = useState('all');
+  const [stageFilter, setStageFilter] = useState(() => searchParams.get('stage') || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,

@@ -5,6 +5,7 @@ import { Users, UserCheck, Calendar, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { UserProfileModal } from './UserProfileModal';
 import PipelineOverview from './PipelineOverview';
+import BookingInsights from './BookingInsights';
 
 interface CustomerMetrics {
   totalCustomers: number;
@@ -192,6 +193,9 @@ const DashboardContent = () => {
 
       {/* Pipeline Overview */}
       <PipelineOverview />
+
+      {/* Booking Pipeline Insights */}
+      <BookingInsights />
 
       {/* Customer Section */}
       <div className="bg-card rounded-xl border border-border shadow-sm">
