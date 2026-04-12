@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/expandable-chat";
 import { useToast } from "@/components/ui/use-toast";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
+import { useChatConfig } from "@/hooks/useChatConfig";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,9 +57,11 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const { config: chatConfig } = useChatConfig();
   const shouldAutoOpen = useAutoOpenChat({ 
     sessionKey: 'everafter-chat-auto-opened-visitor',
-    enabled: true 
+    enabled: chatConfig.auto_open_enabled,
+    delay: chatConfig.auto_open_delay_seconds * 1000
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState("");
@@ -724,7 +727,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
         <ChatBubble key={message.id} variant="received">
           <ChatBubbleAvatar fallback="EVA" />
           <ChatBubbleMessage variant="received">
-            <p>Hi, I'm Eva 👋 How can I help you today? For the full experience — with portfolio, offers, and pricing — log in anytime.</p>
+            <p>{chatConfig.visitor_initial_message}</p>
           </ChatBubbleMessage>
         </ChatBubble>
       );

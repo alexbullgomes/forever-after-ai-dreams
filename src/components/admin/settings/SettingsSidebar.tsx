@@ -1,7 +1,7 @@
-import { Palette, FileText, Monitor, Layers, MessageSquareQuote, Mail, Search, Link } from 'lucide-react';
+import { Palette, FileText, Monitor, Layers, MessageSquareQuote, Mail, Search, Link, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type SettingsSection = 'brand-colors' | 'content' | 'hero' | 'sections' | 'testimonials' | 'contact' | 'seo' | 'navigation';
+export type SettingsSection = 'brand-colors' | 'content' | 'hero' | 'sections' | 'testimonials' | 'contact' | 'seo' | 'navigation' | 'chat';
 
 interface SettingsSidebarProps {
   activeSection: SettingsSection;
@@ -17,6 +17,7 @@ const sections = [
   { id: 'contact' as const, label: 'Contact', icon: Mail },
   { id: 'seo' as const, label: 'SEO', icon: Search },
   { id: 'navigation' as const, label: 'Navigation', icon: Link },
+  { id: 'chat' as const, label: 'Chat', icon: MessageCircle },
 ];
 
 export const SettingsSidebar = ({ activeSection, onSectionChange }: SettingsSidebarProps) => {

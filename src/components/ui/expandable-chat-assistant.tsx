@@ -23,6 +23,7 @@ import { AudioPlayer } from "@/components/wedding/components/AudioPlayer";
 import { VoiceInput } from "@/components/ui/voice-input";
 import { toast } from "sonner";
 import { useAutoOpenChat } from "@/hooks/useAutoOpenChat";
+import { useChatConfig } from "@/hooks/useChatConfig";
 import { ChatCardMessage } from "@/components/chat/ChatCardMessage";
 import { PhoneCaptureCard } from "@/components/chat/PhoneCaptureCard";
 import { CardMessageData } from "@/types/chat";
@@ -61,9 +62,11 @@ interface ExpandableChatAssistantProps {
 
 export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: externalOnOpenChange }: ExpandableChatAssistantProps) {
   const { user } = useAuth();
+  const { config: chatConfig } = useChatConfig();
   const shouldAutoOpen = useAutoOpenChat({ 
     sessionKey: 'everafter-chat-auto-opened-authenticated',
-    enabled: !!user 
+    enabled: !!user && chatConfig.auto_open_enabled,
+    delay: chatConfig.auto_open_delay_seconds * 1000
   });
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -205,7 +208,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
       if (!dbMessages || dbMessages.length === 0) {
         chatMessages.push({
           id: 0,
-          content: "Hi there! I'm EVA. You don't need to have it all figured out. Just share what you're thinking — a voice note 🎤, a message 💬, anything. I'm here to help shape your ideas into something beautiful. ✨",
+          content: chatConfig.user_initial_message || chatConfig.visitor_initial_message,
           sender: "ai",
           timestamp: new Date().toISOString(),
         });
