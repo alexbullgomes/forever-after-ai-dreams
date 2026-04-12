@@ -11,6 +11,8 @@ export interface InteractiveProduct3DCardProps {
   price?: number | string;
   currency?: string;
   priceUnit?: string;
+  originalPrice?: number | string;
+  isPromotional?: boolean;
   description: string;
   imageUrl: string;
   videoUrl?: string;
@@ -35,6 +37,8 @@ export const InteractiveProduct3DCard = React.forwardRef<
       price,
       currency = "USD",
       priceUnit = "per night",
+      originalPrice,
+      isPromotional = false,
       description,
       imageUrl,
       videoUrl,
@@ -76,9 +80,9 @@ export const InteractiveProduct3DCard = React.forwardRef<
       mouseY.set(0);
     };
 
-    const formatPrice = () => {
+    const formatPrice = (value?: number | string) => {
       const currencySymbol = currency === "USD" ? "$" : currency;
-      const priceValue = typeof price === "number" ? price.toLocaleString() : price;
+      const priceValue = typeof value === "number" ? value.toLocaleString() : value;
       return `${currencySymbol}${priceValue}`;
     };
 
@@ -127,7 +131,12 @@ export const InteractiveProduct3DCard = React.forwardRef<
             {/* Price */}
             {price !== undefined && price !== null && (
               <p className="text-lg font-semibold text-foreground">
-                {formatPrice()}{" "}
+                {isPromotional && originalPrice !== undefined && originalPrice !== null && (
+                  <span className="text-sm font-normal text-muted-foreground line-through mr-2">
+                    {formatPrice(originalPrice)}
+                  </span>
+                )}
+                {formatPrice(price)}{" "}
                 <span className="text-sm font-normal text-muted-foreground">
                   {priceUnit}
                 </span>

@@ -1234,6 +1234,7 @@ export type Database = {
           days: number | null
           deliverable_text: string | null
           description: string | null
+          has_promotional_price: boolean
           highlight_label: string | null
           id: string
           image_url: string | null
@@ -1242,6 +1243,7 @@ export type Database = {
           media_type: string | null
           price: number
           price_unit: string | null
+          promotional_price: number | null
           rating: number | null
           show_full_price: boolean
           show_in_our_products: boolean
@@ -1265,6 +1267,7 @@ export type Database = {
           days?: number | null
           deliverable_text?: string | null
           description?: string | null
+          has_promotional_price?: boolean
           highlight_label?: string | null
           id?: string
           image_url?: string | null
@@ -1273,6 +1276,7 @@ export type Database = {
           media_type?: string | null
           price: number
           price_unit?: string | null
+          promotional_price?: number | null
           rating?: number | null
           show_full_price?: boolean
           show_in_our_products?: boolean
@@ -1296,6 +1300,7 @@ export type Database = {
           days?: number | null
           deliverable_text?: string | null
           description?: string | null
+          has_promotional_price?: boolean
           highlight_label?: string | null
           id?: string
           image_url?: string | null
@@ -1304,6 +1309,7 @@ export type Database = {
           media_type?: string | null
           price?: number
           price_unit?: string | null
+          promotional_price?: number | null
           rating?: number | null
           show_full_price?: boolean
           show_in_our_products?: boolean

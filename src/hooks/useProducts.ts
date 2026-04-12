@@ -31,6 +31,8 @@ export interface Product {
   booking_reserve_enabled: boolean;
   booking_reserve_amount: number | null;
   show_full_price: boolean;
+  has_promotional_price: boolean;
+  promotional_price: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -172,6 +174,8 @@ export function useProducts(options: UseProductsOptions = {}) {
           booking_reserve_enabled: product.booking_reserve_enabled,
           booking_reserve_amount: product.booking_reserve_amount,
           show_full_price: product.show_full_price,
+          has_promotional_price: product.has_promotional_price,
+          promotional_price: product.promotional_price,
         });
 
       if (insertError) throw insertError;
