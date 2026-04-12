@@ -47,6 +47,8 @@ const productSchema = z.object({
   booking_reserve_enabled: z.boolean().default(false),
   booking_reserve_amount: z.coerce.number().min(0).optional(),
   show_full_price: z.boolean().default(true),
+  has_promotional_price: z.boolean().default(false),
+  promotional_price: z.coerce.number().min(0).optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -95,6 +97,8 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       booking_reserve_enabled: false,
       booking_reserve_amount: undefined,
       show_full_price: true,
+      has_promotional_price: false,
+      promotional_price: undefined,
     },
   });
 
@@ -122,6 +126,8 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         booking_reserve_enabled: product.booking_reserve_enabled ?? false,
         booking_reserve_amount: product.booking_reserve_amount ?? undefined,
         show_full_price: product.show_full_price ?? true,
+        has_promotional_price: product.has_promotional_price ?? false,
+        promotional_price: product.promotional_price ?? undefined,
       });
     } else {
       form.reset({
@@ -146,6 +152,8 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
         booking_reserve_enabled: false,
         booking_reserve_amount: undefined,
         show_full_price: true,
+        has_promotional_price: false,
+        promotional_price: undefined,
       });
     }
   }, [product, form]);
@@ -191,6 +199,8 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
       booking_reserve_enabled: values.booking_reserve_enabled,
       booking_reserve_amount: values.booking_reserve_enabled ? (values.booking_reserve_amount ?? null) : null,
       show_full_price: values.show_full_price,
+      has_promotional_price: values.has_promotional_price,
+      promotional_price: values.has_promotional_price ? (values.promotional_price ?? null) : null,
     });
     onOpenChange(false);
   };
@@ -496,6 +506,45 @@ export function ProductForm({ open, onOpenChange, product, onSubmit }: ProductFo
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Promotional Price Settings */}
+            <div className="rounded-lg border p-4 space-y-4">
+              <h3 className="font-medium text-sm text-foreground">Promotional Price Display</h3>
+              <FormField
+                control={form.control}
+                name="has_promotional_price"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between">
+                    <div>
+                      <FormLabel className="text-base font-medium">Enable promotional price</FormLabel>
+                      <p className="text-xs text-muted-foreground">Display a discounted price alongside the original (visual only, does not affect payments)</p>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch("has_promotional_price") && (
+                <FormField
+                  control={form.control}
+                  name="promotional_price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Promotional Price ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" placeholder="249" {...field} />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Must be lower than the full price. The original price will show with a strikethrough.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

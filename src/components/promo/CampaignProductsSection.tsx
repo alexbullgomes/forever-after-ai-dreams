@@ -219,13 +219,19 @@ export function CampaignProductsSection({ campaignId, campaignSlug, hideProductP
           {products.map(({ product }) => {
             const { imageUrl, videoUrl } = getProductThumbnail(product);
             const shouldShowPrice = !hideProductPrices && product.show_full_price;
+            const showPromo = shouldShowPrice
+              && product.has_promotional_price
+              && product.promotional_price != null
+              && product.promotional_price < product.price;
             return (
               <InteractiveProduct3DCard
                 key={product.id}
                 title={product.title}
-                price={shouldShowPrice ? product.price : undefined}
+                price={shouldShowPrice ? (showPromo ? product.promotional_price! : product.price) : undefined}
                 currency={product.currency}
                 priceUnit={shouldShowPrice ? product.price_unit : undefined}
+                originalPrice={showPromo ? product.price : undefined}
+                isPromotional={showPromo}
                 description={product.description || ""}
                 imageUrl={imageUrl}
                 videoUrl={videoUrl}

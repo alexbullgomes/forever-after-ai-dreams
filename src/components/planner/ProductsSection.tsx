@@ -81,13 +81,19 @@ export function ProductsSection() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
         {visibleProducts.map((product) => {
           const { imageUrl, videoUrl } = getProductThumbnail(product);
+          const showPromo = product.show_full_price
+            && product.has_promotional_price
+            && product.promotional_price != null
+            && product.promotional_price < product.price;
           return (
             <InteractiveProduct3DCard
               key={product.id}
               title={product.title}
-              price={product.show_full_price ? product.price : undefined}
+              price={product.show_full_price ? (showPromo ? product.promotional_price! : product.price) : undefined}
               currency={product.currency}
               priceUnit={product.show_full_price ? product.price_unit : undefined}
+              originalPrice={showPromo ? product.price : undefined}
+              isPromotional={showPromo}
               description={product.description || ""}
               imageUrl={imageUrl}
               videoUrl={videoUrl}
