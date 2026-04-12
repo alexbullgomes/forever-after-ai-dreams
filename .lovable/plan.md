@@ -1,42 +1,72 @@
 
 
-# Campaign-Level Price Visibility Override
+# Promotional Price Display (UI-Only Enhancement)
 
 ## Summary
-Add a `hide_product_prices_in_campaign` boolean column to `promotional_campaigns` and wire it through the admin UI and campaign product cards.
+Add `has_promotional_price` and `promotional_price` columns to the `products` table, wire them through the admin form and product card component for display-only promotional pricing with strikethrough on the original price. No changes to Stripe, booking, or backend logic.
 
 ## Database Migration
 ```sql
-ALTER TABLE public.promotional_campaigns
-ADD COLUMN hide_product_prices_in_campaign boolean NOT NULL DEFAULT false;
+ALTER TABLE public.products
+ADD COLUMN has_promotional_price boolean NOT NULL DEFAULT false,
+ADD COLUMN promotional_price numeric;
 ```
 
 ## File Changes
 
 ### 1. `src/integrations/supabase/types.ts`
-Add `hide_product_prices_in_campaign` to the `promotional_campaigns` Row/Insert/Update types.
+Add `has_promotional_price` and `promotional_price` to products Row/Insert/Update types.
 
-### 2. `src/components/admin/CampaignProductsTab.tsx`
-- Accept new prop: `hideProductPrices: boolean` and `onToggleHideProductPrices: (val: boolean) => void`
-- Add a second toggle below "Enable Products Section": "Hide product prices in this campaign" with helper text
+### 2. `src/hooks/useProducts.ts`
+Add both fields to the Product interface and include them in all queries and the duplicate function.
 
-### 3. `src/components/admin/PromotionalCampaignForm.tsx`
-- Add `hide_product_prices_in_campaign` to `formData` type, defaults, reset logic, and save payload
-- Pass the new props to `CampaignProductsTab`
+### 3. `src/components/admin/ProductForm.tsx`
+Below the existing "Booking Reserve Settings" section, add a new section:
+- Toggle: "Enable promotional price"
+- When enabled, show a numeric input for `promotional_price`
+- Include in save payload
 
-### 4. `src/pages/PromotionalLanding.tsx`
-- Pass `hideProductPrices={campaign.hide_product_prices_in_campaign}` to `CampaignProductsSection`
+### 4. `src/components/ui/3d-product-card.tsx`
+- Add optional props: `originalPrice?: number | string`, `isPromotional?: boolean`
+- Update price rendering: when `isPromotional` is true, show `originalPrice` with strikethrough (muted, smaller) and the main `price` as the promotional price (highlighted)
+- When not promotional, render price as before
 
-### 5. `src/components/promo/CampaignProductsSection.tsx`
-- Accept new prop `hideProductPrices?: boolean`
-- Update price logic:
-  ```typescript
-  const shouldShowPrice = !hideProductPrices && product.show_full_price;
-  price={shouldShowPrice ? product.price : undefined}
-  priceUnit={shouldShowPrice ? product.price_unit : undefined}
-  ```
+### 5. `src/components/planner/ProductsSection.tsx`
+Compute promotional display logic before passing to card:
+```typescript
+const showPromo = product.has_promotional_price 
+  && product.promotional_price 
+  && product.promotional_price < product.price;
+
+price={product.show_full_price 
+  ? (showPromo ? product.promotional_price : product.price) 
+  : undefined}
+originalPrice={product.show_full_price && showPromo ? product.price : undefined}
+isPromotional={product.show_full_price && showPromo}
+```
+
+### 6. `src/components/promo/CampaignProductsSection.tsx`
+Same logic as above, but also respecting `hideProductPrices` campaign override:
+```typescript
+const shouldShowPrice = !hideProductPrices && product.show_full_price;
+const showPromo = shouldShowPrice 
+  && product.has_promotional_price 
+  && product.promotional_price 
+  && product.promotional_price < product.price;
+```
+
+## Visual Design
+Price area when promotional:
+```text
+$350  $249 Session
+^^^^  ^^^^
+muted  primary/bold
+line-through
+```
+Both prices inline, same row. No "sale" labels.
 
 ## Scope
-- Only affects campaign landing page product cards
-- No changes to Services page, booking flow, Stripe, or admin product views
+- Display only -- Stripe, booking, and reserve logic completely untouched
+- `promotional_price` is never passed to checkout or edge functions
+- Safe defaults: existing products unaffected
 
