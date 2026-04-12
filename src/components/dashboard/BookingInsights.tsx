@@ -66,6 +66,7 @@ const BookingInsights = () => {
     const { data: rows, error } = await supabase
       .from('booking_requests')
       .select('id, stage, created_at, last_seen_at, user_id, product_id, package_id, products:product_id(title, price), campaign_packages:package_id(title, minimum_deposit_cents)')
+      .eq('is_archived', false)
       .order('created_at', { ascending: false })
       .limit(1000);
 

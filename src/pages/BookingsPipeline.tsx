@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
-import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User, DollarSign } from 'lucide-react';
+import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User, DollarSign, RotateCcw } from 'lucide-react';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import { AvailabilityOverrideModal } from '@/components/availability/AvailabilityOverrideModal';
 import { AvailabilityStatusBadge, AvailabilityStatus } from '@/components/availability/AvailabilityStatusBadge';
@@ -105,6 +105,9 @@ export default function BookingsPipeline() {
   const [manualPaymentMethod, setManualPaymentMethod] = useState('cash');
   const [manualPaymentNotes, setManualPaymentNotes] = useState('');
   const [manualPaymentLoading, setManualPaymentLoading] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [createBackup, setCreateBackup] = useState(true);
+  const [resetting, setResetting] = useState(false);
   const { toast } = useToast();
   const { getSlotAvailability } = useAvailabilityComputation();
 
@@ -118,6 +121,7 @@ export default function BookingsPipeline() {
           products:product_id (title, price),
           campaign_packages:package_id (title, minimum_deposit_cents)
         `)
+        .eq('is_archived', false)
         .order('created_at', { ascending: false });
 
       if (stageFilter !== 'all') {
@@ -309,6 +313,36 @@ export default function BookingsPipeline() {
     );
   });
 
+  const handleResetPipeline = async () => {
+    setResetting(true);
+    try {
+      const { data, error } = await supabase.rpc('archive_booking_pipeline', {
+        p_create_snapshot: createBackup,
+        p_filter_range: 'all',
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; archived_count: number; snapshot_id: string | null };
+
+      toast({
+        title: 'Pipeline reset complete',
+        description: `${result.archived_count} booking requests archived${result.snapshot_id ? ' with backup snapshot' : ''}`,
+      });
+
+      setResetDialogOpen(false);
+      fetchBookings();
+    } catch (err: any) {
+      toast({
+        title: 'Reset failed',
+        description: err.message || 'Failed to reset pipeline',
+        variant: 'destructive',
+      });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const formatTime = (time: string | null) => {
     if (!time) return '-';
     const [hours, minutes] = time.split(':').map(Number);
@@ -321,11 +355,49 @@ export default function BookingsPipeline() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Bookings Pipeline</h1>
-        <Button onClick={fetchBookings} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setResetDialogOpen(true)} variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset Metrics
+          </Button>
+          <Button onClick={fetchBookings} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Booking Pipeline?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>This will archive all current booking requests from the pipeline view. No data will be deleted — archived entries can be restored later.</p>
+              <p className="text-xs text-muted-foreground">Active bookings, payments, and Stripe data remain untouched.</p>
+              <label className="flex items-center gap-2 pt-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={createBackup}
+                  onChange={(e) => setCreateBackup(e.target.checked)}
+                  className="rounded border-border"
+                />
+                <span className="text-sm">Create metrics snapshot before reset</span>
+              </label>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={resetting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetPipeline}
+              disabled={resetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {resetting ? 'Resetting...' : 'Reset Pipeline'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
