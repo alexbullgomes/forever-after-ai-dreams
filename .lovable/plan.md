@@ -1,40 +1,50 @@
 
 
-# Auto-Assign New Users to Pipeline
+# Pipeline Process – Date-Based Lead Filters
 
-## Problem
-New users are created with `pipeline_profile = 'Disable'` by default. The Pipeline Process page only shows profiles where `pipeline_profile = 'Enable'`. This means new users are invisible in the pipeline until an admin manually enables them.
+## Summary
+Add a client-side filter bar above the pipeline kanban board to filter profiles by recency (Today, This Week, This Month, All). No database or query changes -- filtering applied in-memory on the already-fetched `profiles` array.
 
-Current defaults on the `profiles` table:
-- `pipeline_profile` = `'Disable'` -- **this is the problem**
-- `pipeline_status` = `'New Lead & Negotiation'` -- already correct
-- `status` = `'New Lead'` -- already correct
+## Approach: Client-Side Filtering
+The page already fetches all pipeline-enabled profiles in one query. Filtering client-side is the safest approach: zero risk to drag-and-drop, real-time subscriptions, or existing queries.
 
-There are currently **13 users** stuck with `pipeline_profile = 'Disable'` who never appeared in the pipeline.
+## Changes
 
-## Solution
-One database migration with two statements:
+**Single file: `src/pages/PipelineProcess.tsx`**
 
-1. **Change the column default** from `'Disable'` to `'Enable'` so all future users automatically appear in the pipeline
-2. **Backfill existing users** who are currently `'Disable'` to `'Enable'` so they appear immediately
+1. **Add state**: `dateFilter` with values `'all' | 'today' | 'week' | 'month'`, default `'all'`
 
-```sql
--- 1. Change default for future users
-ALTER TABLE public.profiles
-ALTER COLUMN pipeline_profile SET DEFAULT 'Enable';
+2. **Add filter function** using `created_at`:
+   - Today: `created_at >= startOfToday()`
+   - This Week: `created_at >= startOfWeek()` (Sunday)
+   - This Month: `created_at >= startOfMonth()`
+   - All: no filter
 
--- 2. Backfill existing hidden users
-UPDATE public.profiles
-SET pipeline_profile = 'Enable'
-WHERE pipeline_profile = 'Disable';
+3. **Derive `filteredProfiles`** via `useMemo` -- applies date filter to `profiles` state. All existing kanban rendering and drag-and-drop logic uses `filteredProfiles` instead of `profiles` for display, but drag handlers continue to operate on the full `profiles` state so moves persist correctly.
+
+4. **Add filter bar UI** between the header and the kanban board:
+   - Horizontal row of 4 buttons: All Leads, Today, This Week, This Month
+   - Each button shows a badge count (computed from full `profiles` array)
+   - Active filter has `variant="default"`, others `variant="ghost"`
+   - Summary text: e.g. "Showing 5 of 14 leads"
+
+5. **`getStatusCount`** updated to count from `filteredProfiles`
+
+## What is NOT touched
+- Database schema
+- Supabase query / real-time subscription
+- Drag-and-drop handlers (`handleDragEnd`, `handleMoveToColumn`, etc.)
+- `KanbanProvider`, `KanbanBoard`, `KanbanCard` components
+- RLS policies
+- Any other file
+
+## Visual Layout
+```text
+Pipeline Process
+Manage and track customer progress through the pipeline
+
+[All Leads (14)] [Today (2)] [This Week (5)] [This Month (9)]   Showing 9 of 14 leads
+
+┌─ New Lead & Negotiation ─┐ ┌─ Closed Deal... ─┐ ...
 ```
-
-## Impact
-- All 13 existing hidden users will appear in "New Lead & Negotiation" column
-- Every future registration (email or Google OAuth) will automatically land in the pipeline
-- No code changes needed -- the `handle_new_user` trigger and Pipeline Process page already work correctly with these values
-- No effect on Stripe, booking, or any other system
-
-## Files Changed
-- One SQL migration only. No frontend or backend code changes.
 
