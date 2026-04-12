@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, UserCheck, Calendar, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { UserProfileModal } from './UserProfileModal';
+import PipelineOverview from './PipelineOverview';
 
 interface CustomerMetrics {
   totalCustomers: number;
