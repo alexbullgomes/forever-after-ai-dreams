@@ -121,6 +121,7 @@ export default function BookingsPipeline() {
           products:product_id (title, price),
           campaign_packages:package_id (title, minimum_deposit_cents)
         `)
+        .eq('is_archived', false)
         .order('created_at', { ascending: false });
 
       if (stageFilter !== 'all') {
@@ -311,6 +312,36 @@ export default function BookingsPipeline() {
       b.campaign_packages?.title?.toLowerCase().includes(query)
     );
   });
+
+  const handleResetPipeline = async () => {
+    setResetting(true);
+    try {
+      const { data, error } = await supabase.rpc('archive_booking_pipeline', {
+        p_create_snapshot: createBackup,
+        p_filter_range: 'all',
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; archived_count: number; snapshot_id: string | null };
+
+      toast({
+        title: 'Pipeline reset complete',
+        description: `${result.archived_count} booking requests archived${result.snapshot_id ? ' with backup snapshot' : ''}`,
+      });
+
+      setResetDialogOpen(false);
+      fetchBookings();
+    } catch (err: any) {
+      toast({
+        title: 'Reset failed',
+        description: err.message || 'Failed to reset pipeline',
+        variant: 'destructive',
+      });
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const formatTime = (time: string | null) => {
     if (!time) return '-';
