@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -62,15 +63,31 @@ const pipelineStatuses = [
 ];
 
 export default function PipelineProcess() {
+  const [searchParams] = useSearchParams();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilter>(() => {
+    const range = searchParams.get('range');
+    if (range && ['all', 'today', 'week', 'month'].includes(range)) return range as DateFilter;
+    return 'all';
+  });
+  const [highlightedStatus, setHighlightedStatus] = useState<string | null>(
+    searchParams.get('status')
+  );
   const [selectedProfile, setSelectedProfile] = useState<{
     id: string;
     name: string;
     email: string;
   } | null>(null);
   const { toast } = useToast();
+
+  // Clear highlight after 2 seconds
+  useEffect(() => {
+    if (highlightedStatus) {
+      const timer = setTimeout(() => setHighlightedStatus(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedStatus]);
 
   const filteredProfiles = useMemo(() => {
     const cutoff = getFilterDate(dateFilter);
@@ -387,7 +404,7 @@ export default function PipelineProcess() {
       <KanbanProvider onDragEnd={handleDragEnd} className="min-h-[600px]">
         {pipelineStatuses.map(status => (
           <KanbanBoard key={status.id} id={status.id}>
-            <div className="flex items-center justify-between mb-2">
+            <div className={`flex items-center justify-between mb-2 rounded-md px-1 transition-all duration-500 ${highlightedStatus === status.id ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
               <KanbanHeader name={status.name} color={status.color} />
               <Badge variant="secondary" className="text-xs">
                 {getStatusCount(status.id)}

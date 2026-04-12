@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, UserCheck, Calendar, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { UserProfileModal } from './UserProfileModal';
+import PipelineOverview from './PipelineOverview';
 
 interface CustomerMetrics {
   totalCustomers: number;
@@ -188,6 +189,9 @@ const DashboardContent = () => {
           onClick={() => navigate('/dashboard/chat-admin')}
         />
       </div>
+
+      {/* Pipeline Overview */}
+      <PipelineOverview />
 
       {/* Customer Section */}
       <div className="bg-card rounded-xl border border-border shadow-sm">
