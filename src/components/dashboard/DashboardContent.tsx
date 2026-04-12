@@ -190,6 +190,9 @@ const DashboardContent = () => {
         />
       </div>
 
+      {/* Pipeline Overview */}
+      <PipelineOverview />
+
       {/* Customer Section */}
       <div className="bg-card rounded-xl border border-border shadow-sm">
         <div className="p-6 border-b border-border">
