@@ -1,72 +1,40 @@
 
 
-# Promotional Price Display (UI-Only Enhancement)
+# Auto-Assign New Users to Pipeline
 
-## Summary
-Add `has_promotional_price` and `promotional_price` columns to the `products` table, wire them through the admin form and product card component for display-only promotional pricing with strikethrough on the original price. No changes to Stripe, booking, or backend logic.
+## Problem
+New users are created with `pipeline_profile = 'Disable'` by default. The Pipeline Process page only shows profiles where `pipeline_profile = 'Enable'`. This means new users are invisible in the pipeline until an admin manually enables them.
 
-## Database Migration
+Current defaults on the `profiles` table:
+- `pipeline_profile` = `'Disable'` -- **this is the problem**
+- `pipeline_status` = `'New Lead & Negotiation'` -- already correct
+- `status` = `'New Lead'` -- already correct
+
+There are currently **13 users** stuck with `pipeline_profile = 'Disable'` who never appeared in the pipeline.
+
+## Solution
+One database migration with two statements:
+
+1. **Change the column default** from `'Disable'` to `'Enable'` so all future users automatically appear in the pipeline
+2. **Backfill existing users** who are currently `'Disable'` to `'Enable'` so they appear immediately
+
 ```sql
-ALTER TABLE public.products
-ADD COLUMN has_promotional_price boolean NOT NULL DEFAULT false,
-ADD COLUMN promotional_price numeric;
+-- 1. Change default for future users
+ALTER TABLE public.profiles
+ALTER COLUMN pipeline_profile SET DEFAULT 'Enable';
+
+-- 2. Backfill existing hidden users
+UPDATE public.profiles
+SET pipeline_profile = 'Enable'
+WHERE pipeline_profile = 'Disable';
 ```
 
-## File Changes
+## Impact
+- All 13 existing hidden users will appear in "New Lead & Negotiation" column
+- Every future registration (email or Google OAuth) will automatically land in the pipeline
+- No code changes needed -- the `handle_new_user` trigger and Pipeline Process page already work correctly with these values
+- No effect on Stripe, booking, or any other system
 
-### 1. `src/integrations/supabase/types.ts`
-Add `has_promotional_price` and `promotional_price` to products Row/Insert/Update types.
-
-### 2. `src/hooks/useProducts.ts`
-Add both fields to the Product interface and include them in all queries and the duplicate function.
-
-### 3. `src/components/admin/ProductForm.tsx`
-Below the existing "Booking Reserve Settings" section, add a new section:
-- Toggle: "Enable promotional price"
-- When enabled, show a numeric input for `promotional_price`
-- Include in save payload
-
-### 4. `src/components/ui/3d-product-card.tsx`
-- Add optional props: `originalPrice?: number | string`, `isPromotional?: boolean`
-- Update price rendering: when `isPromotional` is true, show `originalPrice` with strikethrough (muted, smaller) and the main `price` as the promotional price (highlighted)
-- When not promotional, render price as before
-
-### 5. `src/components/planner/ProductsSection.tsx`
-Compute promotional display logic before passing to card:
-```typescript
-const showPromo = product.has_promotional_price 
-  && product.promotional_price 
-  && product.promotional_price < product.price;
-
-price={product.show_full_price 
-  ? (showPromo ? product.promotional_price : product.price) 
-  : undefined}
-originalPrice={product.show_full_price && showPromo ? product.price : undefined}
-isPromotional={product.show_full_price && showPromo}
-```
-
-### 6. `src/components/promo/CampaignProductsSection.tsx`
-Same logic as above, but also respecting `hideProductPrices` campaign override:
-```typescript
-const shouldShowPrice = !hideProductPrices && product.show_full_price;
-const showPromo = shouldShowPrice 
-  && product.has_promotional_price 
-  && product.promotional_price 
-  && product.promotional_price < product.price;
-```
-
-## Visual Design
-Price area when promotional:
-```text
-$350  $249 Session
-^^^^  ^^^^
-muted  primary/bold
-line-through
-```
-Both prices inline, same row. No "sale" labels.
-
-## Scope
-- Display only -- Stripe, booking, and reserve logic completely untouched
-- `promotional_price` is never passed to checkout or edge functions
-- Safe defaults: existing products unaffected
+## Files Changed
+- One SQL migration only. No frontend or backend code changes.
 
