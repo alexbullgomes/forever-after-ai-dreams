@@ -345,23 +345,40 @@ export default function PipelineProcess() {
       </div>
 
       {/* Date Filter Bar */}
-      <div className="flex flex-wrap items-center gap-2">
-        {filterLabels.map(({ key, label }) => (
-          <Button
-            key={key}
-            variant={dateFilter === key ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setDateFilter(key)}
-            className="gap-1.5"
-          >
-            {label}
-            <Badge variant={dateFilter === key ? 'outline' : 'secondary'} className="text-xs ml-1">
-              {getFilterCount(key)}
-            </Badge>
-          </Button>
-        ))}
+      <div className="flex flex-wrap items-center gap-1.5 rounded-lg bg-muted/50 p-1">
+        {filterLabels.map(({ key, label }) => {
+          const isActive = dateFilter === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setDateFilter(key)}
+              className={`
+                inline-flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium
+                transition-all duration-200 ease-in-out
+                ${isActive
+                  ? 'bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/80'
+                }
+              `}
+            >
+              {label}
+              <span
+                className={`
+                  inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold leading-none
+                  transition-colors duration-200
+                  ${isActive
+                    ? 'bg-primary-foreground/20 text-primary-foreground'
+                    : 'bg-muted text-muted-foreground'
+                  }
+                `}
+              >
+                {getFilterCount(key)}
+              </span>
+            </button>
+          );
+        })}
         {dateFilter !== 'all' && (
-          <span className="text-sm text-muted-foreground ml-2">
+          <span className="ml-auto text-xs italic text-muted-foreground/70 px-2">
             Showing {filteredProfiles.length} of {profiles.length} leads
           </span>
         )}
