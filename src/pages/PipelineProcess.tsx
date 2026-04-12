@@ -314,7 +314,7 @@ export default function PipelineProcess() {
   };
 
   const getStatusCount = (statusId: string) => {
-    return profiles.filter(profile => profile.pipeline_status === statusId).length;
+    return filteredProfiles.filter(profile => profile.pipeline_status === statusId).length;
   };
 
   const handleProfileClick = (profile: Profile) => {
