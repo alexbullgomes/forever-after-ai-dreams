@@ -1,50 +1,101 @@
 
 
-# Pipeline Process – Date-Based Lead Filters
+# Expandable Chat – Configurable Initial Message & Behavior via Project Settings
 
 ## Summary
-Add a client-side filter bar above the pipeline kanban board to filter profiles by recency (Today, This Week, This Month, All). No database or query changes -- filtering applied in-memory on the already-fetched `profiles` array.
+Add a "Chat Configuration" section to Project Settings that lets admins customize the chat's initial greeting messages, auto-open behavior, and delay timing. All values stored in the existing `site_settings` table. No changes to chat architecture, message flow, webhooks, or database schema.
 
-## Approach: Client-Side Filtering
-The page already fetches all pipeline-enabled profiles in one query. Filtering client-side is the safest approach: zero risk to drag-and-drop, real-time subscriptions, or existing queries.
+## Current Behavior (Hardcoded)
+- **Visitor intro**: `"Hi, I'm Eva 👋 How can I help you today? For the full experience — with portfolio, offers, and pricing — log in anytime."` (rendered when no conversation exists)
+- **Authenticated intro**: `"Hi there! I'm EVA. You don't need to have it all figured out..."` (injected when message history is empty)
+- **Auto-open delay**: hardcoded 60 seconds in `useAutoOpenChat` hook
+- **Show once per session**: always true (hardcoded via sessionStorage)
+
+## Architecture
+
+```text
+site_settings table
+  key: "chat_config"
+  value: {
+    visitor_initial_message: string,
+    user_initial_message: string,
+    auto_open_enabled: boolean,
+    auto_open_delay_seconds: number,
+    show_once_per_session: boolean
+  }
+
+Settings UI → useSiteSettingsAdmin → site_settings (upsert)
+Chat components → useChatConfig hook → reads from site_settings with defaults
+```
 
 ## Changes
 
-**Single file: `src/pages/PipelineProcess.tsx`**
+### 1. New Hook: `src/hooks/useChatConfig.ts`
+- Reads `chat_config` key from `site_settings` table
+- Returns typed config with safe defaults:
+  - `visitor_initial_message`: current hardcoded text
+  - `user_initial_message`: current hardcoded text
+  - `auto_open_enabled`: `true`
+  - `auto_open_delay_seconds`: `60`
+  - `show_once_per_session`: `true`
+- Caches in localStorage for instant access (same pattern as brand colors)
 
-1. **Add state**: `dateFilter` with values `'all' | 'today' | 'week' | 'month'`, default `'all'`
+### 2. New Settings Section: `src/components/admin/settings/ChatConfigEditor.tsx`
+- Textarea: Visitor Initial Message (with current default as placeholder)
+- Textarea: Logged-in User Initial Message (optional, falls back to visitor message)
+- Toggle: Auto Open Chat (on/off)
+- Number input: Auto Open Delay (seconds, default 30)
+- Toggle: Show Only Once Per Session
+- Save button with toast feedback
+- Uses `useSiteSettingsAdmin` pattern (upsert to `site_settings` with key `chat_config`)
 
-2. **Add filter function** using `created_at`:
-   - Today: `created_at >= startOfToday()`
-   - This Week: `created_at >= startOfWeek()` (Sunday)
-   - This Month: `created_at >= startOfMonth()`
-   - All: no filter
+### 3. Update Settings Sidebar: `src/components/admin/settings/SettingsSidebar.tsx`
+- Add `'chat'` to `SettingsSection` type
+- Add sidebar item with `MessageCircle` icon, label "Chat"
 
-3. **Derive `filteredProfiles`** via `useMemo` -- applies date filter to `profiles` state. All existing kanban rendering and drag-and-drop logic uses `filteredProfiles` instead of `profiles` for display, but drag handlers continue to operate on the full `profiles` state so moves persist correctly.
+### 4. Update Project Settings Page: `src/pages/ProjectSettings.tsx`
+- Import `ChatConfigEditor`
+- Add `case 'chat'` to `renderContent()`
 
-4. **Add filter bar UI** between the header and the kanban board:
-   - Horizontal row of 4 buttons: All Leads, Today, This Week, This Month
-   - Each button shows a badge count (computed from full `profiles` array)
-   - Active filter has `variant="default"`, others `variant="ghost"`
-   - Summary text: e.g. "Showing 5 of 14 leads"
+### 5. Update `src/components/ui/expandable-chat-webhook.tsx`
+- Import `useChatConfig`
+- Replace hardcoded intro message text (line 727) with `config.visitor_initial_message`
+- Pass `config.auto_open_delay_seconds * 1000` and `config.auto_open_enabled` to `useAutoOpenChat`
+- No changes to message persistence, webhook flow, or realtime subscriptions
 
-5. **`getStatusCount`** updated to count from `filteredProfiles`
+### 6. Update `src/components/ui/expandable-chat-assistant.tsx`
+- Import `useChatConfig`
+- Replace hardcoded greeting (line 208) with `config.user_initial_message` (falling back to `config.visitor_initial_message`)
+- Pass config values to `useAutoOpenChat`
 
-## What is NOT touched
-- Database schema
-- Supabase query / real-time subscription
-- Drag-and-drop handlers (`handleDragEnd`, `handleMoveToColumn`, etc.)
-- `KanbanProvider`, `KanbanBoard`, `KanbanCard` components
-- RLS policies
-- Any other file
+### 7. Update `src/hooks/useAutoOpenChat.ts`
+- Already accepts `delay` and `enabled` params -- no structural changes needed
+- Chat components will just pass dynamic values from config instead of hardcoded ones
 
-## Visual Layout
-```text
-Pipeline Process
-Manage and track customer progress through the pipeline
+## Message Injection Safety
+- Initial messages are **local-only UI messages** (id=0 or generated client-side ID)
+- They are NOT inserted into the database
+- They are NOT sent to webhooks or n8n
+- They only appear when no conversation/messages exist
+- On reload with existing conversation, messages load from DB -- no duplicate risk
 
-[All Leads (14)] [Today (2)] [This Week (5)] [This Month (9)]   Showing 9 of 14 leads
+## Files Changed
+| File | Change |
+|------|--------|
+| `src/hooks/useChatConfig.ts` | **New** -- hook to read chat config from site_settings |
+| `src/components/admin/settings/ChatConfigEditor.tsx` | **New** -- admin UI for chat settings |
+| `src/components/admin/settings/SettingsSidebar.tsx` | Add 'chat' section |
+| `src/pages/ProjectSettings.tsx` | Wire ChatConfigEditor |
+| `src/components/ui/expandable-chat-webhook.tsx` | Use dynamic config for intro + auto-open |
+| `src/components/ui/expandable-chat-assistant.tsx` | Use dynamic config for greeting + auto-open |
 
-┌─ New Lead & Negotiation ─┐ ┌─ Closed Deal... ─┐ ...
-```
+## What is NOT Touched
+- Database schema (uses existing `site_settings` key-value pattern)
+- `visitor-chat` edge function
+- `chat-webhook-callback` edge function
+- `messages` table or RLS policies
+- Realtime subscriptions or broadcast channels
+- n8n webhook flow
+- AI/Human handoff logic
+- `useAutoOpenChat` hook structure
 
