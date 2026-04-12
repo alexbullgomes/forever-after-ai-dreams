@@ -12,6 +12,13 @@ import {
 "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import DOMPurify from "dompurify";
+
+const SANITIZE_CFG = {
+  ALLOWED_TAGS: ["p", "br", "strong", "ul", "ol", "li", "a"],
+  ALLOWED_ATTR: ["href", "target", "rel"],
+};
+const safeHtml = (html: string) => DOMPurify.sanitize(html, SANITIZE_CFG);
 
 const isVideoUrl = (url: string) => /\.(mp4|webm)(\?.*)?$/i.test(url);
 
@@ -161,7 +168,7 @@ export function FeatureShowcase({
             </h2>
 
             {description &&
-            <p className="text-base leading-relaxed text-muted-foreground">{description}</p>
+            <div className="prose prose-sm max-w-none text-muted-foreground [&_a]:text-primary [&_p]:my-1 [&_ul]:pl-5 [&_ul]:list-disc" dangerouslySetInnerHTML={{ __html: safeHtml(description) }} />
             }
 
             {/* Stats chips */}
@@ -184,8 +191,8 @@ export function FeatureShowcase({
                       <AccordionTrigger className="text-sm font-semibold text-foreground">
                         {step.title}
                       </AccordionTrigger>
-                      <AccordionContent className="text-sm text-muted-foreground">
-                        {step.text}
+                      <AccordionContent className="prose prose-sm max-w-none text-sm text-muted-foreground [&_a]:text-primary [&_p]:my-1 [&_ul]:pl-5 [&_ul]:list-disc">
+                        <div dangerouslySetInnerHTML={{ __html: safeHtml(step.text) }} />
                       </AccordionContent>
                     </AccordionItem>
                 )}

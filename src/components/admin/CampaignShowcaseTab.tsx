@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import { MiniRichTextEditor } from "@/components/admin/blog/MiniRichTextEditor";
 import type { ShowcaseStep, TabMedia } from "@/components/ui/feature-showcase";
 
 interface CampaignShowcaseTabProps {
@@ -79,7 +79,7 @@ export function CampaignShowcaseTab({
               </div>
               <div>
                 <Label>Description</Label>
-                <Textarea value={description} onChange={e => onDescriptionChange(e.target.value)} rows={3} />
+                <MiniRichTextEditor content={description} onChange={onDescriptionChange} placeholder="Showcase description…" />
               </div>
             </CardContent>
           </Card>
@@ -127,7 +127,7 @@ export function CampaignShowcaseTab({
                     </Button>
                   </div>
                   <Input value={step.title} onChange={e => { const n = [...steps]; n[i] = { ...n[i], title: e.target.value }; onStepsChange(n); }} placeholder="Step title" />
-                  <Textarea value={step.text} onChange={e => { const n = [...steps]; n[i] = { ...n[i], text: e.target.value }; onStepsChange(n); }} placeholder="Step description" rows={2} />
+                  <MiniRichTextEditor content={step.text} onChange={val => { const n = [...steps]; n[i] = { ...n[i], text: val }; onStepsChange(n); }} placeholder="Step description…" />
                 </div>
               ))}
               {steps.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No steps yet.</p>}
