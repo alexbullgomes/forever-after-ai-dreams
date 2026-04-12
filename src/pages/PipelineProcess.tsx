@@ -344,6 +344,29 @@ export default function PipelineProcess() {
         </p>
       </div>
 
+      {/* Date Filter Bar */}
+      <div className="flex flex-wrap items-center gap-2">
+        {filterLabels.map(({ key, label }) => (
+          <Button
+            key={key}
+            variant={dateFilter === key ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setDateFilter(key)}
+            className="gap-1.5"
+          >
+            {label}
+            <Badge variant={dateFilter === key ? 'outline' : 'secondary'} className="text-xs ml-1">
+              {getFilterCount(key)}
+            </Badge>
+          </Button>
+        ))}
+        {dateFilter !== 'all' && (
+          <span className="text-sm text-muted-foreground ml-2">
+            Showing {filteredProfiles.length} of {profiles.length} leads
+          </span>
+        )}
+      </div>
+
       <KanbanProvider onDragEnd={handleDragEnd} className="min-h-[600px]">
         {pipelineStatuses.map(status => (
           <KanbanBoard key={status.id} id={status.id}>
@@ -354,13 +377,13 @@ export default function PipelineProcess() {
               </Badge>
             </div>
             <KanbanCards 
-              items={profiles
+              items={filteredProfiles
                 .filter(profile => profile.pipeline_status === status.id)
                 .sort((a, b) => a.sort_order - b.sort_order)
                 .map(profile => profile.id)
               }
             >
-              {profiles
+              {filteredProfiles
                 .filter(profile => profile.pipeline_status === status.id)
                 .sort((a, b) => a.sort_order - b.sort_order)
                 .map((profile, index) => (
