@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
-import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User, DollarSign } from 'lucide-react';
+import { CalendarIcon, Eye, RefreshCw, UserCheck, XCircle, User, DollarSign, RotateCcw } from 'lucide-react';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import { AvailabilityOverrideModal } from '@/components/availability/AvailabilityOverrideModal';
 import { AvailabilityStatusBadge, AvailabilityStatus } from '@/components/availability/AvailabilityStatusBadge';
