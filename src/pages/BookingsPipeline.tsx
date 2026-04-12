@@ -105,6 +105,9 @@ export default function BookingsPipeline() {
   const [manualPaymentMethod, setManualPaymentMethod] = useState('cash');
   const [manualPaymentNotes, setManualPaymentNotes] = useState('');
   const [manualPaymentLoading, setManualPaymentLoading] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [createBackup, setCreateBackup] = useState(true);
+  const [resetting, setResetting] = useState(false);
   const { toast } = useToast();
   const { getSlotAvailability } = useAvailabilityComputation();
 
