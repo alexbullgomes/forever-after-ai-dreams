@@ -63,15 +63,31 @@ const pipelineStatuses = [
 ];
 
 export default function PipelineProcess() {
+  const [searchParams] = useSearchParams();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [dateFilter, setDateFilter] = useState<DateFilter>(() => {
+    const range = searchParams.get('range');
+    if (range && ['all', 'today', 'week', 'month'].includes(range)) return range as DateFilter;
+    return 'all';
+  });
+  const [highlightedStatus, setHighlightedStatus] = useState<string | null>(
+    searchParams.get('status')
+  );
   const [selectedProfile, setSelectedProfile] = useState<{
     id: string;
     name: string;
     email: string;
   } | null>(null);
   const { toast } = useToast();
+
+  // Clear highlight after 2 seconds
+  useEffect(() => {
+    if (highlightedStatus) {
+      const timer = setTimeout(() => setHighlightedStatus(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedStatus]);
 
   const filteredProfiles = useMemo(() => {
     const cutoff = getFilterDate(dateFilter);
