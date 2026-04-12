@@ -383,6 +383,57 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_pipeline_snapshots: {
+        Row: {
+          abandoned: number
+          archived_count: number
+          checkout_started: number
+          contacted: number
+          created_at: string
+          created_by: string | null
+          date_selected: number
+          estimated_revenue: number
+          filter_range: string | null
+          id: string
+          metrics_json: Json | null
+          paid: number
+          time_selected: number
+          total_in_flow: number
+        }
+        Insert: {
+          abandoned?: number
+          archived_count?: number
+          checkout_started?: number
+          contacted?: number
+          created_at?: string
+          created_by?: string | null
+          date_selected?: number
+          estimated_revenue?: number
+          filter_range?: string | null
+          id?: string
+          metrics_json?: Json | null
+          paid?: number
+          time_selected?: number
+          total_in_flow?: number
+        }
+        Update: {
+          abandoned?: number
+          archived_count?: number
+          checkout_started?: number
+          contacted?: number
+          created_at?: string
+          created_by?: string | null
+          date_selected?: number
+          estimated_revenue?: number
+          filter_range?: string | null
+          id?: string
+          metrics_json?: Json | null
+          paid?: number
+          time_selected?: number
+          total_in_flow?: number
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           availability_version: string
@@ -391,6 +442,7 @@ export type Database = {
           created_at: string
           event_date: string
           id: string
+          is_archived: boolean
           last_seen_at: string
           offer_expires_at: string
           package_id: string | null
@@ -410,6 +462,7 @@ export type Database = {
           created_at?: string
           event_date: string
           id?: string
+          is_archived?: boolean
           last_seen_at?: string
           offer_expires_at: string
           package_id?: string | null
@@ -429,6 +482,7 @@ export type Database = {
           created_at?: string
           event_date?: string
           id?: string
+          is_archived?: boolean
           last_seen_at?: string
           offer_expires_at?: string
           package_id?: string | null
@@ -2092,6 +2146,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_booking_pipeline: {
+        Args: { p_create_snapshot?: boolean; p_filter_range?: string }
+        Returns: Json
+      }
       check_booking_hold_rate_limit: {
         Args: { p_user_id?: string; p_visitor_id: string }
         Returns: boolean
