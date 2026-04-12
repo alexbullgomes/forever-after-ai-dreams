@@ -355,11 +355,49 @@ export default function BookingsPipeline() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Bookings Pipeline</h1>
-        <Button onClick={fetchBookings} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setResetDialogOpen(true)} variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reset Metrics
+          </Button>
+          <Button onClick={fetchBookings} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Booking Pipeline?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>This will archive all current booking requests from the pipeline view. No data will be deleted — archived entries can be restored later.</p>
+              <p className="text-xs text-muted-foreground">Active bookings, payments, and Stripe data remain untouched.</p>
+              <label className="flex items-center gap-2 pt-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={createBackup}
+                  onChange={(e) => setCreateBackup(e.target.checked)}
+                  className="rounded border-border"
+                />
+                <span className="text-sm">Create metrics snapshot before reset</span>
+              </label>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={resetting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetPipeline}
+              disabled={resetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {resetting ? 'Resetting...' : 'Reset Pipeline'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
