@@ -64,12 +64,25 @@ const pipelineStatuses = [
 export default function PipelineProcess() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [selectedProfile, setSelectedProfile] = useState<{
     id: string;
     name: string;
     email: string;
   } | null>(null);
   const { toast } = useToast();
+
+  const filteredProfiles = useMemo(() => {
+    const cutoff = getFilterDate(dateFilter);
+    if (!cutoff) return profiles;
+    return profiles.filter(p => new Date(p.created_at) >= cutoff);
+  }, [profiles, dateFilter]);
+
+  const getFilterCount = (filter: DateFilter) => {
+    const cutoff = getFilterDate(filter);
+    if (!cutoff) return profiles.length;
+    return profiles.filter(p => new Date(p.created_at) >= cutoff).length;
+  };
 
   const fetchProfiles = async () => {
     try {
