@@ -404,7 +404,7 @@ export default function PipelineProcess() {
       <KanbanProvider onDragEnd={handleDragEnd} className="min-h-[600px]">
         {pipelineStatuses.map(status => (
           <KanbanBoard key={status.id} id={status.id}>
-            <div className="flex items-center justify-between mb-2">
+            <div className={`flex items-center justify-between mb-2 rounded-md px-1 transition-all duration-500 ${highlightedStatus === status.id ? 'ring-2 ring-primary/50 bg-primary/5' : ''}`}>
               <KanbanHeader name={status.name} color={status.color} />
               <Badge variant="secondary" className="text-xs">
                 {getStatusCount(status.id)}
