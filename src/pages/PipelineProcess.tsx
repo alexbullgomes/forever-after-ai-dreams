@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UserProfileModal } from '@/components/dashboard/UserProfileModal';
 import {
@@ -14,6 +15,31 @@ import {
 import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { useToast } from '@/hooks/use-toast';
+
+type DateFilter = 'all' | 'today' | 'week' | 'month';
+
+const getFilterDate = (filter: DateFilter): Date | null => {
+  if (filter === 'all') return null;
+  const now = new Date();
+  switch (filter) {
+    case 'today':
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case 'week': {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      d.setDate(d.getDate() - d.getDay()); // Sunday
+      return d;
+    }
+    case 'month':
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+};
+
+const filterLabels: { key: DateFilter; label: string }[] = [
+  { key: 'all', label: 'All Leads' },
+  { key: 'today', label: 'Today' },
+  { key: 'week', label: 'This Week' },
+  { key: 'month', label: 'This Month' },
+];
 
 interface Profile {
   id: string;
