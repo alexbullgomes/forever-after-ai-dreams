@@ -2,13 +2,21 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search } from 'lucide-react';
+import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search, Star, Archive, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
@@ -34,6 +42,9 @@ interface Conversation {
   message_count: number;
   last_message_at: string | null;
   new_msg: string;
+  is_favorite_lead?: boolean;
+  is_favorite_customer?: boolean;
+  archived_at?: string | null;
 }
 
 interface Message {
@@ -63,8 +74,22 @@ const ChatAdmin = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
+  const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user' | 'favorites'>('all');
+  const [archiveFilter, setArchiveFilter] = useState<'active' | 'archived' | 'all'>('active');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Clean Up modal state
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [cleanupRange, setCleanupRange] = useState<string>('30');
+  const [excludeFavorites, setExcludeFavorites] = useState(true);
+  const [excludeUserLinked, setExcludeUserLinked] = useState(true);
+  const [excludeWithContact, setExcludeWithContact] = useState(true);
+  const [excludeHumanMode, setExcludeHumanMode] = useState(true);
+  const [cleanupReason, setCleanupReason] = useState('');
+  const [cleanupPreview, setCleanupPreview] = useState<null | {
+    affected_count: number; messages_preserved: number; oldest: string | null; newest: string | null;
+  }>(null);
+  const [cleanupBusy, setCleanupBusy] = useState(false);
   const lastAutoOpenedIdRef = useRef<string | null>(null);
   
   // Booking state for product cards (admin can also test booking flow)
@@ -192,10 +217,25 @@ const ChatAdmin = () => {
         return;
       }
 
+      // Collect customer ids to fetch favorite status from profiles
+      const customerIds = Array.from(new Set(
+        (data || [])
+          .map((c: any) => c.customer_id)
+          .filter((id: string | null) => !!id)
+      ));
+      let favoriteCustomerSet = new Set<string>();
+      if (customerIds.length > 0) {
+        const { data: favProfiles } = await supabase
+          .from('profiles')
+          .select('id, is_favorite_customer')
+          .in('id', customerIds as string[])
+          .eq('is_favorite_customer', true);
+        favoriteCustomerSet = new Set((favProfiles || []).map((p: any) => p.id));
+      }
+
       // Get the actual last message timestamp for each conversation
       const conversationsWithLastMessage = await Promise.all(
         data.map(async (conv) => {
-          // Get the most recent message for this conversation
           const { data: lastMessage } = await supabase
             .from('messages')
             .select('created_at')
@@ -207,18 +247,15 @@ const ChatAdmin = () => {
           return {
             ...conv,
             message_count: conv.messages?.[0]?.count || 0,
-            last_message_at: lastMessage?.created_at || conv.created_at
+            last_message_at: lastMessage?.created_at || conv.created_at,
+            is_favorite_customer: conv.customer_id ? favoriteCustomerSet.has(conv.customer_id) : false,
           };
         })
       );
 
-      // Sort conversations by last message timestamp (most recent first)
       const processedConversations = conversationsWithLastMessage.sort((a, b) => {
-        // First, sort by unread status (unread conversations first)
         if (a.new_msg === 'unread' && b.new_msg !== 'unread') return -1;
         if (b.new_msg === 'unread' && a.new_msg !== 'unread') return 1;
-        
-        // Then sort by last message timestamp (most recent first)
         const aTime = new Date(a.last_message_at).getTime();
         const bTime = new Date(b.last_message_at).getTime();
         return bTime - aTime;
@@ -457,6 +494,97 @@ const ChatAdmin = () => {
     }
   };
 
+  // Toggle favorite (lead or customer)
+  const handleToggleFavorite = async (conv: Conversation, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const isCustomer = !!conv.customer_id;
+    const currentlyFav = isCustomer ? !!conv.is_favorite_customer : !!conv.is_favorite_lead;
+    const next = !currentlyFav;
+
+    setConversations(prev => prev.map(c => c.id === conv.id
+      ? { ...c, ...(isCustomer ? { is_favorite_customer: next } : { is_favorite_lead: next }) }
+      : c));
+    if (selectedConversation?.id === conv.id) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        ...(isCustomer ? { is_favorite_customer: next } : { is_favorite_lead: next })
+      } : prev);
+    }
+
+    const { error } = await supabase.rpc('toggle_favorite_conversation', {
+      p_conversation_id: conv.id,
+      p_favorite: next,
+    });
+
+    if (error) {
+      setConversations(prev => prev.map(c => c.id === conv.id
+        ? { ...c, ...(isCustomer ? { is_favorite_customer: currentlyFav } : { is_favorite_lead: currentlyFav }) }
+        : c));
+      toast({ title: 'Could not update favorite', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({
+      title: next ? (isCustomer ? 'Marked as Favorite Customer' : 'Marked as Favorite Lead') : 'Favorite removed',
+    });
+  };
+
+  const handlePreviewCleanup = async () => {
+    setCleanupBusy(true);
+    setCleanupPreview(null);
+    const { data, error } = await supabase.rpc('preview_archive_visitor_conversations', {
+      p_older_than_days: parseInt(cleanupRange, 10),
+      p_exclude_favorites: excludeFavorites,
+      p_exclude_user_linked: excludeUserLinked,
+      p_exclude_with_contact: excludeWithContact,
+      p_exclude_human_mode: excludeHumanMode,
+    });
+    setCleanupBusy(false);
+    if (error) {
+      toast({ title: 'Preview failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setCleanupPreview(data as any);
+  };
+
+  const handleConfirmCleanup = async () => {
+    setCleanupBusy(true);
+    const { data, error } = await supabase.rpc('archive_visitor_conversations', {
+      p_older_than_days: parseInt(cleanupRange, 10),
+      p_exclude_favorites: excludeFavorites,
+      p_exclude_user_linked: excludeUserLinked,
+      p_exclude_with_contact: excludeWithContact,
+      p_exclude_human_mode: excludeHumanMode,
+      p_reason: cleanupReason.trim() || null,
+    });
+    setCleanupBusy(false);
+    if (error) {
+      toast({ title: 'Archive failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const result = data as any;
+    toast({
+      title: 'Visitor conversations archived',
+      description: `${result?.archived_count ?? 0} archived. Batch: ${(result?.batch_id || '').slice(0, 8)}…`,
+    });
+    setCleanupOpen(false);
+    setCleanupPreview(null);
+    setCleanupReason('');
+    fetchConversations();
+  };
+
+  const handleRestoreConversation = async (conv: Conversation, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const { error } = await supabase.rpc('restore_archived_conversations', {
+      p_conversation_ids: [conv.id],
+    });
+    if (error) {
+      toast({ title: 'Restore failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Conversation restored' });
+    fetchConversations();
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -498,11 +626,18 @@ const ChatAdmin = () => {
         {(() => {
           // Computed filter values
           const filteredConversations = conversations.filter((conv) => {
-            // Type filter
+            // Archive filter
+            const isArchived = !!conv.archived_at;
+            if (archiveFilter === 'active' && isArchived) return false;
+            if (archiveFilter === 'archived' && !isArchived) return false;
+
+            // Type / favorites filter
             if (conversationFilter !== 'all') {
               const isVisitor = !conv.customer_id && !!conv.visitor_id;
               if (conversationFilter === 'visitor' && !isVisitor) return false;
               if (conversationFilter === 'user' && isVisitor) return false;
+              if (conversationFilter === 'favorites' &&
+                  !conv.is_favorite_lead && !conv.is_favorite_customer) return false;
             }
             // Search filter
             if (searchQuery.trim()) {
@@ -516,22 +651,57 @@ const ChatAdmin = () => {
             }
             return true;
           });
-          const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
-          const userCount = conversations.filter(c => !!c.customer_id).length;
-          
-          // Unread counts per category
-          const allUnread = conversations.filter(c => c.new_msg === 'unread').length;
-          const visitorUnread = conversations.filter(c => !c.customer_id && !!c.visitor_id && c.new_msg === 'unread').length;
-          const userUnread = conversations.filter(c => !!c.customer_id && c.new_msg === 'unread').length;
+          const activeConversations = conversations.filter(c => !c.archived_at);
+          const visitorCount = activeConversations.filter(c => !c.customer_id && !!c.visitor_id).length;
+          const userCount = activeConversations.filter(c => !!c.customer_id).length;
+          const favoritesCount = activeConversations.filter(c => c.is_favorite_lead || c.is_favorite_customer).length;
+          const archivedCount = conversations.filter(c => !!c.archived_at).length;
+
+          // Unread counts (active only)
+          const allUnread = activeConversations.filter(c => c.new_msg === 'unread').length;
+          const visitorUnread = activeConversations.filter(c => !c.customer_id && !!c.visitor_id && c.new_msg === 'unread').length;
+          const userUnread = activeConversations.filter(c => !!c.customer_id && c.new_msg === 'unread').length;
 
           return (
         <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
           <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-900">Active Conversations</h3>
-              <Badge variant="secondary">{filteredConversations.length}</Badge>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Users className="h-5 w-5 text-gray-600 shrink-0" />
+                <h3 className="font-semibold text-gray-900 truncate">
+                  {archiveFilter === 'archived' ? 'Archived Conversations' : 'Active Conversations'}
+                </h3>
+                <Badge variant="secondary">{filteredConversations.length}</Badge>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setCleanupOpen(true); setCleanupPreview(null); }}
+                className="text-xs gap-1 shrink-0"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Clean Up
+              </Button>
             </div>
+
+            {/* Archive segmented control */}
+            <div className="flex items-center gap-1 mt-3 p-0.5 bg-muted rounded-md">
+              {(['active', 'archived', 'all'] as const).map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setArchiveFilter(val)}
+                  className={`flex-1 text-xs py-1 px-2 rounded transition-colors ${
+                    archiveFilter === val ? 'bg-background shadow-sm font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {val === 'active' && `Active (${activeConversations.length})`}
+                  {val === 'archived' && `Archived (${archivedCount})`}
+                  {val === 'all' && `All (${conversations.length})`}
+                </button>
+              ))}
+            </div>
+
             {/* Search Bar */}
             <div className="relative mt-3">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -544,14 +714,14 @@ const ChatAdmin = () => {
               />
             </div>
             {/* Filter Buttons */}
-            <div className="flex items-center gap-1 mt-3">
+            <div className="flex items-center gap-1 mt-3 flex-wrap">
               <Button
                 variant={conversationFilter === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('all')}
-                className="flex-1 text-xs relative"
+                className="flex-1 min-w-[70px] text-xs relative"
               >
-                All ({conversations.length})
+                All
                 {allUnread > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
                     {allUnread}
@@ -562,7 +732,7 @@ const ChatAdmin = () => {
                 variant={conversationFilter === 'visitor' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('visitor')}
-                className="flex-1 text-xs relative"
+                className="flex-1 min-w-[70px] text-xs relative"
               >
                 Visitors ({visitorCount})
                 {visitorUnread > 0 && (
@@ -575,7 +745,7 @@ const ChatAdmin = () => {
                 variant={conversationFilter === 'user' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('user')}
-                className="flex-1 text-xs relative"
+                className="flex-1 min-w-[70px] text-xs relative"
               >
                 Users ({userCount})
                 {userUnread > 0 && (
@@ -583,6 +753,15 @@ const ChatAdmin = () => {
                     {userUnread}
                   </span>
                 )}
+              </Button>
+              <Button
+                variant={conversationFilter === 'favorites' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setConversationFilter('favorites')}
+                className="flex-1 min-w-[80px] text-xs gap-1"
+              >
+                <Star className="h-3 w-3" />
+                Favorites ({favoritesCount})
               </Button>
             </div>
           </div>
@@ -600,6 +779,12 @@ const ChatAdmin = () => {
                     : (conversation.user_name?.charAt(0).toUpperCase() || 
                        conversation.user_email?.charAt(0).toUpperCase() || 'U');
                   
+                  const isFav = isVisitor ? !!conversation.is_favorite_lead : !!conversation.is_favorite_customer;
+                  const isArchived = !!conversation.archived_at;
+                  const favTooltip = isVisitor
+                    ? (isFav ? 'Remove Favorite Lead' : 'Mark as Favorite Lead')
+                    : (isFav ? 'Remove Favorite Customer' : 'Mark as Favorite Customer');
+
                   return (
                     <div
                       key={conversation.id}
@@ -607,31 +792,45 @@ const ChatAdmin = () => {
                       className={`p-3 rounded-lg border cursor-pointer transition-colors relative ${
                         selectedConversation?.id === conversation.id
                           ? 'bg-rose-50 border-rose-200'
-                          : isUnread 
-                            ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
-                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                          : isArchived
+                            ? 'bg-gray-50 border-gray-200 hover:bg-gray-100 opacity-90'
+                            : isUnread
+                              ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                              : 'bg-white border-gray-200 hover:bg-gray-50'
                       }`}
                     >
-                      {isUnread && (
+                      {isUnread && !isArchived && (
                         <div className="absolute top-2 right-2 h-3 w-3 bg-blue-500 rounded-full"></div>
                       )}
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                            isVisitor 
-                              ? 'bg-gradient-to-r from-gray-500 to-gray-600' 
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${
+                            isVisitor
+                              ? 'bg-gradient-to-r from-gray-500 to-gray-600'
                               : 'bg-gradient-to-r from-rose-500 to-pink-500'
                           }`}>
                             {displayInitial}
                           </div>
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1">
-                              <span className={`text-sm ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className={`text-sm truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
                                 {displayName}
                               </span>
                               {isVisitor && (
                                 <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-gray-100 text-gray-600 border-gray-300">
                                   Guest
+                                </Badge>
+                              )}
+                              {isFav && (
+                                <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-amber-50 text-amber-700 border-amber-200 gap-0.5">
+                                  <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                                  Favorite
+                                </Badge>
+                              )}
+                              {isArchived && (
+                                <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-muted text-muted-foreground gap-0.5">
+                                  <Archive className="h-2.5 w-2.5" />
+                                  Archived
                                 </Badge>
                               )}
                             </div>
@@ -641,9 +840,43 @@ const ChatAdmin = () => {
                             </div>
                           </div>
                         </div>
-                        <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'}>
-                          {conversation.mode}
-                        </Badge>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleToggleFavorite(conversation, e)}
+                                  className="p-1 rounded hover:bg-muted transition-colors"
+                                  aria-label={favTooltip}
+                                >
+                                  <Star className={`h-4 w-4 ${isFav ? 'fill-amber-500 text-amber-500' : 'text-muted-foreground'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{favTooltip}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          {isArchived && (
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleRestoreConversation(conversation, e)}
+                                    className="p-1 rounded hover:bg-muted transition-colors"
+                                    aria-label="Restore conversation"
+                                  >
+                                    <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>Restore conversation</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'} className="ml-1">
+                            {conversation.mode}
+                          </Badge>
+                        </div>
                       </div>
                       {conversation.last_message_at && (
                         <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -717,23 +950,52 @@ const ChatAdmin = () => {
                       </div>
                     );
                   })()}
-                  {roleLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500"></div>
-                  ) : hasRole ? (
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-700">AI</span>
-                      <Switch
-                        checked={selectedConversation.mode === 'human'}
-                        onCheckedChange={handleModeToggle}
-                        className="data-[state=checked]:bg-rose-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Human</span>
-                    </div>
-                  ) : (
-                    <Badge variant={selectedConversation.mode === 'ai' ? 'default' : 'secondary'}>
-                      {selectedConversation.mode} mode
-                    </Badge>
-                  )}
+                  {(() => {
+                    const sel = selectedConversation;
+                    const selIsVisitor = !sel.customer_id && !!sel.visitor_id;
+                    const selFav = selIsVisitor ? !!sel.is_favorite_lead : !!sel.is_favorite_customer;
+                    const selFavTooltip = selIsVisitor
+                      ? (selFav ? 'Remove Favorite Lead' : 'Mark as Favorite Lead')
+                      : (selFav ? 'Remove Favorite Customer' : 'Mark as Favorite Customer');
+                    return (
+                      <div className="flex items-center gap-3">
+                        {hasRole && (
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleFavorite(sel)}
+                                  className="p-1.5 rounded hover:bg-muted transition-colors"
+                                  aria-label={selFavTooltip}
+                                >
+                                  <Star className={`h-5 w-5 ${selFav ? 'fill-amber-500 text-amber-500' : 'text-muted-foreground'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{selFavTooltip}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        {roleLoading ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500"></div>
+                        ) : hasRole ? (
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-gray-700">AI</span>
+                            <Switch
+                              checked={sel.mode === 'human'}
+                              onCheckedChange={handleModeToggle}
+                              className="data-[state=checked]:bg-rose-500"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Human</span>
+                          </div>
+                        ) : (
+                          <Badge variant={sel.mode === 'ai' ? 'default' : 'secondary'}>
+                            {sel.mode} mode
+                          </Badge>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -951,6 +1213,91 @@ const ChatAdmin = () => {
           currency={bookingProduct.currency}
         />
       )}
+
+      {/* Clean Up Visitor Conversations Modal */}
+      <AlertDialog open={cleanupOpen} onOpenChange={setCleanupOpen}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Archive className="h-5 w-5" />
+              Clean Up Visitor Conversations
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Safely archive old visitor conversations. Messages are preserved and archive is reversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between p-2 rounded bg-muted text-sm">
+              <span className="text-muted-foreground">Scope</span>
+              <Badge variant="secondary">Visitors only</Badge>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">Older than</Label>
+              <Select value={cleanupRange} onValueChange={(v) => { setCleanupRange(v); setCleanupPreview(null); }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                  <SelectItem value="0">All time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm">Safety filters</Label>
+              {[
+                { id: 'fav', checked: excludeFavorites, set: setExcludeFavorites, label: 'Exclude favorite leads/customers' },
+                { id: 'usr', checked: excludeUserLinked, set: setExcludeUserLinked, label: 'Exclude user-linked conversations' },
+                { id: 'ctc', checked: excludeWithContact, set: setExcludeWithContact, label: 'Exclude conversations with captured name/email' },
+                { id: 'hum', checked: excludeHumanMode, set: setExcludeHumanMode, label: 'Exclude conversations in human mode' },
+              ].map((opt) => (
+                <div key={opt.id} className="flex items-center gap-2">
+                  <Checkbox id={opt.id} checked={opt.checked} onCheckedChange={(v) => { opt.set(!!v); setCleanupPreview(null); }} />
+                  <label htmlFor={opt.id} className="text-sm cursor-pointer">{opt.label}</label>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">Reason (optional)</Label>
+              <Input value={cleanupReason} onChange={(e) => setCleanupReason(e.target.value)} placeholder="e.g. Quarterly cleanup" />
+            </div>
+
+            {cleanupPreview && (
+              <div className="rounded-md border p-3 text-sm space-y-1 bg-muted/50">
+                <div className="flex justify-between"><span className="text-muted-foreground">Conversations to archive</span><span className="font-semibold">{cleanupPreview.affected_count}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Messages preserved</span><span className="font-semibold">{cleanupPreview.messages_preserved}</span></div>
+                {cleanupPreview.oldest && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Oldest</span><span>{format(new Date(cleanupPreview.oldest), 'MMM d, yyyy')}</span></div>
+                )}
+                {cleanupPreview.newest && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Newest</span><span>{format(new Date(cleanupPreview.newest), 'MMM d, yyyy')}</span></div>
+                )}
+                {cleanupPreview.affected_count === 0 && (
+                  <p className="text-xs text-muted-foreground pt-1">Nothing matches your filters.</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={cleanupBusy}>Cancel</AlertDialogCancel>
+            <Button variant="outline" onClick={handlePreviewCleanup} disabled={cleanupBusy}>
+              {cleanupBusy && !cleanupPreview ? 'Loading…' : 'Preview'}
+            </Button>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleConfirmCleanup(); }}
+              disabled={cleanupBusy || !cleanupPreview || cleanupPreview.affected_count === 0}
+              className="bg-rose-500 hover:bg-rose-600"
+            >
+              {cleanupBusy ? 'Archiving…' : 'Archive'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
