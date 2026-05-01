@@ -626,11 +626,18 @@ const ChatAdmin = () => {
         {(() => {
           // Computed filter values
           const filteredConversations = conversations.filter((conv) => {
-            // Type filter
+            // Archive filter
+            const isArchived = !!conv.archived_at;
+            if (archiveFilter === 'active' && isArchived) return false;
+            if (archiveFilter === 'archived' && !isArchived) return false;
+
+            // Type / favorites filter
             if (conversationFilter !== 'all') {
               const isVisitor = !conv.customer_id && !!conv.visitor_id;
               if (conversationFilter === 'visitor' && !isVisitor) return false;
               if (conversationFilter === 'user' && isVisitor) return false;
+              if (conversationFilter === 'favorites' &&
+                  !conv.is_favorite_lead && !conv.is_favorite_customer) return false;
             }
             // Search filter
             if (searchQuery.trim()) {
@@ -644,13 +651,16 @@ const ChatAdmin = () => {
             }
             return true;
           });
-          const visitorCount = conversations.filter(c => !c.customer_id && !!c.visitor_id).length;
-          const userCount = conversations.filter(c => !!c.customer_id).length;
-          
-          // Unread counts per category
-          const allUnread = conversations.filter(c => c.new_msg === 'unread').length;
-          const visitorUnread = conversations.filter(c => !c.customer_id && !!c.visitor_id && c.new_msg === 'unread').length;
-          const userUnread = conversations.filter(c => !!c.customer_id && c.new_msg === 'unread').length;
+          const activeConversations = conversations.filter(c => !c.archived_at);
+          const visitorCount = activeConversations.filter(c => !c.customer_id && !!c.visitor_id).length;
+          const userCount = activeConversations.filter(c => !!c.customer_id).length;
+          const favoritesCount = activeConversations.filter(c => c.is_favorite_lead || c.is_favorite_customer).length;
+          const archivedCount = conversations.filter(c => !!c.archived_at).length;
+
+          // Unread counts (active only)
+          const allUnread = activeConversations.filter(c => c.new_msg === 'unread').length;
+          const visitorUnread = activeConversations.filter(c => !c.customer_id && !!c.visitor_id && c.new_msg === 'unread').length;
+          const userUnread = activeConversations.filter(c => !!c.customer_id && c.new_msg === 'unread').length;
 
           return (
         <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
