@@ -855,10 +855,17 @@ export type Database = {
       }
       conversations: {
         Row: {
+          archive_batch_id: string | null
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
           campaign_slug: string | null
           created_at: string
           customer_id: string | null
+          favorite_lead_at: string | null
+          favorite_lead_by: string | null
           id: string
+          is_favorite_lead: boolean
           mode: string | null
           new_msg: string | null
           page_path: string | null
@@ -872,10 +879,17 @@ export type Database = {
           visitor_id: string | null
         }
         Insert: {
+          archive_batch_id?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           campaign_slug?: string | null
           created_at?: string
           customer_id?: string | null
+          favorite_lead_at?: string | null
+          favorite_lead_by?: string | null
           id?: string
+          is_favorite_lead?: boolean
           mode?: string | null
           new_msg?: string | null
           page_path?: string | null
@@ -889,10 +903,17 @@ export type Database = {
           visitor_id?: string | null
         }
         Update: {
+          archive_batch_id?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           campaign_slug?: string | null
           created_at?: string
           customer_id?: string | null
+          favorite_lead_at?: string | null
+          favorite_lead_by?: string | null
           id?: string
+          is_favorite_lead?: boolean
           mode?: string | null
           new_msg?: string | null
           page_path?: string | null
@@ -1388,8 +1409,12 @@ export type Database = {
           email: string | null
           event_city: string | null
           event_date: string | null
+          favorite_customer_at: string | null
+          favorite_customer_by: string | null
+          favorite_customer_note: string | null
           gallery_event: string | null
           id: string
+          is_favorite_customer: boolean
           name: string | null
           package_consultation: string | null
           pipeline_profile: string | null
@@ -1413,8 +1438,12 @@ export type Database = {
           email?: string | null
           event_city?: string | null
           event_date?: string | null
+          favorite_customer_at?: string | null
+          favorite_customer_by?: string | null
+          favorite_customer_note?: string | null
           gallery_event?: string | null
           id: string
+          is_favorite_customer?: boolean
           name?: string | null
           package_consultation?: string | null
           pipeline_profile?: string | null
@@ -1438,8 +1467,12 @@ export type Database = {
           email?: string | null
           event_city?: string | null
           event_date?: string | null
+          favorite_customer_at?: string | null
+          favorite_customer_by?: string | null
+          favorite_customer_note?: string | null
           gallery_event?: string | null
           id?: string
+          is_favorite_customer?: boolean
           name?: string | null
           package_consultation?: string | null
           pipeline_profile?: string | null
@@ -2150,6 +2183,17 @@ export type Database = {
         Args: { p_create_snapshot?: boolean; p_filter_range?: string }
         Returns: Json
       }
+      archive_visitor_conversations: {
+        Args: {
+          p_exclude_favorites?: boolean
+          p_exclude_human_mode?: boolean
+          p_exclude_user_linked?: boolean
+          p_exclude_with_contact?: boolean
+          p_older_than_days?: number
+          p_reason?: string
+        }
+        Returns: Json
+      }
       check_booking_hold_rate_limit: {
         Args: { p_user_id?: string; p_visitor_id: string }
         Returns: boolean
@@ -2200,6 +2244,29 @@ export type Database = {
             Returns: boolean
           }
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
+      preview_archive_visitor_conversations: {
+        Args: {
+          p_exclude_favorites?: boolean
+          p_exclude_human_mode?: boolean
+          p_exclude_user_linked?: boolean
+          p_exclude_with_contact?: boolean
+          p_older_than_days?: number
+        }
+        Returns: Json
+      }
+      restore_archive_batch: { Args: { p_batch_id: string }; Returns: Json }
+      restore_archived_conversations: {
+        Args: { p_conversation_ids: string[] }
+        Returns: Json
+      }
+      toggle_favorite_conversation: {
+        Args: {
+          p_conversation_id: string
+          p_favorite: boolean
+          p_note?: string
+        }
+        Returns: Json
+      }
       track_referral_conversion: {
         Args: {
           p_conversion_data?: Json
