@@ -42,6 +42,9 @@ interface Conversation {
   message_count: number;
   last_message_at: string | null;
   new_msg: string;
+  is_favorite_lead?: boolean;
+  is_favorite_customer?: boolean;
+  archived_at?: string | null;
 }
 
 interface Message {
