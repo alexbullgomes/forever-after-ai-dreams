@@ -217,10 +217,25 @@ const ChatAdmin = () => {
         return;
       }
 
+      // Collect customer ids to fetch favorite status from profiles
+      const customerIds = Array.from(new Set(
+        (data || [])
+          .map((c: any) => c.customer_id)
+          .filter((id: string | null) => !!id)
+      ));
+      let favoriteCustomerSet = new Set<string>();
+      if (customerIds.length > 0) {
+        const { data: favProfiles } = await supabase
+          .from('profiles')
+          .select('id, is_favorite_customer')
+          .in('id', customerIds as string[])
+          .eq('is_favorite_customer', true);
+        favoriteCustomerSet = new Set((favProfiles || []).map((p: any) => p.id));
+      }
+
       // Get the actual last message timestamp for each conversation
       const conversationsWithLastMessage = await Promise.all(
         data.map(async (conv) => {
-          // Get the most recent message for this conversation
           const { data: lastMessage } = await supabase
             .from('messages')
             .select('created_at')
@@ -232,18 +247,15 @@ const ChatAdmin = () => {
           return {
             ...conv,
             message_count: conv.messages?.[0]?.count || 0,
-            last_message_at: lastMessage?.created_at || conv.created_at
+            last_message_at: lastMessage?.created_at || conv.created_at,
+            is_favorite_customer: conv.customer_id ? favoriteCustomerSet.has(conv.customer_id) : false,
           };
         })
       );
 
-      // Sort conversations by last message timestamp (most recent first)
       const processedConversations = conversationsWithLastMessage.sort((a, b) => {
-        // First, sort by unread status (unread conversations first)
         if (a.new_msg === 'unread' && b.new_msg !== 'unread') return -1;
         if (b.new_msg === 'unread' && a.new_msg !== 'unread') return 1;
-        
-        // Then sort by last message timestamp (most recent first)
         const aTime = new Date(a.last_message_at).getTime();
         const bTime = new Date(b.last_message_at).getTime();
         return bTime - aTime;
