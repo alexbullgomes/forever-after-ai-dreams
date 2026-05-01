@@ -74,8 +74,22 @@ const ChatAdmin = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showEntityPicker, setShowEntityPicker] = useState(false);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user'>('all');
+  const [conversationFilter, setConversationFilter] = useState<'all' | 'visitor' | 'user' | 'favorites'>('all');
+  const [archiveFilter, setArchiveFilter] = useState<'active' | 'archived' | 'all'>('active');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Clean Up modal state
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [cleanupRange, setCleanupRange] = useState<string>('30');
+  const [excludeFavorites, setExcludeFavorites] = useState(true);
+  const [excludeUserLinked, setExcludeUserLinked] = useState(true);
+  const [excludeWithContact, setExcludeWithContact] = useState(true);
+  const [excludeHumanMode, setExcludeHumanMode] = useState(true);
+  const [cleanupReason, setCleanupReason] = useState('');
+  const [cleanupPreview, setCleanupPreview] = useState<null | {
+    affected_count: number; messages_preserved: number; oldest: string | null; newest: string | null;
+  }>(null);
+  const [cleanupBusy, setCleanupBusy] = useState(false);
   const lastAutoOpenedIdRef = useRef<string | null>(null);
   
   // Booking state for product cards (admin can also test booking flow)
