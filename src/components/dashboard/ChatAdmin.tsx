@@ -950,23 +950,52 @@ const ChatAdmin = () => {
                       </div>
                     );
                   })()}
-                  {roleLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500"></div>
-                  ) : hasRole ? (
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-gray-700">AI</span>
-                      <Switch
-                        checked={selectedConversation.mode === 'human'}
-                        onCheckedChange={handleModeToggle}
-                        className="data-[state=checked]:bg-rose-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Human</span>
-                    </div>
-                  ) : (
-                    <Badge variant={selectedConversation.mode === 'ai' ? 'default' : 'secondary'}>
-                      {selectedConversation.mode} mode
-                    </Badge>
-                  )}
+                  {(() => {
+                    const sel = selectedConversation;
+                    const selIsVisitor = !sel.customer_id && !!sel.visitor_id;
+                    const selFav = selIsVisitor ? !!sel.is_favorite_lead : !!sel.is_favorite_customer;
+                    const selFavTooltip = selIsVisitor
+                      ? (selFav ? 'Remove Favorite Lead' : 'Mark as Favorite Lead')
+                      : (selFav ? 'Remove Favorite Customer' : 'Mark as Favorite Customer');
+                    return (
+                      <div className="flex items-center gap-3">
+                        {hasRole && (
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleFavorite(sel)}
+                                  className="p-1.5 rounded hover:bg-muted transition-colors"
+                                  aria-label={selFavTooltip}
+                                >
+                                  <Star className={`h-5 w-5 ${selFav ? 'fill-amber-500 text-amber-500' : 'text-muted-foreground'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{selFavTooltip}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        {roleLoading ? (
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500"></div>
+                        ) : hasRole ? (
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-gray-700">AI</span>
+                            <Switch
+                              checked={sel.mode === 'human'}
+                              onCheckedChange={handleModeToggle}
+                              className="data-[state=checked]:bg-rose-500"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Human</span>
+                          </div>
+                        ) : (
+                          <Badge variant={sel.mode === 'ai' ? 'default' : 'secondary'}>
+                            {sel.mode} mode
+                          </Badge>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
