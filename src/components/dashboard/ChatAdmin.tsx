@@ -494,6 +494,97 @@ const ChatAdmin = () => {
     }
   };
 
+  // Toggle favorite (lead or customer)
+  const handleToggleFavorite = async (conv: Conversation, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const isCustomer = !!conv.customer_id;
+    const currentlyFav = isCustomer ? !!conv.is_favorite_customer : !!conv.is_favorite_lead;
+    const next = !currentlyFav;
+
+    setConversations(prev => prev.map(c => c.id === conv.id
+      ? { ...c, ...(isCustomer ? { is_favorite_customer: next } : { is_favorite_lead: next }) }
+      : c));
+    if (selectedConversation?.id === conv.id) {
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        ...(isCustomer ? { is_favorite_customer: next } : { is_favorite_lead: next })
+      } : prev);
+    }
+
+    const { error } = await supabase.rpc('toggle_favorite_conversation', {
+      p_conversation_id: conv.id,
+      p_favorite: next,
+    });
+
+    if (error) {
+      setConversations(prev => prev.map(c => c.id === conv.id
+        ? { ...c, ...(isCustomer ? { is_favorite_customer: currentlyFav } : { is_favorite_lead: currentlyFav }) }
+        : c));
+      toast({ title: 'Could not update favorite', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({
+      title: next ? (isCustomer ? 'Marked as Favorite Customer' : 'Marked as Favorite Lead') : 'Favorite removed',
+    });
+  };
+
+  const handlePreviewCleanup = async () => {
+    setCleanupBusy(true);
+    setCleanupPreview(null);
+    const { data, error } = await supabase.rpc('preview_archive_visitor_conversations', {
+      p_older_than_days: parseInt(cleanupRange, 10),
+      p_exclude_favorites: excludeFavorites,
+      p_exclude_user_linked: excludeUserLinked,
+      p_exclude_with_contact: excludeWithContact,
+      p_exclude_human_mode: excludeHumanMode,
+    });
+    setCleanupBusy(false);
+    if (error) {
+      toast({ title: 'Preview failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setCleanupPreview(data as any);
+  };
+
+  const handleConfirmCleanup = async () => {
+    setCleanupBusy(true);
+    const { data, error } = await supabase.rpc('archive_visitor_conversations', {
+      p_older_than_days: parseInt(cleanupRange, 10),
+      p_exclude_favorites: excludeFavorites,
+      p_exclude_user_linked: excludeUserLinked,
+      p_exclude_with_contact: excludeWithContact,
+      p_exclude_human_mode: excludeHumanMode,
+      p_reason: cleanupReason.trim() || null,
+    });
+    setCleanupBusy(false);
+    if (error) {
+      toast({ title: 'Archive failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    const result = data as any;
+    toast({
+      title: 'Visitor conversations archived',
+      description: `${result?.archived_count ?? 0} archived. Batch: ${(result?.batch_id || '').slice(0, 8)}…`,
+    });
+    setCleanupOpen(false);
+    setCleanupPreview(null);
+    setCleanupReason('');
+    fetchConversations();
+  };
+
+  const handleRestoreConversation = async (conv: Conversation, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const { error } = await supabase.rpc('restore_archived_conversations', {
+      p_conversation_ids: [conv.id],
+    });
+    if (error) {
+      toast({ title: 'Restore failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Conversation restored' });
+    fetchConversations();
+  };
+
   if (loading || roleLoading) {
     return (
       <div className="flex items-center justify-center h-64">
