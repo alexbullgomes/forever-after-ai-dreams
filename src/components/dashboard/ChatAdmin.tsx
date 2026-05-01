@@ -665,11 +665,43 @@ const ChatAdmin = () => {
           return (
         <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col">
           <div className="p-4 border-b border-gray-200 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-900">Active Conversations</h3>
-              <Badge variant="secondary">{filteredConversations.length}</Badge>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Users className="h-5 w-5 text-gray-600 shrink-0" />
+                <h3 className="font-semibold text-gray-900 truncate">
+                  {archiveFilter === 'archived' ? 'Archived Conversations' : 'Active Conversations'}
+                </h3>
+                <Badge variant="secondary">{filteredConversations.length}</Badge>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setCleanupOpen(true); setCleanupPreview(null); }}
+                className="text-xs gap-1 shrink-0"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Clean Up
+              </Button>
             </div>
+
+            {/* Archive segmented control */}
+            <div className="flex items-center gap-1 mt-3 p-0.5 bg-muted rounded-md">
+              {(['active', 'archived', 'all'] as const).map((val) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setArchiveFilter(val)}
+                  className={`flex-1 text-xs py-1 px-2 rounded transition-colors ${
+                    archiveFilter === val ? 'bg-background shadow-sm font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {val === 'active' && `Active (${activeConversations.length})`}
+                  {val === 'archived' && `Archived (${archivedCount})`}
+                  {val === 'all' && `All (${conversations.length})`}
+                </button>
+              ))}
+            </div>
+
             {/* Search Bar */}
             <div className="relative mt-3">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -682,14 +714,14 @@ const ChatAdmin = () => {
               />
             </div>
             {/* Filter Buttons */}
-            <div className="flex items-center gap-1 mt-3">
+            <div className="flex items-center gap-1 mt-3 flex-wrap">
               <Button
                 variant={conversationFilter === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('all')}
-                className="flex-1 text-xs relative"
+                className="flex-1 min-w-[70px] text-xs relative"
               >
-                All ({conversations.length})
+                All
                 {allUnread > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
                     {allUnread}
@@ -700,7 +732,7 @@ const ChatAdmin = () => {
                 variant={conversationFilter === 'visitor' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('visitor')}
-                className="flex-1 text-xs relative"
+                className="flex-1 min-w-[70px] text-xs relative"
               >
                 Visitors ({visitorCount})
                 {visitorUnread > 0 && (
@@ -713,7 +745,7 @@ const ChatAdmin = () => {
                 variant={conversationFilter === 'user' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setConversationFilter('user')}
-                className="flex-1 text-xs relative"
+                className="flex-1 min-w-[70px] text-xs relative"
               >
                 Users ({userCount})
                 {userUnread > 0 && (
@@ -721,6 +753,15 @@ const ChatAdmin = () => {
                     {userUnread}
                   </span>
                 )}
+              </Button>
+              <Button
+                variant={conversationFilter === 'favorites' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setConversationFilter('favorites')}
+                className="flex-1 min-w-[80px] text-xs gap-1"
+              >
+                <Star className="h-3 w-3" />
+                Favorites ({favoritesCount})
               </Button>
             </div>
           </div>
