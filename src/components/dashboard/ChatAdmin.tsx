@@ -1213,6 +1213,91 @@ const ChatAdmin = () => {
           currency={bookingProduct.currency}
         />
       )}
+
+      {/* Clean Up Visitor Conversations Modal */}
+      <AlertDialog open={cleanupOpen} onOpenChange={setCleanupOpen}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Archive className="h-5 w-5" />
+              Clean Up Visitor Conversations
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Safely archive old visitor conversations. Messages are preserved and archive is reversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between p-2 rounded bg-muted text-sm">
+              <span className="text-muted-foreground">Scope</span>
+              <Badge variant="secondary">Visitors only</Badge>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">Older than</Label>
+              <Select value={cleanupRange} onValueChange={(v) => { setCleanupRange(v); setCleanupPreview(null); }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                  <SelectItem value="0">All time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm">Safety filters</Label>
+              {[
+                { id: 'fav', checked: excludeFavorites, set: setExcludeFavorites, label: 'Exclude favorite leads/customers' },
+                { id: 'usr', checked: excludeUserLinked, set: setExcludeUserLinked, label: 'Exclude user-linked conversations' },
+                { id: 'ctc', checked: excludeWithContact, set: setExcludeWithContact, label: 'Exclude conversations with captured name/email' },
+                { id: 'hum', checked: excludeHumanMode, set: setExcludeHumanMode, label: 'Exclude conversations in human mode' },
+              ].map((opt) => (
+                <div key={opt.id} className="flex items-center gap-2">
+                  <Checkbox id={opt.id} checked={opt.checked} onCheckedChange={(v) => { opt.set(!!v); setCleanupPreview(null); }} />
+                  <label htmlFor={opt.id} className="text-sm cursor-pointer">{opt.label}</label>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">Reason (optional)</Label>
+              <Input value={cleanupReason} onChange={(e) => setCleanupReason(e.target.value)} placeholder="e.g. Quarterly cleanup" />
+            </div>
+
+            {cleanupPreview && (
+              <div className="rounded-md border p-3 text-sm space-y-1 bg-muted/50">
+                <div className="flex justify-between"><span className="text-muted-foreground">Conversations to archive</span><span className="font-semibold">{cleanupPreview.affected_count}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Messages preserved</span><span className="font-semibold">{cleanupPreview.messages_preserved}</span></div>
+                {cleanupPreview.oldest && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Oldest</span><span>{format(new Date(cleanupPreview.oldest), 'MMM d, yyyy')}</span></div>
+                )}
+                {cleanupPreview.newest && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Newest</span><span>{format(new Date(cleanupPreview.newest), 'MMM d, yyyy')}</span></div>
+                )}
+                {cleanupPreview.affected_count === 0 && (
+                  <p className="text-xs text-muted-foreground pt-1">Nothing matches your filters.</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={cleanupBusy}>Cancel</AlertDialogCancel>
+            <Button variant="outline" onClick={handlePreviewCleanup} disabled={cleanupBusy}>
+              {cleanupBusy && !cleanupPreview ? 'Loading…' : 'Preview'}
+            </Button>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleConfirmCleanup(); }}
+              disabled={cleanupBusy || !cleanupPreview || cleanupPreview.affected_count === 0}
+              className="bg-rose-500 hover:bg-rose-600"
+            >
+              {cleanupBusy ? 'Archiving…' : 'Archive'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
