@@ -779,6 +779,12 @@ const ChatAdmin = () => {
                     : (conversation.user_name?.charAt(0).toUpperCase() || 
                        conversation.user_email?.charAt(0).toUpperCase() || 'U');
                   
+                  const isFav = isVisitor ? !!conversation.is_favorite_lead : !!conversation.is_favorite_customer;
+                  const isArchived = !!conversation.archived_at;
+                  const favTooltip = isVisitor
+                    ? (isFav ? 'Remove Favorite Lead' : 'Mark as Favorite Lead')
+                    : (isFav ? 'Remove Favorite Customer' : 'Mark as Favorite Customer');
+
                   return (
                     <div
                       key={conversation.id}
@@ -786,31 +792,45 @@ const ChatAdmin = () => {
                       className={`p-3 rounded-lg border cursor-pointer transition-colors relative ${
                         selectedConversation?.id === conversation.id
                           ? 'bg-rose-50 border-rose-200'
-                          : isUnread 
-                            ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
-                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                          : isArchived
+                            ? 'bg-gray-50 border-gray-200 hover:bg-gray-100 opacity-90'
+                            : isUnread
+                              ? 'bg-blue-50 border-blue-200 hover:bg-blue-100'
+                              : 'bg-white border-gray-200 hover:bg-gray-50'
                       }`}
                     >
-                      {isUnread && (
+                      {isUnread && !isArchived && (
                         <div className="absolute top-2 right-2 h-3 w-3 bg-blue-500 rounded-full"></div>
                       )}
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                            isVisitor 
-                              ? 'bg-gradient-to-r from-gray-500 to-gray-600' 
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0 ${
+                            isVisitor
+                              ? 'bg-gradient-to-r from-gray-500 to-gray-600'
                               : 'bg-gradient-to-r from-rose-500 to-pink-500'
                           }`}>
                             {displayInitial}
                           </div>
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1">
-                              <span className={`text-sm ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className={`text-sm truncate ${isUnread ? 'font-semibold text-gray-900' : 'font-medium text-gray-900'}`}>
                                 {displayName}
                               </span>
                               {isVisitor && (
                                 <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-gray-100 text-gray-600 border-gray-300">
                                   Guest
+                                </Badge>
+                              )}
+                              {isFav && (
+                                <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-amber-50 text-amber-700 border-amber-200 gap-0.5">
+                                  <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                                  Favorite
+                                </Badge>
+                              )}
+                              {isArchived && (
+                                <Badge variant="outline" className="text-xs py-0 px-1 h-4 bg-muted text-muted-foreground gap-0.5">
+                                  <Archive className="h-2.5 w-2.5" />
+                                  Archived
                                 </Badge>
                               )}
                             </div>
@@ -820,9 +840,43 @@ const ChatAdmin = () => {
                             </div>
                           </div>
                         </div>
-                        <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'}>
-                          {conversation.mode}
-                        </Badge>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleToggleFavorite(conversation, e)}
+                                  className="p-1 rounded hover:bg-muted transition-colors"
+                                  aria-label={favTooltip}
+                                >
+                                  <Star className={`h-4 w-4 ${isFav ? 'fill-amber-500 text-amber-500' : 'text-muted-foreground'}`} />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{favTooltip}</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          {isArchived && (
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleRestoreConversation(conversation, e)}
+                                    className="p-1 rounded hover:bg-muted transition-colors"
+                                    aria-label="Restore conversation"
+                                  >
+                                    <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent>Restore conversation</TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <Badge variant={conversation.mode === 'ai' ? 'default' : 'secondary'} className="ml-1">
+                            {conversation.mode}
+                          </Badge>
+                        </div>
                       </div>
                       {conversation.last_message_at && (
                         <div className="flex items-center gap-1 text-xs text-gray-500">
