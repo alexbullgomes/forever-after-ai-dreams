@@ -45,7 +45,7 @@ const BlogPost = () => {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
-    image: post.cover_image_url || "https://everafter-studio.lovable.app/og-image.jpg",
+    image: post.cover_image_url || "https://www.everafterca.com/og-image.jpg",
     author: {
       "@type": "Person",
       name: post.author_name || "EverAfter Team",
@@ -55,7 +55,7 @@ const BlogPost = () => {
       name: "EverAfter Studio",
       logo: {
         "@type": "ImageObject",
-        url: "https://everafter-studio.lovable.app/og-image.jpg",
+        url: "https://www.everafterca.com/og-image.jpg",
       },
     },
     datePublished: post.published_at,
@@ -63,7 +63,7 @@ const BlogPost = () => {
     description: post.seo_description || post.excerpt || "",
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://everafter-studio.lovable.app/blog/${post.slug}`,
+      "@id": `https://www.everafterca.com/blog/${post.slug}`,
     },
   };
 

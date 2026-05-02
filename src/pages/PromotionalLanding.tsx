@@ -186,7 +186,7 @@ const PromotionalLanding = () => {
     "provider": {
       "@type": "LocalBusiness",
       "name": "Everafter Studio",
-      "url": "https://everafter-studio.lovable.app"
+      "url": "https://www.everafterca.com"
     },
     "areaServed": "California, USA",
     "image": campaign.meta_image_url || campaign.banner_poster_url
@@ -197,14 +197,14 @@ const PromotionalLanding = () => {
       <Helmet>
         <title>{campaign.meta_title || campaign.title} | Everafter Studio</title>
         <meta name="description" content={campaign.meta_description || campaign.banner_tagline} />
-        <link rel="canonical" href={`https://everafter-studio.lovable.app/promo/${campaign.slug}`} />
+        <link rel="canonical" href={`https://www.everafterca.com/promo/${campaign.slug}`} />
         
         <meta property="og:title" content={`${campaign.meta_title || campaign.title} | Everafter Studio`} />
         <meta property="og:description" content={campaign.meta_description || campaign.banner_tagline} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Everafter Studio" />
         {campaign.meta_image_url && <meta property="og:image" content={campaign.meta_image_url} />}
-        <meta property="og:url" content={`https://everafter-studio.lovable.app/promo/${campaign.slug}`} />
+        <meta property="og:url" content={`https://www.everafterca.com/promo/${campaign.slug}`} />
         
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@everafterca" />
