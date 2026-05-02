@@ -28,4 +28,4 @@ Disallow: /services
 Disallow: /affiliate
 Disallow: /payment-success
 
-Sitemap: https://everafter-studio.lovable.app/sitemap.xml
+Sitemap: https://www.everafterca.com/sitemap.xml

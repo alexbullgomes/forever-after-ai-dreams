@@ -1,126 +1,73 @@
-# Chat Admin — Favorites + Safe Visitor Archive
+# SEO Audit & Domain Migration to everafterca.com
 
-## Summary
-Two admin-only additions to Chat Admin: (1) star/favorite leads & customers, (2) safe archive of visitor-only conversations with snapshot/preview/restore. No deletes. No changes to chat realtime, n8n webhooks, or existing RLS surface.
+## Audit Findings
 
----
+A `sitemap.xml` exists at `public/sitemap.xml`, but it (and many other SEO references) point to the unofficial `everafter-studio.lovable.app` domain. The robots.txt also uses that domain.
 
-## Part 1 — Favorites
+### Files referencing `everafter-studio.lovable.app` that need fixing:
+1. `public/sitemap.xml` — all 3 URLs + missing campaign pages
+2. `public/robots.txt` — Sitemap directive
+3. `index.html` — og:image, og:url, twitter:image, canonical
+4. `src/components/SEO.tsx` — `siteUrl` constant + default `ogImage`
+5. `src/pages/Index.tsx` — LocalBusiness schema (`url`, `image`, `@id`)
+6. `src/pages/BlogPost.tsx` — schema image + `@id` URLs
+7. `src/pages/PromotionalLanding.tsx` — canonical, og:url, schema url
+8. `src/components/admin/blog/BlogPostForm.tsx` — admin slug preview hint (cosmetic)
 
-### Schema changes
+Robots.txt already allows Googlebot/Bingbot/`*` on `/` (with a few admin/internal disallows that should remain). Good.
 
-**`conversations`** (for visitor-only favorites):
-- `is_favorite_lead boolean NOT NULL DEFAULT false`
-- `favorite_lead_at timestamptz`
-- `favorite_lead_by uuid` (no FK to `auth.users` — convention in this project)
+## Changes
 
-**`profiles`** (for customer favorites):
-- `is_favorite_customer boolean NOT NULL DEFAULT false`
-- `favorite_customer_at timestamptz`
-- `favorite_customer_by uuid`
-- `favorite_customer_note text`
+### 1. `public/sitemap.xml` — rewrite
+Use `https://www.everafterca.com` and include the 4 requested pages:
+- `/` (priority 1.0)
+- `/promo/wedding-packages` (0.9)
+- `/promo/bussines-content` (0.9) — note: spelling preserved per user request
+- `/promo/family-content` (0.9)
 
-Indexes: partial indexes on `is_favorite_lead` and `is_favorite_customer` where true.
+Keep `/weddingquiz` (0.7) and `/blog` (0.7) since they are legitimate public pages already indexable. Update `lastmod` to 2026-05-02.
 
-### Security
-Direct UPDATE is gated by existing admin RLS policies on both tables, BUT the `profiles` "Users can update their own profiles" policy currently only locks a fixed set of fields via `get_own_profile_protected_fields`. To prevent a user from toggling their own `is_favorite_customer`, we expose favorites only through an admin RPC and do **not** rely on the user-update policy:
+### 2. `public/robots.txt`
+Change the `Sitemap:` line to `https://www.everafterca.com/sitemap.xml`. Leave existing allow/disallow rules untouched.
 
-```
-toggle_favorite_conversation(p_conversation_id uuid, p_favorite boolean, p_note text default null)
-  -> SECURITY DEFINER
-  -> requires has_role(auth.uid(),'admin')
-  -> if conversation.customer_id IS NOT NULL: update profiles row
-  -> else: update conversations row (lead)
-  -> returns jsonb { kind: 'customer'|'lead', favorited: bool }
-```
+### 3. `index.html`
+Replace the 4 lovable.app references (og:image, og:url, twitter:image, canonical) with `https://www.everafterca.com/...`.
 
-Visitor→user linking (`linkVisitorConversation` in AuthContext): when a visitor conversation that was a favorite lead becomes linked to a customer, migrate the flag — extend the linker (or add a trigger on `conversations` UPDATE of `customer_id`) to copy `is_favorite_lead`/`favorite_lead_at` into the matching profile's `is_favorite_customer` if not already set, then clear the lead flag.
+### 4. `src/components/SEO.tsx`
+- `siteUrl = "https://www.everafterca.com"`
+- Default `ogImage = "https://www.everafterca.com/og-image.jpg"`
 
-### UI (in `src/components/dashboard/ChatAdmin.tsx`)
-- Star icon button on each conversation card (right side, near the `ai`/`human` badge) and in the conversation header.
-- Tooltip text varies by `customer_id` presence ("Favorite Customer" vs "Favorite Lead").
-- Small "★ Favorite" badge inline with name when active.
-- Add a **Favorites** chip alongside `All / Visitors / Users` filter tabs.
-- Calls `supabase.rpc('toggle_favorite_conversation', …)` with optimistic update + toast.
-- For customer conversations, fetch `profiles.is_favorite_customer` joined alongside the conversation list (single query addition).
+This automatically fixes canonicals on every page using `<SEO canonical="/..." />` (Home, Blog, BlogPost, WeddingQuiz, etc.) so each canonical resolves to `https://www.everafterca.com/<path>`.
 
----
+### 5. `src/pages/Index.tsx`
+LocalBusiness JSON-LD: replace `url`, `image` with the new domain.
 
-## Part 2 — Archive Visitor Conversations
+### 6. `src/pages/BlogPost.tsx`
+Replace fallback OG image and `@id` schema URL with new domain.
 
-### Schema changes
-**`conversations`**:
-- `archived_at timestamptz`
-- `archived_by uuid`
-- `archive_reason text`
-- `archive_batch_id uuid`
-- Index on `archived_at` (partial: where null).
+### 7. `src/pages/PromotionalLanding.tsx`
+Replace `canonical`, `og:url`, and schema `url` with `https://www.everafterca.com/...`. This makes promo pages (including the 3 in the sitemap) canonical to the official domain.
 
-No changes to `messages` — they remain intact.
+### 8. `src/components/admin/blog/BlogPostForm.tsx`
+Update the admin-only display text from `everafter-studio.lovable.app/blog/...` to `www.everafterca.com/blog/...` (cosmetic, admin UI only).
 
-### RPCs (SECURITY DEFINER, admin-only)
+## Canonical URLs After Changes
+| Page | Canonical |
+|---|---|
+| Home | `https://www.everafterca.com/` |
+| Wedding Packages promo | `https://www.everafterca.com/promo/wedding-packages` |
+| Business promo | `https://www.everafterca.com/promo/bussines-content` |
+| Family promo | `https://www.everafterca.com/promo/family-content` |
+| Wedding Quiz | `https://www.everafterca.com/weddingquiz` |
+| Blog list | `https://www.everafterca.com/blog` |
+| Blog post | `https://www.everafterca.com/blog/{slug}` |
 
-```
-preview_archive_visitor_conversations(p_older_than_days int)
-  returns jsonb {
-    affected_count, messages_preserved, oldest, newest,
-    excluded_favorites, excluded_user_linked, excluded_human_mode, excluded_with_contact
-  }
+## Out of Scope / Not Touched
+- No design, layout, content, or UI changes
+- No edge function or DB changes
+- Admin/internal `Disallow` rules in robots.txt remain as-is
+- The `everafter-studio.lovable.app` preview deployment will still load (Lovable hosts it), but its canonicals will now point to the official domain — which is the desired behavior to consolidate SEO signal.
 
-archive_visitor_conversations(
-  p_older_than_days int,
-  p_exclude_favorites bool default true,
-  p_exclude_user_linked bool default true,
-  p_exclude_with_contact bool default true,
-  p_exclude_human_mode bool default true,
-  p_reason text default null
-) returns jsonb { batch_id, archived_count }
-
-restore_archived_conversations(p_conversation_ids uuid[]) returns jsonb { restored_count }
-restore_archive_batch(p_batch_id uuid) returns jsonb { restored_count }
-```
-
-Filter rules in archive:
-- `customer_id IS NULL` (visitor-only) — hard requirement, never archive linked
-- `archived_at IS NULL`
-- `created_at < now() - (p_older_than_days || ' days')::interval` (or skip if `p_older_than_days = 0` for "all time")
-- `mode != 'human'` when exclude_human_mode
-- `is_favorite_lead = false` when exclude_favorites
-- `user_email IS NULL AND user_name IS NULL` when exclude_with_contact (these are the captured contact fields on conversations)
-
-Archive only sets the four columns + a shared `archive_batch_id`. No deletes, no message changes, no message inserts (so no webhook trigger fires).
-
-### UI changes (`ChatAdmin.tsx`)
-
-1. **Active/Archived/All filter** — segmented control above the existing All/Visitors/Users tabs. Default = Active. Conversations query adds `.is('archived_at', null)` for Active, `.not('archived_at','is',null)` for Archived.
-2. **Active count badge** excludes archived.
-3. **"Clean Up" button** in the conversation list header — opens an AlertDialog:
-   - Title: "Clean Up Visitor Conversations"
-   - Scope (locked, info-only): "Visitors only"
-   - Range select: 7 / 30 (default) / 90 / All time
-   - Checkboxes (all checked by default): Exclude favorite leads, Exclude user-linked, Exclude with contact info, Exclude human-mode
-   - Optional reason text
-   - **Preview button** → calls `preview_archive_visitor_conversations` → renders the counts/date range and warnings
-   - **Archive button** (disabled until preview) → calls `archive_visitor_conversations`, shows toast with batch_id and count, refreshes list
-4. **Restore action** on archived conversation cards — small "Restore" button visible only when filter = Archived. Calls `restore_archived_conversations([id])`.
-
-### Realtime / n8n safety
-- Archive only updates `conversations` — no rows inserted into `messages`, so `emit_message_webhook` (only fires on `messages` insert) never runs.
-- Existing realtime subscriptions on `messages` and `conversations` are unaffected; archived rows simply drop out of the active list filter.
-- Visitor chat edge function (`visitor-chat`) finds conversations by `visitor_id` regardless of `archived_at`. If an archived visitor returns and sends a new message, we should auto-unarchive on new user message. Implement via a trigger on `messages` AFTER INSERT WHEN role='user': `UPDATE conversations SET archived_at=NULL, archived_by=NULL, archive_reason=NULL WHERE id=NEW.conversation_id AND archived_at IS NOT NULL`. This preserves UX continuity without breaking history.
-
----
-
-## Files touched
-- **Migration** (single file): all schema columns + indexes + 4 RPCs + auto-unarchive trigger.
-- `src/components/dashboard/ChatAdmin.tsx`: filters, star button, Clean Up modal, restore action, query updates.
-- `src/contexts/AuthContext.tsx` (`linkVisitorConversation`): migrate `is_favorite_lead` → `is_favorite_customer` when linking.
-- `src/integrations/supabase/types.ts` regenerates automatically.
-
-## Risk analysis
-- **No data loss**: archive is reversible; restore RPCs provided; messages untouched.
-- **RLS unchanged** for non-admins; favorites flow through SECURITY DEFINER RPC with explicit `has_role` check, so users cannot self-favorite.
-- **Webhook safety**: archive path performs only `UPDATE conversations`; `emit_message_webhook` is on `messages` only.
-- **Realtime safety**: subscriptions still receive events; filter is purely presentational on the list.
-- **Edge case**: archived visitor returning → auto-unarchive trigger keeps conversations alive. Documented in trigger comment.
-- **Edge case**: visitor→user linking → favorite migrates so admins don't lose the marker.
+## Risks
+- Very low. Canonicals/sitemaps are metadata; no runtime behavior changes.
+- Promo page slug `bussines-content` is misspelled; included as-is per user instruction. If the actual route differs, the sitemap URL would 404 for crawlers. Worth verifying the slug exists in `promotional_campaigns` after deploy.

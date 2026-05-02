@@ -192,7 +192,7 @@ const BlogPostForm = ({ post, onSubmit, onCancel, isLoading }: BlogPostFormProps
                   {seoTitle || title || "Post Title"} | EverAfter Blog
                 </div>
                 <div className="text-green-700 text-sm">
-                  everafter-studio.lovable.app/blog/...
+                  www.everafterca.com/blog/...
                 </div>
                 <div className="text-gray-600 text-sm line-clamp-2">
                   {seoDescription || "Meta description will appear here..."}
