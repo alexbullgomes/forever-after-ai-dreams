@@ -14,12 +14,12 @@ const SEO = ({
   title,
   description,
   canonical,
-  ogImage = "https://everafter-studio.lovable.app/og-image.jpg",
+  ogImage = "https://www.everafterca.com/og-image.jpg",
   ogType = "website",
   noIndex = false,
   schema
 }: SEOProps) => {
-  const siteUrl = "https://everafter-studio.lovable.app";
+  const siteUrl = "https://www.everafterca.com";
   const fullTitle = title.includes("Everafter") ? title : `${title} | Everafter Studio`;
   
   return (

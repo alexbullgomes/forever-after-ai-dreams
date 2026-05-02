@@ -30,7 +30,7 @@ const Index = () => {
     "@type": "LocalBusiness",
     "name": seo.business_name,
     "description": seo.seo_description,
-    "url": "https://everafter-studio.lovable.app",
+    "url": "https://www.everafterca.com",
     "telephone": seo.phone,
     "email": seo.email,
     "address": {
@@ -39,7 +39,7 @@ const Index = () => {
       "addressCountry": "US"
     },
     "priceRange": "$$",
-    "image": "https://everafter-studio.lovable.app/og-image.jpg",
+    "image": "https://www.everafterca.com/og-image.jpg",
     "sameAs": seo.social_urls
   };
 
