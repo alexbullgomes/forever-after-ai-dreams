@@ -405,8 +405,17 @@ export const GalleryCardForm = ({ isOpen, onClose, onSave, editingCard, galleryT
             </div>
           </div>
 
+          <SmartMediaUrlField
+            value={{
+              thumb_webm_url: formData.thumb_webm_url,
+              thumb_mp4_url: formData.thumb_mp4_url,
+              thumb_image_url: formData.thumb_image_url,
+            }}
+            onChange={(patch) => setFormData(prev => ({ ...prev, ...patch }))}
+          />
+
           <div className="space-y-2">
-            <Label>Thumbnail (Video Fallback)</Label>
+            <Label>Thumbnail (Video Fallback) — advanced</Label>
             <div className="space-y-4 border border-border rounded-lg p-4">
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-2">
