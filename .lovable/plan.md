@@ -1,63 +1,57 @@
-# Promotional Footer Pricing Mismatch — Fix Plan
+## Audit
 
-## Root cause
+**DB fields (`gallery_cards`)**: All needed columns already exist — `thumbnail_url`, `thumb_image_url`, `thumb_webm_url`, `thumb_mp4_url`, plus legacy `video_url`/`video_mp4_url`. **No schema changes needed.**
 
-`src/components/PromotionalFooter.tsx` reads pricing exclusively from the **legacy** columns on `promotional_campaigns`:
-- `pricing_card_1_title` / `pricing_card_1_price` / `pricing_card_1_enabled`
-- `pricing_card_2_*`
-- `pricing_card_3_*`
+**Edit modal (`src/components/admin/GalleryCardForm.tsx`)**: Already exposes separate inputs for `thumb_webm_url`, `thumb_mp4_url`, `thumb_image_url` and renders a working preview. The legacy "Thumbnail Image" upload only writes to `thumbnail_url`. There is no unified "paste any URL" helper.
 
-Meanwhile, the Edit Campaign modal's **Packages** tab (`CampaignPackagesTab` + `useCampaignPackages`) writes to a separate table, **`campaign_packages`** (fields `title`, `price_display`, `is_enabled`, `sort_order`, `is_popular`, `minimum_deposit_cents`, ...). This is the same source `usePromotionalCampaign` and `PromoPricing` already use on the campaign landing pages.
+**Admin list (`src/pages/GalleryCardsAdmin.tsx`, `SortableCardItem`)**: Renders ONLY `<img src={card.thumbnail_url} />`. If a card has just `thumb_mp4_url` (or any of the modern thumb fields) and no `thumbnail_url`, the row shows a broken/empty image — this is the visible bug.
 
-So the footer is reading from a stale legacy schema that the admin no longer edits, while the new Packages editor saves to `campaign_packages`. Hence the outdated $1500 / $3000 / $2000 values.
+**Public render (`src/components/Portfolio.tsx` + `VideoThumbnail`)**: Already follows the correct priority (webm → mp4 → image → fallback). Working correctly.
 
-## Source of truth
+## Root Cause
 
-`campaign_packages` table, filtered by `campaign_id`, `is_enabled = true`, ordered by `sort_order`. Use `title` and `price_display` for display. This matches the campaign landing page (`PromoPricing`) so the footer and the campaign page stay in sync.
+The admin list preview only reads `thumbnail_url` and ignores `thumb_mp4_url` / `thumb_webm_url` / `thumb_image_url`. Cards that use the modern video-thumbnail fields appear empty in the dashboard, even though they render fine on the public site.
 
-## Files involved
+## Plan
 
-- `src/components/PromotionalFooter.tsx` — only file that needs logic changes
-- (Reference, no changes) `src/hooks/useCampaignPackages.ts`, `src/hooks/usePromotionalCampaign.ts`, `src/components/promo/PromoPricing.tsx`, `src/components/admin/CampaignPackagesTab.tsx`
+1. **`src/utils/galleryThumbnail.ts` (new)** — small helper:
+   - `resolveCardThumbnail(card)` returns `{ webm, mp4, image }` with priority `thumb_*` → legacy (`thumbnail_url`).
+   - `classifyMediaUrl(url)` returns `'mp4' | 'webm' | 'image' | 'unknown'` based on extension.
+   - `isAllowedPublicMediaUrl(url)` warns (not blocks) if not under `https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/`.
 
-## Database
+2. **`src/pages/GalleryCardsAdmin.tsx` (`SortableCardItem`)** — replace the `<img>` block with a 64×64 preview that:
+   - Uses `<video muted loop playsInline preload="metadata">` with webm + mp4 sources when available (autoplay on hover only to keep list light).
+   - Falls back to `<img>` using `thumb_image_url` → `thumbnail_url`.
+   - Falls back to existing `ImageIcon` placeholder when nothing is set.
+   - On `<video>` `onError`, swaps to image fallback.
 
-- Read from: `public.campaign_packages` (existing, RLS already allows public read for enabled packages on active campaigns — confirmed by current usage on `/promo/:slug`)
-- Keep reading from: `public.promotional_campaigns` for `slug`, `banner_headline`, `is_active`, `visibility_mode`, `promotional_footer_enabled`
-- Legacy `pricing_card_1/2/3_*` columns: NOT removed. Kept as a safe fallback only when a campaign has zero enabled packages in `campaign_packages`.
+3. **`src/components/admin/GalleryCardForm.tsx`** — add a new "Thumbnail / Preview Media URL" smart input ABOVE the existing advanced fields (existing fields kept intact for power users):
+   - Helper text: *"Paste a public Supabase local storage URL. Supports MP4, WebM, WebP, JPG, PNG."*
+   - On paste/blur, classify by extension and write into `thumb_mp4_url`, `thumb_webm_url`, or `thumb_image_url` accordingly (clearing any conflicting field of the same kind only).
+   - Soft-warn (yellow text, not blocking) if URL is not on the local Supabase host.
+   - Existing per-format inputs stay visible and editable.
+   - Existing legacy "Thumbnail Image" upload stays as-is for backward compatibility.
 
-## Implementation plan (single-file, low risk)
+4. **No changes** to: `Portfolio.tsx`, `VideoThumbnail`, `useGalleryCards`, RLS, schema, public rendering priority, drag-and-drop, filters, published/featured toggles.
 
-1. **Update fetch in `PromotionalFooter.tsx`**
-   - Query `promotional_campaigns` for active + public + `promotional_footer_enabled` campaigns (keep current filters), select `id, slug, banner_headline` plus the legacy `pricing_card_*` columns (kept for fallback).
-   - For the resulting campaign list, fetch related rows from `campaign_packages` in a single query: `.select('campaign_id,title,price_display,sort_order,is_enabled').in('campaign_id', ids).eq('is_enabled', true).order('sort_order')`.
-   - Group packages by `campaign_id` in memory.
+## Files Touched
 
-2. **Build display cards per campaign**
-   - If campaign has ≥1 enabled package → map each to `{ title, price: price_display }` (cap at first 3 to preserve current footer layout).
-   - Else → fall back to the legacy `pricing_card_1/2/3_*` fields (current behavior) so older campaigns that never used the new editor keep working.
+- `src/utils/galleryThumbnail.ts` (new)
+- `src/pages/GalleryCardsAdmin.tsx` (preview swap inside `SortableCardItem`)
+- `src/components/admin/GalleryCardForm.tsx` (add unified URL field, keep existing fields)
 
-3. **Realtime updates**
-   - Keep the existing `postgres_changes` channel on `promotional_campaigns`.
-   - Add a second channel on `campaign_packages` (`event: '*'`) that re-runs the same fetch, so admin edits to packages reflect on the homepage live.
-   - Clean up both channels on unmount.
+## Risks & Mitigations
 
-4. **No UI changes**
-   - JSX, classes, rotation logic, mobile/chat-open hide behavior, keyboard handlers, navigation to `/promo/:slug` all unchanged.
+- **Autoplay in long lists could be heavy** → only play on hover, `preload="metadata"`, mute, no audio decode.
+- **Existing cards with only `thumbnail_url`** → still display via image fallback path; behavior unchanged on public site.
+- **Pasted non-Supabase URLs** → soft warning only; not blocked, so legacy data keeps working.
+- **No DB migration** → zero risk of data loss; all writes go to existing columns.
 
-## Risks & mitigations
+## QA Checklist (post-implementation)
 
-- **Risk:** A campaign has the footer enabled but no packages in `campaign_packages` yet → would render empty.
-  **Mitigation:** Legacy `pricing_card_*` fallback preserved.
-- **Risk:** RLS on `campaign_packages` blocks anonymous read.
-  **Mitigation:** Already publicly readable — `usePromotionalCampaign` performs the same anonymous query for `/promo/:slug` and works in production.
-- **Risk:** N+1 query if many active campaigns.
-  **Mitigation:** Single `.in('campaign_id', ids)` batch query.
-- **No impact on:** Stripe checkout, booking holds, deposits (`minimum_deposit_cents` untouched), campaign visibility toggles, package ordering, campaign landing pages, AI/n8n flows, realtime chat.
-
-## Out of scope (explicitly not changed)
-
-- Booking / deposit / Stripe logic
-- Footer design and animation
-- Legacy `pricing_card_*` columns (kept; can be deprecated in a later migration once all campaigns are confirmed migrated)
-- Admin Packages editor
+- Admin list shows animated MP4 preview on hover for video-only cards.
+- Image-only cards still display the static thumbnail.
+- Cards with no media show clean placeholder (no broken-image icon).
+- Edit modal: pasting `…/Wedding_short_2.mp4` populates `thumb_mp4_url` automatically; existing fields remain editable.
+- Public homepage Portfolio renders unchanged.
+- Published / Featured toggles, drag-and-drop, filters, and gallery type selector all still work.

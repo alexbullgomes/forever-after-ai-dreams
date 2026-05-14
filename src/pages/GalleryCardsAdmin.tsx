@@ -13,6 +13,63 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Edit, Trash2, GripVertical, Search, Image as ImageIcon } from 'lucide-react';
 import { GalleryCardForm } from '@/components/admin/GalleryCardForm';
 import { useGalleryCards, type GalleryCard } from '@/hooks/useGalleryCards';
+import { resolveCardThumbnail } from '@/utils/galleryThumbnail';
+
+const CardPreviewThumb = ({ card }: { card: any }) => {
+  const { webm, mp4, image, hasVideo, hasAny } = resolveCardThumbnail(card);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const showVideo = hasVideo && !videoFailed;
+
+  if (!hasAny) {
+    return (
+      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+        <ImageIcon className="h-6 w-6 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (showVideo) {
+    return (
+      <video
+        className="w-16 h-16 object-cover rounded-lg bg-muted"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={image}
+        onMouseEnter={(e) => {
+          const v = e.currentTarget;
+          v.play().catch(() => {});
+        }}
+        onMouseLeave={(e) => {
+          const v = e.currentTarget;
+          v.pause();
+          v.currentTime = 0;
+        }}
+        onError={() => setVideoFailed(true)}
+      >
+        {webm && <source src={webm} type="video/webm" />}
+        {mp4 && <source src={mp4} type="video/mp4" />}
+      </video>
+    );
+  }
+
+  if (image) {
+    return (
+      <img
+        src={image}
+        alt={card.title}
+        className="w-16 h-16 object-cover rounded-lg bg-muted"
+      />
+    );
+  }
+
+  return (
+    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+      <ImageIcon className="h-6 w-6 text-muted-foreground" />
+    </div>
+  );
+};
 import { useServiceGalleryCards, type ServiceGalleryCard } from '@/hooks/useServiceGalleryCards';
 import { useOurPortfolioGallery, type PortfolioGalleryCard } from '@/hooks/useOurPortfolioGallery';
 import { useBusinessContentsGallery, type BusinessContentsGalleryCard } from '@/hooks/useBusinessContentsGallery';
@@ -72,17 +129,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
           </div>
 
           <div className="flex-shrink-0">
-            {card.thumbnail_url ? (
-              <img
-                src={card.thumbnail_url}
-                alt={card.title}
-                className="w-16 h-16 object-cover rounded-lg"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                <ImageIcon className="h-6 w-6 text-gray-400" />
-              </div>
-            )}
+            <CardPreviewThumb card={card} />
           </div>
 
           <div className="flex-1 min-w-0">
