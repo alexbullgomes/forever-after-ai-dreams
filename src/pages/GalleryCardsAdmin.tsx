@@ -72,17 +72,7 @@ const SortableCardItem = ({ card, onEdit, onDelete, onTogglePublished, onToggleF
           </div>
 
           <div className="flex-shrink-0">
-            {card.thumbnail_url ? (
-              <img
-                src={card.thumbnail_url}
-                alt={card.title}
-                className="w-16 h-16 object-cover rounded-lg"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                <ImageIcon className="h-6 w-6 text-gray-400" />
-              </div>
-            )}
+            <CardPreviewThumb card={card} />
           </div>
 
           <div className="flex-1 min-w-0">
