@@ -10,6 +10,81 @@ import { Upload, X, Image as ImageIcon, Link, ExternalLink } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { GalleryCard } from '@/hooks/useGalleryCards';
+import { classifyMediaUrl, isAllowedPublicMediaUrl } from '@/utils/galleryThumbnail';
+
+interface SmartMediaValue {
+  thumb_webm_url: string;
+  thumb_mp4_url: string;
+  thumb_image_url: string;
+}
+
+const SmartMediaUrlField = ({
+  value,
+  onChange,
+}: {
+  value: SmartMediaValue;
+  onChange: (patch: Partial<SmartMediaValue>) => void;
+}) => {
+  const [input, setInput] = useState('');
+  const [warn, setWarn] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
+  const apply = (raw: string) => {
+    const url = raw.trim();
+    setInfo(null);
+    setWarn(null);
+    if (!url) return;
+    const kind = classifyMediaUrl(url);
+    if (kind === 'unknown') {
+      setWarn('Unsupported file type. Use .mp4, .webm, .jpg, .jpeg, .png, or .webp.');
+      return;
+    }
+    if (!isAllowedPublicMediaUrl(url)) {
+      setWarn('Heads up: URL is not on the local Supabase storage host. It will still be saved.');
+    }
+    if (kind === 'mp4') {
+      onChange({ thumb_mp4_url: url });
+      setInfo('Saved to MP4 thumbnail field.');
+    } else if (kind === 'webm') {
+      onChange({ thumb_webm_url: url });
+      setInfo('Saved to WebM thumbnail field.');
+    } else if (kind === 'image') {
+      onChange({ thumb_image_url: url });
+      setInfo('Saved to image thumbnail field.');
+    }
+    setInput('');
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="smart_media_url">Thumbnail / Preview Media URL</Label>
+      <div className="flex gap-2">
+        <Input
+          id="smart_media_url"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onPaste={(e) => {
+            const pasted = e.clipboardData.getData('text');
+            if (pasted) {
+              e.preventDefault();
+              apply(pasted);
+            }
+          }}
+          onBlur={() => input && apply(input)}
+          placeholder="https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/weddingvideo/your_file.mp4"
+        />
+        <Button type="button" variant="outline" onClick={() => apply(input)}>
+          Apply
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Paste a public Supabase local storage URL. Supports MP4, WebM, WebP, JPG, and PNG. The URL is auto-routed to the correct field below.
+      </p>
+      {info && <p className="text-xs text-success">{info}</p>}
+      {warn && <p className="text-xs text-warning">{warn}</p>}
+    </div>
+  );
+};
 
 interface Campaign {
   id: string;
