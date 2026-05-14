@@ -14,11 +14,10 @@ import { Plus, Edit, Trash2, GripVertical, Search, Image as ImageIcon } from 'lu
 import { GalleryCardForm } from '@/components/admin/GalleryCardForm';
 import { useGalleryCards, type GalleryCard } from '@/hooks/useGalleryCards';
 import { resolveCardThumbnail } from '@/utils/galleryThumbnail';
-import { useState as useReactState } from 'react';
 
 const CardPreviewThumb = ({ card }: { card: any }) => {
   const { webm, mp4, image, hasVideo, hasAny } = resolveCardThumbnail(card);
-  const [videoFailed, setVideoFailed] = useReactState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const showVideo = hasVideo && !videoFailed;
 
   if (!hasAny) {
