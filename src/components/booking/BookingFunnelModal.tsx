@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
 import { saveBookingState, PendingBookingState } from '@/utils/bookingRedirect';
 import { format } from 'date-fns';
+import { trackEvent } from '@/utils/analytics';
 
 type BookingStep = 'date' | 'checking' | 'slots';
 
