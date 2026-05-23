@@ -19,6 +19,7 @@ import AuthModal from "@/components/AuthModal";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 import PromotionalPopup from "@/components/PromotionalPopup";
 import { CampaignPortalProvider } from "@/contexts/CampaignPortalContext";
+import { trackEvent } from "@/utils/analytics";
 
 // Allowed tracking script domains for validation
 const ALLOWED_SCRIPT_DOMAINS = [
