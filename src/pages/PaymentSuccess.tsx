@@ -23,6 +23,7 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    trackEvent('payment_success_viewed');
   }, []);
 
   useEffect(() => {
