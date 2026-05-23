@@ -1,57 +1,80 @@
-## Audit
+# Google Analytics 4 Integration Plan
 
-**DB fields (`gallery_cards`)**: All needed columns already exist — `thumbnail_url`, `thumb_image_url`, `thumb_webm_url`, `thumb_mp4_url`, plus legacy `video_url`/`video_mp4_url`. **No schema changes needed.**
+## Current state
+- `index.html` CSP already allow-lists `googletagmanager.com` and `google-analytics.com` — no CSP changes required.
+- `react-helmet-async` provides `<title>` per page.
+- `PromotionalLanding` injects campaign-specific tracking scripts (Meta/TikTok/GA, etc.) — keep untouched; new global GA4 runs alongside.
+- React Router lives in `src/App.tsx` inside a `<BrowserRouter>`, with a `VisitorTracker` already mounted as a route listener (good pattern to mirror).
 
-**Edit modal (`src/components/admin/GalleryCardForm.tsx`)**: Already exposes separate inputs for `thumb_webm_url`, `thumb_mp4_url`, `thumb_image_url` and renders a working preview. The legacy "Thumbnail Image" upload only writes to `thumbnail_url`. There is no unified "paste any URL" helper.
+## Approach
+Load the gtag base script once in `index.html`, disable automatic `page_view` (`send_page_view: false`), and emit `page_view` manually on every React Router navigation. Wrap all event calls in a small typed helper that no-ops when `window.gtag` is missing, so failures never crash the app.
 
-**Admin list (`src/pages/GalleryCardsAdmin.tsx`, `SortableCardItem`)**: Renders ONLY `<img src={card.thumbnail_url} />`. If a card has just `thumb_mp4_url` (or any of the modern thumb fields) and no `thumbnail_url`, the row shows a broken/empty image — this is the visible bug.
+## Files
 
-**Public render (`src/components/Portfolio.tsx` + `VideoThumbnail`)**: Already follows the correct priority (webm → mp4 → image → fallback). Working correctly.
+### 1. `index.html` — add gtag base loader (in `<head>`, async)
+```html
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M1BNE1BC7Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', 'G-M1BNE1BC7Z', { send_page_view: false, anonymize_ip: true });
+</script>
+```
+Hardcode the ID (matches current pattern for `VITE_SUPABASE_*`); also read `import.meta.env.VITE_GA_MEASUREMENT_ID` inside the helper as an override for future flexibility. No CSP edits needed.
 
-## Root Cause
+### 2. `src/utils/analytics.ts` (new) — central helper
+- `GA_MEASUREMENT_ID` constant.
+- `trackPageView(path: string, title?: string)` → `gtag('event', 'page_view', { page_path, page_title, page_location })`.
+- `trackEvent(name: string, params?: Record<string, string | number | boolean>)` → guarded `gtag('event', ...)`.
+- Sanitizer that strips obviously-PII keys (`email`, `phone`, `name`, `user_id`, `visitor_id`, `session_id`, anything containing `id` unless explicitly allow-listed like `campaign_slug`).
+- All functions no-op if `typeof window === 'undefined' || !window.gtag`.
 
-The admin list preview only reads `thumbnail_url` and ignores `thumb_mp4_url` / `thumb_webm_url` / `thumb_image_url`. Cards that use the modern video-thumbnail fields appear empty in the dashboard, even though they render fine on the public site.
+### 3. `src/components/GoogleAnalyticsTracker.tsx` (new)
+- Mounted once inside `<BrowserRouter>` next to `VisitorTracker`.
+- Uses `useLocation()` to fire `trackPageView` on every pathname/search change.
+- Skips `/dashboard/*` admin routes (treat as internal — not tracked) per requirement. `/user-dashboard/*` tracked with generic titles only (no IDs in path beyond what router shows).
 
-## Plan
+### 4. `src/App.tsx`
+- Mount `<GoogleAnalyticsTracker />` next to `<VisitorTracker />`.
 
-1. **`src/utils/galleryThumbnail.ts` (new)** — small helper:
-   - `resolveCardThumbnail(card)` returns `{ webm, mp4, image }` with priority `thumb_*` → legacy (`thumbnail_url`).
-   - `classifyMediaUrl(url)` returns `'mp4' | 'webm' | 'image' | 'unknown'` based on extension.
-   - `isAllowedPublicMediaUrl(url)` warns (not blocks) if not under `https://supabasestudio.agcreationmkt.cloud/storage/v1/object/public/`.
+### 5. Event instrumentation (surgical, no UI changes)
+Add `trackEvent(...)` calls only — no markup, styling, or logic changes:
 
-2. **`src/pages/GalleryCardsAdmin.tsx` (`SortableCardItem`)** — replace the `<img>` block with a 64×64 preview that:
-   - Uses `<video muted loop playsInline preload="metadata">` with webm + mp4 sources when available (autoplay on hover only to keep list light).
-   - Falls back to `<img>` using `thumb_image_url` → `thumbnail_url`.
-   - Falls back to existing `ImageIcon` placeholder when nothing is set.
-   - On `<video>` `onError`, swaps to image fallback.
+| Event | Location | Params (safe only) |
+|---|---|---|
+| `cta_click` | `Hero`, `PromoHero` primary buttons | `cta_label`, `source_page` |
+| `service_card_click` | `Services` / `ServicesWithImages` | `service_category` |
+| `product_card_click` | `ProductsSection`, `CampaignProductsSection` | `product_title` |
+| `campaign_view` | `PromotionalLanding` mount | `campaign_slug` |
+| `campaign_package_click` | `CampaignPricingCard` reserve button | `campaign_slug`, `package_name` |
+| `booking_started` | `BookingFunnelModal` open | `product_title`, `campaign_slug?` |
+| `booking_date_selected` | `BookingStepDate.onSubmit` | `product_title` |
+| `booking_time_selected` | `BookingStepSlots` slot select | `product_title` |
+| `checkout_started` | right before redirect to Stripe in booking + wedding flows | `product_title`, `package_name?` |
+| `payment_success_viewed` | `PaymentSuccess` mount | (none) |
+| `consultation_form_opened` | `ConsultationPopup` open | `source_page` |
+| `consultation_form_submitted` | `ConsultationForm` submit success | `source_page` |
+| `chat_opened` | `ExpandableChatWebhook` + `ExpandableChatAssistant` open | `chat_surface` (visitor/auth) |
+| `chat_message_sent` | same components, on send | `chat_surface` |
+| `blog_post_viewed` | `BlogPost` mount | `post_slug`, `category?` |
+| `gallery_item_click` | `Portfolio` / gallery modal open | `gallery_type`, `item_position` |
 
-3. **`src/components/admin/GalleryCardForm.tsx`** — add a new "Thumbnail / Preview Media URL" smart input ABOVE the existing advanced fields (existing fields kept intact for power users):
-   - Helper text: *"Paste a public Supabase local storage URL. Supports MP4, WebM, WebP, JPG, PNG."*
-   - On paste/blur, classify by extension and write into `thumb_mp4_url`, `thumb_webm_url`, or `thumb_image_url` accordingly (clearing any conflicting field of the same kind only).
-   - Soft-warn (yellow text, not blocking) if URL is not on the local Supabase host.
-   - Existing per-format inputs stay visible and editable.
-   - Existing legacy "Thumbnail Image" upload stays as-is for backward compatibility.
+No user IDs, emails, phones, Stripe session IDs, visitor IDs, or DB IDs are ever passed.
 
-4. **No changes** to: `Portfolio.tsx`, `VideoThumbnail`, `useGalleryCards`, RLS, schema, public rendering priority, drag-and-drop, filters, published/featured toggles.
+## Safety & non-regression
+- Helper guards every call → if gtag fails to load, app behaves identically.
+- No changes to routing, auth, Stripe, chat, RLS, webhooks, or campaign tracking scripts.
+- CSP unchanged (already permits GA domains).
+- Async script load — no render blocking.
+- `send_page_view: false` + manual SPA tracking eliminates duplicate page views.
+- Admin `/dashboard/*` excluded; `/user-dashboard/*` tracked with path only.
 
-## Files Touched
-
-- `src/utils/galleryThumbnail.ts` (new)
-- `src/pages/GalleryCardsAdmin.tsx` (preview swap inside `SortableCardItem`)
-- `src/components/admin/GalleryCardForm.tsx` (add unified URL field, keep existing fields)
-
-## Risks & Mitigations
-
-- **Autoplay in long lists could be heavy** → only play on hover, `preload="metadata"`, mute, no audio decode.
-- **Existing cards with only `thumbnail_url`** → still display via image fallback path; behavior unchanged on public site.
-- **Pasted non-Supabase URLs** → soft warning only; not blocked, so legacy data keeps working.
-- **No DB migration** → zero risk of data loss; all writes go to existing columns.
-
-## QA Checklist (post-implementation)
-
-- Admin list shows animated MP4 preview on hover for video-only cards.
-- Image-only cards still display the static thumbnail.
-- Cards with no media show clean placeholder (no broken-image icon).
-- Edit modal: pasting `…/Wedding_short_2.mp4` populates `thumb_mp4_url` automatically; existing fields remain editable.
-- Public homepage Portfolio renders unchanged.
-- Published / Featured toggles, drag-and-drop, filters, and gallery type selector all still work.
+## Test checklist after build
+1. Initial load fires exactly one `page_view` (DevTools Network → `collect?v=2`).
+2. Navigate Home → Services → Blog → fires one `page_view` per nav.
+3. `/promo/:slug` fires `page_view` + `campaign_view` with `campaign_slug`.
+4. Open booking modal, pick date/time, start checkout → 4 events, no PII in payloads.
+5. `/dashboard/...` produces zero GA hits.
+6. Console clean; no CSP violations; no UI shifts.

@@ -4,6 +4,7 @@ import { validateConsultationForm, submitConsultationRequest } from "./utils/for
 import ConsultationFormFields from "./ConsultationFormFields";
 import ConsultationFormActions from "./ConsultationFormActions";
 import { buildPhonePayload } from "@/components/ui/phone-number-field";
+import { trackEvent } from "@/utils/analytics";
 
 interface PackageInfo {
   name: string;
@@ -32,6 +33,7 @@ const ConsultationForm = ({ userEmail, packageInfo, onClose }: ConsultationFormP
 
     try {
       await submitConsultationRequest(userEmail || "", cellphone, packageInfo, buildPhonePayload(dialCode, cellphone));
+      trackEvent('consultation_form_submitted', { source_page: window.location.pathname });
       onClose();
       console.log('Consultation request submitted successfully');
       // Redirect to planner page with auto-open chat

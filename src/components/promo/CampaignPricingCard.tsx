@@ -16,6 +16,7 @@ import {
   clearBookingState,
   PendingBookingState 
 } from "@/utils/bookingRedirect";
+import { trackEvent } from "@/utils/analytics";
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
 const BOOKING_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
@@ -219,7 +220,10 @@ export function CampaignPricingCard({
           <div className="space-y-3">
             {primaryCtaEnabled && (
               <Button
-                onClick={() => setIsBookingOpen(true)}
+                onClick={() => {
+                  trackEvent('campaign_package_click', { campaign_slug: campaignSlug, package_name: name });
+                  setIsBookingOpen(true);
+                }}
                 disabled={isResuming}
                 className="w-full h-12 bg-brand-gradient hover:opacity-90 text-white font-semibold rounded-lg shadow-lg transition-all duration-300"
               >

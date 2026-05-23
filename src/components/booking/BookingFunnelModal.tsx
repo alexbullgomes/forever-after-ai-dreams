@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getOrCreateVisitorId, trackVisitorEvent } from '@/utils/visitor';
 import { saveBookingState, PendingBookingState } from '@/utils/bookingRedirect';
 import { format } from 'date-fns';
+import { trackEvent } from '@/utils/analytics';
 
 type BookingStep = 'date' | 'checking' | 'slots';
 
@@ -106,7 +107,21 @@ export function BookingFunnelModal({
     generateTimeSlots,
   } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, packageId: packageId! } : undefined);
 
+  // Fire booking_started when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    trackEvent('booking_started', {
+      product_title: productTitle,
+      campaign_slug: campaignSlug,
+      campaign_mode: campaignMode,
+    });
+  }, [isOpen, productTitle, campaignSlug, campaignMode]);
+
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
+    trackEvent('booking_date_selected', {
+      product_title: productTitle,
+      campaign_slug: campaignSlug,
+    });
     // For campaign pricing card mode, check auth BEFORE proceeding to availability check
     if (campaignMode && !user) {
       const pendingState: PendingBookingState = {
@@ -171,8 +186,9 @@ export function BookingFunnelModal({
 
   const handleTimeSelect = useCallback(async (time: string) => {
     setSelectedTime(time);
+    trackEvent('booking_time_selected', { product_title: productTitle });
     await updateSelectedTime(time);
-  }, [updateSelectedTime]);
+  }, [updateSelectedTime, productTitle]);
 
   const handleCheckout = useCallback(async () => {
     if (!bookingRequest || !selectedTime) return;
@@ -211,6 +227,13 @@ export function BookingFunnelModal({
 
     setIsProcessing(true);
     
+    // GA4 (no PII)
+    trackEvent('checkout_started', {
+      product_title: productTitle,
+      campaign_slug: campaignSlug,
+      campaign_mode: campaignMode,
+    });
+
     // Track the checkout initiation event
     trackVisitorEvent('booking_checkout_started', productTitle, {
       product_id: productId,

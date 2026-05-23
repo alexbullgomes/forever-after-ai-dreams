@@ -19,6 +19,7 @@ import AuthModal from "@/components/AuthModal";
 import { usePromotionalPopup } from "@/hooks/usePromotionalPopup";
 import PromotionalPopup from "@/components/PromotionalPopup";
 import { CampaignPortalProvider } from "@/contexts/CampaignPortalContext";
+import { trackEvent } from "@/utils/analytics";
 
 // Allowed tracking script domains for validation
 const ALLOWED_SCRIPT_DOMAINS = [
@@ -100,6 +101,13 @@ const PromotionalLanding = () => {
       return () => removeCampaignColorsFromRoot(campaign.brand_colors as any);
     }
   }, [campaign?.brand_colors]);
+
+  // Fire a single campaign_view event when the campaign slug resolves
+  useEffect(() => {
+    if (campaign?.slug) {
+      trackEvent('campaign_view', { campaign_slug: campaign.slug });
+    }
+  }, [campaign?.slug]);
 
   // Handle opening chat with a pre-filled message from booking modal
   const handleOpenChatWithMessage = useCallback((message: string) => {

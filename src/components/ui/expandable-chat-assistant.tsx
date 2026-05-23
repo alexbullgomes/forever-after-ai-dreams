@@ -639,6 +639,11 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
   const handleOpenChange = (isOpen: boolean) => {
     setIsChatOpen(isOpen);
     externalOnOpenChange?.(isOpen);
+    if (isOpen) {
+      import('@/utils/analytics').then(({ trackEvent }) =>
+        trackEvent('chat_opened', { chat_surface: 'authenticated' })
+      );
+    }
   };
 
   return (
