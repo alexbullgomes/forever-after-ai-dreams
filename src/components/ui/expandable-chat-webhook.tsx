@@ -424,6 +424,11 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
   const handleOpenChange = (isOpen: boolean) => {
     setIsChatOpen(isOpen);
     externalOnOpenChange?.(isOpen);
+    if (isOpen) {
+      import('@/utils/analytics').then(({ trackEvent }) =>
+        trackEvent('chat_opened', { chat_surface: 'visitor' })
+      );
+    }
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
