@@ -49,6 +49,7 @@ const AppContent = () => {
         <Sonner />
         <BrowserRouter>
           <VisitorTracker />
+          <GoogleAnalyticsTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
