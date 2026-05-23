@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
 import AuthModal from "@/components/AuthModal";
 import SEO from "@/components/SEO";
 import BlogPostContent from "@/components/blog/BlogPostContent";
 import { useBlogPost } from "@/hooks/useBlogPosts";
+import { trackEvent } from "@/utils/analytics";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: post, isLoading, error } = useBlogPost(slug || "");
+
+  useEffect(() => {
+    if (post?.slug) {
+      trackEvent('blog_post_viewed', { post_slug: post.slug });
+    }
+  }, [post?.slug]);
 
   // Loading state
   if (isLoading) {
