@@ -102,6 +102,13 @@ const PromotionalLanding = () => {
     }
   }, [campaign?.brand_colors]);
 
+  // Fire a single campaign_view event when the campaign slug resolves
+  useEffect(() => {
+    if (campaign?.slug) {
+      trackEvent('campaign_view', { campaign_slug: campaign.slug });
+    }
+  }, [campaign?.slug]);
+
   // Handle opening chat with a pre-filled message from booking modal
   const handleOpenChatWithMessage = useCallback((message: string) => {
     // Dispatch custom event for the chat components to handle
