@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { initializeReferralTracking } from "@/utils/affiliateTracking";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { VisitorTracker } from "@/components/VisitorTracker";
+import { GoogleAnalyticsTracker } from "@/components/GoogleAnalyticsTracker";
 
 // Eager load for homepage (LCP critical)
 import Index from "./pages/Index";
