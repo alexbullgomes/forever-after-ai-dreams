@@ -33,6 +33,7 @@ const ConsultationForm = ({ userEmail, packageInfo, onClose }: ConsultationFormP
 
     try {
       await submitConsultationRequest(userEmail || "", cellphone, packageInfo, buildPhonePayload(dialCode, cellphone));
+      trackEvent('consultation_form_submitted', { source_page: window.location.pathname });
       onClose();
       console.log('Consultation request submitted successfully');
       // Redirect to planner page with auto-open chat
