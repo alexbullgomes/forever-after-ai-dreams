@@ -227,6 +227,13 @@ export function BookingFunnelModal({
 
     setIsProcessing(true);
     
+    // GA4 (no PII)
+    trackEvent('checkout_started', {
+      product_title: productTitle,
+      campaign_slug: campaignSlug,
+      campaign_mode: campaignMode,
+    });
+
     // Track the checkout initiation event
     trackVisitorEvent('booking_checkout_started', productTitle, {
       product_id: productId,
