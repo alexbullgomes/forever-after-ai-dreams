@@ -107,6 +107,16 @@ export function BookingFunnelModal({
     generateTimeSlots,
   } = useBookingRequest(productId, campaignMode ? { campaignId: campaignId!, packageId: packageId! } : undefined);
 
+  // Fire booking_started when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    trackEvent('booking_started', {
+      product_title: productTitle,
+      campaign_slug: campaignSlug,
+      campaign_mode: campaignMode,
+    });
+  }, [isOpen, productTitle, campaignSlug, campaignMode]);
+
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
     // For campaign pricing card mode, check auth BEFORE proceeding to availability check
     if (campaignMode && !user) {
