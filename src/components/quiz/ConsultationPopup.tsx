@@ -26,6 +26,9 @@ const ConsultationPopup = ({ isOpen, onClose, userEmail, packageInfo }: Consulta
     
     const initialTime = initializeCountdown();
     setTimeLeft(initialTime);
+    import('@/utils/analytics').then(({ trackEvent }) =>
+      trackEvent('consultation_form_opened', { source_page: window.location.pathname })
+    );
   }, [isOpen]);
 
   // Countdown timer effect
