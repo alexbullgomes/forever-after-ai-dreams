@@ -118,6 +118,10 @@ export function BookingFunnelModal({
   }, [isOpen, productTitle, campaignSlug, campaignMode]);
 
   const handleDateSubmit = useCallback(async (date: Date, timezone: string) => {
+    trackEvent('booking_date_selected', {
+      product_title: productTitle,
+      campaign_slug: campaignSlug,
+    });
     // For campaign pricing card mode, check auth BEFORE proceeding to availability check
     if (campaignMode && !user) {
       const pendingState: PendingBookingState = {
