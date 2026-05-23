@@ -186,8 +186,9 @@ export function BookingFunnelModal({
 
   const handleTimeSelect = useCallback(async (time: string) => {
     setSelectedTime(time);
+    trackEvent('booking_time_selected', { product_title: productTitle });
     await updateSelectedTime(time);
-  }, [updateSelectedTime]);
+  }, [updateSelectedTime, productTitle]);
 
   const handleCheckout = useCallback(async () => {
     if (!bookingRequest || !selectedTime) return;
