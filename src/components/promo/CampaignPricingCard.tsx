@@ -16,6 +16,7 @@ import {
   clearBookingState,
   PendingBookingState 
 } from "@/utils/bookingRedirect";
+import { trackEvent } from "@/utils/analytics";
 
 const PENDING_CAMPAIGN_BOOKING_KEY = 'pendingCampaignBooking';
 const BOOKING_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
