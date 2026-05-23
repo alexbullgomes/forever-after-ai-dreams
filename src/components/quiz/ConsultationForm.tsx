@@ -4,6 +4,7 @@ import { validateConsultationForm, submitConsultationRequest } from "./utils/for
 import ConsultationFormFields from "./ConsultationFormFields";
 import ConsultationFormActions from "./ConsultationFormActions";
 import { buildPhonePayload } from "@/components/ui/phone-number-field";
+import { trackEvent } from "@/utils/analytics";
 
 interface PackageInfo {
   name: string;
