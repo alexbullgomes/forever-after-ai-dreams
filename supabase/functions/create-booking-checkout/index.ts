@@ -61,25 +61,71 @@ serve(async (req) => {
       minimum_deposit_cents,
     });
 
-    // Determine charge amount and currency
-    // For campaign mode: use per-package deposit or fallback to $150
+    // SECURITY: Always fetch trusted prices from DB. Never trust client-supplied amounts.
     let chargeAmount: number;
+    let chargeCurrency: string;
+    let trustedTitle: string = product_title;
+
     if (campaign_mode) {
-      // Validate deposit is configured
-      if (!minimum_deposit_cents || minimum_deposit_cents < 100) {
-        logStep("ERROR: Package deposit not configured", { minimum_deposit_cents });
+      if (!package_id) {
+        return new Response(
+          JSON.stringify({ error: "Missing package_id for campaign booking." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+      const { data: pkg, error: pkgErr } = await supabase
+        .from("campaign_packages")
+        .select("id, title, minimum_deposit_cents")
+        .eq("id", package_id)
+        .maybeSingle();
+      if (pkgErr || !pkg) {
+        logStep("ERROR: Package not found", { package_id, error: pkgErr?.message });
+        return new Response(
+          JSON.stringify({ error: "Package not found." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+        );
+      }
+      if (!pkg.minimum_deposit_cents || pkg.minimum_deposit_cents < 100) {
+        logStep("ERROR: Package deposit not configured", { pkg });
         return new Response(
           JSON.stringify({ error: "Package deposit not configured. Please contact support." }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
         );
       }
-      chargeAmount = minimum_deposit_cents / 100; // Convert cents to dollars
+      chargeAmount = pkg.minimum_deposit_cents / 100;
+      chargeCurrency = 'usd';
+      trustedTitle = pkg.title || product_title;
     } else {
-      chargeAmount = product_price;
+      if (!product_id) {
+        return new Response(
+          JSON.stringify({ error: "Missing product_id." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+      const { data: prod, error: prodErr } = await supabase
+        .from("products")
+        .select("id, title, price, currency")
+        .eq("id", product_id)
+        .maybeSingle();
+      if (prodErr || !prod) {
+        logStep("ERROR: Product not found", { product_id, error: prodErr?.message });
+        return new Response(
+          JSON.stringify({ error: "Product not found." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+        );
+      }
+      if (!prod.price || Number(prod.price) <= 0) {
+        return new Response(
+          JSON.stringify({ error: "Product price not configured." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+      chargeAmount = Number(prod.price);
+      chargeCurrency = (prod.currency || 'usd').toLowerCase();
+      trustedTitle = prod.title || product_title;
     }
-    const chargeCurrency = campaign_mode ? 'usd' : (currency?.toLowerCase() || 'usd');
-    
-    logStep("Charge details", { chargeAmount, chargeCurrency, campaign_mode });
+
+    logStep("Trusted charge details", { chargeAmount, chargeCurrency, campaign_mode });
 
     // Fetch product booking rules for hold duration (skip for campaigns - use defaults)
     let holdMinutes = 15;
