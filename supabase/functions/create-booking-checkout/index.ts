@@ -268,7 +268,7 @@ serve(async (req) => {
 
     // Build product description
     const productDescription = campaign_mode 
-      ? `Deposit for ${product_title} on ${event_date} at ${selected_time}`
+      ? `Deposit for ${trustedTitle} on ${event_date} at ${selected_time}`
       : `Booking for ${event_date} at ${selected_time}`;
     
     // Set Stripe checkout session to expire in 60 minutes
@@ -283,7 +283,7 @@ serve(async (req) => {
           price_data: {
             currency: chargeCurrency,
             product_data: {
-              name: product_title,
+              name: trustedTitle,
               description: productDescription,
             },
             unit_amount: Math.round(chargeAmount * 100),
