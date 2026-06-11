@@ -109,6 +109,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       fileUrl: dbMsg.audio_url || undefined,
       fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
       fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
+      metadata: dbMsg.metadata ?? null,
     };
   };
 
