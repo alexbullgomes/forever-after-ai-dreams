@@ -1209,8 +1209,11 @@ const ChatAdmin = () => {
                   {selectedConversation.mode === 'ai' ? 'AI Handling' : 'Human Takeover'}
                 </Badge>
               </div>
-
+              <p className="text-xs text-gray-500 mt-4">
+                This is an unauthenticated visitor. If they log in, their conversation will be linked to their account.
+              </p>
             </div>
+
             <Button 
               onClick={() => setIsProfileModalOpen(false)} 
               className="w-full mt-6"
