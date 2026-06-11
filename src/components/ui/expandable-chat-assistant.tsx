@@ -38,6 +38,7 @@ interface DatabaseMessage {
   content: string | null;
   audio_url: string | null;
   created_at: string;
+  metadata?: Record<string, any> | null;
 }
 
 interface ChatMessage {
@@ -47,6 +48,7 @@ interface ChatMessage {
   timestamp: string;
   type?: 'text' | 'audio' | 'card';
   cardData?: CardMessageData;
+  metadata?: Record<string, any> | null;
   files?: Array<{
     fileUrl: string;
     fileType: string;
