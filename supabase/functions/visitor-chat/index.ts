@@ -341,7 +341,7 @@ serve(async (req) => {
       }
 
       case 'submit_phone': {
-        const { phone_e164, phone_country_dial_code, phone_national } = body;
+        const { phone_e164, phone_country_dial_code, phone_national, visitor_full_name } = body;
 
         // Validation
         const e164Re = /^\+[1-9]\d{6,15}$/;
@@ -365,6 +365,14 @@ serve(async (req) => {
           );
         }
 
+        const trimmedName = (visitor_full_name ?? '').trim();
+        if (!trimmedName || trimmedName.length > 100) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Invalid visitor_full_name' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         const now = new Date().toISOString();
 
         // Upsert visitor record
@@ -377,6 +385,8 @@ serve(async (req) => {
               phone_country_dial_code,
               phone_national,
               phone_updated_at: now,
+              visitor_full_name: trimmedName,
+              visitor_name_updated_at: now,
               last_seen_at: now,
             } as any, { onConflict: 'visitor_id' });
         } catch (err) {
@@ -386,21 +396,30 @@ serve(async (req) => {
         // Find or create conversation by visitor_id
         const { data: existingConv } = await supabase
           .from('conversations')
-          .select('id')
+          .select('id, user_name, customer_id')
           .eq('visitor_id', visitor_id)
           .maybeSingle();
 
         let conversationId: string;
         if (existingConv) {
           conversationId = existingConv.id;
+          // Only overwrite user_name when conversation is still an anonymous guest
+          // (no customer_id, name missing or default 'Visitor').
+          const shouldUpdateUserName = !existingConv.customer_id
+            && (!existingConv.user_name || existingConv.user_name === 'Visitor');
+          const updatePayload: Record<string, unknown> = {
+            phone_e164,
+            phone_country_dial_code,
+            phone_national,
+            phone_updated_at: now,
+            visitor_full_name: trimmedName,
+            visitor_name_updated_at: now,
+          };
+          if (shouldUpdateUserName) updatePayload.user_name = trimmedName;
+
           const { error: updErr } = await supabase
             .from('conversations')
-            .update({
-              phone_e164,
-              phone_country_dial_code,
-              phone_national,
-              phone_updated_at: now,
-            } as any)
+            .update(updatePayload as any)
             .eq('id', conversationId);
           if (updErr) {
             console.error('[visitor-chat] conversation phone update error:', updErr);
@@ -415,13 +434,15 @@ serve(async (req) => {
             .insert({
               visitor_id,
               customer_id: null,
-              user_name: visitor_name || 'Visitor',
+              user_name: trimmedName,
               mode: 'ai',
               new_msg: 'unread',
               phone_e164,
               phone_country_dial_code,
               phone_national,
               phone_updated_at: now,
+              visitor_full_name: trimmedName,
+              visitor_name_updated_at: now,
             } as any)
             .select('id')
             .single();
