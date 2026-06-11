@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { Phone, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Phone, CheckCircle2, AlertCircle, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import PhoneNumberField, {
   buildPhoneE164,
   isValidPhone,
-  formatUSPhone,
   stripNonDigits,
 } from "@/components/ui/phone-number-field";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,15 +19,20 @@ interface PhoneCaptureCardProps {
   variant?: "sent" | "received";
 }
 
+const MAX_NAME_LEN = 100;
+
 export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCardProps) => {
   const isSent = variant === "sent";
 
+  const [fullName, setFullName] = useState("");
   const [phoneValue, setPhoneValue] = useState("");
   const [dialCode, setDialCode] = useState("+1");
   const [state, setState] = useState<CardState>("pending");
   const [errorMsg, setErrorMsg] = useState("");
   const [savedNumber, setSavedNumber] = useState<string | null>(null);
+  const [savedName, setSavedName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // On mount, check auth & existing phone (profile or localStorage)
   useEffect(() => {
@@ -35,6 +40,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
       const { data: sessionData } = await supabase.auth.getSession();
       const uid = sessionData?.session?.user?.id ?? null;
       setUserId(uid);
+      setAuthChecked(true);
 
       if (uid) {
         // Authenticated: check profile
@@ -49,10 +55,12 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
           setState("success");
         }
       } else {
-        // Visitor: check localStorage
+        // Visitor: check localStorage for prior submission
         const visitorPhone = localStorage.getItem("visitor_phone");
-        if (visitorPhone) {
+        const visitorName = localStorage.getItem("visitor_full_name");
+        if (visitorPhone && visitorName) {
           setSavedNumber(visitorPhone);
+          setSavedName(visitorName);
           setState("success");
         }
       }
@@ -60,7 +68,24 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
     init();
   }, []);
 
+  const isVisitor = authChecked && !userId;
+
   const handleSubmit = async () => {
+    const trimmedName = fullName.trim();
+
+    if (isVisitor) {
+      if (!trimmedName) {
+        setErrorMsg("Please enter your full name.");
+        setState("error");
+        return;
+      }
+      if (trimmedName.length > MAX_NAME_LEN) {
+        setErrorMsg(`Name must be ${MAX_NAME_LEN} characters or less.`);
+        setState("error");
+        return;
+      }
+    }
+
     if (!isValidPhone(dialCode, phoneValue)) {
       setErrorMsg("Please enter a valid phone number.");
       setState("error");
@@ -73,7 +98,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
     const e164 = buildPhoneE164(dialCode, phoneValue);
 
     if (userId) {
-      // Authenticated path: update profile directly
+      // Authenticated path: update profile directly (name not collected)
       const { error } = await supabase
         .from("profiles")
         .update({ user_number: e164 })
@@ -88,6 +113,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
     } else {
       // Visitor path: save to localStorage + persist via edge function
       localStorage.setItem("visitor_phone", e164);
+      localStorage.setItem("visitor_full_name", trimmedName);
 
       const visitorId = getOrCreateVisitorId();
       try {
@@ -98,6 +124,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
             phone_e164: e164,
             phone_country_dial_code: dialCode.startsWith('+') ? dialCode.replace(/[^+\d]/g, '') : `+${dialCode}`,
             phone_national: stripNonDigits(phoneValue),
+            visitor_full_name: trimmedName,
           },
         });
         if (fnErr || (resp && resp.success === false)) {
@@ -114,15 +141,30 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
       }
     }
 
-
     setSavedNumber(e164);
+    setSavedName(isVisitor ? trimmedName : null);
     setState("success");
   };
+
+  const title = isVisitor
+    ? (data.title === "Phone Number Required" || !data.title
+        ? "Contact Information Required"
+        : data.title)
+    : (data.title || "Phone Number Required");
+
+  const description = isVisitor
+    ? "Please provide your name and phone number so we can reach you."
+    : data.description;
+
+  const submitDisabled =
+    state === "submitting" ||
+    !stripNonDigits(phoneValue) ||
+    (isVisitor && !fullName.trim());
 
   return (
     <div
       className={cn(
-        "flex flex-col gap-2.5 p-3 rounded-lg min-w-[220px] max-w-[300px]",
+        "flex flex-col gap-2.5 p-3 rounded-lg min-w-[240px] max-w-[320px]",
         isSent
           ? "bg-white/10 border border-white/20"
           : "bg-muted/70 border border-border"
@@ -140,28 +182,33 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
         </div>
         <div className="min-w-0">
           <h4 className={cn("font-semibold text-sm truncate", isSent ? "text-white" : "text-foreground")}>
-            {data.title || "Phone Number Required"}
+            {title}
           </h4>
         </div>
       </div>
 
-      {data.description && (
+      {description && (
         <p className={cn("text-xs leading-relaxed", isSent ? "text-white/70" : "text-muted-foreground")}>
-          {data.description}
+          {description}
         </p>
       )}
 
       {/* Success state */}
       {state === "success" && savedNumber ? (
         <div className={cn(
-          "flex items-center gap-2 p-2 rounded-md",
+          "flex items-start gap-2 p-2 rounded-md",
           isSent ? "bg-white/10" : "bg-emerald-50 dark:bg-emerald-950/30"
         )}>
-          <CheckCircle2 className={cn("w-4 h-4 shrink-0", isSent ? "text-emerald-300" : "text-emerald-600")} />
-          <div className="min-w-0">
+          <CheckCircle2 className={cn("w-4 h-4 shrink-0 mt-0.5", isSent ? "text-emerald-300" : "text-emerald-600")} />
+          <div className="min-w-0 space-y-0.5">
             <p className={cn("text-xs font-medium", isSent ? "text-white" : "text-emerald-700 dark:text-emerald-400")}>
-              Phone number saved
+              {savedName ? "Contact information saved" : "Phone number saved"}
             </p>
+            {savedName && (
+              <p className={cn("text-xs", isSent ? "text-white/80" : "text-foreground")}>
+                {savedName}
+              </p>
+            )}
             <p className={cn("text-xs font-mono", isSent ? "text-white/70" : "text-muted-foreground")}>
               {savedNumber}
             </p>
@@ -169,6 +216,27 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
         </div>
       ) : (
         <>
+          {/* Full name input (visitors only) */}
+          {isVisitor && (
+            <div className="relative">
+              <User className={cn(
+                "w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none",
+                isSent ? "text-white/60" : "text-muted-foreground"
+              )} />
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+                maxLength={MAX_NAME_LEN}
+                disabled={state === "submitting"}
+                className={cn(
+                  "h-8 text-sm pl-7",
+                  isSent && "bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                )}
+              />
+            </div>
+          )}
+
           {/* Phone input */}
           <PhoneNumberField
             value={phoneValue}
@@ -195,7 +263,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
           <Button
             size="sm"
             onClick={handleSubmit}
-            disabled={state === "submitting" || !stripNonDigits(phoneValue)}
+            disabled={submitDisabled}
             className={cn(
               "w-full h-8 text-xs font-medium",
               isSent
