@@ -697,6 +697,9 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
                     <PhoneCaptureCard
                       data={message.cardData}
                       variant={message.sender === 'user' ? 'sent' : 'received'}
+                      messageId={message.id}
+                      conversationId={conversationId ?? undefined}
+                      submittedMeta={message.metadata?.phoneCapture ?? null}
                     />
                   ) : message.type === 'card' && message.cardData ? (
                     <ChatCardMessage 
