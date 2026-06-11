@@ -259,6 +259,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
       timestamp: dbMessage.created_at,
       type: dbMessage.type,
       cardData,
+      metadata: (dbMessage as any).metadata ?? null,
       files: files.length > 0 ? files : undefined
     };
   };
