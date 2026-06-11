@@ -49,6 +49,8 @@ interface Conversation {
   phone_country_dial_code?: string | null;
   phone_national?: string | null;
   phone_updated_at?: string | null;
+  visitor_full_name?: string | null;
+  visitor_name_updated_at?: string | null;
 }
 
 
