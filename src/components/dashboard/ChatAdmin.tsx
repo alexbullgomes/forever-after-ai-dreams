@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search, Star, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search, Star, Archive, RotateCcw, Trash2, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
