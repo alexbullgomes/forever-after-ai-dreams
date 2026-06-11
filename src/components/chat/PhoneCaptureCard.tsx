@@ -86,23 +86,34 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
         return;
       }
     } else {
-      // Visitor path: save to localStorage + visitors table
+      // Visitor path: save to localStorage + persist via edge function
       localStorage.setItem("visitor_phone", e164);
 
       const visitorId = getOrCreateVisitorId();
       try {
-        await supabase
-          .from("visitors" as any)
-          .upsert({
+        const { data: resp, error: fnErr } = await supabase.functions.invoke('visitor-chat', {
+          body: {
+            action: 'submit_phone',
             visitor_id: visitorId,
-            phone_number: e164,
-            last_seen_at: new Date().toISOString(),
-          } as any, { onConflict: "visitor_id" });
+            phone_e164: e164,
+            phone_country_dial_code: dialCode.startsWith('+') ? dialCode.replace(/[^+\d]/g, '') : `+${dialCode}`,
+            phone_national: stripNonDigits(phoneValue),
+          },
+        });
+        if (fnErr || (resp && resp.success === false)) {
+          console.error('PhoneCaptureCard submit_phone error:', fnErr || resp);
+          setState("error");
+          setErrorMsg("Failed to save. Please try again.");
+          return;
+        }
       } catch (err) {
         console.error("PhoneCaptureCard visitor update error:", err);
-        // Non-blocking — localStorage is the primary store for visitors
+        setState("error");
+        setErrorMsg("Failed to save. Please try again.");
+        return;
       }
     }
+
 
     setSavedNumber(e164);
     setState("success");
