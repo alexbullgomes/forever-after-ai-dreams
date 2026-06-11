@@ -1194,15 +1194,22 @@ const ChatAdmin = () => {
                   {format(new Date(selectedConversation.created_at), 'MMMM d, yyyy HH:mm')}
                 </p>
               </div>
+              {selectedConversation.phone_e164 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Phone Number</label>
+                  <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-gray-500" />
+                    {selectedConversation.phone_e164}
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-gray-600">Status</label>
                 <Badge variant="outline" className="mt-1">
                   {selectedConversation.mode === 'ai' ? 'AI Handling' : 'Human Takeover'}
                 </Badge>
               </div>
-              <p className="text-xs text-gray-500 mt-4">
-                This is an unauthenticated visitor. If they log in, their conversation will be linked to their account.
-              </p>
+
             </div>
             <Button 
               onClick={() => setIsProfileModalOpen(false)} 
