@@ -7,13 +7,17 @@ const corsHeaders = {
 };
 
 interface VisitorChatRequest {
-  action: 'send_message' | 'get_conversation' | 'get_messages';
+  action: 'send_message' | 'get_conversation' | 'get_messages' | 'submit_phone';
   visitor_id: string;
   content?: string;
   type?: 'text' | 'audio';
   audio_url?: string;
   audio_data?: string; // Base64 encoded audio for upload
   visitor_name?: string;
+  // Phone submission fields
+  phone_e164?: string;
+  phone_country_dial_code?: string;
+  phone_national?: string;
   metadata?: {
     context?: {
       page_url?: string;
@@ -29,6 +33,7 @@ interface VisitorChatRequest {
     } | null;
   };
 }
+
 
 interface Message {
   id: number;
