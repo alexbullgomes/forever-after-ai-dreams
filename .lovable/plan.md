@@ -1,100 +1,72 @@
+# Fix: Visitor Phone Capture Not Visible in Chat Admin
 
-# Goal
+## What's happening today
 
-Replace `hmdnronxajctsrlgrhey.supabase.co` on the Google OAuth screen with an EverAfter-branded domain (recommended: `auth.everafterca.com`), without breaking sessions, bookings, Stripe, chat, dashboard, or storage.
+- `PhoneCaptureCard` (visitor path) writes the phone only to two places:
+  - `localStorage["visitor_phone"]` (E.164 string)
+  - `visitors.phone_number` (E.164 string, single field)
+- The `conversations` table has **no phone columns**, and `ChatAdmin.tsx` only reads from `conversations` (`user_name`, `user_email`, `visitor_id`). It never joins to `visitors`.
+- Result: the visitor saves the number successfully, but the admin sees nothing — there is no path from `visitors.phone_number` into the admin UI.
+- Additionally, only the E.164 string is stored; dial code / national parts are lost (doesn't match the project's `phone_e164` / `phone_country_dial_code` / `phone_national` convention).
 
-# Current state (verified)
+## Fix overview
 
-- Frontend Supabase client (`src/integrations/supabase/client.ts`) hardcodes `SUPABASE_URL = https://hmdnronxajctsrlgrhey.supabase.co`. `.env` mirrors the same in `VITE_SUPABASE_URL`.
-- Google OAuth is initiated in `src/components/auth/GoogleAuthButton.tsx` via `supabase.auth.signInWithOAuth({ provider: 'google', redirectTo: <app url> })`. The "Continue to ..." text on Google's screen is driven by the **OAuth client's authorized redirect URI host**, which today is Supabase's project URL: `https://hmdnronxajctsrlgrhey.supabase.co/auth/v1/callback`. That is why users see `hmdnronxajctsrlgrhey.supabase.co`.
-- `redirectTo` passed from our app is only the final post-auth landing URL — it does **not** change what Google displays. Only the Supabase auth callback host does.
-- Public media stays on `supabasestudio.agcreationmkt.cloud` (unrelated, untouched).
-- Edge Functions, Stripe webhook, n8n webhooks, RLS, and the JWT issuer all key off the Supabase project — none need URL changes for this work.
+Persist the phone server-side, linked to **both** the visitor and the active conversation, in the canonical 3-field format, and surface it in Chat Admin in real time via the existing `conversations` realtime subscription.
 
-# Why a custom domain is the only real fix
+## Changes
 
-The Google consent screen shows the host of the OAuth redirect URI registered in Google Cloud. To replace it with EverAfter branding, Supabase must expose its auth endpoint on `auth.everafterca.com`, and Google's redirect URI must be re-registered to that host. Supabase offers two products for this:
+### 1. Database migration
+Add nullable phone columns to `conversations` and complete the set on `visitors`:
 
-- **Custom Domain** (paid add-on, ~$10/mo per project, available on Pro plan and above) — gives `auth.everafterca.com/auth/v1/callback`. This is what we want.
-- **Vanity Subdomain** (free, Pro plan) — only changes to `<name>.supabase.co`. Does not satisfy the branding goal.
+```sql
+ALTER TABLE public.conversations
+  ADD COLUMN IF NOT EXISTS phone_e164 text,
+  ADD COLUMN IF NOT EXISTS phone_country_dial_code text,
+  ADD COLUMN IF NOT EXISTS phone_national text,
+  ADD COLUMN IF NOT EXISTS phone_updated_at timestamptz;
 
-**Action item for user:** confirm the project is on Pro plan (or upgrade) and enable the Custom Domain add-on. The plan below assumes Custom Domain.
+ALTER TABLE public.visitors
+  ADD COLUMN IF NOT EXISTS phone_country_dial_code text,
+  ADD COLUMN IF NOT EXISTS phone_national text,
+  ADD COLUMN IF NOT EXISTS phone_updated_at timestamptz;
+```
 
-# Migration plan (zero-downtime)
+`visitors.phone_number` is kept as the legacy E.164 mirror (backward compatibility). No RLS changes needed — writes happen via the edge function using the service role.
 
-The project ref URL keeps working forever after a custom domain is added — Supabase serves both. So we cut over OAuth first, then optionally update the client.
+### 2. `supabase/functions/visitor-chat/index.ts`
+Add a new action `submit_phone` (visitor flow, no auth required):
 
-## Phase 1 — Supabase custom domain (no code changes)
+- Input: `visitor_id`, `phone_e164`, `phone_country_dial_code`, `phone_national`.
+- Validation: visitor_id length ≥ 10; `phone_e164` regex `^\+[1-9]\d{6,15}$`; dial code regex `^\+\d{1,4}$`; national length 4–20.
+- Upsert into `visitors` (phone_number + new 3 fields + phone_updated_at).
+- Update the visitor's existing `conversations` row (matched by `visitor_id`) with the same fields. If none exists, create one (same defaults as `send_message`).
+- Returns `{ success, conversation_id }`.
 
-1. In Supabase Dashboard → Settings → Custom Domains: add `auth.everafterca.com`.
-2. Add the CNAME record Supabase shows (typically `auth → <project-ref>.supabase.co`) plus a TXT verification record at the DNS provider for `everafterca.com`.
-3. Wait for "Activated".
-4. In Authentication → URL Configuration: set **Site URL** to `https://www.everafterca.com` and add to **Redirect URLs**:
-   - `https://www.everafterca.com/**`
-   - `https://everafterca.com/**`
-   - `https://everafter-studio.lovable.app/**`
-   - `https://id-preview--*.lovable.app/**`
-   - `http://localhost:*/**`
+Existing `send_message` / `get_conversation` / `get_messages` paths untouched.
 
-   (Site URL only affects fallback redirects, not Google's screen.)
+### 3. `src/components/chat/PhoneCaptureCard.tsx` (visitor path only)
+Replace the direct `supabase.from('visitors').upsert(...)` call with `supabase.functions.invoke('visitor-chat', { body: { action: 'submit_phone', visitor_id, phone_e164, phone_country_dial_code, phone_national } })`. Keep:
+- localStorage write (`visitor_phone`) for the on-card "saved" persistence across reloads.
+- Authenticated-user path (writes to `profiles.user_number`) unchanged.
+- All UI states, success card, validation messages unchanged.
 
-## Phase 2 — Google Cloud Console
+### 4. `src/components/dashboard/ChatAdmin.tsx`
+- Extend the `Conversation` type and the `select(...)` calls to include `phone_e164, phone_country_dial_code, phone_national, phone_updated_at`.
+- In the conversation header / visitor info modal, add a "Phone" row showing `phone_e164` (with a copy-to-clipboard icon, matching existing styling). Show nothing if null.
+- In the conversation list row preview for visitors, show a small phone icon + last 4 digits when present.
+- Realtime: the component already subscribes to `conversations` changes; the new fields will flow through automatically (verify the subscription selects `*` or update it). No new subscription needed.
 
-In the existing OAuth Client ID (Web application):
+## Safety / non-regression
 
-- **Authorized JavaScript origins** — add (keep old entries during transition):
-  - `https://auth.everafterca.com`
-  - `https://www.everafterca.com`
-  - `https://everafterca.com`
-- **Authorized redirect URIs** — add:
-  - `https://auth.everafterca.com/auth/v1/callback`
-  - Keep `https://hmdnronxajctsrlgrhey.supabase.co/auth/v1/callback` until Phase 3 is verified, then remove.
+- No changes to: auth flow, n8n webhook payloads, message inserts, AI/Human mode, realtime broadcasts, Stripe, admin role checks, RLS on existing columns.
+- New columns are nullable — existing rows and code paths unaffected.
+- Edge function action is additive — no existing action signature changes.
+- Validation rejects malformed input; service role write is scoped to the visitor_id supplied (same trust model as the existing `send_message` action — acceptable since visitor_id is the only identity primitive for guests).
 
-OAuth consent screen (App branding):
-- App name: `EverAfter`
-- User support email: support address on `everafterca.com`
-- App logo: upload EverAfter logo (square, ≥120px, <1MB)
-- App domain: `https://www.everafterca.com`
-- Authorized domains: add `everafterca.com`
-- Privacy policy: `https://www.everafterca.com/privacy`
-- Terms of service: `https://www.everafterca.com/terms`
-- Developer contact: same support address
-
-Result: the Google sign-in screen says **"Continue to auth.everafterca.com"** with the EverAfter logo and "EverAfter" app name.
-
-## Phase 3 — Point Supabase Auth to the custom domain
-
-In Supabase → Authentication → Providers → Google: paste Client ID and Client Secret (re-paste if needed). Supabase auto-generates the callback URL on the active custom domain. No code change required for this phase — the JS client can still talk to the project-ref URL; Google's screen is already branded because it's driven by Google's redirect-URI host, not by the JS client URL.
-
-## Phase 4 (optional) — Repoint the JS client
-
-Only do this after Phase 3 is verified live for 24-48h. Update `src/integrations/supabase/client.ts` and `.env` `VITE_SUPABASE_URL` to `https://auth.everafterca.com`. The publishable key and JWT issuer stay valid because Supabase serves both hosts. Existing user sessions remain valid (JWTs aren't tied to host). Realtime, RLS, edge function invocation URLs from the client, and Stripe checkout all keep working.
-
-**Skip Phase 4 if you want zero code risk** — the OAuth branding goal is already met by Phase 1-3.
-
-# What we explicitly do NOT change
-
-- `supabase/config.toml` `project_id` — stays `hmdnronxajctsrlgrhey`.
-- Edge Function URLs (Stripe webhook endpoint registered in Stripe Dashboard, n8n callbacks, webhook-proxy targets) — all remain on the project-ref URL.
-- `chat-audios` bucket URLs and all public media URLs.
-- `STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `LOVABLE_API_KEY`, and other secrets.
-- Anon/publishable key.
-
-# Rollback
-
-If anything breaks during Phase 2-3, remove the new redirect URI from Google Cloud — Google immediately reverts to the old Supabase URL. The custom domain itself is non-destructive (both hosts serve auth).
-
-# Deliverables in build mode
-
-Build mode work is minimal and only needed for Phase 4:
-1. Update `src/integrations/supabase/client.ts` `SUPABASE_URL` constant.
-2. Update `.env` `VITE_SUPABASE_URL`.
-3. Smoke test: login (email + Google), session persistence, booking checkout, chat send/receive, admin dashboard.
-
-Everything else (DNS, Supabase dashboard, Google Cloud) is configuration the user performs in their accounts — I can guide step-by-step but cannot execute.
-
-# Open questions before build mode
-
-1. Is the project on Supabase **Pro plan** with budget for the Custom Domain add-on (~$10/mo)? If not, the only free option is a vanity subdomain like `everafter.supabase.co` — better than the random ref but still shows `.supabase.co`.
-2. Preferred subdomain: `auth.everafterca.com` (recommended, clearest intent) or `api.everafterca.com`?
-3. Do you want Phase 4 (repoint the JS client) included, or stop at Phase 3 for maximum safety?
+## Acceptance verification
+After build:
+1. Visitor submits phone → success card shows "Phone number saved".
+2. Admin chat header for that conversation shows the phone within ~1s (realtime), no refresh.
+3. Reloading `/dashboard/chat` still shows it (persisted on `conversations`).
+4. Authenticated user phone capture still writes to `profiles.user_number` only.
+5. No console errors; existing visitor chat send/receive flow unchanged.
