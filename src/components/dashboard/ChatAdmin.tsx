@@ -1192,6 +1192,14 @@ const ChatAdmin = () => {
                   {selectedConversation.visitor_id}
                 </p>
               </div>
+              {selectedConversation.visitor_full_name && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Full Name</label>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border">
+                    {selectedConversation.visitor_full_name}
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-gray-600">Conversation Started</label>
                 <p className="text-sm text-gray-900">
