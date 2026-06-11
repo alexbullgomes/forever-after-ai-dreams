@@ -19,6 +19,7 @@ interface VisitorChatRequest {
   phone_country_dial_code?: string;
   phone_national?: string;
   visitor_full_name?: string;
+  message_id?: number;
   metadata?: {
     context?: {
       page_url?: string;
@@ -341,7 +342,8 @@ serve(async (req) => {
       }
 
       case 'submit_phone': {
-        const { phone_e164, phone_country_dial_code, phone_national, visitor_full_name } = body;
+        const { phone_e164, phone_country_dial_code, phone_national, visitor_full_name, message_id } = body;
+
 
         // Validation
         const e164Re = /^\+[1-9]\d{6,15}$/;
@@ -457,6 +459,47 @@ serve(async (req) => {
         }
 
         console.log(`[visitor-chat] Phone saved for visitor ${visitor_id} on conversation ${conversationId}`);
+
+        // Tag the specific message (card) with submitted metadata so only that
+        // card flips to success state. Strictly scoped by visitor_id + conversation_id.
+        if (typeof message_id === 'number' && Number.isFinite(message_id)) {
+          try {
+            const { data: existingMsg } = await supabase
+              .from('messages')
+              .select('id, metadata')
+              .eq('id', message_id)
+              .eq('conversation_id', conversationId)
+              .eq('visitor_id', visitor_id)
+              .maybeSingle();
+
+            if (existingMsg) {
+              const prevMeta = (existingMsg.metadata && typeof existingMsg.metadata === 'object')
+                ? existingMsg.metadata as Record<string, unknown>
+                : {};
+              const nextMeta = {
+                ...prevMeta,
+                phoneCapture: {
+                  submittedNumber: phone_e164,
+                  submittedName: trimmedName,
+                  submittedAt: now,
+                },
+              };
+              const { error: metaErr } = await supabase
+                .from('messages')
+                .update({ metadata: nextMeta })
+                .eq('id', message_id)
+                .eq('conversation_id', conversationId)
+                .eq('visitor_id', visitor_id);
+              if (metaErr) {
+                console.error('[visitor-chat] message metadata update error:', metaErr);
+              }
+            } else {
+              console.warn(`[visitor-chat] message ${message_id} not found for visitor ${visitor_id}`);
+            }
+          } catch (err) {
+            console.error('[visitor-chat] message metadata exception:', err);
+          }
+        }
 
         return new Response(
           JSON.stringify({ success: true, conversation_id: conversationId }),

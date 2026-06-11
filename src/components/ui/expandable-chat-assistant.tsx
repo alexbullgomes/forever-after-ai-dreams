@@ -38,6 +38,7 @@ interface DatabaseMessage {
   content: string | null;
   audio_url: string | null;
   created_at: string;
+  metadata?: Record<string, any> | null;
 }
 
 interface ChatMessage {
@@ -47,6 +48,7 @@ interface ChatMessage {
   timestamp: string;
   type?: 'text' | 'audio' | 'card';
   cardData?: CardMessageData;
+  metadata?: Record<string, any> | null;
   files?: Array<{
     fileUrl: string;
     fileType: string;
@@ -257,6 +259,7 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
       timestamp: dbMessage.created_at,
       type: dbMessage.type,
       cardData,
+      metadata: (dbMessage as any).metadata ?? null,
       files: files.length > 0 ? files : undefined
     };
   };
@@ -694,6 +697,9 @@ export function ExpandableChatAssistant({ autoOpen = false, onOpenChange: extern
                     <PhoneCaptureCard
                       data={message.cardData}
                       variant={message.sender === 'user' ? 'sent' : 'received'}
+                      messageId={message.id}
+                      conversationId={conversationId ?? undefined}
+                      submittedMeta={message.metadata?.phoneCapture ?? null}
                     />
                   ) : message.type === 'card' && message.cardData ? (
                     <ChatCardMessage 

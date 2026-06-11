@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Phone, CheckCircle2, AlertCircle, Loader2, User } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Phone, CheckCircle2, AlertCircle, Loader2, User, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PhoneNumberField, {
@@ -14,14 +14,37 @@ import { getOrCreateVisitorId } from "@/utils/visitor";
 
 type CardState = "pending" | "submitting" | "success" | "error";
 
+export interface PhoneCaptureSubmittedMeta {
+  submittedNumber: string;
+  submittedName?: string | null;
+  submittedAt?: string | null;
+}
+
 interface PhoneCaptureCardProps {
   data: CardMessageData;
   variant?: "sent" | "received";
+  /** ID of the underlying chat message; required for per-card persistence. */
+  messageId?: string | number;
+  conversationId?: string;
+  /** If this specific message has already been submitted, pass its metadata to render success. */
+  submittedMeta?: PhoneCaptureSubmittedMeta | null;
+  /** Admin view: never show inputs; show submitted values or an awaiting state. */
+  readOnly?: boolean;
+  /** EntityPickerModal preview: always show blank, disabled fields. */
+  previewOnly?: boolean;
 }
 
 const MAX_NAME_LEN = 100;
 
-export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCardProps) => {
+export const PhoneCaptureCard = ({
+  data,
+  variant = "received",
+  messageId,
+  conversationId,
+  submittedMeta,
+  readOnly = false,
+  previewOnly = false,
+}: PhoneCaptureCardProps) => {
   const isSent = variant === "sent";
 
   const [fullName, setFullName] = useState("");
@@ -29,48 +52,41 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
   const [dialCode, setDialCode] = useState("+1");
   const [state, setState] = useState<CardState>("pending");
   const [errorMsg, setErrorMsg] = useState("");
-  const [savedNumber, setSavedNumber] = useState<string | null>(null);
-  const [savedName, setSavedName] = useState<string | null>(null);
+  const [localSubmitted, setLocalSubmitted] = useState<PhoneCaptureSubmittedMeta | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
-  // On mount, check auth & existing phone (profile or localStorage)
+  // Auth check (only used to decide whether to render the Full Name field
+  // for unauthenticated visitors). Never used to prefill or auto-flip to success.
   useEffect(() => {
-    const init = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const uid = sessionData?.session?.user?.id ?? null;
-      setUserId(uid);
+    if (previewOnly) {
       setAuthChecked(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (cancelled) return;
+      setUserId(sessionData?.session?.user?.id ?? null);
+      setAuthChecked(true);
+    })();
+    return () => { cancelled = true; };
+  }, [previewOnly]);
 
-      if (uid) {
-        // Authenticated: check profile
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("user_number")
-          .eq("id", uid)
-          .single();
+  // Resolve submitted metadata: prefer just-submitted local state, then
+  // server-persisted metadata for THIS specific message.
+  const effectiveSubmitted: PhoneCaptureSubmittedMeta | null =
+    localSubmitted ?? (submittedMeta && submittedMeta.submittedNumber ? submittedMeta : null);
 
-        if (profile?.user_number) {
-          setSavedNumber(profile.user_number);
-          setState("success");
-        }
-      } else {
-        // Visitor: check localStorage for prior submission
-        const visitorPhone = localStorage.getItem("visitor_phone");
-        const visitorName = localStorage.getItem("visitor_full_name");
-        if (visitorPhone && visitorName) {
-          setSavedNumber(visitorPhone);
-          setSavedName(visitorName);
-          setState("success");
-        }
-      }
-    };
-    init();
-  }, []);
-
-  const isVisitor = authChecked && !userId;
+  // For the EntityPickerModal preview, always treat as visitor view so both
+  // Full Name + Phone fields are visible (disabled), accurately representing
+  // what the visitor will receive.
+  const showNameField = previewOnly ? true : (authChecked && !userId);
+  const isVisitor = previewOnly ? true : (authChecked && !userId);
 
   const handleSubmit = async () => {
+    if (previewOnly || readOnly) return;
+
     const trimmedName = fullName.trim();
 
     if (isVisitor) {
@@ -98,7 +114,8 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
     const e164 = buildPhoneE164(dialCode, phoneValue);
 
     if (userId) {
-      // Authenticated path: update profile directly (name not collected)
+      // Authenticated path: update profile directly (name not collected).
+      // No localStorage writes; submitted state is local to this card only.
       const { error } = await supabase
         .from("profiles")
         .update({ user_number: e164 })
@@ -111,11 +128,13 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
         return;
       }
     } else {
-      // Visitor path: save to localStorage + persist via edge function
-      localStorage.setItem("visitor_phone", e164);
-      localStorage.setItem("visitor_full_name", trimmedName);
-
+      // Visitor path: persist via edge function, scoped to this message + visitor.
       const visitorId = getOrCreateVisitorId();
+      const parsedMessageId =
+        typeof messageId === "string" ? Number(messageId)
+        : typeof messageId === "number" ? messageId
+        : undefined;
+
       try {
         const { data: resp, error: fnErr } = await supabase.functions.invoke('visitor-chat', {
           body: {
@@ -125,6 +144,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
             phone_country_dial_code: dialCode.startsWith('+') ? dialCode.replace(/[^+\d]/g, '') : `+${dialCode}`,
             phone_national: stripNonDigits(phoneValue),
             visitor_full_name: trimmedName,
+            message_id: Number.isFinite(parsedMessageId as number) ? parsedMessageId : undefined,
           },
         });
         if (fnErr || (resp && resp.success === false)) {
@@ -141,25 +161,57 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
       }
     }
 
-    setSavedNumber(e164);
-    setSavedName(isVisitor ? trimmedName : null);
+    setLocalSubmitted({
+      submittedNumber: e164,
+      submittedName: isVisitor ? trimmedName : null,
+      submittedAt: new Date().toISOString(),
+    });
     setState("success");
   };
 
-  const title = isVisitor
-    ? (data.title === "Phone Number Required" || !data.title
+  const title = useMemo(() => {
+    const wantsContactCopy = isVisitor || readOnly || previewOnly;
+    if (wantsContactCopy) {
+      return (data.title === "Phone Number Required" || !data.title)
         ? "Contact Information Required"
-        : data.title)
-    : (data.title || "Phone Number Required");
+        : data.title;
+    }
+    return data.title || "Phone Number Required";
+  }, [data.title, isVisitor, readOnly, previewOnly]);
 
-  const description = isVisitor
-    ? "Please provide your name and phone number so we can reach you."
-    : data.description;
+  const description = useMemo(() => {
+    if (isVisitor || readOnly || previewOnly) {
+      return "Please provide your name and phone number so we can reach you.";
+    }
+    return data.description;
+  }, [data.description, isVisitor, readOnly, previewOnly]);
 
   const submitDisabled =
     state === "submitting" ||
     !stripNonDigits(phoneValue) ||
     (isVisitor && !fullName.trim());
+
+  const renderSuccess = (s: PhoneCaptureSubmittedMeta) => (
+    <div className={cn(
+      "flex items-start gap-2 p-2 rounded-md",
+      isSent ? "bg-white/10" : "bg-emerald-50 dark:bg-emerald-950/30"
+    )}>
+      <CheckCircle2 className={cn("w-4 h-4 shrink-0 mt-0.5", isSent ? "text-emerald-300" : "text-emerald-600")} />
+      <div className="min-w-0 space-y-0.5">
+        <p className={cn("text-xs font-medium", isSent ? "text-white" : "text-emerald-700 dark:text-emerald-400")}>
+          {s.submittedName ? "Contact information saved" : "Phone number saved"}
+        </p>
+        {s.submittedName && (
+          <p className={cn("text-xs", isSent ? "text-white/80" : "text-foreground")}>
+            {s.submittedName}
+          </p>
+        )}
+        <p className={cn("text-xs font-mono", isSent ? "text-white/70" : "text-muted-foreground")}>
+          {s.submittedNumber}
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -193,31 +245,22 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
         </p>
       )}
 
-      {/* Success state */}
-      {state === "success" && savedNumber ? (
+      {effectiveSubmitted ? (
+        renderSuccess(effectiveSubmitted)
+      ) : readOnly ? (
         <div className={cn(
-          "flex items-start gap-2 p-2 rounded-md",
-          isSent ? "bg-white/10" : "bg-emerald-50 dark:bg-emerald-950/30"
+          "flex items-center gap-2 p-2 rounded-md",
+          isSent ? "bg-white/10" : "bg-muted"
         )}>
-          <CheckCircle2 className={cn("w-4 h-4 shrink-0 mt-0.5", isSent ? "text-emerald-300" : "text-emerald-600")} />
-          <div className="min-w-0 space-y-0.5">
-            <p className={cn("text-xs font-medium", isSent ? "text-white" : "text-emerald-700 dark:text-emerald-400")}>
-              {savedName ? "Contact information saved" : "Phone number saved"}
-            </p>
-            {savedName && (
-              <p className={cn("text-xs", isSent ? "text-white/80" : "text-foreground")}>
-                {savedName}
-              </p>
-            )}
-            <p className={cn("text-xs font-mono", isSent ? "text-white/70" : "text-muted-foreground")}>
-              {savedNumber}
-            </p>
-          </div>
+          <Clock className={cn("w-4 h-4 shrink-0", isSent ? "text-white/70" : "text-muted-foreground")} />
+          <p className={cn("text-xs", isSent ? "text-white/80" : "text-muted-foreground")}>
+            Awaiting visitor response
+          </p>
         </div>
       ) : (
         <>
-          {/* Full name input (visitors only) */}
-          {isVisitor && (
+          {/* Full name input (visitors only, or preview) */}
+          {showNameField && (
             <div className="relative">
               <User className={cn(
                 "w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none",
@@ -228,7 +271,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Your full name"
                 maxLength={MAX_NAME_LEN}
-                disabled={state === "submitting"}
+                disabled={state === "submitting" || previewOnly}
                 className={cn(
                   "h-8 text-sm pl-7",
                   isSent && "bg-white/10 border-white/20 text-white placeholder:text-white/40"
@@ -244,7 +287,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
             dialCode={dialCode}
             onDialCodeChange={setDialCode}
             placeholder="(555) 123-4567"
-            disabled={state === "submitting"}
+            disabled={state === "submitting" || previewOnly}
             inputClassName={cn(
               "h-8 text-sm",
               isSent && "bg-white/10 border-white/20 text-white placeholder:text-white/40"
@@ -263,7 +306,7 @@ export const PhoneCaptureCard = ({ data, variant = "received" }: PhoneCaptureCar
           <Button
             size="sm"
             onClick={handleSubmit}
-            disabled={submitDisabled}
+            disabled={submitDisabled || previewOnly}
             className={cn(
               "w-full h-8 text-xs font-medium",
               isSent

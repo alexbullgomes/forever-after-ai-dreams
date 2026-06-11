@@ -40,6 +40,7 @@ interface ChatMessage {
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
+  metadata?: Record<string, any> | null;
 }
 
 interface ExpandableChatWebhookProps {
@@ -108,6 +109,7 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
       fileUrl: dbMsg.audio_url || undefined,
       fileType: dbMsg.audio_url ? 'audio/webm' : undefined,
       fileName: dbMsg.audio_url ? 'voice-message.webm' : undefined,
+      metadata: dbMsg.metadata ?? null,
     };
   };
 
@@ -749,6 +751,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             <PhoneCaptureCard
               data={message.cardData}
               variant={isUser ? 'sent' : 'received'}
+              messageId={message.id}
+              conversationId={conversationId ?? undefined}
+              submittedMeta={message.metadata?.phoneCapture ?? null}
             />
           ) : message.type === 'card' && message.cardData ? (
             <ChatCardMessage 
