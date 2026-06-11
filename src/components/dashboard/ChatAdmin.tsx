@@ -49,6 +49,8 @@ interface Conversation {
   phone_country_dial_code?: string | null;
   phone_national?: string | null;
   phone_updated_at?: string | null;
+  visitor_full_name?: string | null;
+  visitor_name_updated_at?: string | null;
 }
 
 
@@ -776,11 +778,12 @@ const ChatAdmin = () => {
                 {filteredConversations.map((conversation) => {
                   const isUnread = conversation.new_msg === 'unread';
                   const isVisitor = !conversation.customer_id && !!conversation.visitor_id;
+                  const visitorName = conversation.visitor_full_name?.trim();
                   const displayName = isVisitor 
-                    ? 'Visitor' 
+                    ? (visitorName || 'Visitor')
                     : (conversation.user_name || conversation.user_email || 'Anonymous');
                   const displayInitial = isVisitor 
-                    ? 'V' 
+                    ? (visitorName?.charAt(0).toUpperCase() || 'V')
                     : (conversation.user_name?.charAt(0).toUpperCase() || 
                        conversation.user_email?.charAt(0).toUpperCase() || 'U');
                   
@@ -915,11 +918,12 @@ const ChatAdmin = () => {
                 <div className="flex items-center justify-between">
                   {(() => {
                     const isVisitor = !selectedConversation.customer_id && !!selectedConversation.visitor_id;
+                    const visitorName = selectedConversation.visitor_full_name?.trim();
                     const displayName = isVisitor 
-                      ? 'Visitor' 
+                      ? (visitorName || 'Visitor')
                       : (selectedConversation.user_name || selectedConversation.user_email || 'Anonymous User');
                     const displayInitial = isVisitor 
-                      ? 'V' 
+                      ? (visitorName?.charAt(0).toUpperCase() || 'V')
                       : (selectedConversation.user_name?.charAt(0).toUpperCase() || 
                          selectedConversation.user_email?.charAt(0).toUpperCase() || 'U');
                     
@@ -1188,6 +1192,14 @@ const ChatAdmin = () => {
                   {selectedConversation.visitor_id}
                 </p>
               </div>
+              {selectedConversation.visitor_full_name && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Full Name</label>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-2 rounded border">
+                    {selectedConversation.visitor_full_name}
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-gray-600">Conversation Started</label>
                 <p className="text-sm text-gray-900">

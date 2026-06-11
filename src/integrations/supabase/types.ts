@@ -880,7 +880,9 @@ export type Database = {
           taken_by: string | null
           user_email: string | null
           user_name: string | null
+          visitor_full_name: string | null
           visitor_id: string | null
+          visitor_name_updated_at: string | null
         }
         Insert: {
           archive_batch_id?: string | null
@@ -908,7 +910,9 @@ export type Database = {
           taken_by?: string | null
           user_email?: string | null
           user_name?: string | null
+          visitor_full_name?: string | null
           visitor_id?: string | null
+          visitor_name_updated_at?: string | null
         }
         Update: {
           archive_batch_id?: string | null
@@ -936,7 +940,9 @@ export type Database = {
           taken_by?: string | null
           user_email?: string | null
           user_name?: string | null
+          visitor_full_name?: string | null
           visitor_id?: string | null
+          visitor_name_updated_at?: string | null
         }
         Relationships: []
       }
@@ -2133,7 +2139,9 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          visitor_full_name: string | null
           visitor_id: string
+          visitor_name_updated_at: string | null
         }
         Insert: {
           browser?: string | null
@@ -2158,7 +2166,9 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          visitor_full_name?: string | null
           visitor_id: string
+          visitor_name_updated_at?: string | null
         }
         Update: {
           browser?: string | null
@@ -2183,7 +2193,9 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          visitor_full_name?: string | null
           visitor_id?: string
+          visitor_name_updated_at?: string | null
         }
         Relationships: [
           {
