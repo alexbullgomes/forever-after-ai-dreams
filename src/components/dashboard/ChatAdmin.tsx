@@ -45,7 +45,12 @@ interface Conversation {
   is_favorite_lead?: boolean;
   is_favorite_customer?: boolean;
   archived_at?: string | null;
+  phone_e164?: string | null;
+  phone_country_dial_code?: string | null;
+  phone_national?: string | null;
+  phone_updated_at?: string | null;
 }
+
 
 interface Message {
   id: number;
