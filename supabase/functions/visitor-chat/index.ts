@@ -339,6 +339,109 @@ serve(async (req) => {
         );
       }
 
+      case 'submit_phone': {
+        const { phone_e164, phone_country_dial_code, phone_national } = body;
+
+        // Validation
+        const e164Re = /^\+[1-9]\d{6,15}$/;
+        const dialRe = /^\+\d{1,4}$/;
+        if (!phone_e164 || !e164Re.test(phone_e164)) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Invalid phone_e164' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (!phone_country_dial_code || !dialRe.test(phone_country_dial_code)) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Invalid phone_country_dial_code' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (!phone_national || phone_national.length < 4 || phone_national.length > 25) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Invalid phone_national' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const now = new Date().toISOString();
+
+        // Upsert visitor record
+        try {
+          await supabase
+            .from('visitors')
+            .upsert({
+              visitor_id,
+              phone_number: phone_e164,
+              phone_country_dial_code,
+              phone_national,
+              phone_updated_at: now,
+              last_seen_at: now,
+            } as any, { onConflict: 'visitor_id' });
+        } catch (err) {
+          console.error('[visitor-chat] visitors upsert error:', err);
+        }
+
+        // Find or create conversation by visitor_id
+        const { data: existingConv } = await supabase
+          .from('conversations')
+          .select('id')
+          .eq('visitor_id', visitor_id)
+          .maybeSingle();
+
+        let conversationId: string;
+        if (existingConv) {
+          conversationId = existingConv.id;
+          const { error: updErr } = await supabase
+            .from('conversations')
+            .update({
+              phone_e164,
+              phone_country_dial_code,
+              phone_national,
+              phone_updated_at: now,
+            } as any)
+            .eq('id', conversationId);
+          if (updErr) {
+            console.error('[visitor-chat] conversation phone update error:', updErr);
+            return new Response(
+              JSON.stringify({ success: false, error: 'Failed to update conversation' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        } else {
+          const { data: newConv, error: createErr } = await supabase
+            .from('conversations')
+            .insert({
+              visitor_id,
+              customer_id: null,
+              user_name: visitor_name || 'Visitor',
+              mode: 'ai',
+              new_msg: 'unread',
+              phone_e164,
+              phone_country_dial_code,
+              phone_national,
+              phone_updated_at: now,
+            } as any)
+            .select('id')
+            .single();
+          if (createErr || !newConv) {
+            console.error('[visitor-chat] conversation create error:', createErr);
+            return new Response(
+              JSON.stringify({ success: false, error: 'Failed to create conversation' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          conversationId = newConv.id;
+        }
+
+        console.log(`[visitor-chat] Phone saved for visitor ${visitor_id} on conversation ${conversationId}`);
+
+        return new Response(
+          JSON.stringify({ success: true, conversation_id: conversationId }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       default:
         return new Response(
           JSON.stringify({ success: false, error: 'Unknown action' }),
