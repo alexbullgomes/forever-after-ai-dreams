@@ -12,6 +12,8 @@ export interface ChatMessage {
   response?: string;
   type?: 'text' | 'audio' | 'card';
   cardData?: CardMessageData;
+  metadata?: any;
+  conversationId?: string;
   files?: Array<{
     fileUrl: string;
     fileType: string;
