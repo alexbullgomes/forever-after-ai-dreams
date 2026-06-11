@@ -44,6 +44,9 @@ export const ChatMessageComponent = ({ chat, playingAudio, onAudioPlay, onBookPr
           <PhoneCaptureCard
             data={chat.cardData}
             variant={chat.isUser ? 'sent' : 'received'}
+            messageId={chat.id}
+            conversationId={chat.conversationId}
+            submittedMeta={chat.metadata?.phoneCapture ?? null}
           />
         ) : chat.type === 'card' && chat.cardData ? (
           <ChatCardMessage 
