@@ -18,6 +18,7 @@ interface VisitorChatRequest {
   phone_e164?: string;
   phone_country_dial_code?: string;
   phone_national?: string;
+  visitor_full_name?: string;
   metadata?: {
     context?: {
       page_url?: string;
