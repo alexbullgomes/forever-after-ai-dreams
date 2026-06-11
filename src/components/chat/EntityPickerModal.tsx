@@ -49,8 +49,8 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
   const phoneCaptureCardData: CardMessageData = useMemo(() => ({
     entityType: 'phone_capture',
     entityId: `phone-capture-${Date.now()}`,
-    title: 'Phone Number Required',
-    description: 'Please provide your phone number so we can reach you.',
+    title: 'Contact Information Required',
+    description: 'Please provide your name and phone number so we can reach you.',
     priceLabel: null,
     imageUrl: null,
     ctaLabel: 'Submit',
