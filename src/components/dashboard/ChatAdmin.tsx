@@ -64,6 +64,7 @@ interface Message {
   created_at: string;
   user_name: string | null;
   user_email: string | null;
+  metadata?: Record<string, any> | null;
 }
 
 const ChatAdmin = () => {
