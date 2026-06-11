@@ -918,11 +918,12 @@ const ChatAdmin = () => {
                 <div className="flex items-center justify-between">
                   {(() => {
                     const isVisitor = !selectedConversation.customer_id && !!selectedConversation.visitor_id;
+                    const visitorName = selectedConversation.visitor_full_name?.trim();
                     const displayName = isVisitor 
-                      ? 'Visitor' 
+                      ? (visitorName || 'Visitor')
                       : (selectedConversation.user_name || selectedConversation.user_email || 'Anonymous User');
                     const displayInitial = isVisitor 
-                      ? 'V' 
+                      ? (visitorName?.charAt(0).toUpperCase() || 'V')
                       : (selectedConversation.user_name?.charAt(0).toUpperCase() || 
                          selectedConversation.user_email?.charAt(0).toUpperCase() || 'U');
                     
