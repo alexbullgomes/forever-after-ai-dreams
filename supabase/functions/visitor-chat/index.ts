@@ -342,7 +342,8 @@ serve(async (req) => {
       }
 
       case 'submit_phone': {
-        const { phone_e164, phone_country_dial_code, phone_national, visitor_full_name } = body;
+        const { phone_e164, phone_country_dial_code, phone_national, visitor_full_name, message_id } = body;
+
 
         // Validation
         const e164Re = /^\+[1-9]\d{6,15}$/;
