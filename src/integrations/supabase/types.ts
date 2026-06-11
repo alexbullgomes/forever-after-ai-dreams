@@ -870,6 +870,10 @@ export type Database = {
           new_msg: string | null
           page_path: string | null
           page_type: string | null
+          phone_country_dial_code: string | null
+          phone_e164: string | null
+          phone_national: string | null
+          phone_updated_at: string | null
           public_code: string | null
           referral_code: string | null
           taken_at: string | null
@@ -894,6 +898,10 @@ export type Database = {
           new_msg?: string | null
           page_path?: string | null
           page_type?: string | null
+          phone_country_dial_code?: string | null
+          phone_e164?: string | null
+          phone_national?: string | null
+          phone_updated_at?: string | null
           public_code?: string | null
           referral_code?: string | null
           taken_at?: string | null
@@ -918,6 +926,10 @@ export type Database = {
           new_msg?: string | null
           page_path?: string | null
           page_type?: string | null
+          phone_country_dial_code?: string | null
+          phone_e164?: string | null
+          phone_national?: string | null
+          phone_updated_at?: string | null
           public_code?: string | null
           referral_code?: string | null
           taken_at?: string | null
@@ -2109,7 +2121,10 @@ export type Database = {
           linked_user_id: string | null
           metadata: Json | null
           os: string | null
+          phone_country_dial_code: string | null
+          phone_national: string | null
           phone_number: string | null
+          phone_updated_at: string | null
           referrer: string | null
           screen_resolution: string | null
           status: string
@@ -2131,7 +2146,10 @@ export type Database = {
           linked_user_id?: string | null
           metadata?: Json | null
           os?: string | null
+          phone_country_dial_code?: string | null
+          phone_national?: string | null
           phone_number?: string | null
+          phone_updated_at?: string | null
           referrer?: string | null
           screen_resolution?: string | null
           status?: string
@@ -2153,7 +2171,10 @@ export type Database = {
           linked_user_id?: string | null
           metadata?: Json | null
           os?: string | null
+          phone_country_dial_code?: string | null
+          phone_national?: string | null
           phone_number?: string | null
+          phone_updated_at?: string | null
           referrer?: string | null
           screen_resolution?: string | null
           status?: string

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search, Star, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import { Send, Users, MessageCircle, Clock, ArrowDown, Copy, Search, Star, Archive, RotateCcw, Trash2, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -45,7 +45,12 @@ interface Conversation {
   is_favorite_lead?: boolean;
   is_favorite_customer?: boolean;
   archived_at?: string | null;
+  phone_e164?: string | null;
+  phone_country_dial_code?: string | null;
+  phone_national?: string | null;
+  phone_updated_at?: string | null;
 }
+
 
 interface Message {
   id: number;
@@ -946,6 +951,13 @@ const ChatAdmin = () => {
                               ? `ID: ${selectedConversation.visitor_id?.slice(0, 8)}...` 
                               : selectedConversation.user_email}
                           </p>
+                          {selectedConversation.phone_e164 && (
+                            <p className="text-xs text-gray-700 font-mono mt-0.5 flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              {selectedConversation.phone_e164}
+                            </p>
+                          )}
+
                         </div>
                       </div>
                     );
@@ -1182,6 +1194,15 @@ const ChatAdmin = () => {
                   {format(new Date(selectedConversation.created_at), 'MMMM d, yyyy HH:mm')}
                 </p>
               </div>
+              {selectedConversation.phone_e164 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Phone Number</label>
+                  <p className="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-gray-500" />
+                    {selectedConversation.phone_e164}
+                  </p>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-gray-600">Status</label>
                 <Badge variant="outline" className="mt-1">
@@ -1192,6 +1213,7 @@ const ChatAdmin = () => {
                 This is an unauthenticated visitor. If they log in, their conversation will be linked to their account.
               </p>
             </div>
+
             <Button 
               onClick={() => setIsProfileModalOpen(false)} 
               className="w-full mt-6"
