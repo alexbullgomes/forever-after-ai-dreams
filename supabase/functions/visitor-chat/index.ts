@@ -19,6 +19,7 @@ interface VisitorChatRequest {
   phone_country_dial_code?: string;
   phone_national?: string;
   visitor_full_name?: string;
+  message_id?: number;
   metadata?: {
     context?: {
       page_url?: string;
