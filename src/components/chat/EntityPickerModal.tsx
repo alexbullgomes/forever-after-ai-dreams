@@ -230,7 +230,7 @@ export const EntityPickerModal = ({ open, onOpenChange, onSendCard }: EntityPick
           <div className="border rounded-lg p-3 bg-muted/30 mt-4">
             <p className="text-xs text-muted-foreground mb-2 font-medium">Preview:</p>
             {previewCardData.entityType === 'phone_capture' ? (
-              <PhoneCaptureCard data={previewCardData} variant="received" />
+              <PhoneCaptureCard data={previewCardData} variant="received" previewOnly />
             ) : (
               <ChatCardMessage data={previewCardData} variant="received" />
             )}
