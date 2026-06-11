@@ -951,6 +951,13 @@ const ChatAdmin = () => {
                               ? `ID: ${selectedConversation.visitor_id?.slice(0, 8)}...` 
                               : selectedConversation.user_email}
                           </p>
+                          {selectedConversation.phone_e164 && (
+                            <p className="text-xs text-gray-700 font-mono mt-0.5 flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              {selectedConversation.phone_e164}
+                            </p>
+                          )}
+
                         </div>
                       </div>
                     );
