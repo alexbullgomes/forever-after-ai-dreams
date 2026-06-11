@@ -1051,6 +1051,10 @@ const ChatAdmin = () => {
                               <PhoneCaptureCard
                                 data={cardData}
                                 variant={message.role === 'user' ? 'sent' : 'received'}
+                                messageId={message.id}
+                                conversationId={message.conversation_id}
+                                submittedMeta={message.metadata?.phoneCapture ?? null}
+                                readOnly
                               />
                             ) : message.type === 'card' && cardData ? (
                               <ChatCardMessage 
