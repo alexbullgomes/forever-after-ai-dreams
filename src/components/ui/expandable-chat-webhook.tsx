@@ -751,6 +751,9 @@ const ExpandableChatWebhook: React.FC<ExpandableChatWebhookProps> = ({
             <PhoneCaptureCard
               data={message.cardData}
               variant={isUser ? 'sent' : 'received'}
+              messageId={message.id}
+              conversationId={conversationId ?? undefined}
+              submittedMeta={message.metadata?.phoneCapture ?? null}
             />
           ) : message.type === 'card' && message.cardData ? (
             <ChatCardMessage 
