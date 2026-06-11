@@ -40,6 +40,7 @@ interface ChatMessage {
   fileUrl?: string;
   fileType?: string;
   fileName?: string;
+  metadata?: Record<string, any> | null;
 }
 
 interface ExpandableChatWebhookProps {
