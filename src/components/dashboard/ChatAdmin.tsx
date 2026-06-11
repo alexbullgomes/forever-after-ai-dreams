@@ -778,11 +778,12 @@ const ChatAdmin = () => {
                 {filteredConversations.map((conversation) => {
                   const isUnread = conversation.new_msg === 'unread';
                   const isVisitor = !conversation.customer_id && !!conversation.visitor_id;
+                  const visitorName = conversation.visitor_full_name?.trim();
                   const displayName = isVisitor 
-                    ? 'Visitor' 
+                    ? (visitorName || 'Visitor')
                     : (conversation.user_name || conversation.user_email || 'Anonymous');
                   const displayInitial = isVisitor 
-                    ? 'V' 
+                    ? (visitorName?.charAt(0).toUpperCase() || 'V')
                     : (conversation.user_name?.charAt(0).toUpperCase() || 
                        conversation.user_email?.charAt(0).toUpperCase() || 'U');
                   
