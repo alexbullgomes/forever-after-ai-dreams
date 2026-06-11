@@ -1,72 +1,52 @@
-# Fix: Visitor Phone Capture Not Visible in Chat Admin
 
-## What's happening today
+## Current implementation
 
-- `PhoneCaptureCard` (visitor path) writes the phone only to two places:
-  - `localStorage["visitor_phone"]` (E.164 string)
-  - `visitors.phone_number` (E.164 string, single field)
-- The `conversations` table has **no phone columns**, and `ChatAdmin.tsx` only reads from `conversations` (`user_name`, `user_email`, `visitor_id`). It never joins to `visitors`.
-- Result: the visitor saves the number successfully, but the admin sees nothing — there is no path from `visitors.phone_number` into the admin UI.
-- Additionally, only the E.164 string is stored; dial code / national parts are lost (doesn't match the project's `phone_e164` / `phone_country_dial_code` / `phone_national` convention).
-
-## Fix overview
-
-Persist the phone server-side, linked to **both** the visitor and the active conversation, in the canonical 3-field format, and surface it in Chat Admin in real time via the existing `conversations` realtime subscription.
+- **Card UI**: `src/components/chat/PhoneCaptureCard.tsx` renders a "Phone Number Required" form with a country dial code selector + phone input. On submit:
+  - Authenticated path → updates `profiles.user_number`.
+  - Visitor path → writes phone to `localStorage["visitor_phone"]` and calls the `visitor-chat` edge function with `action: 'submit_phone'`.
+- **Edge function**: `supabase/functions/visitor-chat/index.ts` `submit_phone` validates `phone_e164` / dial code / national, upserts into `visitors`, and writes `phone_e164`, `phone_country_dial_code`, `phone_national`, `phone_updated_at` onto the matching `conversations` row (or creates one).
+- **Admin UI**: `src/components/dashboard/ChatAdmin.tsx` reads `conversations` (including `phone_e164`, `user_name`, `visitor_id`) and shows the phone in the header/visitor info modal. It does not currently track a separate visitor-submitted name — `user_name` defaults to `'Visitor'` when the conversation is created.
 
 ## Changes
 
 ### 1. Database migration
-Add nullable phone columns to `conversations` and complete the set on `visitors`:
+Add nullable visitor-name fields, scoped to the guest conversation only (never touches `profiles`):
 
-```sql
-ALTER TABLE public.conversations
-  ADD COLUMN IF NOT EXISTS phone_e164 text,
-  ADD COLUMN IF NOT EXISTS phone_country_dial_code text,
-  ADD COLUMN IF NOT EXISTS phone_national text,
-  ADD COLUMN IF NOT EXISTS phone_updated_at timestamptz;
+- `conversations.visitor_full_name text`
+- `conversations.visitor_name_updated_at timestamptz`
+- `visitors.visitor_full_name text`
+- `visitors.visitor_name_updated_at timestamptz`
 
-ALTER TABLE public.visitors
-  ADD COLUMN IF NOT EXISTS phone_country_dial_code text,
-  ADD COLUMN IF NOT EXISTS phone_national text,
-  ADD COLUMN IF NOT EXISTS phone_updated_at timestamptz;
-```
+No GRANT changes needed (existing tables).
 
-`visitors.phone_number` is kept as the legacy E.164 mirror (backward compatibility). No RLS changes needed — writes happen via the edge function using the service role.
+### 2. Edge function — `supabase/functions/visitor-chat/index.ts`
+Extend the `submit_phone` action:
+- Accept `visitor_full_name` (required for visitors).
+- Validate: trim, non-empty, max 100 chars.
+- On upsert to `visitors`, also write `visitor_full_name` + `visitor_name_updated_at`.
+- On `conversations` update/insert, also write `visitor_full_name` + `visitor_name_updated_at`. Do NOT overwrite `user_name` if already set by a real user; only set it when null/'Visitor' so the conversation list shows the submitted name.
 
-### 2. `supabase/functions/visitor-chat/index.ts`
-Add a new action `submit_phone` (visitor flow, no auth required):
+### 3. Visitor card — `src/components/chat/PhoneCaptureCard.tsx`
+- Add `fullName` state with a text input above the phone field (placeholder "Your full name", maxLength 100).
+- Title → "Contact Information Required"; description → "Please provide your name and phone number so we can reach you."
+- Validation: require trimmed non-empty name, max 100 chars, in addition to phone validation.
+- Visitor submit: include `visitor_full_name` in the edge function call; persist `localStorage["visitor_full_name"]` for restore.
+- Success state displays both the saved name and phone. Pre-restore from localStorage on mount.
+- Authenticated path unchanged (still updates `profiles.user_number` only) — name field is hidden for authenticated users to avoid touching their profile.
 
-- Input: `visitor_id`, `phone_e164`, `phone_country_dial_code`, `phone_national`.
-- Validation: visitor_id length ≥ 10; `phone_e164` regex `^\+[1-9]\d{6,15}$`; dial code regex `^\+\d{1,4}$`; national length 4–20.
-- Upsert into `visitors` (phone_number + new 3 fields + phone_updated_at).
-- Update the visitor's existing `conversations` row (matched by `visitor_id`) with the same fields. If none exists, create one (same defaults as `send_message`).
-- Returns `{ success, conversation_id }`.
+### 4. Admin UI — `src/components/dashboard/ChatAdmin.tsx`
+- Extend the `Conversation` type and `select(...)` queries with `visitor_full_name`, `visitor_name_updated_at`.
+- Conversation list (visitor rows): show `visitor_full_name` when present, keep the "Guest" badge, keep visitor ID line.
+- Conversation header / visitor info modal: show submitted name prominently, with phone underneath. Keep "Guest" badge for visitor conversations.
+- Realtime: existing `conversations` subscription propagates new fields automatically — no extra wiring.
 
-Existing `send_message` / `get_conversation` / `get_messages` paths untouched.
+## Safety
 
-### 3. `src/components/chat/PhoneCaptureCard.tsx` (visitor path only)
-Replace the direct `supabase.from('visitors').upsert(...)` call with `supabase.functions.invoke('visitor-chat', { body: { action: 'submit_phone', visitor_id, phone_e164, phone_country_dial_code, phone_national } })`. Keep:
-- localStorage write (`visitor_phone`) for the on-card "saved" persistence across reloads.
-- Authenticated-user path (writes to `profiles.user_number`) unchanged.
-- All UI states, success card, validation messages unchanged.
+- Migration only adds nullable columns. No data backfill.
+- Authenticated user flow and `profiles` table untouched.
+- Edge function action remains additive; only the new field is required for visitor submissions (server still validates).
+- No changes to n8n trigger, Stripe, AI/Human mode, or realtime channels.
 
-### 4. `src/components/dashboard/ChatAdmin.tsx`
-- Extend the `Conversation` type and the `select(...)` calls to include `phone_e164, phone_country_dial_code, phone_national, phone_updated_at`.
-- In the conversation header / visitor info modal, add a "Phone" row showing `phone_e164` (with a copy-to-clipboard icon, matching existing styling). Show nothing if null.
-- In the conversation list row preview for visitors, show a small phone icon + last 4 digits when present.
-- Realtime: the component already subscribes to `conversations` changes; the new fields will flow through automatically (verify the subscription selects `*` or update it). No new subscription needed.
+## Acceptance check
 
-## Safety / non-regression
-
-- No changes to: auth flow, n8n webhook payloads, message inserts, AI/Human mode, realtime broadcasts, Stripe, admin role checks, RLS on existing columns.
-- New columns are nullable — existing rows and code paths unaffected.
-- Edge function action is additive — no existing action signature changes.
-- Validation rejects malformed input; service role write is scoped to the visitor_id supplied (same trust model as the existing `send_message` action — acceptable since visitor_id is the only identity primitive for guests).
-
-## Acceptance verification
-After build:
-1. Visitor submits phone → success card shows "Phone number saved".
-2. Admin chat header for that conversation shows the phone within ~1s (realtime), no refresh.
-3. Reloading `/dashboard/chat` still shows it (persisted on `conversations`).
-4. Authenticated user phone capture still writes to `profiles.user_number` only.
-5. No console errors; existing visitor chat send/receive flow unchanged.
+After build: visitor opens the card → fills name + phone → submits → success card shows both → admin chat header + list row show the submitted name with Guest badge and phone → reload `/dashboard/chat-admin` retains both → authenticated phone capture still updates only `profiles.user_number`.
